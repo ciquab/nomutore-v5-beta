@@ -2,8 +2,8 @@ import { APP, EXERCISE, CALORIES, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from '../co
 import { Store, db } from '../store.js';
 import { Service } from '../service.js';
 import { DOM, showMessage, applyTheme } from './dom.js';
-import { updateBeerSelectOptions } from './modals/BeerModal.js'; // ここからインポート
-import { getActiveSchemaFromIds } from './modals/CheckModal.js'; // ヘルパー再利用
+import { updateBeerSelectOptions } from './modals/beerModal.js'; // ここからインポート
+import { getActiveSchemaFromIds } from './modals/checkModal.js'; // ヘルパー再利用
 
 // 内部ヘルパー
 const findItemInLibrary = (id) => {

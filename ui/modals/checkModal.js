@@ -28,6 +28,12 @@ export const getActiveSchemaFromIds = (ids) => {
     return activeSchema;
 };
 
+// ★追加: 外部公開用エクスポート
+export const openCheckLibrary = CheckModal.openLibrary;
+export const applyPreset = CheckModal.applyPreset;
+export const saveLibraryChanges = CheckModal.saveLibraryChanges;
+export const openCheckModal = CheckModal.open;
+
 // Helper: 現在設定されているID一覧を取得
 const getCurrentActiveIds = () => {
     try {
@@ -300,4 +306,5 @@ export const CheckModal = {
         toggleModal('check-library-modal', false);
         showMessage('チェック項目を更新しました', 'success');
     }
+
 };

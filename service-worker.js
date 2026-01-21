@@ -1,52 +1,44 @@
-const CACHE_NAME = 'nomutorev5.0.4'; // Updated Version
+const CACHE_NAME = 'nomutorev5.0.0'; // Updated Version
 // アプリケーションを構成する全ファイル
 const APP_SHELL = [
     './',
     './index.html',
     './manifest.json',
     './style.css',
-    './types.js',         // ★Phase 1 追加
-
+    
     // Core Logic & Data
     './main.js',
     './constants.js',
     './store.js',
     './logic.js',
-    './service.js',
-    './dataManager.js',
-    './errorHandler.js',
+    './service.js',       
+    
+    './dataManager.js',   
+    './errorHandler.js',  
 
-    // UI Modules (Base)
+    // UI Modules
     './ui/index.js',
     './ui/dom.js',
     './ui/state.js',
-    './ui/Settings.js',   // ★Phase 2 追加
-
-    // UI Components (Features)
     './ui/beerTank.js',
     './ui/liverRank.js',
     './ui/checkStatus.js',
     './ui/weekly.js',
     './ui/chart.js',
     './ui/logList.js',
+    './ui/modal.js',
     
-    // './ui/modal.js',   // 🗑️ 削除 (分割したため不要)
+    // v4 New Modules
+    './ui/timer.js',          // New
+    './ui/beerStats.js',      // New
+    './ui/archiveManager.js', // New
 
-    // ★Phase 2 追加: Modals
+    './ui/Settings.js',
     './ui/modals/index.js',
-    './ui/modals/ActionMenu.js',
     './ui/modals/BeerModal.js',
     './ui/modals/CheckModal.js',
     './ui/modals/ExerciseModal.js',
-
-    // ★Phase 2 追加: Components
-    './ui/components/LogItem.js',
-    './ui/components/HeatmapCell.js',
-
-    // v4 New Modules
-    './ui/timer.js',
-    './ui/beerStats.js',
-    './ui/archiveManager.js',
+    './ui/modals/ActionMenu.js',
 
     // Assets
     './icon-192_2.png',

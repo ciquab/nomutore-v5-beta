@@ -1,7 +1,7 @@
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
 import { Calc } from './logic.js';
-import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal } from './ui/index.js';
+import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal,handleSaveSettings } from './ui/index.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
@@ -77,8 +77,8 @@ const initApp = async () => {
         updateBeerSelectOptions(); 
         UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
 
-        // ★修正: 自動作成機能により「未入力なのにUpdate」と表示される問題を防ぐため削除
-        // await Service.ensureTodayCheckRecord();
+        // 当日のチェックレコードを確保（なければ作成）★いったん削除
+        //await Service.ensureTodayCheckRecord();
 
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // ★修正: 編集IDを取得
         const idField = document.getElementById('editing-log-id');
-        const existingId = idField && idField.value ? parseInt(idField.value) : undefined;
+        const existingId = idField && idField.value ? parseInt(idField.value) : null;
 
         // ★修正: 新規・更新ともに Service.saveBeerLog に任せます
         // Service内で IDがあれば update, なければ add を適切に処理してくれます
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('bulk-delete', async () => {
         const checkboxes = document.querySelectorAll('.log-checkbox:checked');
-        const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
         if (ids.length > 0) {
             await Service.bulkDeleteLogs(ids);
         } else {
@@ -227,8 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnSaveSettings = document.getElementById('btn-save-settings');
     if (btnSaveSettings) {
-    btnSaveSettings.onclick = UI.handleSaveSettings; 
-}
+        btnSaveSettings.onclick = UI.handleSaveSettings;
+    }
 
     const btnTimerStart = document.getElementById('btn-timer-start');
     if(btnTimerStart) btnTimerStart.addEventListener('click', () => Timer.start());

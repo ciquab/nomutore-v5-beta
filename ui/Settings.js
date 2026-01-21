@@ -1,8 +1,11 @@
 import { APP, EXERCISE, CALORIES, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from '../constants.js';
 import { Store, db } from '../store.js';
-// 循環参照回避のためUIのインポートは削除
+import { Service } from '../service.js';
 import { DOM, showMessage, applyTheme } from './dom.js';
+import { updateBeerSelectOptions } from './modals/BeerModal.js'; // ここからインポート
+import { getActiveSchemaFromIds } from './modals/CheckModal.js'; // ヘルパー再利用
 
+// 内部ヘルパー
 const findItemInLibrary = (id) => {
     const allItems = Object.values(CHECK_LIBRARY).flat();
     return allItems.find(i => i.id === id);
@@ -31,29 +34,18 @@ export const Settings = {
             durationContainer.classList.add('hidden');
         }
 
-        Settings.updateBeerSelectors();
+        // Beer設定の更新
+        updateBeerSelectOptions();
+        const mode1Sel = document.getElementById('setting-mode-1');
+        const mode2Sel = document.getElementById('setting-mode-2');
+        if(mode1Sel) mode1Sel.value = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+        if(mode2Sel) mode2Sel.value = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+
+        // Exercise設定の更新
         Settings.updateExerciseSelectors();
+        
+        // Check項目エディタの描画
         Settings.renderCheckEditor();
-    },
-
-    updateBeerSelectors: () => {
-        const mode1 = document.getElementById('setting-mode-1');
-        const mode2 = document.getElementById('setting-mode-2');
-        const styles = Object.keys(CALORIES.STYLES);
-        const currentModes = Store.getModes();
-
-        [mode1, mode2].forEach(sel => {
-            if(sel && sel.children.length === 0) {
-                styles.forEach(s => {
-                    const opt = document.createElement('option');
-                    opt.value = s;
-                    opt.textContent = s;
-                    sel.appendChild(opt);
-                });
-            }
-        });
-        if(mode1) mode1.value = currentModes.mode1;
-        if(mode2) mode2.value = currentModes.mode2;
     },
 
     updateExerciseSelectors: () => {
@@ -87,7 +79,7 @@ export const Settings = {
         } catch(e) {}
 
         if (!schema || schema.length === 0) {
-            schema = CHECK_DEFAULT_IDS.map(id => findItemInLibrary(id)).filter(Boolean);
+            schema = getActiveSchemaFromIds(CHECK_DEFAULT_IDS);
             localStorage.setItem('nomutore_check_schema', JSON.stringify(schema));
         }
 
@@ -111,63 +103,84 @@ export const Settings = {
     },
 
     save: async () => {
-        const weight = document.getElementById('weight-input').value;
-        const height = document.getElementById('height-input').value;
-        const age = document.getElementById('age-input').value;
-        const gender = document.getElementById('gender-input').value;
-
-        if (!weight || !height || !age) {
-            showMessage('Profile info incomplete.', 'error');
-            return;
+        const btn = document.getElementById('btn-save-settings');
+        const originalText = btn ? btn.textContent : 'Save';
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
         }
 
-        // ★修正: 個別のキーに保存する（Store.getProfileの仕様に合わせる）
-        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, weight);
-        localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, height);
-        localStorage.setItem(APP.STORAGE_KEYS.AGE, age);
-        localStorage.setItem(APP.STORAGE_KEYS.GENDER, gender);
-        
-        // 念のためプロファイルオブジェクトとしても保存（将来の互換性用）
-        const profile = { weight, height, age, gender };
-        localStorage.setItem(APP.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+        try {
+            const weight = document.getElementById('weight-input').value;
+            const height = document.getElementById('height-input').value;
+            const age = document.getElementById('age-input').value;
+            const gender = document.getElementById('gender-input').value;
 
-        // Theme
-        const theme = document.getElementById('theme-input').value;
-        localStorage.setItem(APP.STORAGE_KEYS.THEME, theme);
-        applyTheme(theme);
+            if (!weight || !height || !age) {
+                showMessage('Profile info incomplete.', 'error');
+                return;
+            }
 
-        // Period
-        const periodMode = document.getElementById('setting-period-mode').value;
-        localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, periodMode);
-        if(periodMode === 'custom') {
-            const dur = document.getElementById('setting-period-duration').value;
-            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_DURATION, dur);
-        }
+            // 個別キーへの保存 (Store.getProfile仕様)
+            localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, weight);
+            localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, height);
+            localStorage.setItem(APP.STORAGE_KEYS.AGE, age);
+            localStorage.setItem(APP.STORAGE_KEYS.GENDER, gender);
+            
+            const profile = { weight, height, age, gender };
+            localStorage.setItem(APP.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
 
-        // Modes
-        const m1 = document.getElementById('setting-mode-1').value;
-        const m2 = document.getElementById('setting-mode-2').value;
-        localStorage.setItem(APP.STORAGE_KEYS.MODE1, m1);
-        localStorage.setItem(APP.STORAGE_KEYS.MODE2, m2);
-        localStorage.setItem(APP.STORAGE_KEYS.BASE_EXERCISE, document.getElementById('setting-base-exercise').value);
-        localStorage.setItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE, document.getElementById('setting-default-record-exercise').value);
+            // Theme
+            const theme = document.getElementById('theme-input').value;
+            localStorage.setItem(APP.STORAGE_KEYS.THEME, theme);
+            applyTheme(theme);
 
-        // ★修正: ヘッダーのビール選択肢を即時更新
-        const headerSel = document.getElementById('header-mode-select');
-        if(headerSel) {
-            headerSel.options[0].text = m1;
-            headerSel.options[1].text = m2;
-        }
+            // Period
+            const periodMode = document.getElementById('setting-period-mode').value;
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, periodMode);
+            if(periodMode === 'custom') {
+                const dur = document.getElementById('setting-period-duration').value;
+                localStorage.setItem(APP.STORAGE_KEYS.PERIOD_DURATION, dur);
+            }
+            // 期間設定変更を反映（Service呼び出し）
+            await Service.updatePeriodSettings(periodMode);
 
-        showMessage('Settings Saved!', 'success');
-        
-        if (window.UI) {
-            await window.UI.refreshUI(); 
-            window.UI.switchTab('home');
+            // Modes
+            const m1 = document.getElementById('setting-mode-1').value;
+            const m2 = document.getElementById('setting-mode-2').value;
+            localStorage.setItem(APP.STORAGE_KEYS.MODE1, m1);
+            localStorage.setItem(APP.STORAGE_KEYS.MODE2, m2);
+            localStorage.setItem(APP.STORAGE_KEYS.BASE_EXERCISE, document.getElementById('setting-base-exercise').value);
+            localStorage.setItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE, document.getElementById('setting-default-record-exercise').value);
+
+            // Header UI 即時更新
+            const headerSel = document.getElementById('header-mode-select');
+            if(headerSel) {
+                headerSel.options[0].text = m1;
+                headerSel.options[1].text = m2;
+            }
+
+            showMessage('Settings Saved!', 'success');
+            
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+            if (window.UI) {
+                await window.UI.refreshUI(); 
+                window.UI.switchTab('home');
+            }
+
+        } catch(e) {
+            console.error(e);
+            showMessage('Error saving settings', 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
         }
     }
 };
 
+// HTML onclick用のグローバル関数
 window.removeCheckItem = (index) => {
     if(!confirm('この項目を削除しますか？')) return;
     let schema = [];

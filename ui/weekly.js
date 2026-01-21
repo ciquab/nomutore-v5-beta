@@ -2,14 +2,13 @@ import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
 import { DOM } from './dom.js';
-import { HeatmapCell } from './components/HeatmapCell.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export async function renderWeeklyAndHeatUp(logs, checks) {
     const profile = Store.getProfile();
 
-    // 1. データ準備（アーカイブ含む）
+    // アーカイブデータを含めた全ログの取得（v4仕様）
     let allLogsForDisplay = await db.logs.toArray();
     try {
         if (db.period_archives) {
@@ -24,7 +23,7 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
         console.error("Failed to load archives for calendar:", e);
     }
 
-    // 2. ストリーク計算とバッジ表示（元のロジック維持）
+    // ストリーク計算とバッジ表示
     const streak = Calc.getCurrentStreak(allLogsForDisplay, checks, profile);
     const multiplier = Calc.getStreakMultiplier ? Calc.getStreakMultiplier(streak) : 1.0;
     
@@ -43,50 +42,118 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
     }
 
     // ----------------------------------------------------
-
     // 1. Weekly Calendar (上部の1週間カレンダー)
-
-    // ---------------------------------------------------
-
-    // 3. Weekly Calendar 描画
-    const container = document.getElementById('weekly-calendar');
+    // ----------------------------------------------------
+    const container = DOM.elements['weekly-calendar'] || document.getElementById('weekly-calendar');
     if (container) {
-        // 日付範囲の計算
+        // 月曜始まりロジック
         const today = dayjs();
-        const currentDay = today.day() || 7; 
+        const currentDay = today.day() || 7; // Sun(0) -> 7
         const startOfWeek = today.subtract(currentDay - 1, 'day');
         
-        // ラベル更新
-        const rangeLabel = document.getElementById('weekly-range-label');
-        if (rangeLabel) {
-            const endOfWeek = startOfWeek.add(6, 'day');
-            rangeLabel.textContent = `${startOfWeek.format('M/D')} - ${endOfWeek.format('M/D')}`;
-        }
-
-        // HTML生成ループ
         let html = '';
+        
         for (let i = 0; i < 7; i++) {
             const d = startOfWeek.add(i, 'day');
             const isToday = d.isSame(today, 'day');
             const status = Calc.getDayStatus(d, allLogsForDisplay, checks, profile);
             
-            // ★たったこの1行で、あの複雑なHTMLと分岐を呼び出せます！
-            html += HeatmapCell(d, status, isToday);
+            let bgClass = "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700";
+            let textClass = "text-gray-400";
+            let borderClass = "border";
+            let iconHtml = '';
+
+            // スマホ対応: アイコンを2つ並べるためのラッパー
+            const dualIconWrapper = (icon1, icon2) => `
+                <div class="flex items-center justify-center gap-[1px] transform scale-90">
+                    ${icon1}
+                    ${icon2}
+                </div>
+            `;
+
+            // ★配色をヒートマップのロジック（赤＝飲酒、青＝運動・努力、緑＝休肝）に統一
+            switch (status) {
+                case 'rest_exercise': // 休肝日 + 運動 (最強)
+                    bgClass = "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700";
+                    textClass = "text-emerald-600 dark:text-emerald-400";
+                    iconHtml = dualIconWrapper(
+                        `<i class="ph-fill ph-coffee text-xs"></i>`,
+                        `<i class="ph-fill ph-person-simple-run text-xs"></i>`
+                    );
+                    break;
+
+                case 'rest': // 休肝日のみ (Green)
+                    bgClass = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800";
+                    textClass = "text-emerald-500 dark:text-emerald-500";
+                    iconHtml = `<i class="ph-fill ph-coffee text-lg"></i>`;
+                    break;
+
+                case 'drink_exercise_success': // 完済 (Indigo/Blue)
+                    // ヒートマップの「🏅」に相当。成功色。
+                    bgClass = "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700";
+                    textClass = "text-indigo-600 dark:text-indigo-400";
+                    iconHtml = dualIconWrapper(
+                        `<i class="ph-fill ph-beer-stein text-xs"></i>`,
+                        `<i class="ph-bold ph-check text-xs"></i>`
+                    );
+                    break;
+
+                case 'drink_exercise': // 未完済 (Cyan/Blue)
+                    // ★変更: ヒートマップの「💦 (Blue)」に合わせて、オレンジ(注意)から青系(努力)に変更
+                    // 「飲んだけど運動はした」というポジティブさを表現
+                    bgClass = "bg-sky-100 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700";
+                    textClass = "text-sky-600 dark:text-sky-400";
+                    iconHtml = dualIconWrapper(
+                        `<i class="ph-fill ph-beer-stein text-xs"></i>`,
+                        `<i class="ph-fill ph-person-simple-run text-xs"></i>`
+                    );
+                    break;
+
+                case 'drink': // 飲酒のみ (Red)
+                    // ★変更: ヒートマップの「🍺 (Red)」に合わせて、オレンジから赤(警告)に変更
+                    bgClass = "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800";
+                    textClass = "text-red-500 dark:text-red-500";
+                    iconHtml = `<i class="ph-fill ph-beer-stein text-lg"></i>`;
+                    break;
+
+                case 'exercise': // 運動のみ (Blue)
+                    bgClass = "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
+                    textClass = "text-blue-600 dark:text-blue-400";
+                    iconHtml = `<i class="ph-fill ph-person-simple-run text-lg"></i>`;
+                    break;
+                    
+                default:
+                    iconHtml = `<span class="text-[10px] font-bold opacity-30 font-mono">${d.format('D')}</span>`;
+                    break;
+            }
+
+            if (isToday) {
+                borderClass = "border-2 border-indigo-500 dark:border-indigo-400 shadow-md shadow-indigo-500/20";
+            }
+
+            html += `
+                <div class="aspect-square rounded-xl ${bgClass} ${borderClass} flex items-center justify-center ${textClass} transition-all hover:scale-105 active:scale-95 cursor-pointer relative group"
+                     onclick="UI.openCheckModal('${d.format('YYYY-MM-DD')}')">
+                    ${iconHtml}
+                    ${isToday ? '<span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-indigo-500 rounded-full border-2 border-white dark:border-gray-900"></span>' : ''}
+                </div>
+            `;
         }
+        
         container.innerHTML = html;
+        
+        // ラベル更新
+        const label = document.getElementById('weekly-range-label');
+        if (label) {
+            const endOfWeek = startOfWeek.add(6, 'day');
+            label.textContent = `${startOfWeek.format('M/D')} - ${endOfWeek.format('M/D')}`;
+        }
     }
 
-
     // ----------------------------------------------------
-
     // 2. Heatmap (下部のヒートマップ) - v3ロジック適用
-
     // ----------------------------------------------------
-
-    // 4. Heatmap (下部のヒートマップ) - ロジック維持
-    if (typeof renderHeatmap === 'function') {
-        renderHeatmap(checks, allLogsForDisplay, profile);
-    }
+    renderHeatmap(checks, allLogsForDisplay, profile);
 }
 
 export function renderHeatmap(checks, logs, profile) {

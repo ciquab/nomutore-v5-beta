@@ -70,7 +70,7 @@ export function renderBeerTank(currentBalanceKcal) {
             cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm";
             
             const safeIcon = escapeHtml(baseExData.icon);
-            minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-red-600/70 dark:text-red-200">to burn</span>`;
+            minText.innerHTML = `+${Math.round(displayMinutes)} min <span class="text-[10px] font-normal opacity-70">(${safeIcon})</span>`;
             minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
 
             // メッセージ

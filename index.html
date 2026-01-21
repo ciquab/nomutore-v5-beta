@@ -212,12 +212,11 @@
                  </button>
  
                  <div id="bulk-action-area" class="fixed bottom-24 left-0 right-0 z-40 flex justify-center pointer-events-none">
-    <button id="btn-delete-selected" onclick="import('./ui/logList.js').then(m => m.deleteSelectedLogs())" 
-        class="pointer-events-auto shadow-lg bg-red-500 text-white px-6 py-3 rounded-full font-bold shadow-red-500/30 transition-all transform translate-y-40 opacity-0 flex items-center gap-2 disabled:opacity-50">
-        <i class="ph-bold ph-trash"></i>
-        Delete Selected
-    </button>
-</div>
+                     <button id="btn-delete-selected" onclick="import('./ui/logList.js').then(m => m.deleteSelectedLogs())" class="pointer-events-auto shadow-lg bg-red-500 text-white px-6 py-3 rounded-full font-bold shadow-red-500/30 transition-all transform translate-y-20 opacity-0 flex items-center gap-2 disabled:opacity-50">
+                         <i class="ph-bold ph-trash"></i>
+                         Delete Selected
+                     </button>
+                 </div>
 
                  <div id="edit-spacer" class="h-16 hidden"></div>
              </div>
@@ -330,8 +329,8 @@
                 <!-- ★変更: ライブラリとカスタムの2つのボタンを配置 -->
                 <div class="flex gap-2 mb-4">
                     <button onclick="UI.openCheckLibrary()" class="flex-1 py-3 bg-indigo-100 text-indigo-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-indigo-200 transition">
-    <i class="ph-bold ph-list-plus"></i> Open Library
-</button>
+                        <i class="ph-bold ph-list-plus"></i> Open Library
+                    </button>
                     <button onclick="addNewCheckItem()" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-gray-50 transition dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                         <i class="ph-bold ph-pencil-simple"></i> Custom
                     </button>
@@ -466,16 +465,16 @@
             <div class="p-4 bg-white dark:bg-base-900 border-b border-base-200 dark:border-base-800 z-20">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Quick Presets</p>
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    <button onclick="UI.applyPreset('default')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-indigo-100 hover:text-indigo-600 transition">
+                    <button onclick="applyPreset('default')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-indigo-100 hover:text-indigo-600 transition">
                         🔰 基本セット
                     </button>
-                    <button onclick="UI.applyPreset('diet')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-orange-100 hover:text-orange-600 transition">
+                    <button onclick="applyPreset('diet')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-orange-100 hover:text-orange-600 transition">
                         📉 ガチダイエット
                     </button>
-                    <button onclick="UI.applyPreset('muscle')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-red-100 hover:text-red-600 transition">
+                    <button onclick="applyPreset('muscle')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-red-100 hover:text-red-600 transition">
                         💪 筋トレ
                     </button>
-                    <button onclick="UI.applyPreset('liver')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-emerald-100 hover:text-emerald-600 transition">
+                    <button onclick="applyPreset('liver')" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-emerald-100 hover:text-emerald-600 transition">
                         🏥 肝臓ケア
                     </button>
                 </div>
@@ -487,7 +486,7 @@
             </div>
 
             <div class="p-4 border-t border-base-200 dark:border-base-800 bg-white dark:bg-base-900 z-20">
-                <button onclick="UI.applyLibraryChanges()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition">
+                <button onclick="applyLibraryChanges()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition">
                     Save Selection
                 </button>
             </div>
@@ -497,15 +496,16 @@
     <!-- Beer Modal -->
     <div id="beer-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
-            <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
+        <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 class="font-bold text-lg">Record Drink</h3>
                 <button onclick="UI.closeModal('beer-modal')" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center">✕</button>
             </div>
+            
             <div class="flex p-2 gap-2 bg-base-50 dark:bg-base-900">
                 <button id="tab-beer-preset" class="flex-1 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-sm transition">Preset</button>
                 <button id="tab-beer-custom" class="flex-1 py-2 text-xs font-bold rounded-xl text-gray-500 hover:bg-base-200 dark:hover:bg-base-800 transition">Custom</button>
             </div>
-            <div class="p-5 overflow-y-auto space-y-4 relative z-0">
+            <div class="relative z-0 p-5 overflow-y-auto space-y-4">
                 <input type="hidden" id="editing-log-id" value="">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -605,7 +605,7 @@
     <!-- Check Modal (Updated: UI Consistency) -->
     <div id="check-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
-            <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
+        <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 class="font-bold text-lg">Daily Check</h3>
                 <button onclick="UI.closeModal('check-modal')" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center text-gray-500 hover:bg-base-300 dark:hover:bg-base-700 transition">
                     ✕
@@ -613,7 +613,7 @@
             </div>
 
             <!-- Scrollable Body -->
-            <div class="p-5 overflow-y-auto space-y-4 relative z-0">
+            <div class="relative z-0 p-5 overflow-y-auto space-y-4">
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase">Date</label>
                     <input type="date" id="check-date" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1">
@@ -641,7 +641,7 @@
             </div>
 
             <!-- Footer (Border Added, Consistent Layout) -->
-            <div class="relative z-10 p-4 border-t border-base-100 bg-white/95 dark:border-base-800 flex gap-2 bg-base-50 dark:bg-base-900">
+            <div class="relative z-10 p-4 border-t border-base-100 bg-white/95 dark:border-base-800 flex gap-2">
                 <button onclick="UI.closeModal('check-modal')" class="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition">
                     Cancel
                 </button>
@@ -651,63 +651,6 @@
             </div>
         </div>
     </div>
-
-        <!-- Exercise Modal -->
-    <div id="exercise-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
-        
-        <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
-            <h3 class="font-bold text-lg">Log Workout</h3>
-            <button onclick="UI.closeModal('exercise-modal')" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center">✕</button>
-        </div>
-        
-        <div class="p-5 space-y-4 overflow-y-auto relative z-0">
-            <input type="hidden" id="editing-exercise-id">
-            <div class="grid grid-cols-5 gap-3">
-                <div class="col-span-3">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Date</label>
-                    <input type="date" id="manual-date" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
-                </div>
-                <div class="col-span-2">
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Mins</label>
-                    <input type="number" id="manual-minutes" placeholder="30" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
-                </div>
-            </div>
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Activity</label>
-                <select id="exercise-select" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold"></select>
-            </div>
-
-            <label class="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl cursor-pointer border border-orange-100 dark:border-orange-800/50 transition">
-                <div class="flex items-center gap-2">
-                    <span class="text-xl">🔥</span>
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-orange-800 dark:text-orange-200">Apply Streak Bonus</span>
-                        <span class="text-[10px] text-orange-600/70 dark:text-orange-400/70">継続ボーナスを適用する</span>
-                    </div>
-                </div>
-                <div class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="manual-apply-bonus" class="sr-only peer" checked>
-                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
-                </div>
-            </label>
-        </div>
-
-        <div class="relative z-10 p-4 border-t border-base-100 bg-white/95 dark:border-base-800 flex gap-2 bg-base-50 dark:bg-base-900">
-            <button id="btn-delete-exercise" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
-                <i class="ph-bold ph-trash text-xl"></i>
-            </button>
-
-            <button onclick="UI.closeModal('exercise-modal')" class="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition">
-                Cancel
-            </button>
-
-            <button id="btn-save-exercise" class="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">
-                Save Workout
-            </button>
-        </div>
-    </div>
-</div>
 
     <div id="timer-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-base-900 text-white transition-opacity duration-300">
         <div id="timer-bubbles-container" class="absolute inset-0 overflow-hidden pointer-events-none opacity-40 z-0"></div>
@@ -793,6 +736,63 @@
             </button>
         </div>
     </div>
+
+        <!-- Exercise Modal -->
+    <div id="exercise-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
+        
+        <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
+            <h3 class="font-bold text-lg">Log Workout</h3>
+            <button onclick="UI.closeModal('exercise-modal')" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center">✕</button>
+        </div>
+        
+        <div class="p-5 space-y-4 overflow-y-auto relative z-0">
+            <input type="hidden" id="editing-exercise-id">
+            <div class="grid grid-cols-5 gap-3">
+                <div class="col-span-3">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Date</label>
+                    <input type="date" id="manual-date" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
+                </div>
+                <div class="col-span-2">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Mins</label>
+                    <input type="number" id="manual-minutes" placeholder="30" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
+                </div>
+            </div>
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Activity</label>
+                <select id="exercise-select" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold"></select>
+            </div>
+
+            <label class="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-xl cursor-pointer border border-orange-100 dark:border-orange-800/50 transition">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🔥</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-orange-800 dark:text-orange-200">Apply Streak Bonus</span>
+                        <span class="text-[10px] text-orange-600/70 dark:text-orange-400/70">継続ボーナスを適用する</span>
+                    </div>
+                </div>
+                <div class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="manual-apply-bonus" class="sr-only peer" checked>
+                    <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                </div>
+            </label>
+        </div>
+
+        <div class="relative z-10 p-4 border-t border-base-100 bg-white/95 dark:border-base-800 flex gap-2 bg-base-50 dark:bg-base-900">
+            <button id="btn-delete-exercise" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+                <i class="ph-bold ph-trash text-xl"></i>
+            </button>
+
+            <button onclick="UI.closeModal('exercise-modal')" class="flex-1 py-3 font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition">
+                Cancel
+            </button>
+
+            <button id="btn-save-exercise" class="flex-[2] py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition">
+                Save Workout
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- Help Modal (Updated for Better Onboarding & Full Manual) -->
     <div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">

@@ -181,3 +181,6 @@ export const BeerModal = {
         }
     }
 };
+
+// ★追加: 外部ファイルが利用するための名前付きエクスポート
+export const updateBeerSelectOptions = BeerModal.updateSelectOptions;

@@ -376,5 +376,12 @@ export const UI = {
     handleSaveSettings: Settings.save,
     openCheckLibrary,
     applyPreset,
-    applyLibraryChanges
+    applyLibraryChanges,
+
+// ★追加: 外部ファイルが直接インポートするための名前付きエクスポートを兼ねる
+    // UIオブジェクト自体にメソッドを持たせる
+    updateBeerSelectOptions
 };
+
+// ★追加: 外部モジュール（DataManagerなど）が import { updateBeerSelectOptions } from './ui/index.js' できるようにする
+export { updateBeerSelectOptions, toggleModal };

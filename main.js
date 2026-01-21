@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // ★修正: 編集IDを取得
         const idField = document.getElementById('editing-log-id');
-        const existingId = idField && idField.value ? parseInt(idField.value) : null;
+        const existingId = idField && idField.value ? parseInt(idField.value) : undefined;
 
         // ★修正: 新規・更新ともに Service.saveBeerLog に任せます
         // Service内で IDがあれば update, なければ add を適切に処理してくれます
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('bulk-delete', async () => {
         const checkboxes = document.querySelectorAll('.log-checkbox:checked');
-        const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+        const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
         if (ids.length > 0) {
             await Service.bulkDeleteLogs(ids);
         } else {

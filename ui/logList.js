@@ -7,17 +7,14 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 import { LogItem } from './components/LogItem.js';
 
 // 状態管理
-let currentLimit = 20; // 最初に表示する件数
-const LIMIT_STEP = 20; // 追加で読み込む件数
-
-// ★変数定義を追加 (ReferenceError回避)
+let currentLimit = 20; 
+const LIMIT_STEP = 20; 
 let _fetchLogsFn = null;
 
 export const toggleEditMode = () => {
     const isEdit = !StateManager.isEditMode;
     StateManager.setIsEditMode(isEdit);
     
-    // UI反映
     updateLogListView(false); 
     
     const selectAllBtn = document.getElementById('btn-select-all');
@@ -51,11 +48,13 @@ const updateBulkActionUI = () => {
         deleteBtn.disabled = count === 0;
         deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> Delete (${count})`;
         
-        // 編集モードでなければ隠す (translate-y-20 opacity-0 クラスで制御)
+        // ★修正: 隠す移動量を translate-y-20 -> translate-y-40 に増やして確実に隠す
+        const hideClasses = ['translate-y-40', 'opacity-0', 'pointer-events-none'];
+        
         if(StateManager.isEditMode) {
-             deleteBtn.classList.remove('translate-y-20', 'opacity-0');
+             deleteBtn.classList.remove(...hideClasses);
         } else {
-             deleteBtn.classList.add('translate-y-20', 'opacity-0');
+             deleteBtn.classList.add(...hideClasses);
         }
     }
     
@@ -67,9 +66,9 @@ export const deleteSelectedLogs = async () => {
     const checkboxes = document.querySelectorAll('.log-checkbox:checked');
     if (checkboxes.length === 0) return;
 
-    // ★修正1: ここでの confirm() を削除 (Service側で行うため、2重表示を防止)
-    
-    // ★修正2: dataset.id ではなく value から取得 (LogItemの実装に合わせる)
+    // ★修正: ここでの confirm() を削除 (Service側で行うため)
+
+    // ★修正: dataset.id ではなく value から取得 (LogItemの実装に合わせる)
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
     
     try {
@@ -79,16 +78,11 @@ export const deleteSelectedLogs = async () => {
         await updateLogListView(false); 
     } catch (e) {
         console.error(e);
-        // Service側でもエラー表示している場合はここでのalertは不要だが、念のため残すか削除してもよい
     }
 };
 
-// ハンドラ設定関数
 export const setFetchLogsHandler = (fn) => { _fetchLogsFn = fn; };
 
-/**
- * ログリストを更新する
- */
 export const updateLogListView = async (reset = false) => {
     const listEl = document.getElementById('log-list');
     const loadMoreBtn = document.getElementById('btn-load-more');
@@ -113,7 +107,6 @@ export const updateLogListView = async (reset = false) => {
     if (logs.length === 0) {
         listEl.innerHTML = `<li class="text-center text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>No logs yet.</li>`;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
-        // データがない場合もUI更新（ボタンを隠すため）
         updateBulkActionUI();
         return;
     }
@@ -153,9 +146,7 @@ export const updateLogListView = async (reset = false) => {
         cb.addEventListener('click', (e) => e.stopPropagation());
     });
     
-    // ★修正3: 最後に必ずUI状態を更新して、ボタンの表示/非表示を同期する
     updateBulkActionUI();
 };
 
-// 外部参照用
 updateLogListView.updateBulkCount = updateBulkCount;

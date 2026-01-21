@@ -4,15 +4,16 @@ import { DOM, toggleModal, toggleDryDay, showMessage } from '../dom.js';
 import { StateManager } from '../state.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-// ヘルパー: IDリストからアクティブなスキーマを生成（カスタム項目維持）
+// Helper: IDリストからスキーマオブジェクトの配列を生成 (modal.jsのロジックを厳密に再現)
 export const getActiveSchemaFromIds = (ids) => {
     const activeSchema = [];
-    const allLibraryItems = Object.values(CHECK_LIBRARY).flat();
-
     ids.forEach(id => {
-        let item = allLibraryItems.find(i => i.id === id);
+        let item = null;
+        Object.values(CHECK_LIBRARY).forEach(category => {
+            const found = category.find(i => i.id === id);
+            if (found) item = found;
+        });
         
-        // ライブラリにない場合は既存の設定（カスタム項目）から探す
         if (!item) {
             try {
                 const current = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
@@ -27,7 +28,7 @@ export const getActiveSchemaFromIds = (ids) => {
     return activeSchema;
 };
 
-// ヘルパー: 現在設定されているID一覧を取得
+// Helper: 現在設定されているID一覧を取得
 const getCurrentActiveIds = () => {
     try {
         const schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
@@ -38,25 +39,21 @@ const getCurrentActiveIds = () => {
 };
 
 export const CheckModal = {
-    // --- モーダルを開く ---
+    // --- Daily Check Input Modal (記録用) ---
     open: async (dateStr = null) => {
         const targetDate = dateStr || StateManager.selectedDate || dayjs().format('YYYY-MM-DD');
         const dateInput = document.getElementById('check-date');
         if(dateInput) dateInput.value = targetDate;
 
-        // UI同期: 休肝日スイッチと飲酒項目の表示制御
+        // UI同期ロジック
         const syncDryDayUI = (isDry) => {
             const items = document.querySelectorAll('.drinking-only');
             items.forEach(el => {
                 if (isDry) {
                     el.classList.add('hidden');
-                    // 隠すときはチェックを外す
-                    const cb = el.querySelector('input');
-                    if(cb && cb.checked) {
-                        cb.checked = false;
-                        // 親要素のスタイルもリセット
-                        el.className = el.className.replace('bg-indigo-600 border-indigo-600 text-white shadow-md', 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-indigo-300');
-                    }
+                    // 休肝日なら、飲酒時のみ項目のチェックを外す
+                    const cb = el.querySelector('input[type="checkbox"]');
+                    if(cb) cb.checked = false;
                 } else {
                     el.classList.remove('hidden');
                 }
@@ -86,7 +83,7 @@ export const CheckModal = {
 
         document.getElementById('check-weight').value = (existing && existing.weight) ? existing.weight : '';
 
-        // チェック項目の描画
+        // チェック項目の描画 (modal.jsのHTML構造を厳密に再現)
         const container = document.getElementById('check-items-container');
         container.innerHTML = '';
 
@@ -100,72 +97,75 @@ export const CheckModal = {
         }
 
         schema.forEach(item => {
-            const isChecked = existing ? !!existing[item.id] : false;
             const div = document.createElement('div');
-            if (item.drinking_only) div.classList.add('drinking-only');
-
-            const baseClass = "p-3 rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-1 h-24";
-            const checkedClass = "bg-indigo-600 border-indigo-600 text-white shadow-md";
-            const uncheckedClass = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 hover:border-indigo-300";
+            const visibilityClass = item.drinking_only ? 'drinking-only' : '';
+            if (visibilityClass) div.className = visibilityClass;
             
-            // 初期表示制御
-            let isHidden = false;
-            if (item.drinking_only && (existing && existing.isDryDay)) isHidden = true;
-            
-            div.className = `${baseClass} ${isChecked ? checkedClass : uncheckedClass} ${isHidden ? 'hidden' : ''}`;
-
-            div.onclick = () => {
-                const cb = div.querySelector('input');
-                cb.checked = !cb.checked;
-                
-                if(cb.checked) {
-                    div.className = `${baseClass} ${checkedClass} ${item.drinking_only ? 'drinking-only' : ''}`;
-                    // ★重要: 飲酒項目をONにしたら休肝日はOFFにする
-                    if (item.drinking_only) {
-                        if (isDryCheck && isDryCheck.checked) {
-                            isDryCheck.checked = false;
-                            syncDryDayUI(false);
-                        }
-                    }
-                } else {
-                    div.className = `${baseClass} ${uncheckedClass} ${item.drinking_only ? 'drinking-only' : ''}`;
-                }
-            };
-
+            // ★復元: modal.jsと同じラベルベースのHTML構造
             div.innerHTML = `
-                <span class="text-2xl">${item.icon}</span>
-                <span class="text-[10px] font-bold leading-tight">${item.label}</span>
-                <input type="checkbox" id="check-${item.id}" class="hidden" ${isChecked ? 'checked' : ''}>
+                <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
+                    <input type="checkbox" id="check-${item.id}" class="rounded text-indigo-600 focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                            <span>${item.icon}</span> ${item.label}
+                        </span>
+                        ${item.desc ? `<span class="text-[9px] text-gray-400">${item.desc}</span>` : ''}
+                    </div>
+                </label>
             `;
             container.appendChild(div);
+
+            // ★復元: 飲酒時のみ項目をチェックしたら、休肝日チェックを外すロジック
+            if (item.drinking_only) {
+                const cb = div.querySelector('input[type="checkbox"]');
+                if (cb) {
+                    cb.addEventListener('change', () => {
+                        if (cb.checked) {
+                            const dryCheck = document.getElementById('check-is-dry');
+                            if (dryCheck && dryCheck.checked) {
+                                dryCheck.checked = false;
+                                syncDryDayUI(false); // UI更新
+                            }
+                        }
+                    });
+                }
+            }
         });
 
-        // 保存ボタンの状態
+        // 値のセット用ヘルパー
+        const setCheck = (id, val) => {
+            const el = document.getElementById(id);
+            if(el) el.checked = !!val;
+        };
+
+        // 初期状態の反映
         const saveBtn = document.getElementById('btn-save-check');
         
+        // Reset
+        setCheck('check-is-dry', false);
+        syncDryDayUI(false);
+        if (saveBtn) saveBtn.textContent = 'Save Check';
+
         if (existing) {
-            if (isDryCheck) isDryCheck.checked = existing.isDryDay;
+            setCheck('check-is-dry', existing.isDryDay);
             syncDryDayUI(existing.isDryDay);
             
-            // 自動生成データ(weight: null)かどうかの判定
+            schema.forEach(item => {
+                if (existing[item.id] !== undefined) {
+                    setCheck(`check-${item.id}`, existing[item.id]);
+                }
+            });
+
             if (saveBtn) {
                 const isAutoGenerated = (existing.weight === null); 
                 saveBtn.textContent = isAutoGenerated ? 'Save Check' : 'Update Check';
             }
-        } else {
-            if (isDryCheck) isDryCheck.checked = false;
-            syncDryDayUI(false);
-            if (saveBtn) saveBtn.textContent = 'Save Check';
         }
 
-        // ★重要: ビール記録がある場合は休肝日を強制OFF・無効化
         if (beerLogsCount > 0) {
-            if (isDryCheck) {
-                isDryCheck.checked = false;
-                isDryCheck.disabled = true;
-            }
-            syncDryDayUI(false); 
-            
+            setCheck('check-is-dry', false);
+            syncDryDayUI(false);
+            if (isDryCheck) isDryCheck.disabled = true;
             if (dryLabelContainer) dryLabelContainer.classList.add('opacity-50', 'pointer-events-none');
             if (dryLabelText) dryLabelText.innerHTML = "Is today a Dry Day? <span class='text-[10px] text-red-500 font-bold ml-2'>(Alcohol Recorded)</span>";
         }
@@ -173,7 +173,8 @@ export const CheckModal = {
         toggleModal('check-modal', true);
     },
 
-    // --- ライブラリ選択画面 ---
+    // --- Library Selection Modal (設定用) ---
+    // ここはmodal.jsでもカード型だったのでそのまま維持
     openLibrary: () => {
         const container = document.getElementById('library-content');
         if (!container) return;
@@ -212,7 +213,6 @@ export const CheckModal = {
                     const checkbox = document.getElementById(`lib-chk-${item.id}`);
                     if (checkbox) {
                         checkbox.checked = !checkbox.checked;
-                        // スタイル切り替え
                         if (checkbox.checked) {
                             btn.className = 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500';
                             const icon = btn.querySelector('.check-icon');
@@ -259,38 +259,29 @@ export const CheckModal = {
             currentSchema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
         } catch(e){}
 
-        // ライブラリ由来のIDセット
         const libraryIds = new Set();
         Object.values(CHECK_LIBRARY).flat().forEach(i => libraryIds.add(i.id));
 
-        // カスタム項目（ライブラリにないもの）だけ抽出して維持
         const customItems = currentSchema.filter(item => !libraryIds.has(item.id));
 
-        // プリセットIDからスキーマを構築
         const newSchemaFromLibrary = getActiveSchemaFromIds(selectedIds);
-        
-        // 結合
         const finalSchema = [...newSchemaFromLibrary, ...customItems];
 
         localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(finalSchema));
         
-        // 開いているUIがあれば更新
         const modal = document.getElementById('check-library-modal');
         if(modal && !modal.classList.contains('hidden')) {
             CheckModal.openLibrary(); 
         }
-        // 設定画面のリスト更新
+        
         import('../Settings.js').then(m => m.Settings.renderCheckEditor());
         
-        showMessage(`プリセット「${preset.label}」を適用しました`, 'success');
+        showMessage(`プリセット「${preset.label}」を適用しました}`, 'success');
     },
 
     saveLibraryChanges: () => {
-        const checkboxes = document.querySelectorAll('.library-check');
-        const selectedIds = [];
-        checkboxes.forEach(cb => {
-            if (cb.checked) selectedIds.push(cb.value);
-        });
+        const checkedInputs = document.querySelectorAll('#library-content input[type="checkbox"]:checked');
+        const selectedIds = Array.from(checkedInputs).map(input => input.value);
         
         let currentSchema = [];
         try { currentSchema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]'); } catch(e){}

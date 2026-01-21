@@ -1,10 +1,10 @@
 import { EXERCISE, APP } from '../../constants.js';
 import { toggleModal } from '../dom.js';
-import { StateManager } from '../state.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export const ExerciseModal = {
-    open: (e, log = null) => {
+    // modal.js の openManualInput を完全再現
+    open: (dateStr = null, log = null) => {
         const idField = document.getElementById('editing-exercise-id');
         const minField = document.getElementById('manual-minutes');
         const dateField = document.getElementById('manual-date');
@@ -15,11 +15,14 @@ export const ExerciseModal = {
         if(idField) idField.value = '';
         if(minField) minField.value = '';
         
-        const targetDate = StateManager.selectedDate || (log ? dayjs(log.timestamp).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
+        // 日付決定ロジックの復元 (引数 dateStr を優先)
+        const targetDate = dateStr || (log ? dayjs(log.timestamp).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
         if(dateField) dateField.value = targetDate;
 
+        // セレクトボックス生成ロジックの復元 (毎回クリアして再生成)
         const typeSel = document.getElementById('exercise-select');
-        if (typeSel && typeSel.children.length === 0) {
+        if (typeSel) {
+            typeSel.innerHTML = '';
             Object.keys(EXERCISE).forEach(k => {
                 const o = document.createElement('option');
                 o.value = k;

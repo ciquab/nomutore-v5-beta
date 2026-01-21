@@ -18,7 +18,6 @@ export const BeerModal = {
         const untappdCheck = document.getElementById('untappd-check');
         const useUntappd = untappdCheck ? untappdCheck.checked : false;
 
-        // タイムスタンプ生成 (正午基準)
         const ts = dateVal 
             ? dayjs(dateVal).startOf('day').add(12, 'hour').valueOf() 
             : dayjs().startOf('day').add(12, 'hour').valueOf(); 
@@ -92,7 +91,7 @@ export const BeerModal = {
             document.getElementById('beer-rating').value = log.rating || 0;
             document.getElementById('beer-memo').value = log.memo || '';
             
-            if (log.isCustom || log.type === 'brew') { // 旧データ互換
+            if (log.isCustom || log.type === 'brew') {
                 BeerModal.switchTab('custom');
                 document.getElementById('custom-abv').value = log.abv || 5.0;
                 document.getElementById('custom-amount').value = log.rawAmount || log.ml || 350;
@@ -128,7 +127,6 @@ export const BeerModal = {
         const activeClasses = ['bg-indigo-600', 'text-white', 'shadow-sm'];
         const inactiveClasses = ['text-gray-500', 'hover:bg-base-200', 'dark:hover:bg-base-800'];
 
-        // クラスのリセット
         btnPreset.classList.remove(...activeClasses);
         btnPreset.classList.add(...inactiveClasses);
         btnCustom.classList.remove(...activeClasses);
@@ -150,7 +148,7 @@ export const BeerModal = {
     adjustCount: (delta) => {
         const el = document.getElementById('beer-count');
         let v = parseFloat(el.value) || 1;
-        v = Math.max(0.5, v + delta); // 0.5単位等は許容するがマイナスは防ぐ
+        v = Math.max(0.5, v + delta); 
         el.value = v;
     },
 
@@ -182,5 +180,5 @@ export const BeerModal = {
     }
 };
 
-// ★追加: 外部ファイルが利用するための名前付きエクスポート
-export const updateBeerSelectOptions = BeerModal.updateSelectOptions;
+// 外部インポート用
+export const updateBeerSelectOptions = beerModal.updateSelectOptions;

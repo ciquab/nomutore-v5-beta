@@ -5,9 +5,9 @@ import { ActionMenu } from './actionMenu.js';
 import { toggleModal, showMessage } from '../dom.js';
 import { Timer } from '../timer.js';
 
-// --- 各モーダル機能のエイリアスエクスポート ---
+// --- モーダル機能エクスポート ---
 
-// Beer Modal
+// Beer
 export const openBeerModal = BeerModal.open;
 export const resetBeerForm = BeerModal.resetForm;
 export const getBeerFormData = BeerModal.getFormData;
@@ -16,25 +16,24 @@ export const adjustBeerCount = BeerModal.adjustCount;
 export const searchUntappd = BeerModal.searchUntappd;
 export const updateBeerSelectOptions = BeerModal.updateSelectOptions;
 
-// Check Modal & Library
+// Check
 export const openCheckModal = CheckModal.open;
 export const openCheckLibrary = CheckModal.openLibrary;
 export const applyPreset = CheckModal.applyPreset;
 export const applyLibraryChanges = CheckModal.saveLibraryChanges;
 
-// Exercise Modal
+// Exercise
 export const openManualInput = ExerciseModal.open;
 
-// Action Menu
+// Action
 export const openActionMenu = ActionMenu.open;
 export const handleActionSelect = ActionMenu.handleSelect;
 
 
-// --- 汎用・その他モーダル制御 ---
+// --- その他共通 ---
 
 export const closeModal = (id) => toggleModal(id, false);
 
-// ヘルプモーダル (初回セットアップ誘導ロジックを含む)
 export const openHelp = (isFirstTime = false) => {
     toggleModal('help-modal', true);
     
@@ -44,7 +43,6 @@ export const openHelp = (isFirstTime = false) => {
             footerBtn.textContent = "Start Setup";
             footerBtn.onclick = () => {
                 toggleModal('help-modal', false);
-                // Settingsタブへ移動 (window.UI経由)
                 if (window.UI && window.UI.switchTab) {
                     window.UI.switchTab('settings');
                     showMessage('まずはプロフィールを設定しましょう！', 'info');
@@ -57,7 +55,6 @@ export const openHelp = (isFirstTime = false) => {
     }
 };
 
-// Timer関連のラッパー
 export const openTimer = (reset = false) => {
     if (reset) Timer.reset();
     toggleModal('timer-modal', true);
@@ -65,14 +62,11 @@ export const openTimer = (reset = false) => {
 };
 
 export const closeTimer = () => {
-    // 動作中なら確認が必要だが、UI操作としては閉じるだけ
     toggleModal('timer-modal', false);
 };
 
-
-// --- 互換性維持のためのプレースホルダー ---
-// 既存のコードがこれらの関数をインポートしている可能性があるため残す
+// 互換性維持
 export const updateInputSuggestions = () => {}; 
 export const renderQuickButtons = () => {}; 
 export const openLogDetail = () => {}; 
-export const updateModeSelector = () => {};
+export const updateModeSelector = () => {}; 

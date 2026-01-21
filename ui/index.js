@@ -18,7 +18,7 @@ import { Settings } from './Settings.js';
 
 import { 
     getBeerFormData, resetBeerForm, openBeerModal, switchBeerInputTab, 
-    openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
+    openCheckModal, openManualInput, openHelp, openLogDetail, 
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,

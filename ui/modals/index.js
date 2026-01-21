@@ -1,7 +1,7 @@
-import { BeerModal } from './BeerModal.js';
-import { CheckModal } from './CheckModal.js';
-import { ExerciseModal } from './ExerciseModal.js';
-import { ActionMenu } from './ActionMenu.js';
+import { BeerModal } from './beerModal.js';
+import { CheckModal } from './checkModal.js';
+import { ExerciseModal } from './exerciseModal.js';
+import { ActionMenu } from './actionMenu.js';
 import { toggleModal, showMessage } from '../dom.js';
 import { Timer } from '../timer.js';
 

@@ -420,13 +420,17 @@ export const UI = {
     openActionMenu: openActionMenu,
     handleActionSelect: handleActionSelect,
     renderSettings: Settings.render,
-    handleSaveSettings: Settings.save, // UIオブジェクトにも追加
-    
-    // ★追加: これがないとDataManagerからの呼び出しでエラーになる
-    updateModeSelector: updateModeSelector,
-    applyTheme: applyTheme,
-    toggleDryDay: toggleDryDay 
+    handleSaveSettings: Settings.save,
 
+    // ★追加: 移植した CheckModal 関連の機能を UI オブジェクトに登録
+    openCheckLibrary,      // これにより UI.openCheckLibrary() が有効になります
+    applyPreset,           // プリセット適用用
+    applyLibraryChanges,   // ライブラリ保存用
+    
+    updateBeerSelectOptions,
+    updateInputSuggestions, 
+    renderQuickButtons, 
+    openLogDetail
 };
 
 export { 
@@ -441,6 +445,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

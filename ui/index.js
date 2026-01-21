@@ -383,5 +383,15 @@ export const UI = {
     updateBeerSelectOptions
 };
 
-// ★追加: 外部モジュール（DataManagerなど）が import { updateBeerSelectOptions } from './ui/index.js' できるようにする
-export { updateBeerSelectOptions, toggleModal };
+export { 
+    renderBeerTank, 
+    renderLiverRank, 
+    renderCheckStatus, 
+    renderWeeklyAndHeatUp, 
+    renderChart, 
+    updateLogListView, 
+    updateModeSelector, 
+    updateBeerSelectOptions,
+    StateManager,
+    toggleModal
+};

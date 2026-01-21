@@ -23,7 +23,7 @@ import {
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect
-} from './ui/index.js';
+} from './modals/index.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 

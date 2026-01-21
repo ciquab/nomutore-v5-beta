@@ -27,6 +27,8 @@ import {
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+export const handleSaveSettings = Settings.save;
+
 export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();
@@ -329,7 +331,7 @@ export const UI = {
         } else if (tabId === 'home') {
             refreshUI();
         } else if (tabId === 'settings') {
-            renderSettings(); 
+            Settings.render(); // ★Settings.renderを呼び出し
         }
     },
 
@@ -416,7 +418,8 @@ export const UI = {
     
     openActionMenu: openActionMenu,
     handleActionSelect: handleActionSelect,
-    handleSaveSettings: Settings.save,
+    renderSettings: Settings.render,
+    handleSaveSettings: Settings.save, // UIオブジェクトにも追加
     
     // ★追加: これがないとDataManagerからの呼び出しでエラーになる
     updateModeSelector: updateModeSelector,

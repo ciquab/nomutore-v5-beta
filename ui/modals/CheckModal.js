@@ -239,4 +239,10 @@ export const CheckModal = {
         toggleModal('check-library-modal', false);
         showMessage('Check items updated!', 'success');
     }
+
 };
+
+export const openCheckLibrary = CheckModal.openLibrary;
+export const applyPreset = CheckModal.applyPreset;
+export const saveLibraryChanges = CheckModal.saveLibraryChanges;
+export const openCheckModal = CheckModal.open;

@@ -6,7 +6,6 @@ import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
-import { handleSaveSettings } from './ui/modal.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // HTMLからonclickで呼ぶためにwindowオブジェクトに登録
@@ -228,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnSaveSettings = document.getElementById('btn-save-settings');
     if (btnSaveSettings) {
-        btnSaveSettings.onclick = handleSaveSettings;
+        btnSaveSettings.onclick = UI.handleSaveSettings()
     }
 
     const btnTimerStart = document.getElementById('btn-timer-start');

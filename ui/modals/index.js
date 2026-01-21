@@ -26,20 +26,41 @@ export const handleActionSelect = ActionMenu.handleSelect;
 
 // 汎用・その他
 export const closeModal = (id) => toggleModal(id, false);
-export const openHelp = () => toggleModal('help-modal', true);
 
-// Timer関連のラッパー (modal.jsにあったもの)
+// ★復元: 初回セットアップ対応のHelpモーダル
+export const openHelp = (isFirstTime = false) => {
+    toggleModal('help-modal', true);
+    
+    const footerBtn = document.querySelector('#help-modal button.w-full');
+    if (footerBtn) {
+        if (isFirstTime) {
+            footerBtn.textContent = "Start Setup";
+            footerBtn.onclick = () => {
+                toggleModal('help-modal', false);
+                // Settingsタブへ移動
+                if (window.UI && window.UI.switchTab) {
+                    window.UI.switchTab('settings');
+                    showMessage('まずはプロフィールを設定しましょう！', 'info');
+                }
+            };
+        } else {
+            footerBtn.textContent = "OK, Let's Drink!";
+            footerBtn.onclick = () => toggleModal('help-modal', false);
+        }
+    }
+};
+
+// Timer関連
 export const openTimer = (reset = false) => {
     if (reset) Timer.reset();
     toggleModal('timer-modal', true);
     Timer.init();
 };
 export const closeTimer = () => {
-    // 動作中なら確認が必要だが、一旦閉じるだけ
     toggleModal('timer-modal', false);
 };
 
-export const updateInputSuggestions = () => {}; // Placeholder
-export const renderQuickButtons = () => {}; // Placeholder
-export const openLogDetail = () => {}; // Placeholder
-export const updateModeSelector = () => {}; // Placeholder
+export const updateInputSuggestions = () => {}; 
+export const renderQuickButtons = () => {}; 
+export const openLogDetail = () => {}; 
+export const updateModeSelector = () => {};

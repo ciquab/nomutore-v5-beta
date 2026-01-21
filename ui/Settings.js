@@ -1,13 +1,21 @@
 import { APP, EXERCISE, CALORIES, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from '../constants.js';
 import { Store, db } from '../store.js';
-import { UI, refreshUI } from './index.js'; // 循環参照に注意が必要だが、refreshUIのみならOK
+import { UI, refreshUI } from './index.js';
 import { DOM, showMessage } from './dom.js';
+
+// ライブラリ全体からIDでアイテムを探すヘルパー
+const findItemInLibrary = (id) => {
+    // CHECK_LIBRARYは { general: [], diet: [] ... } の形式なのでフラット化して検索
+    const allItems = Object.values(CHECK_LIBRARY).flat();
+    return allItems.find(i => i.id === id);
+};
 
 export const Settings = {
     render: () => {
         const profile = Store.getProfile();
         
-        document.getElementById('weight-input').value = profile.weight || '';
+        const wInput = document.getElementById('weight-input');
+        if (wInput) wInput.value = profile.weight || '';
         document.getElementById('height-input').value = profile.height || '';
         document.getElementById('age-input').value = profile.age || '';
         document.getElementById('gender-input').value = profile.gender || 'male';
@@ -25,13 +33,8 @@ export const Settings = {
             durationContainer.classList.add('hidden');
         }
 
-        // Beer Modes
         Settings.updateBeerSelectors();
-        
-        // Exercise Selectors
         Settings.updateExerciseSelectors();
-
-        // Check Editor List
         Settings.renderCheckEditor();
     },
 
@@ -42,7 +45,7 @@ export const Settings = {
         const currentModes = Store.getModes();
 
         [mode1, mode2].forEach(sel => {
-            if(sel.children.length === 0) {
+            if(sel && sel.children.length === 0) {
                 styles.forEach(s => {
                     const opt = document.createElement('option');
                     opt.value = s;
@@ -51,8 +54,8 @@ export const Settings = {
                 });
             }
         });
-        mode1.value = currentModes.mode1;
-        mode2.value = currentModes.mode2;
+        if(mode1) mode1.value = currentModes.mode1;
+        if(mode2) mode2.value = currentModes.mode2;
     },
 
     updateExerciseSelectors: () => {
@@ -60,7 +63,7 @@ export const Settings = {
         const defRec = document.getElementById('setting-default-record-exercise');
         
         const populate = (sel) => {
-            if(sel.children.length === 0) {
+            if(sel && sel.children.length === 0) {
                 Object.entries(EXERCISE).forEach(([k, v]) => {
                     const opt = document.createElement('option');
                     opt.value = k;
@@ -72,24 +75,32 @@ export const Settings = {
         populate(baseEx);
         populate(defRec);
 
-        baseEx.value = Store.getBaseExercise();
-        defRec.value = Store.getDefaultRecordExercise();
+        if(baseEx) baseEx.value = Store.getBaseExercise();
+        if(defRec) defRec.value = Store.getDefaultRecordExercise();
     },
 
     renderCheckEditor: () => {
         const container = document.getElementById('check-editor-list');
         if(!container) return;
         
-        let schema = JSON.parse(localStorage.getItem('nomutore_check_schema'));
-        if (!schema) schema = CHECK_DEFAULT_IDS.map(id => CHECK_LIBRARY.find(i => i.id === id)).filter(Boolean);
+        let schema = [];
+        try {
+            schema = JSON.parse(localStorage.getItem('nomutore_check_schema'));
+        } catch(e) {}
 
-        container.innerHTML = schema.map(item => `
+        // ★修正: 初期値がない、または空の場合はデフォルトIDから復元
+        if (!schema || schema.length === 0) {
+            schema = CHECK_DEFAULT_IDS.map(id => findItemInLibrary(id)).filter(Boolean);
+            localStorage.setItem('nomutore_check_schema', JSON.stringify(schema));
+        }
+
+        container.innerHTML = schema.map((item, index) => `
             <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl mb-2 border border-gray-100 dark:border-gray-700">
                 <div class="flex items-center gap-3">
                     <span class="text-xl">${item.icon}</span>
                     <span class="text-sm font-bold dark:text-white">${item.label}</span>
                 </div>
-                <button onclick="removeCheckItem('${item.id}')" class="text-red-400 hover:text-red-600 px-2">
+                <button onclick="removeCheckItem(${index})" class="text-red-400 hover:text-red-600 px-2">
                     <i class="ph-bold ph-minus-circle"></i>
                 </button>
             </div>
@@ -131,8 +142,36 @@ export const Settings = {
 
         showMessage('Settings Saved!', 'success');
         
-        // 画面リフレッシュ
         await window.UI.refreshUI(); 
         window.UI.switchTab('home');
     }
+};
+
+// ★復元: グローバル関数として公開 (HTMLのonclickから呼ばれる)
+window.removeCheckItem = (index) => {
+    if(!confirm('この項目を削除しますか？')) return;
+    let schema = [];
+    try { schema = JSON.parse(localStorage.getItem('nomutore_check_schema')); } catch(e) {}
+    schema.splice(index, 1);
+    localStorage.setItem('nomutore_check_schema', JSON.stringify(schema));
+    Settings.renderCheckEditor();
+};
+
+window.addNewCheckItem = () => {
+    const label = prompt('項目名を入力してください (例: 筋トレ)');
+    if(!label) return;
+    const icon = prompt('アイコン絵文字を入力してください (例: 💪)', '💪');
+    const desc = prompt('説明を入力してください (例: 30分以上やった)', '');
+    const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
+
+    const id = `custom_${Date.now()}`;
+    const newItem = {
+        id, label, icon: icon || '✅', type: 'boolean', desc, drinking_only: drinkingOnly
+    };
+
+    let schema = [];
+    try { schema = JSON.parse(localStorage.getItem('nomutore_check_schema') || '[]'); } catch(e) {}
+    schema.push(newItem);
+    localStorage.setItem('nomutore_check_schema', JSON.stringify(schema));
+    Settings.renderCheckEditor();
 };

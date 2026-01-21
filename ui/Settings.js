@@ -1,6 +1,6 @@
 import { APP, EXERCISE, CALORIES, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from '../constants.js';
 import { Store, db } from '../store.js';
-import { UI, refreshUI } from './index.js';
+import { refreshUI } from './index.js';
 import { DOM, showMessage } from './dom.js';
 
 // ライブラリ全体からIDでアイテムを探すヘルパー
@@ -146,10 +146,12 @@ export const Settings = {
         localStorage.setItem(APP.STORAGE_KEYS.BASE_EXERCISE, document.getElementById('setting-base-exercise').value);
         localStorage.setItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE, document.getElementById('setting-default-record-exercise').value);
 
-        showMessage('Settings Saved!', 'success');
+        showMessage('設定を保存しました！', 'success');
         
-        await window.UI.refreshUI(); 
-        window.UI.switchTab('home');
+        // ★修正: window.UI 経由で呼び出す（main.jsで登録されているため安全）
+        if (window.UI) {
+            await window.UI.refreshUI(); 
+            window.UI.switchTab('home');
     }
 };
 

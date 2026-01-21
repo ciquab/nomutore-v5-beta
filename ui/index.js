@@ -18,7 +18,7 @@ import { Settings } from './Settings.js';
 
 import { 
     getBeerFormData, resetBeerForm, openBeerModal, switchBeerInputTab, 
-    openCheckModal, openCheckLibrary, openManualInput, openHelp, openLogDetail, 
+    openCheckModal, openCheckLibrary, applyPreset, applyLibraryChenges, openManualInput, openHelp, openLogDetail, 
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
@@ -408,6 +408,8 @@ export const UI = {
     toggleSelectAll: toggleSelectAll,
     switchCellarViewHTML: (mode) => UI.switchCellarView(mode),
     openCheckLibrary,
+    applyPreset,
+    applyLibraryChenges,
     openTimer: openTimer,
     closeTimer: closeTimer,
     refreshUI: refreshUI,
@@ -439,5 +441,6 @@ export {
     StateManager,
     toggleModal
 };
+
 
 

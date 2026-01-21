@@ -14,6 +14,7 @@ import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, se
 import { renderBeerStats } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
+import { Settings } from './Settings.js';
 
 import { 
     getBeerFormData, resetBeerForm, openBeerModal, switchBeerInputTab, 
@@ -22,7 +23,7 @@ import {
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect
-} from './modal.js';
+} from './ui/index.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -415,6 +416,7 @@ export const UI = {
     
     openActionMenu: openActionMenu,
     handleActionSelect: handleActionSelect,
+    handleSaveSettings: Settings.save,
     
     // ★追加: これがないとDataManagerからの呼び出しでエラーになる
     updateModeSelector: updateModeSelector,
@@ -433,6 +435,5 @@ export {
     updateModeSelector, 
     updateBeerSelectOptions,
     StateManager,
-    toggleModal,
-    handleSaveSettings
+    toggleModal
 };

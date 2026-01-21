@@ -433,5 +433,6 @@ export {
     updateModeSelector, 
     updateBeerSelectOptions,
     StateManager,
-    toggleModal
+    toggleModal,
+    handleSaveSettings
 };

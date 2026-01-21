@@ -1,9 +1,11 @@
-import { BeerModal } from './beerModal.js';
-import { CheckModal } from './checkModal.js';
-import { ExerciseModal } from './exerciseModal.js';
-import { ActionMenu } from './actionMenu.js';
+import { BeerModal } from './BeerModal.js';
+import { CheckModal } from './CheckModal.js';
+import { ExerciseModal } from './ExerciseModal.js';
+import { ActionMenu } from './ActionMenu.js';
 import { toggleModal, showMessage } from '../dom.js';
 import { Timer } from '../timer.js';
+// ★追加: 自動スタート判定のために APP 定数をインポート
+import { APP } from '../../constants.js';
 
 // --- モーダル機能エクスポート ---
 
@@ -55,13 +57,30 @@ export const openHelp = (isFirstTime = false) => {
     }
 };
 
-export const openTimer = (reset = false) => {
-    if (reset) Timer.reset();
-    toggleModal('timer-modal', true);
+// Timer関連のラッパー
+// ★修正: autoStartロジックを完全復活
+export const openTimer = (autoStart = false) => {
     Timer.init();
+    toggleModal('timer-modal', true);
+    
+    // 既に実行中でなければ自動スタート
+    const isRunning = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
+    if (autoStart && !isRunning) {
+        setTimeout(() => {
+            const toggleBtn = document.getElementById('btn-timer-toggle');
+            if (toggleBtn) toggleBtn.click(); 
+        }, 300); // アニメーション待ち
+    }
 };
 
 export const closeTimer = () => {
+    const acc = localStorage.getItem(APP.STORAGE_KEYS.TIMER_ACCUMULATED);
+    const start = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
+    
+    // 計測中または一時停止中でデータがある場合の確認
+    if (start || (acc && parseInt(acc) > 0)) {
+        if (!confirm('タイマーをバックグラウンドで実行したまま閉じますか？\n(計測は止まりません)')) return;
+    }
     toggleModal('timer-modal', false);
 };
 

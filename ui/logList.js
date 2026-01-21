@@ -10,7 +10,7 @@ import { LogItem } from './components/LogItem.js';
 let currentLimit = 20; // 最初に表示する件数
 const LIMIT_STEP = 20; // 追加で読み込む件数
 
-// ★修正: 変数定義を追加 (ReferenceError回避)
+// ★変数定義を追加 (ReferenceError回避)
 let _fetchLogsFn = null;
 
 export const toggleEditMode = () => {
@@ -50,6 +50,8 @@ const updateBulkActionUI = () => {
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
         deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> Delete (${count})`;
+        
+        // 編集モードでなければ隠す (translate-y-20 opacity-0 クラスで制御)
         if(StateManager.isEditMode) {
              deleteBtn.classList.remove('translate-y-20', 'opacity-0');
         } else {
@@ -65,9 +67,10 @@ export const deleteSelectedLogs = async () => {
     const checkboxes = document.querySelectorAll('.log-checkbox:checked');
     if (checkboxes.length === 0) return;
 
-    if (!confirm(`Are you sure you want to delete ${checkboxes.length} items?`)) return;
-
-    const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+    // ★修正1: ここでの confirm() を削除 (Service側で行うため、2重表示を防止)
+    
+    // ★修正2: dataset.id ではなく value から取得 (LogItemの実装に合わせる)
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
     
     try {
         await Service.bulkDeleteLogs(ids);
@@ -76,30 +79,26 @@ export const deleteSelectedLogs = async () => {
         await updateLogListView(false); 
     } catch (e) {
         console.error(e);
-        alert('Failed to delete logs.');
+        // Service側でもエラー表示している場合はここでのalertは不要だが、念のため残すか削除してもよい
     }
 };
 
-// ★修正: ハンドラ設定関数を実装
+// ハンドラ設定関数
 export const setFetchLogsHandler = (fn) => { _fetchLogsFn = fn; };
 
 /**
  * ログリストを更新する
- * @param {boolean} reset - trueなら件数を初期値(20)に戻す。falseなら現在の件数を維持。
  */
 export const updateLogListView = async (reset = false) => {
     const listEl = document.getElementById('log-list');
     const loadMoreBtn = document.getElementById('btn-load-more');
     if (!listEl) return;
 
-    // リセットフラグがtrueなら初期件数に戻す
     if (reset) {
         currentLimit = 20;
     }
 
-    // データ取得
     let logs = [];
-    // ★修正: 変数が定義されたのでエラーにならなくなる
     if (_fetchLogsFn) {
         logs = await _fetchLogsFn();
     } else {
@@ -107,7 +106,6 @@ export const updateLogListView = async (reset = false) => {
     }
 
     const totalCount = logs.length;
-    // currentLimitを使って表示分だけスライス
     const displayLogs = logs.slice(0, currentLimit);
 
     listEl.innerHTML = '';
@@ -115,6 +113,8 @@ export const updateLogListView = async (reset = false) => {
     if (logs.length === 0) {
         listEl.innerHTML = `<li class="text-center text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>No logs yet.</li>`;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
+        // データがない場合もUI更新（ボタンを隠すため）
+        updateBulkActionUI();
         return;
     }
 
@@ -135,12 +135,10 @@ export const updateLogListView = async (reset = false) => {
         listEl.insertAdjacentHTML('beforeend', LogItem(log, StateManager.isEditMode, index));
     });
 
-    // 「Load More」ボタン制御
     if (loadMoreBtn) {
         if (totalCount > currentLimit) {
             loadMoreBtn.classList.remove('hidden');
             loadMoreBtn.textContent = `Load More (${totalCount - currentLimit} remaining)`;
-            // ★修正: ボタンクリック時はlimitを増やしてから updateLogListView(false) を呼ぶ
             loadMoreBtn.onclick = () => {
                 currentLimit += LIMIT_STEP;
                 updateLogListView(false); 
@@ -155,6 +153,7 @@ export const updateLogListView = async (reset = false) => {
         cb.addEventListener('click', (e) => e.stopPropagation());
     });
     
+    // ★修正3: 最後に必ずUI状態を更新して、ボタンの表示/非表示を同期する
     updateBulkActionUI();
 };
 

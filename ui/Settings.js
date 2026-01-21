@@ -1,11 +1,9 @@
 import { APP, EXERCISE, CALORIES, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from '../constants.js';
 import { Store, db } from '../store.js';
-import { refreshUI } from './index.js';
-import { DOM, showMessage } from './dom.js';
+// 循環参照回避のためUIのインポートは削除
+import { DOM, showMessage, applyTheme } from './dom.js';
 
-// ライブラリ全体からIDでアイテムを探すヘルパー
 const findItemInLibrary = (id) => {
-    // CHECK_LIBRARYは { general: [], diet: [] ... } の形式なのでフラット化して検索
     const allItems = Object.values(CHECK_LIBRARY).flat();
     return allItems.find(i => i.id === id);
 };
@@ -88,7 +86,6 @@ export const Settings = {
             schema = JSON.parse(localStorage.getItem('nomutore_check_schema'));
         } catch(e) {}
 
-        // ★修正: 初期値がない、または空の場合はデフォルトIDから復元
         if (!schema || schema.length === 0) {
             schema = CHECK_DEFAULT_IDS.map(id => findItemInLibrary(id)).filter(Boolean);
             localStorage.setItem('nomutore_check_schema', JSON.stringify(schema));
@@ -96,27 +93,27 @@ export const Settings = {
 
         container.innerHTML = schema.map((item, index) => `
             <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl mb-2 border border-gray-100 dark:border-gray-700">
-        <div class="flex items-center gap-3">
-            <span class="text-xl">${item.icon}</span>
-            <div>
-                <div class="text-sm font-bold dark:text-white">${item.label}</div>
-                <div class="text-[10px] text-gray-400">
-                    ${item.desc || ''}
-                    ${item.drinking_only ? '<span class="text-orange-500 font-bold ml-1">🍺 Drink Only</span>' : ''}
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">${item.icon}</span>
+                    <div>
+                        <div class="text-sm font-bold dark:text-white">${item.label}</div>
+                        <div class="text-[10px] text-gray-400">
+                            ${item.desc || ''}
+                            ${item.drinking_only ? '<span class="text-orange-500 font-bold ml-1">🍺 Drink Only</span>' : ''}
+                        </div>
+                    </div>
                 </div>
+                <button onclick="removeCheckItem(${index})" class="text-red-400 hover:text-red-600 px-2 bg-transparent">
+                    <i class="ph-bold ph-minus-circle text-lg"></i>
+                </button>
             </div>
-        </div>
-        <button onclick="removeCheckItem(${index})" class="text-red-400 hover:text-red-600 px-2 bg-transparent">
-            <i class="ph-bold ph-minus-circle text-lg"></i>
-        </button>
-    </div>
         `).join('');
     },
 
     save: async () => {
-        const weight = parseFloat(document.getElementById('weight-input').value);
-        const height = parseFloat(document.getElementById('height-input').value);
-        const age = parseFloat(document.getElementById('age-input').value);
+        const weight = document.getElementById('weight-input').value;
+        const height = document.getElementById('height-input').value;
+        const age = document.getElementById('age-input').value;
         const gender = document.getElementById('gender-input').value;
 
         if (!weight || !height || !age) {
@@ -124,13 +121,20 @@ export const Settings = {
             return;
         }
 
+        // ★修正: 個別のキーに保存する（Store.getProfileの仕様に合わせる）
+        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, weight);
+        localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, height);
+        localStorage.setItem(APP.STORAGE_KEYS.AGE, age);
+        localStorage.setItem(APP.STORAGE_KEYS.GENDER, gender);
+        
+        // 念のためプロファイルオブジェクトとしても保存（将来の互換性用）
         const profile = { weight, height, age, gender };
         localStorage.setItem(APP.STORAGE_KEYS.PROFILE, JSON.stringify(profile));
 
         // Theme
         const theme = document.getElementById('theme-input').value;
         localStorage.setItem(APP.STORAGE_KEYS.THEME, theme);
-        UI.applyTheme(theme);
+        applyTheme(theme);
 
         // Period
         const periodMode = document.getElementById('setting-period-mode').value;
@@ -141,22 +145,29 @@ export const Settings = {
         }
 
         // Modes
-        localStorage.setItem(APP.STORAGE_KEYS.MODE1, document.getElementById('setting-mode-1').value);
-        localStorage.setItem(APP.STORAGE_KEYS.MODE2, document.getElementById('setting-mode-2').value);
+        const m1 = document.getElementById('setting-mode-1').value;
+        const m2 = document.getElementById('setting-mode-2').value;
+        localStorage.setItem(APP.STORAGE_KEYS.MODE1, m1);
+        localStorage.setItem(APP.STORAGE_KEYS.MODE2, m2);
         localStorage.setItem(APP.STORAGE_KEYS.BASE_EXERCISE, document.getElementById('setting-base-exercise').value);
         localStorage.setItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE, document.getElementById('setting-default-record-exercise').value);
 
-        showMessage('設定を保存しました！', 'success');
+        // ★修正: ヘッダーのビール選択肢を即時更新
+        const headerSel = document.getElementById('header-mode-select');
+        if(headerSel) {
+            headerSel.options[0].text = m1;
+            headerSel.options[1].text = m2;
+        }
+
+        showMessage('Settings Saved!', 'success');
         
-        // ★修正: window.UI 経由で呼び出す（main.jsで登録されているため安全）
         if (window.UI) {
             await window.UI.refreshUI(); 
             window.UI.switchTab('home');
-    　　}
+        }
     }
 };
 
-// ★復元: グローバル関数として公開 (HTMLのonclickから呼ばれる)
 window.removeCheckItem = (index) => {
     if(!confirm('この項目を削除しますか？')) return;
     let schema = [];

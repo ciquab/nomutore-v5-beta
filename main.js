@@ -77,8 +77,8 @@ const initApp = async () => {
         updateBeerSelectOptions(); 
         UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
 
-        // 当日のチェックレコードを確保（なければ作成）
-        await Service.ensureTodayCheckRecord();
+        // ★修正: 自動作成機能により「未入力なのにUpdate」と表示される問題を防ぐため削除
+        // await Service.ensureTodayCheckRecord();
 
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();

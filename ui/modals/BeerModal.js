@@ -64,25 +64,45 @@ export const BeerModal = {
     },
 
     getFormData: () => {
-        const isCustom = document.getElementById('tab-beer-custom').classList.contains('bg-indigo-600');
-        const date = document.getElementById('beer-date').value;
-        const count = parseFloat(document.getElementById('beer-count').value) || 1;
-        const memo = document.getElementById('beer-memo').value.trim();
-        const rating = parseInt(document.getElementById('beer-rating').value, 10);
+        // 値の取得
+        const dateVal = document.getElementById('beer-date').value;
         const brewery = document.getElementById('beer-brewery').value.trim();
         const brand = document.getElementById('beer-brand').value.trim();
-        const openUntappd = document.getElementById('untappd-check').checked;
+        const rating = parseInt(document.getElementById('beer-rating').value) || 0;
+        const memo = document.getElementById('beer-memo').value.trim();
+        const untappdCheck = document.getElementById('untappd-check');
+        const useUntappd = untappdCheck ? untappdCheck.checked : false;
+        const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
 
-        let data = { date, count, memo, rating, brewery, brand, openUntappd, isCustom };
+        // ★修正: 日付文字列からタイムスタンプを生成 (正午に設定してタイムゾーンずれ防止)
+        const timestamp = dateVal 
+            ? dayjs(dateVal).startOf('day').add(12, 'hour').valueOf() 
+            : dayjs().startOf('day').add(12, 'hour').valueOf();
+
+        const count = parseFloat(document.getElementById('beer-count').value) || 1;
+        
+        let data = {
+            timestamp, // date文字列ではなくtimestamp数値を渡す
+            count,
+            memo,
+            rating,
+            brewery,
+            brand,
+            useUntappd, // openUntappd ではなく useUntappd
+            isCustom,
+            type: 'beer' // ★修正: ここで 'beer' を指定 ('brew' は間違い)
+        };
 
         if (isCustom) {
-            data.abv = parseFloat(document.getElementById('custom-abv').value);
-            data.amount = parseInt(document.getElementById('custom-amount').value, 10);
-            if (!data.abv || !data.amount) return null; // Validation Error
+            data.abv = parseFloat(document.getElementById('custom-abv').value) || 5.0;
+            data.rawAmount = parseInt(document.getElementById('custom-amount').value, 10) || 350;
+            // バリデーション: 入力値が不正なら null を返す
+            if (!data.abv || !data.rawAmount) return null;
         } else {
             data.style = document.getElementById('beer-select').value;
-            data.size = document.getElementById('beer-size').value;
+            data.size = parseInt(document.getElementById('beer-size').value, 10) || 350;
         }
+        
         return data;
     },
 

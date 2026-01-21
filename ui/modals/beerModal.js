@@ -181,4 +181,4 @@ export const BeerModal = {
 };
 
 // 外部インポート用
-export const updateBeerSelectOptions = beerModal.updateSelectOptions;
+export const updateBeerSelectOptions = BeerModal.updateSelectOptions;

@@ -96,14 +96,20 @@ export const Settings = {
 
         container.innerHTML = schema.map((item, index) => `
             <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl mb-2 border border-gray-100 dark:border-gray-700">
-                <div class="flex items-center gap-3">
-                    <span class="text-xl">${item.icon}</span>
-                    <span class="text-sm font-bold dark:text-white">${item.label}</span>
+        <div class="flex items-center gap-3">
+            <span class="text-xl">${item.icon}</span>
+            <div>
+                <div class="text-sm font-bold dark:text-white">${item.label}</div>
+                <div class="text-[10px] text-gray-400">
+                    ${item.desc || ''}
+                    ${item.drinking_only ? '<span class="text-orange-500 font-bold ml-1">🍺 Drink Only</span>' : ''}
                 </div>
-                <button onclick="removeCheckItem(${index})" class="text-red-400 hover:text-red-600 px-2">
-                    <i class="ph-bold ph-minus-circle"></i>
-                </button>
             </div>
+        </div>
+        <button onclick="removeCheckItem(${index})" class="text-red-400 hover:text-red-600 px-2 bg-transparent">
+            <i class="ph-bold ph-minus-circle text-lg"></i>
+        </button>
+    </div>
         `).join('');
     },
 

@@ -328,9 +328,9 @@
                 
                 <!-- ★変更: ライブラリとカスタムの2つのボタンを配置 -->
                 <div class="flex gap-2 mb-4">
-                    <button onclick="import('./ui/modal.js').then(m => m.openCheckLibrary())" class="flex-1 py-3 bg-indigo-100 text-indigo-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-indigo-200 transition">
-                        <i class="ph-bold ph-list-plus"></i> Open Library
-                    </button>
+                    <button onclick="UI.openCheckLibrary()" class="flex-1 py-3 bg-indigo-100 text-indigo-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-indigo-200 transition">
+    <i class="ph-bold ph-list-plus"></i> Open Library
+</button>
                     <button onclick="addNewCheckItem()" class="flex-1 py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-gray-50 transition dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                         <i class="ph-bold ph-pencil-simple"></i> Custom
                     </button>

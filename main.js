@@ -227,8 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnSaveSettings = document.getElementById('btn-save-settings');
     if (btnSaveSettings) {
-        btnSaveSettings.onclick = UI.handleSaveSettings()
-    }
+    btnSaveSettings.onclick = UI.handleSaveSettings; 
+}
 
     const btnTimerStart = document.getElementById('btn-timer-start');
     if(btnTimerStart) btnTimerStart.addEventListener('click', () => Timer.start());

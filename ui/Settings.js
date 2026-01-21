@@ -152,6 +152,7 @@ export const Settings = {
         if (window.UI) {
             await window.UI.refreshUI(); 
             window.UI.switchTab('home');
+    　　}
     }
 };
 

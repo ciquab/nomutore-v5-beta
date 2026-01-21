@@ -407,7 +407,7 @@ export const UI = {
     toggleEditMode: toggleEditMode,
     toggleSelectAll: toggleSelectAll,
     switchCellarViewHTML: (mode) => UI.switchCellarView(mode),
-    
+    openCheckLibrary,
     openTimer: openTimer,
     closeTimer: closeTimer,
     refreshUI: refreshUI,
@@ -439,4 +439,5 @@ export {
     StateManager,
     toggleModal
 };
+
 

@@ -401,7 +401,6 @@ export const UI = {
     openBeerModal: (e, d) => openBeerModal(e, d),
     openCheckModal: openCheckModal,
     openManualInput: openManualInput,
-    renderSettings: renderSettings, 
     openHelp: openHelp,
     closeModal: closeModal,
     adjustBeerCount: adjustBeerCount,

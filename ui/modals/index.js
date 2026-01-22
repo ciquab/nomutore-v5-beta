@@ -22,7 +22,7 @@ export const updateBeerSelectOptions = BeerModal.updateSelectOptions;
 export const openCheckModal = CheckModal.open;
 export const openCheckLibrary = CheckModal.openLibrary;
 export const applyPreset = CheckModal.applyPreset;
-export const applyLibraryChanges = CheckModal.saveLibraryChanges;
+export const applyLibraryChanges = CheckModal.applyLibraryChanges;
 
 // Exercise
 export const openManualInput = ExerciseModal.open;
@@ -88,4 +88,5 @@ export const closeTimer = () => {
 export const updateInputSuggestions = () => {}; 
 export const renderQuickButtons = () => {}; 
 export const openLogDetail = () => {}; 
+
 export const updateModeSelector = () => {}; 

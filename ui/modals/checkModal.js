@@ -279,7 +279,7 @@ export const CheckModal = {
         showMessage(`プリセット「${preset.label}」を適用しました}`, 'success');
     },
 
-    saveLibraryChanges: () => {
+    applyLibraryChanges: () => {
         const checkedInputs = document.querySelectorAll('#library-content input[type="checkbox"]:checked');
         const selectedIds = Array.from(checkedInputs).map(input => input.value);
         
@@ -308,3 +308,4 @@ export const openCheckLibrary = CheckModal.openLibrary;
 export const applyPreset = CheckModal.applyPreset;
 export const applyLibraryChanges = CheckModal.applyLibraryChanges;
 export const openCheckModal = CheckModal.open;
+

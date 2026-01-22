@@ -189,65 +189,57 @@ body {
     z-index: 1; /* 液体内部(奥) */
 }
 
-/* B. 炭酸の泡 (Bubbles) - ::afterを使用 [修正版] */
+/* B. 炭酸の泡 (Bubbles) - DOM要素版 [完全修正] */
 
-/* JSで .bubbling-liquid クラスがついた時だけ表示 */
-#orb-liquid-front.bubbling-liquid::after,
-.liquid-front.bubbling-liquid::after {
-    content: "";
+/* 1. 泡を入れるためのコンテナ */
+/* 親(liquid-front)が回転しているので、ここで「逆回転」させて中身を正立させる */
+.bubble-container {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    
-    /* ★修正1: 格子感を消すため、サイズを不規則(素数)に変更 */
-    background-image: 
-        radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
-        radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px);
-    background-size: 23px 37px, 41px 31px; /* ランダム感を出す魔法の数字 */
-    background-position: 0 0, 15px 10px;
-    
-    opacity: 0.6;
-    
-    /* ★修正2: 波の回転(6s reverse)を打ち消すため、同じ6sで「順回転」させる */
-    /* 上昇アニメーションは transform ではなく background-position で行う */
-    animation: bubble-stable-rise 6s linear infinite;
-    
     pointer-events: none;
-    z-index: 2;
+    z-index: 10;
+    
+    /* 液体の回転(6s reverse = 左回り)を打ち消すため、(6s normal = 右回り)させる */
+    animation: counter-rotate-stable 6s linear infinite;
 }
 
-/* 借金レベルが高い時の高速泡 */
-#orb-liquid-front.high-pressure::after,
-.liquid-front.high-pressure::after {
-    /* 泡の速度を上げる = 背景移動量を増やす */
-    animation: bubble-stable-rise-fast 6s linear infinite; 
-    opacity: 0.7;
+/* 2. 個別の泡 (Bubble Particle) */
+.bubble-particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    bottom: -10%; /* 最初は隠れた位置から */
+    
+    /* 立ち上るアニメーション (タイマーと同じロジック) */
+    animation: bubble-float-up linear infinite;
 }
 
-/* === 新規追加: 回転を打ち消しながら上昇するアニメーション === */
+/* 逆回転用のキーフレーム */
+@keyframes counter-rotate-stable {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
-@keyframes bubble-stable-rise {
+/* 泡が立ち上る動き (タイマーの動きをベースに調整) */
+@keyframes bubble-float-up {
     0% {
-        transform: rotate(0deg); /* 親の回転 0deg と相殺 */
-        background-position: 0 0, 15px 10px;
+        transform: translateY(0) scale(0.8);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    80% {
+        opacity: 0.4;
     }
     100% {
-        transform: rotate(360deg); /* 親の回転 -360deg を打ち消して正立を保つ */
-        /* Y軸(縦)にだけ数値を引くと、泡が上昇して見える */
-        background-position: 0 -150px, 15px -140px; 
+        /* 液体の上まで昇る */
+        transform: translateY(-250px) scale(1.2); 
+        opacity: 0;
     }
 }
 
-@keyframes bubble-stable-rise-fast {
-    0% {
-        transform: rotate(0deg);
-        background-position: 0 0, 15px 10px;
-    }
-    100% {
-        transform: rotate(360deg);
-        background-position: 0 -400px, 15px -390px; /* 移動量を増やして高速化 */
-    }
-}
 /* Glass Panel */
 .glass-panel {
     background: rgba(255, 255, 255, 0.7);

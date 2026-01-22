@@ -102,15 +102,40 @@ export function renderBeerTank(currentBalanceKcal) {
             fillRatio = Math.max(10, Math.min(94, rawRatio)); 
 
             // --- 演出ロジック ---
-            // Level 1: 常に炭酸の泡を出す
-            liquidFront.classList.add('bubbling-liquid');
-
-            // Level 2: 借金1.5本超え -> 泡を少し激しく
-            if (debtCans > 1.5) {
-                liquidFront.classList.add('high-pressure');
+            // ★変更点: CSSクラス(.bubbling-liquid)ではなく、DOM要素で泡を作る
+            
+            // 泡コンテナがなければ作る
+            let bubbleContainer = liquidFront.querySelector('.bubble-container');
+            if (!bubbleContainer) {
+                bubbleContainer = document.createElement('div');
+                bubbleContainer.className = 'bubble-container';
+                liquidFront.appendChild(bubbleContainer);
+                
+                // 泡を15個生成してコンテナに入れる
+                for (let i = 0; i < 15; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble-particle';
+                    
+                    // ランダムなスタイルを適用 (ここが自然に見せるコツです)
+                    const size = Math.random() * 4 + 2; // 2px ~ 6px
+                    const left = Math.random() * 80 + 10; // 左右 10%~90% の位置
+                    const duration = Math.random() * 2 + 2; // 2秒 ~ 4秒 で昇る
+                    const delay = Math.random() * 4; // 開始時間をずらす
+                    
+                    bubble.style.width = `${size}px`;
+                    bubble.style.height = `${size}px`;
+                    bubble.style.left = `${left}%`;
+                    bubble.style.animationDuration = `${duration}s`;
+                    bubble.style.animationDelay = `-${delay}s`; // マイナス指定ですぐ動き出す
+                    
+                    bubbleContainer.appendChild(bubble);
+                }
             }
 
-            // Level 3: 借金2.5本超え -> ほろ酔いモード (ゆらゆら揺れる)
+            // Level 2: 借金1.5本超え -> 泡を隠さず表示 (不透明度で制御などが必要ならここに記述)
+            // 今回は常時表示でOKなら特になし
+
+            // Level 3: 借金2.5本超え -> ほろ酔いモード
             if (debtCans > 2.5) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }

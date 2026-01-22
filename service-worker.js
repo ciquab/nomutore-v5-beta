@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nomutorev5.0.0'; // Updated Version
+const CACHE_NAME = 'nomutorev4.1.8'; // Updated Version
 // アプリケーションを構成する全ファイル
 const APP_SHELL = [
     './',
@@ -32,13 +32,6 @@ const APP_SHELL = [
     './ui/timer.js',          // New
     './ui/beerStats.js',      // New
     './ui/archiveManager.js', // New
-
-    './ui/Settings.js',
-    './ui/modals/index.js',
-    './ui/modals/BeerModal.js',
-    './ui/modals/CheckModal.js',
-    './ui/modals/ExerciseModal.js',
-    './ui/modals/ActionMenu.js',
 
     // Assets
     './icon-192_2.png',

@@ -1,11 +1,12 @@
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
 import { Calc } from './logic.js';
-import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal,handleSaveSettings } from './ui/index.js';
+import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal } from './ui/index.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
+import { handleSaveSettings } from './ui/modal.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // HTMLからonclickで呼ぶためにwindowオブジェクトに登録
@@ -77,8 +78,8 @@ const initApp = async () => {
         updateBeerSelectOptions(); 
         UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
 
-        // 当日のチェックレコードを確保（なければ作成）★いったん削除
-        //await Service.ensureTodayCheckRecord();
+        // 当日のチェックレコードを確保（なければ作成）
+        await Service.ensureTodayCheckRecord();
 
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();
@@ -227,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnSaveSettings = document.getElementById('btn-save-settings');
     if (btnSaveSettings) {
-        btnSaveSettings.onclick = UI.handleSaveSettings;
+        btnSaveSettings.onclick = handleSaveSettings;
     }
 
     const btnTimerStart = document.getElementById('btn-timer-start');

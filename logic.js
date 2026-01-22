@@ -1,7 +1,3 @@
-// @ts-check
-/** @typedef {import('./types.js').Log} Log */
-/** @typedef {import('./types.js').Profile} Profile */
-
 import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANTS } from './constants.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 

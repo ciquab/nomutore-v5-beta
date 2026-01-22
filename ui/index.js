@@ -14,20 +14,17 @@ import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, se
 import { renderBeerStats } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
-import { Settings } from './Settings.js';
 
 import { 
     getBeerFormData, resetBeerForm, openBeerModal, switchBeerInputTab, 
-    openCheckModal, openCheckLibrary, applyPreset, applyLibraryChanges, openManualInput, openHelp, openLogDetail, 
+    openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect
-} from './modals/index.js';
+} from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
-
-export const handleSaveSettings = Settings.save;
 
 export const refreshUI = async () => {
     try {
@@ -279,23 +276,6 @@ export const UI = {
             }
         });
 
-        // --- ★追加: HTMLのonclickから直接呼び出せるようにwindowに登録 ---
-        // 以前の modal.js ではこれらがグローバルだったため、互換性を維持します
-        window.applyPreset = applyPreset;
-        window.openCheckLibrary = openCheckLibrary;
-        window.applyLibraryChanges = applyLibraryChanges;
-        window.openActionMenu = openActionMenu;
-        window.handleActionSelect = handleActionSelect;
-        window.openBeerModal = openBeerModal;
-        window.openCheckModal = openCheckModal;
-        window.openManualInput = openManualInput;
-        window.openTimer = openTimer;
-        window.closeTimer = closeTimer;
-        window.closeModal = closeModal;
-        window.adjustBeerCount = adjustBeerCount;
-        window.searchUntappd = searchUntappd;
-        window.switchBeerInputTab = switchBeerInputTab;
-        
         applyTheme(Store.getTheme());
     },
 
@@ -348,7 +328,7 @@ export const UI = {
         } else if (tabId === 'home') {
             refreshUI();
         } else if (tabId === 'settings') {
-            Settings.render(); // ★Settings.renderを呼び出し
+            renderSettings(); 
         }
     },
 
@@ -418,12 +398,14 @@ export const UI = {
     openBeerModal: (e, d) => openBeerModal(e, d),
     openCheckModal: openCheckModal,
     openManualInput: openManualInput,
+    renderSettings: renderSettings, 
     openHelp: openHelp,
     closeModal: closeModal,
     adjustBeerCount: adjustBeerCount,
     toggleEditMode: toggleEditMode,
     toggleSelectAll: toggleSelectAll,
     switchCellarViewHTML: (mode) => UI.switchCellarView(mode),
+    
     openTimer: openTimer,
     closeTimer: closeTimer,
     refreshUI: refreshUI,
@@ -433,22 +415,12 @@ export const UI = {
     
     openActionMenu: openActionMenu,
     handleActionSelect: handleActionSelect,
-    renderSettings: Settings.render,
-    handleSaveSettings: Settings.save,
     
-    // ★ここが不足していました: DOM操作ユーティリティの登録
-    applyTheme,
-    toggleDryDay,
+    // ★追加: これがないとDataManagerからの呼び出しでエラーになる
+    updateModeSelector: updateModeSelector,
+    applyTheme: applyTheme,
+    toggleDryDay: toggleDryDay 
 
-    // ★追加: 移植した CheckModal 関連の機能を UI オブジェクトに登録
-    openCheckLibrary,      // これにより UI.openCheckLibrary() が有効になります
-    applyPreset,           // プリセット適用用
-    applyLibraryChanges,   // ライブラリ保存用
-    
-    updateBeerSelectOptions,
-    updateInputSuggestions, 
-    renderQuickButtons, 
-    openLogDetail
 };
 
 export { 
@@ -463,10 +435,3 @@ export {
     StateManager,
     toggleModal
 };
-
-
-
-
-
-
-

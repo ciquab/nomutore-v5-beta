@@ -7,6 +7,7 @@ import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
 import { handleSaveSettings } from './ui/modal.js'; 
+import { CloudManager } from './cloudManager.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // HTMLからonclickで呼ぶためにwindowオブジェクトに登録
@@ -59,6 +60,13 @@ const setupLifecycleListeners = () => {
 const initApp = async () => {
     try {
         console.log('App Initializing...');
+
+        // ★追加: Google Drive API 初期化 (非同期で裏で走らせておく)
+        CloudManager.init().then(() => {
+            console.log('CloudManager ready');
+        }).catch(err => {
+            console.warn('CloudManager init failed (Offline?):', err);
+        });
         
         // 1. Init DOM Elements
         UI.init(); 
@@ -229,6 +237,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSaveSettings = document.getElementById('btn-save-settings');
     if (btnSaveSettings) {
         btnSaveSettings.onclick = handleSaveSettings;
+    }
+
+    // ★追加: クラウドバックアップボタン
+    const btnCloudBackup = document.getElementById('btn-cloud-backup');
+    if (btnCloudBackup) {
+        btnCloudBackup.addEventListener('click', () => {
+            // ダブルクリック防止等のUI制御を入れても良い
+            DataManager.backupToCloud();
+        });
+    }
+
+    const btnCloudRestore = document.getElementById('btn-cloud-restore');
+    if (btnCloudRestore) {
+        btnCloudRestore.addEventListener('click', () => {
+            DataManager.restoreFromCloud();
+        });
     }
 
     const btnTimerStart = document.getElementById('btn-timer-start');

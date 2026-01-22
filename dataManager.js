@@ -4,6 +4,175 @@ import { Calc } from './logic.js';
 import { UI, updateBeerSelectOptions, refreshUI } from './ui/index.js';
 
 export const DataManager = {
+
+// --- 共通ロジック (Internal) ---
+
+    /**
+     * バックアップ用の全データオブジェクトを生成する
+     */
+    getBackupObject: async () => {
+        const logs = await db.logs.toArray();
+        const checks = await db.checks.toArray();
+        // v4で追加されたarchivesテーブルもあれば取得
+        let archives = [];
+        if (db.period_archives) {
+            archives = await db.period_archives.toArray();
+        }
+
+        const settings = {};
+        Object.values(APP.STORAGE_KEYS).forEach(key => {
+            const val = localStorage.getItem(key);
+            if (val !== null) settings[key] = val;
+        });
+
+        return {
+            version: 4.0,
+            exportedAt: Date.now(),
+            data: { logs, checks, archives },
+            settings: settings,
+            device: navigator.userAgent
+        };
+    },
+
+    /**
+     * オブジェクトデータからDBを復元する
+     */
+    restoreFromObject: async (d) => {
+        // バージョン判定
+        const isV4 = d.version && d.version >= 4.0;
+        const logs = isV4 ? d.data.logs : (d.logs || []);
+        const checks = isV4 ? d.data.checks : (d.checks || []);
+        const archives = isV4 ? (d.data.archives || []) : [];
+
+        // 確認
+        if (!confirm(`ログ ${logs.length}件、チェック ${checks.length}件を復元しますか？\n(既存データと重複するものはスキップされます)`)) {
+            return false;
+        }
+
+        try {
+            // Logs
+            if (logs.length > 0) {
+                const existingLogs = await db.logs.toArray();
+                // 重複排除キー: timestampとtypeの組み合わせ
+                const existingLogKeys = new Set(existingLogs.map(l => `${l.timestamp}_${l.type}`));
+                
+                const uniqueLogs = logs
+                    .filter(l => !existingLogKeys.has(`${l.timestamp}_${l.type}`))
+                    .map(l => {
+                        const { id, ...rest } = l; // IDを除外して新規採番
+                        return rest;
+                    });
+                    
+                if (uniqueLogs.length > 0) {
+                    await db.logs.bulkAdd(uniqueLogs);
+                }
+            }
+
+            // Checks
+            if (checks.length > 0) {
+                const existingChecks = await db.checks.toArray();
+                const existingCheckTimestamps = new Set(existingChecks.map(c => c.timestamp));
+                
+                const uniqueChecks = checks
+                    .filter(c => !existingCheckTimestamps.has(c.timestamp))
+                    .map(c => {
+                        const { id, ...rest } = c;
+                        return rest;
+                    });
+                if (uniqueChecks.length > 0) {
+                    await db.checks.bulkAdd(uniqueChecks);
+                }
+            }
+            
+            // Archives (v4)
+            if (archives.length > 0 && db.period_archives) {
+                const existingArch = await db.period_archives.toArray();
+                const existingArchKeys = new Set(existingArch.map(a => `${a.startDate}_${a.endDate}`));
+                
+                const uniqueArch = archives
+                    .filter(a => !existingArchKeys.has(`${a.startDate}_${a.endDate}`))
+                    .map(a => { const { id, ...rest } = a; return rest; });
+                
+                if (uniqueArch.length > 0) await db.period_archives.bulkAdd(uniqueArch);
+            }
+
+            // Settings
+            if (isV4 && d.settings) {
+                Object.entries(d.settings).forEach(([key, val]) => {
+                    localStorage.setItem(key, val);
+                });
+            }
+
+            // UI更新
+            UI.updateModeSelector();
+            updateBeerSelectOptions(); 
+            UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
+            await refreshUI(); 
+            
+            return true;
+        } catch(err) {
+            console.error(err);
+            throw new Error('データの復元中にエラーが発生しました');
+        }
+    },
+
+    // --- クラウド連携 (Google Drive) ---
+
+    backupToCloud: async () => {
+        const statusEl = document.getElementById('cloud-status');
+        try {
+            if(statusEl) statusEl.textContent = 'Preparing backup...';
+            
+            // 1. データ生成
+            const backupData = await DataManager.getBackupObject();
+            
+            // 2. アップロード
+            if(statusEl) statusEl.textContent = 'Uploading to Google Drive...';
+            await CloudManager.uploadBackup(backupData);
+            
+            showMessage('☁️ Googleドライブに保存しました', 'success');
+            if(statusEl) statusEl.textContent = `Last Backup: ${new Date().toLocaleString()}`;
+            
+        } catch (err) {
+            console.error(err);
+            showMessage('バックアップ失敗: コンソールを確認してください', 'error');
+            if(statusEl) statusEl.textContent = 'Error: Backup failed';
+        }
+    },
+
+    restoreFromCloud: async () => {
+        const statusEl = document.getElementById('cloud-status');
+        try {
+            if(statusEl) statusEl.textContent = 'Connecting to Google Drive...';
+            
+            // 1. ダウンロード
+            const data = await CloudManager.downloadBackup();
+            if (!data) {
+                showMessage('ドライブ上にバックアップが見つかりません', 'error');
+                if(statusEl) statusEl.textContent = 'File not found';
+                return;
+            }
+
+            // 2. 復元処理
+            if(statusEl) statusEl.textContent = 'Restoring data...';
+            const success = await DataManager.restoreFromObject(data);
+            
+            if (success) {
+                showMessage('☁️ ドライブから復元しました', 'success');
+                if(statusEl) statusEl.textContent = 'Restore Complete';
+            } else {
+                if(statusEl) statusEl.textContent = 'Restore Cancelled';
+            }
+
+        } catch (err) {
+            console.error(err);
+            showMessage('復元失敗: コンソールを確認してください', 'error');
+            if(statusEl) statusEl.textContent = 'Error: Restore failed';
+        }
+    },
+
+    // --- 既存機能 (File/CSV) ---
+
     /**
      * CSVエクスポート
      * @param {string} type - 'logs' | 'checks'
@@ -42,28 +211,7 @@ export const DataManager = {
      * v4対応: logs, checks, period_archives, settings を全て出力
      */
     exportJSON: async () => {
-        const logs = await db.logs.toArray();
-        const checks = await db.checks.toArray();
-        const archives = await db.period_archives.toArray(); // 新テーブル
-
-        // LocalStorageから設定値を収集
-        const settings = {};
-        Object.values(APP.STORAGE_KEYS).forEach(key => {
-            const val = localStorage.getItem(key);
-            if (val !== null) settings[key] = val;
-        });
-
-        const backupData = {
-            version: 4.0,
-            exportedAt: Date.now(),
-            data: {
-                logs,
-                checks,
-                archives
-            },
-            settings: settings
-        };
-
+        const backupData = await DataManager.getBackupObject();
         const jsonStr = JSON.stringify(backupData, null, 2);
         const filename = `nomutore_backup_v4_${new Date().toISOString().slice(0,10)}.json`;
         DataManager.download(jsonStr, filename, 'application/json');
@@ -80,66 +228,11 @@ export const DataManager = {
         r.onload = async (e) => { 
             try { 
                 const d = JSON.parse(e.target.result); 
-                
-                // v4フォーマットかどうか判定
-                const isV4 = d.version && d.version >= 4.0;
-                const logs = isV4 ? d.data.logs : (d.logs || []);
-                const checks = isV4 ? d.data.checks : (d.checks || []);
-                // const archives = isV4 ? d.data.archives : []; // ※復元ロジックは別途必要
-
-                if (confirm(`ログ ${logs.length}件、チェック ${checks.length}件を復元しますか？\n(既存データと重複するものはスキップされます)`)) { 
-                    
-                    // Logs
-                    if (logs.length > 0) {
-                        const existingLogs = await db.logs.toArray();
-                        const existingLogKeys = new Set(existingLogs.map(l => `${l.timestamp}_${l.type}`));
-                        
-                        const uniqueLogs = logs
-                            .filter(l => !existingLogKeys.has(`${l.timestamp}_${l.type}`))
-                            .map(l => {
-                                const { id, ...rest } = l; // IDは除外して新規採番
-                                return rest;
-                            });
-                            
-                        if (uniqueLogs.length > 0) {
-                            await db.logs.bulkAdd(uniqueLogs);
-                        }
-                    }
-
-                    // Checks
-                    if (checks.length > 0) {
-                        const existingChecks = await db.checks.toArray();
-                        const existingCheckTimestamps = new Set(existingChecks.map(c => c.timestamp));
-                        
-                        const uniqueChecks = checks
-                            .filter(c => !existingCheckTimestamps.has(c.timestamp))
-                            .map(c => {
-                                const { id, ...rest } = c;
-                                return rest;
-                            });
-                        if (uniqueChecks.length > 0) {
-                            await db.checks.bulkAdd(uniqueChecks);
-                        }
-                    }
-                    
-                    // Settings (v4バックアップからの復元)
-                    if (isV4 && d.settings) {
-                        Object.entries(d.settings).forEach(([key, val]) => {
-                            localStorage.setItem(key, val);
-                        });
-                    }
-
-                    // UI更新
-                    UI.updateModeSelector();
-                    updateBeerSelectOptions(); 
-                    UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
-                    await refreshUI(); 
-                    
-                    UI.showMessage('復元しました','success'); 
-                } 
+                // ★修正: 共通ロジックを利用
+                await DataManager.restoreFromObject(d);
             } catch(err) { 
                 console.error(err);
-                UI.showMessage('読込失敗: データ形式が不正です','error'); 
+                showMessage('読込失敗: データ形式が不正です','error'); 
             } 
             inputElement.value = ''; 
         }; 

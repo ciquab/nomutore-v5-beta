@@ -32,6 +32,10 @@
             }
         }
     </script>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white bg-base-50 dark:bg-black text-base-900 dark:text-gray-100">
 
@@ -339,6 +343,34 @@
                 <div id="check-editor-list">
                     <!-- JS Injected -->
                 </div>
+            </div>
+
+<div class="glass-panel p-6 rounded-3xl mb-4 border border-indigo-100 dark:border-indigo-900/30">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                        <i class="ph-fill ph-google-logo"></i>
+                        Google Drive Sync
+                    </h2>
+                    <span class="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">Recommended</span>
+                </div>
+                
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 mb-4 font-medium">
+                    データをGoogleドライブに安全に保存します。<br>
+                    機種変更やデータ紛失に備えて、定期的に保存しましょう。
+                </p>
+
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                    <button id="btn-cloud-backup" class="py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-cloud-arrow-up text-xl"></i>
+                        <span>Backup</span>
+                    </button>
+                    
+                    <button id="btn-cloud-restore" class="py-3 rounded-xl bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-cloud-arrow-down text-xl"></i>
+                        <span>Restore</span>
+                    </button>
+                </div>
+                <div id="cloud-status" class="text-[10px] text-center text-gray-400 font-mono h-4 mt-1"></div>
             </div>
 
             <div class="glass-panel p-6 rounded-3xl mb-4">

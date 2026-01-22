@@ -56,18 +56,6 @@
         </span>
     </div>
 </div>
-            
-            <div class="flex items-center gap-1 flex-shrink min-w-0 ml-2">
-                <div class="relative group max-w-[100px] sm:max-w-[140px]">
-                    <select id="header-mode-select" class="w-full text-xs font-bold bg-transparent border-none py-1 pr-4 pl-0 text-gray-600 dark:text-gray-300 focus:ring-0 cursor-pointer outline-none text-right appearance-none truncate">
-                        <option value="mode1">Lager</option>
-                        <option value="mode2">Ale</option>
-                    </select>
-                    <div class="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-[8px]">▼</div>
-                </div>
-
-                <div class="w-px h-3 bg-gray-300 dark:bg-gray-700 mx-2 flex-shrink-0"></div>
-
                 <button onclick="UI.openHelp()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition flex-shrink-0">
                     <i class="ph-bold ph-question text-lg"></i>
                 </button>
@@ -84,6 +72,35 @@
         <div id="tab-home" class="tab-content active space-y-6">
             
             <section class="relative text-center pt-4 pb-0">
+                <div class="mb-4 px-2 relative z-10">
+        <div class="relative group">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl opacity-20 group-hover:opacity-40 transition blur"></div>
+            
+            <div class="relative flex items-center justify-between bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-xl p-3 border border-white/20 shadow-sm">
+                
+                <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <i class="ph-fill ph-arrows-left-right text-indigo-500"></i>
+                    <span class="text-xs font-bold uppercase tracking-wider">Unit Mode</span>
+                </div>
+
+                <div class="relative flex-1 text-right">
+                    <select id="header-mode-select" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        </select>
+                    
+                    <div class="flex items-center justify-end gap-1 pointer-events-none">
+                        <span id="beer-select-display" class="text-sm font-black text-indigo-900 dark:text-white truncate max-w-[150px]">
+                            Loading...
+                        </span>
+                        <i class="ph-bold ph-caret-down text-indigo-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <p class="text-[10px] text-center text-gray-400 mt-1.5">
+            タップして換算基準を変更
+        </p>
+    </div>
+    <div class="glass-panel rounded-3xl p-8 mb-6 relative overflow-hidden text-center main-display-glow transition-all duration-300">
                 <div class="orb-container">
                     <div id="orb-liquid-back" class="liquid-layer liquid-back" style="top: 100%;"></div>
                     <div id="orb-liquid-front" class="liquid-layer liquid-front" style="top: 100%;"></div>

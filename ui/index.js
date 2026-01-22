@@ -96,18 +96,37 @@ export const UI = {
         bind('nav-tab-cellar', 'click', () => UI.switchTab('cellar'));
         bind('nav-tab-settings', 'click', () => UI.switchTab('settings'));
 
+        // ▼▼▼ 修正ここから (IDは header-mode-select のまま) ▼▼▼
+        
+        // 1. 変更イベント（ロジック更新 ＋ 見た目の文字更新）
         bind('header-mode-select', 'change', (e) => {
+            // 既存のロジック
             StateManager.setBeerMode(e.target.value);
             refreshUI();
+
+            // ★追加: 表示用の文字(beer-select-display)を更新
+            const display = document.getElementById('beer-select-display');
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            if (display && selectedOption) {
+                display.textContent = selectedOption.text;
+            }
         });
 
-        // 初期値反映
+        // 2. 初期化処理（初期値セット ＋ 見た目の文字更新）
         const modes = Store.getModes();
         const headerSel = document.getElementById('header-mode-select');
+        
         if(headerSel && modes) {
             headerSel.options[0].text = modes.mode1 || 'Lager';
             headerSel.options[1].text = modes.mode2 || 'Ale';
             headerSel.value = StateManager.beerMode;
+
+            // ★追加: 初期表示の文字も更新
+            const display = document.getElementById('beer-select-display');
+            const selectedOption = headerSel.options[headerSel.selectedIndex];
+            if (display && selectedOption) {
+                display.textContent = selectedOption.text;
+            }
         }
 
         bind('btn-save-beer', 'click', () => {

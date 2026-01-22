@@ -208,15 +208,17 @@ body {
 /* 2. 個別の泡 (Bubble Particle) */
 .bubble-particle {
     position: absolute;
-    background: rgba(255, 255, 255, 0.8); /* 視認性を上げるため少し濃くしました */
+    background: rgba(255, 255, 255, 0.6); /* 白く半透明に */
     border-radius: 50%;
-    bottom: -20px; /* 最初は画面外の下から */
     
-    /* 立ち上るアニメーション */
+    /* ★重要修正: スタート位置を「一番下」ではなく「液体の中間(タンクの底付近)」に引き上げる */
+    /* 液体は高さ200%あるため、55%付近がちょうど「タンクの底」になります */
+    top: 55%; 
+    
     animation: bubble-float-up linear infinite;
 }
 
-/* 逆回転用のキーフレーム */
+/* 逆回転用 */
 @keyframes counter-rotate-stable {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -229,20 +231,18 @@ body {
         opacity: 0;
     }
     10% {
-        opacity: 0.8; /* 出現 */
+        opacity: 0.8; /* フェードイン */
     }
     50% {
         opacity: 0.6;
     }
     100% {
-        /* 液体の上までまっすぐ昇る */
-        transform: translateY(-300px) scale(1.2); 
+        /* ★重要修正: 上昇距離を延ばして水面まで届かせる (-300px -> -450px) */
+        transform: translateY(-450px) scale(1.2); 
         opacity: 0;
     }
 }
 
-/* ※ここにあった #orb-liquid-front.bubbling-liquid::after { ... } の記述は
-   グリッドの原因になるので完全に消してください */
 /* Glass Panel */
 .glass-panel {
     background: rgba(255, 255, 255, 0.7);

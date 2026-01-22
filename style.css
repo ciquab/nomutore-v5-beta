@@ -302,3 +302,35 @@ select:disabled {
 .animate-clink-left { animation: clink-left 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-clink-right { animation: clink-right 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-toast-text { animation: toast-text-pop 1.5s ease-out forwards; }
+
+/* ネオンサイン風の不定期な明滅アニメーション */
+.animate-neon-flicker {
+  animation: neon-flicker 5s infinite; /* 5秒で1ループ */
+}
+
+@keyframes neon-flicker {
+  /* 基本はずっと点灯 (100%) */
+  0%, 31%, 34%, 37%, 41%, 100% {
+    opacity: 1;
+    /* 点灯時は光る影 (Indigo系のグロー効果) をつけるとよりネオンっぽくなります */
+    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); 
+  }
+
+  /* 一瞬だけ消えかける (接触不良) */
+  32%, 33% {
+    opacity: 0.1;
+    filter: none; /* 光も消える */
+  }
+
+  /* ちょっと暗くなる (電圧低下) */
+  35%, 36% {
+    opacity: 0.3;
+    filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); 
+  }
+  
+  /* また一瞬消える */
+  38%, 40% {
+    opacity: 0.1;
+    filter: none;
+  }
+}

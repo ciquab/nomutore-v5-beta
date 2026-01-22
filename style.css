@@ -303,34 +303,42 @@ select:disabled {
 .animate-clink-right { animation: clink-right 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-toast-text { animation: toast-text-pop 1.5s ease-out forwards; }
 
-/* ネオンサイン風の不定期な明滅アニメーション */
+/* より不規則でリアルなネオン明滅 */
 .animate-neon-flicker {
-  animation: neon-flicker 5s infinite; /* 5秒で1ループ */
+  animation: neon-flicker-random 8s infinite; /* 8秒の長尺ループ */
 }
 
-@keyframes neon-flicker {
-  /* 基本はずっと点灯 (100%) */
-  0%, 31%, 34%, 37%, 41%, 100% {
+@keyframes neon-flicker-random {
+  /* --- 基本状態: 点灯 (グロー効果あり) --- */
+  0%, 100% {
     opacity: 1;
-    /* 点灯時は光る影 (Indigo系のグロー効果) をつけるとよりネオンっぽくなります */
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); 
+    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));
   }
 
-  /* 一瞬だけ消えかける (接触不良) */
-  32%, 33% {
-    opacity: 0.1;
-    filter: none; /* 光も消える */
-  }
-
-  /* ちょっと暗くなる (電圧低下) */
-  35%, 36% {
-    opacity: 0.3;
-    filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); 
-  }
+  /* --- 第1波: 小さな瞬き (2%〜5%) --- */
+  2% { opacity: 1; }
+  2.1% { opacity: 0.8; filter: none; } /* 一瞬暗くなる */
+  2.2% { opacity: 1; filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
   
-  /* また一瞬消える */
-  38%, 40% {
-    opacity: 0.1;
-    filter: none;
-  }
+  /* --- 第2波: 激しい接触不良 (30%〜33%) --- */
+  30% { opacity: 1; }
+  30.1% { opacity: 0; filter: none; } /* 完全に消える */
+  30.5% { opacity: 1; filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
+  30.6% { opacity: 0.2; filter: none; } /* 薄暗い */
+  31% { opacity: 1; }
+  32% { opacity: 0; filter: none; } /* また消える */
+  32.2% { opacity: 1; }
+
+  /* --- 長い安定期間 (33% 〜 85%) --- */
+  /* ここで「もう直ったかな？」と思わせるのがポイントです */
+
+  /* --- 第3波: 忘れた頃に来る一瞬の瞬き (85%) --- */
+  85% { opacity: 1; }
+  85.1% { opacity: 0.4; filter: none; }
+  85.2% { opacity: 1; }
+  
+  /* --- 第4波: 最後のあがき (95%) --- */
+  95% { opacity: 1; }
+  95.2% { opacity: 0.1; filter: none; }
+  95.4% { opacity: 1; }
 }

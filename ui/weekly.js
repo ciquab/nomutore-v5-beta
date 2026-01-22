@@ -71,37 +71,45 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
                 </div>
             `;
 
-            // ★配色をヒートマップのロジック（赤＝飲酒、青＝運動・努力、緑＝休肝）に統一
+            // ★修正: ヒートマップのランク制度に合わせてWeeklyのデザインも統一
             switch (status) {
-                case 'rest_exercise': // 休肝日 + 運動 (最強)
-                    bgClass = "bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700";
-                    textClass = "text-emerald-600 dark:text-emerald-400";
-                    iconHtml = dualIconWrapper(
-                        `<i class="ph-fill ph-coffee text-xs"></i>`,
-                        `<i class="ph-fill ph-person-simple-run text-xs"></i>`
-                    );
+                // 【Sランク】休肝日 + 運動 -> 金メダル
+                case 'rest_exercise': 
+                    // 背景は緑だが、枠線をゴールドにして特別感を出す
+                    bgClass = "bg-emerald-100 dark:bg-emerald-900/30 border-yellow-400 dark:border-yellow-500 border-2";
+                    textClass = "text-yellow-600 dark:text-yellow-400";
+                    iconHtml = `<i class="ph-fill ph-medal text-xl drop-shadow-sm"></i>`;
                     break;
 
-                case 'rest': // 休肝日のみ (Green)
-                    bgClass = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800";
-                    textClass = "text-emerald-500 dark:text-emerald-500";
+                // 【Aランク】運動のみ -> 銀メダル
+                case 'exercise': 
+                    // スポーティなシアン背景 + シルバー枠
+                    bgClass = "bg-cyan-50 dark:bg-cyan-900/20 border-gray-300 dark:border-gray-500 border";
+                    textClass = "text-cyan-600 dark:text-cyan-400";
+                    // 銀メダル（色はグレー系で表現）
+                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-400 dark:text-gray-300"></i>`;
+                    break;
+
+                // 【Bランク】休肝日 -> コーヒー
+                case 'rest': 
+                    bgClass = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800 border";
+                    textClass = "text-emerald-500";
                     iconHtml = `<i class="ph-fill ph-coffee text-lg"></i>`;
                     break;
 
-                case 'drink_exercise_success': // 完済 (Indigo/Blue)
-                    // ヒートマップの「🏅」に相当。成功色。
-                    bgClass = "bg-indigo-100 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700";
-                    textClass = "text-indigo-600 dark:text-indigo-400";
-                    iconHtml = dualIconWrapper(
-                        `<i class="ph-fill ph-beer-stein text-xs"></i>`,
-                        `<i class="ph-bold ph-check text-xs"></i>`
-                    );
+                // 【Cランク】完済 -> 炎 (Burn)
+                case 'drink_exercise_success': 
+                    // 以前のIndigoから「青(Blue)」に変更し、炎アイコンを採用
+                    bgClass = "bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 border";
+                    textClass = "text-blue-600 dark:text-blue-400";
+                    // 青背景に映えるオレンジの炎
+                    iconHtml = `<i class="ph-fill ph-fire text-xl text-orange-500 dark:text-orange-400"></i>`;
                     break;
 
-                case 'drink_exercise': // 未完済 (Cyan/Blue)
-                    // ★変更: ヒートマップの「💦 (Blue)」に合わせて、オレンジ(注意)から青系(努力)に変更
-                    // 「飲んだけど運動はした」というポジティブさを表現
-                    bgClass = "bg-sky-100 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700";
+                // 【Dランク】努力 (飲酒+運動+借金) -> ビールとランナー
+                case 'drink_exercise': 
+                    // Sky(水色)で統一。ここは「内容」が大事なのでアイコン2個並びを維持
+                    bgClass = "bg-sky-100 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 border";
                     textClass = "text-sky-600 dark:text-sky-400";
                     iconHtml = dualIconWrapper(
                         `<i class="ph-fill ph-beer-stein text-xs"></i>`,
@@ -109,17 +117,11 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
                     );
                     break;
 
-                case 'drink': // 飲酒のみ (Red)
-                    // ★変更: ヒートマップの「🍺 (Red)」に合わせて、オレンジから赤(警告)に変更
-                    bgClass = "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800";
-                    textClass = "text-red-500 dark:text-red-500";
+                // 【Eランク】飲酒のみ -> ビール
+                case 'drink': 
+                    bgClass = "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800 border";
+                    textClass = "text-red-500";
                     iconHtml = `<i class="ph-fill ph-beer-stein text-lg"></i>`;
-                    break;
-
-                case 'exercise': // 運動のみ (Blue)
-                    bgClass = "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800";
-                    textClass = "text-blue-600 dark:text-blue-400";
-                    iconHtml = `<i class="ph-fill ph-person-simple-run text-lg"></i>`;
                     break;
                     
                 default:
@@ -184,40 +186,55 @@ export function renderHeatmap(checks, logs, profile) {
         let iconHtml = "";
         
         switch(status) {
-            case 'rest_exercise': // 休肝日+運動 (Green)
-            case 'rest':          // 休肝日 (Green)
+            // 【Sランク】休肝日 ＋ 運動 (最強)
+            case 'rest_exercise': 
+                // 濃い緑 + ゴールドリング + 金メダル
+                bgClass = 'bg-emerald-600 border border-emerald-500 shadow-lg ring-2 ring-yellow-400 dark:ring-yellow-500 z-20';
+                textClass = 'text-white';
+                iconHtml = `<i class="ph-fill ph-medal text-xl text-yellow-300 drop-shadow-md"></i>`;
+                break;
+
+            // 【Aランク】運動のみ (飲まずに鍛えた)
+            case 'exercise':
+                // スポーティなシアン(Cyan) + 銀メダル
+                // ※Sランクに次ぐ高い評価
+                bgClass = 'bg-cyan-600 border border-cyan-500 shadow-md ring-1 ring-white/50 z-10';
+                textClass = 'text-white';
+                iconHtml = `<i class="ph-fill ph-medal text-lg text-gray-200 filter drop-shadow-sm"></i>`; 
+                break;
+
+            // 【Bランク】休肝日のみ (基本)
+            case 'rest':
                 bgClass = 'bg-emerald-400 border border-emerald-500 shadow-sm';
                 textClass = 'text-white font-bold';
                 iconHtml = `<i class="ph-fill ph-coffee text-lg"></i>`;
                 break;
                 
-            case 'drink_exercise_success': // 完済 (Blue + Yellow Border)
-                bgClass = 'bg-blue-500 border-2 border-yellow-400 shadow-md ring-2 ring-yellow-200 dark:ring-yellow-900'; 
+            // 【Cランク】飲酒 ＋ 完済 (リカバリー成功)
+            case 'drink_exercise_success': 
+                // 借金ゼロのクリアな青 + 燃焼の炎
+                bgClass = 'bg-blue-500 border border-blue-400 shadow-md'; 
+                textClass = 'text-white';
+                iconHtml = `<i class="ph-fill ph-fire text-lg text-orange-200 filter drop-shadow-sm"></i>`; 
+                break;
+
+            // 【Dランク】飲酒 ＋ 運動 (借金残り)
+            case 'drink_exercise':
+                // 努力賞の水色
+                bgClass = 'bg-sky-400 border border-sky-300 shadow-sm';
                 textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-medal text-lg"></i>`;
+                iconHtml = `<i class="ph-fill ph-person-simple-run text-lg"></i>`;
                 break;
                 
-            case 'drink_exercise': // 飲酒+運動 (Blue)
-                bgClass = 'bg-blue-400 border border-blue-500 shadow-sm';
-                textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-person-simple-walk text-lg"></i>`;
-                break;
-                
-            case 'drink': // 飲酒のみ (Red)
+            // 【Eランク】飲酒のみ (警告)
+            case 'drink':
                 bgClass = 'bg-red-400 border border-red-500 shadow-sm';
                 textClass = 'text-white font-bold';
                 iconHtml = `<i class="ph-fill ph-beer-stein text-lg"></i>`;
                 break;
                 
-            case 'exercise': // 運動のみ (Cyan)
-                bgClass = 'bg-cyan-400 border border-cyan-500 shadow-sm';
-                textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-person-simple-run text-lg"></i>`;
-                break;
-                
             default: // データなし
                 if (d.isAfter(dayjs())) {
-                    // 未来
                     bgClass = 'bg-transparent border border-dashed border-gray-200 dark:border-gray-700 opacity-50';
                 }
                 break;

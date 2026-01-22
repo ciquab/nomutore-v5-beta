@@ -66,6 +66,10 @@ export function renderBeerTank(currentBalanceKcal) {
             // 液体を隠す
             liquidFront.style.opacity = '0';
             liquidBack.style.opacity = '0';
+
+            // ★ここに追加: 貯金モードになったら泡を削除してリセットする
+            const existingBubbles = liquidFront.querySelector('.bubble-container');
+            if (existingBubbles) existingBubbles.remove();
             
             // 禅モード(黄金の光)ON
             if (orbContainer) orbContainer.classList.add('zen-mode');
@@ -111,22 +115,21 @@ export function renderBeerTank(currentBalanceKcal) {
                 bubbleContainer.className = 'bubble-container';
                 liquidFront.appendChild(bubbleContainer);
                 
-                // 泡を15個生成してコンテナに入れる
-                for (let i = 0; i < 15; i++) {
+                // 泡を生成（数や速度をランダムに）
+                for (let i = 0; i < 12; i++) {
                     const bubble = document.createElement('div');
                     bubble.className = 'bubble-particle';
                     
-                    // ランダムなスタイルを適用 (ここが自然に見せるコツです)
-                    const size = Math.random() * 4 + 2; // 2px ~ 6px
-                    const left = Math.random() * 80 + 10; // 左右 10%~90% の位置
-                    const duration = Math.random() * 2 + 2; // 2秒 ~ 4秒 で昇る
-                    const delay = Math.random() * 4; // 開始時間をずらす
+                    const size = Math.random() * 5 + 3; // 3px ~ 8px
+                    const left = Math.random() * 70 + 15; // 中央寄りに配置
+                    const duration = Math.random() * 3 + 2; // 2~5秒
+                    const delay = Math.random() * 5; 
                     
                     bubble.style.width = `${size}px`;
                     bubble.style.height = `${size}px`;
                     bubble.style.left = `${left}%`;
                     bubble.style.animationDuration = `${duration}s`;
-                    bubble.style.animationDelay = `-${delay}s`; // マイナス指定ですぐ動き出す
+                    bubble.style.animationDelay = `-${delay}s`;
                     
                     bubbleContainer.appendChild(bubble);
                 }

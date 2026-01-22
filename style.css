@@ -190,6 +190,7 @@ body {
 }
 
 /* B. 炭酸の泡 (Bubbles) - DOM要素版 [完全修正] */
+/* 注意: 以前の ::after や background-image の記述は全て削除してください */
 
 /* 1. 泡を入れるためのコンテナ */
 /* 親(liquid-front)が回転しているので、ここで「逆回転」させて中身を正立させる */
@@ -207,11 +208,11 @@ body {
 /* 2. 個別の泡 (Bubble Particle) */
 .bubble-particle {
     position: absolute;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.8); /* 視認性を上げるため少し濃くしました */
     border-radius: 50%;
-    bottom: -10%; /* 最初は隠れた位置から */
+    bottom: -20px; /* 最初は画面外の下から */
     
-    /* 立ち上るアニメーション (タイマーと同じロジック) */
+    /* 立ち上るアニメーション */
     animation: bubble-float-up linear infinite;
 }
 
@@ -221,25 +222,27 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* 泡が立ち上る動き (タイマーの動きをベースに調整) */
+/* 泡が立ち上る動き */
 @keyframes bubble-float-up {
     0% {
-        transform: translateY(0) scale(0.8);
+        transform: translateY(0) scale(0.5);
         opacity: 0;
     }
     10% {
-        opacity: 0.8;
+        opacity: 0.8; /* 出現 */
     }
-    80% {
-        opacity: 0.4;
+    50% {
+        opacity: 0.6;
     }
     100% {
-        /* 液体の上まで昇る */
-        transform: translateY(-250px) scale(1.2); 
+        /* 液体の上までまっすぐ昇る */
+        transform: translateY(-300px) scale(1.2); 
         opacity: 0;
     }
 }
 
+/* ※ここにあった #orb-liquid-front.bubbling-liquid::after { ... } の記述は
+   グリッドの原因になるので完全に消してください */
 /* Glass Panel */
 .glass-panel {
     background: rgba(255, 255, 255, 0.7);

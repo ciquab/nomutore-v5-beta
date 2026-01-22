@@ -189,7 +189,8 @@ body {
     z-index: 1; /* 液体内部(奥) */
 }
 
-/* B. 炭酸の泡 (Bubbles) - ::afterを使用 */
+/* B. 炭酸の泡 (Bubbles) - ::afterを使用 [修正版] */
+
 /* JSで .bubbling-liquid クラスがついた時だけ表示 */
 #orb-liquid-front.bubbling-liquid::after,
 .liquid-front.bubbling-liquid::after {
@@ -198,26 +199,55 @@ body {
     top: 0; left: 0;
     width: 100%; height: 100%;
     
-    /* 泡の模様 */
+    /* ★修正1: 格子感を消すため、サイズを不規則(素数)に変更 */
     background-image: 
-        radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
-        radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: 0 0, 12px 12px;
+        radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.3) 1px, transparent 1px);
+    background-size: 23px 37px, 41px 31px; /* ランダム感を出す魔法の数字 */
+    background-position: 0 0, 15px 10px;
     
     opacity: 0.6;
-    animation: bubble-rise 4s linear infinite;
+    
+    /* ★修正2: 波の回転(6s reverse)を打ち消すため、同じ6sで「順回転」させる */
+    /* 上昇アニメーションは transform ではなく background-position で行う */
+    animation: bubble-stable-rise 6s linear infinite;
+    
     pointer-events: none;
-    z-index: 2; /* 光より手前 */
+    z-index: 2;
 }
 
 /* 借金レベルが高い時の高速泡 */
 #orb-liquid-front.high-pressure::after,
 .liquid-front.high-pressure::after {
-    animation-duration: 2.0s;
+    /* 泡の速度を上げる = 背景移動量を増やす */
+    animation: bubble-stable-rise-fast 6s linear infinite; 
     opacity: 0.7;
 }
 
+/* === 新規追加: 回転を打ち消しながら上昇するアニメーション === */
+
+@keyframes bubble-stable-rise {
+    0% {
+        transform: rotate(0deg); /* 親の回転 0deg と相殺 */
+        background-position: 0 0, 15px 10px;
+    }
+    100% {
+        transform: rotate(360deg); /* 親の回転 -360deg を打ち消して正立を保つ */
+        /* Y軸(縦)にだけ数値を引くと、泡が上昇して見える */
+        background-position: 0 -150px, 15px -140px; 
+    }
+}
+
+@keyframes bubble-stable-rise-fast {
+    0% {
+        transform: rotate(0deg);
+        background-position: 0 0, 15px 10px;
+    }
+    100% {
+        transform: rotate(360deg);
+        background-position: 0 -400px, 15px -390px; /* 移動量を増やして高速化 */
+    }
+}
 /* Glass Panel */
 .glass-panel {
     background: rgba(255, 255, 255, 0.7);

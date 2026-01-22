@@ -279,6 +279,23 @@ export const UI = {
             }
         });
 
+        // --- ★追加: HTMLのonclickから直接呼び出せるようにwindowに登録 ---
+        // 以前の modal.js ではこれらがグローバルだったため、互換性を維持します
+        window.applyPreset = applyPreset;
+        window.openCheckLibrary = openCheckLibrary;
+        window.applyLibraryChanges = applyLibraryChanges;
+        window.openActionMenu = openActionMenu;
+        window.handleActionSelect = handleActionSelect;
+        window.openBeerModal = openBeerModal;
+        window.openCheckModal = openCheckModal;
+        window.openManualInput = openManualInput;
+        window.openTimer = openTimer;
+        window.closeTimer = closeTimer;
+        window.closeModal = closeModal;
+        window.adjustBeerCount = adjustBeerCount;
+        window.searchUntappd = searchUntappd;
+        window.switchBeerInputTab = switchBeerInputTab;
+        
         applyTheme(Store.getTheme());
     },
 
@@ -446,6 +463,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

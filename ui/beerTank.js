@@ -68,7 +68,7 @@ export function renderBeerTank(currentBalanceKcal) {
             liquidBack.style.opacity = '0';
 
             // ★ここに追加: 貯金モードになったら泡を削除してリセットする
-            const existingBubbles = liquidFront.querySelector('.bubble-container');
+            const existingBubbles = orbContainer.querySelector('.bubble-container');
             if (existingBubbles) existingBubbles.remove();
             
             // 禅モード(黄金の光)ON
@@ -106,24 +106,23 @@ export function renderBeerTank(currentBalanceKcal) {
             fillRatio = Math.max(10, Math.min(94, rawRatio)); 
 
             // --- 演出ロジック ---
-            // ★変更点: CSSクラス(.bubbling-liquid)ではなく、DOM要素で泡を作る
-            
-            // 泡コンテナがなければ作る
-            let bubbleContainer = liquidFront.querySelector('.bubble-container');
+            // ★修正: 生成場所を liquidFront ではなく orbContainer に変更！
+            // これにより液体の回転の影響を全く受けなくなります
+            let bubbleContainer = orbContainer.querySelector('.bubble-container');
             if (!bubbleContainer) {
                 bubbleContainer = document.createElement('div');
                 bubbleContainer.className = 'bubble-container';
-                liquidFront.appendChild(bubbleContainer);
+                // orbContainer(枠)に追加
+                orbContainer.appendChild(bubbleContainer);
                 
-                // 泡を生成（数や速度をランダムに）
-                for (let i = 0; i < 12; i++) {
+                for (let i = 0; i < 15; i++) {
                     const bubble = document.createElement('div');
                     bubble.className = 'bubble-particle';
                     
-                    const size = Math.random() * 5 + 3; // 3px ~ 8px
-                    const left = Math.random() * 70 + 15; // 中央寄りに配置
-                    const duration = Math.random() * 3 + 2; // 2~5秒
-                    const delay = Math.random() * 5; 
+                    const size = Math.random() * 4 + 2; 
+                    const left = Math.random() * 80 + 10; 
+                    const duration = Math.random() * 2 + 2; 
+                    const delay = Math.random() * 4; 
                     
                     bubble.style.width = `${size}px`;
                     bubble.style.height = `${size}px`;

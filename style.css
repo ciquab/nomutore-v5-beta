@@ -189,56 +189,44 @@ body {
     z-index: 1; /* 液体内部(奥) */
 }
 
-/* B. 炭酸の泡 (Bubbles) - DOM要素版 [完全修正] */
-/* 注意: 以前の ::after や background-image の記述は全て削除してください */
+/* B. 炭酸の泡 (Bubbles) - DOM要素版 [決定版修正] */
 
-/* 1. 泡を入れるためのコンテナ */
-/* 親(liquid-front)が回転しているので、ここで「逆回転」させて中身を正立させる */
+/* 1. 泡コンテナ */
 .bubble-container {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
+    /* オーブの下半分から泡を発生させる */
+    bottom: 0; 
+    left: 0;
+    width: 100%; 
+    height: 80%; /* 泡が昇る範囲 */
     pointer-events: none;
-    z-index: 10;
-    
-    /* 液体の回転(6s reverse = 左回り)を打ち消すため、(6s normal = 右回り)させる */
-    animation: counter-rotate-stable 6s linear infinite;
+    z-index: 15; /* 液体(z-index: 2)より手前に表示 */
+    overflow: hidden;
+    border-radius: 0 0 130px 130px; /* オーブの丸みに合わせる */
 }
 
-/* 2. 個別の泡 (Bubble Particle) */
+/* 2. 個別の泡 */
 .bubble-particle {
     position: absolute;
-    background: rgba(255, 255, 255, 0.6); /* 白く半透明に */
+    background: rgba(255, 255, 255, 0.7);
     border-radius: 50%;
-    
-    /* ★重要修正: スタート位置を「一番下」ではなく「液体の中間(タンクの底付近)」に引き上げる */
-    /* 液体は高さ200%あるため、55%付近がちょうど「タンクの底」になります */
-    top: 55%; 
-    
+    bottom: -10px;
+    /* シンプルな上昇アニメーション */
     animation: bubble-float-up linear infinite;
 }
 
-/* 逆回転用 */
-@keyframes counter-rotate-stable {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* 泡が立ち上る動き */
+/* 泡がまっすぐ立ち上る動き */
 @keyframes bubble-float-up {
     0% {
         transform: translateY(0) scale(0.5);
         opacity: 0;
     }
     10% {
-        opacity: 0.8; /* フェードイン */
-    }
-    50% {
-        opacity: 0.6;
+        opacity: 0.8;
     }
     100% {
-        /* ★重要修正: 上昇距離を延ばして水面まで届かせる (-300px -> -450px) */
-        transform: translateY(-450px) scale(1.2); 
+        /* 上に向かってまっすぐ昇る */
+        transform: translateY(-220px) scale(1.2); 
         opacity: 0;
     }
 }

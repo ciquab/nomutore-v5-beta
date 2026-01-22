@@ -31,7 +31,7 @@ export const getActiveSchemaFromIds = (ids) => {
 // ★追加: 外部公開用エクスポート
 export const openCheckLibrary = CheckModal.openLibrary;
 export const applyPreset = CheckModal.applyPreset;
-export const saveLibraryChanges = CheckModal.saveLibraryChanges;
+export const applyLibraryChanges = CheckModal.applyLibraryChanges;
 export const openCheckModal = CheckModal.open;
 
 // Helper: 現在設定されているID一覧を取得
@@ -308,3 +308,4 @@ export const CheckModal = {
     }
 
 };
+

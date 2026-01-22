@@ -303,34 +303,50 @@ select:disabled {
 .animate-clink-right { animation: clink-right 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-toast-text { animation: toast-text-pop 1.5s ease-out forwards; }
 
-/* 11秒周期の、かなり気まぐれなネオン明滅 */
+/* 23秒の長尺ループ。完全にランダムに見えるカオスな明滅 */
 .animate-neon-flicker {
-  animation: neon-flicker-sparse 11s infinite;
+  animation: neon-flicker-chaos 23s infinite;
 }
 
-@keyframes neon-flicker-sparse {
-  /* --- 基本状態: ずっと点灯 (安定期間を長く) --- */
-  0%, 100% {
-    opacity: 1;
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6));
-  }
+@keyframes neon-flicker-chaos {
+  /* --- 基本状態: 点灯 (Opacity 1) --- */
+  0%, 100% { opacity: 1; }
 
-  /* --- イベント1: 開始直後に一度だけ「フッ」と暗くなる (電圧低下) --- */
-  4% { opacity: 1; }
-  4.1% { opacity: 0.6; filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); }
-  4.2% { opacity: 1; }
+  /* パターン1: 開始早々の小さな瞬き */
+  2% { opacity: 1; }
+  2.1% { opacity: 0.8; }
+  2.2% { opacity: 1; }
 
-  /* ... ここから約6秒間は何もしない (長い静寂) ... */
-  
-  /* --- イベント2: 忘れた頃に来る「ジジッ」 (60%付近) --- */
-  60% { opacity: 1; }
-  60.1% { opacity: 0; filter: none; } /* 完全に消える */
-  60.3% { opacity: 1; }
-  
-  /* ... またしばらく安定 ... */
+  /* --- 長い静寂 (約5秒) --- */
 
-  /* --- イベント3: 最後のあがき (95%付近) --- */
+  /* パターン2: 激しい接触不良 (ジジジッ) */
+  25% { opacity: 1; }
+  25.1% { opacity: 0; } /* 消灯 */
+  25.2% { opacity: 1; }
+  25.3% { opacity: 0.3; } /* 薄暗い */
+  25.4% { opacity: 1; }
+  25.5% { opacity: 0.1; } /* 消灯 */
+  25.6% { opacity: 1; }
+
+  /* --- 静寂 --- */
+
+  /* パターン3: 電圧低下 (フワッと暗くなる) */
+  45% { opacity: 1; }
+  45.5% { opacity: 0.4; } /* ゆっくり暗く */
+  46% { opacity: 1; }
+
+  /* --- かなり長い静寂 (約8秒) --- */
+  /* ここで「もう直ったかな？」と思わせます */
+
+  /* パターン4: 忘れた頃の単発ブラックアウト */
+  80% { opacity: 1; }
+  80.1% { opacity: 0; }
+  80.3% { opacity: 1; }
+
+  /* パターン5: 終了間際の微細なチラつき */
   95% { opacity: 1; }
-  95.1% { opacity: 0.2; filter: none; } /* 消えかける */
-  95.3% { opacity: 1; }
+  95.1% { opacity: 0.9; }
+  95.2% { opacity: 1; }
+  95.3% { opacity: 0.9; }
+  95.4% { opacity: 1; }
 }

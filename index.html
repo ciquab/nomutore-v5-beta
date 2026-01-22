@@ -912,57 +912,73 @@
                     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="ph-fill ph-house"></i> Dashboard Guide
                     </h4>
-                    <div class="space-y-4">
+                    <div class="space-y-3">
+                        
                         <div class="p-4 rounded-2xl bg-base-50 dark:bg-base-800/50 border border-base-100 dark:border-base-700">
-                            <h5 class="font-bold text-sm mb-2 flex items-center gap-2">🔮 センターオーブ (Beer Tank)</h5>
+                            <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
+                                🔮 センターオーブ (Beer Tank)
+                            </h5>
                             <ul class="text-xs space-y-3 text-gray-600 dark:text-gray-300">
                                 <li class="flex gap-3">
                                     <span class="text-red-500 font-black text-lg">●</span>
                                     <div>
                                         <strong class="block text-base-900 dark:text-white">Debt Mode (借金)</strong>
-                                        収支がマイナスの時、タンクに液体が溜まります。<br>
-                                        <span class="text-[10px] opacity-70">「完済まであと何分の運動が必要か」が表示されます。</span>
+                                        <span class="text-[10px] opacity-80">収支マイナス時。「完済まであと何分の運動が必要か」を表示。</span>
                                     </div>
                                 </li>
                                 <li class="flex gap-3">
                                     <span class="text-emerald-500 font-black text-lg">●</span>
                                     <div>
                                         <strong class="block text-base-900 dark:text-white">Zen Mode (貯金)</strong>
-                                        収支がプラスになると液体が消え、オーブが黄金に輝きます。<br>
-                                        <span class="text-[10px] opacity-70">心置きなくビールを楽しめる状態です！</span>
+                                        <span class="text-[10px] opacity-80">収支プラス時。オーブが黄金に輝き、心置きなく飲める状態。</span>
                                     </div>
                                 </li>
                             </ul>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-[11px]">
-                                <span class="font-bold block mb-1">🛡️ Liver Rank</span>
-                                あなたのレベルを示す称号です。
+                            <div class="p-4 rounded-2xl bg-base-50 dark:bg-base-800/50 border border-base-100 dark:border-base-700">
+                                <h5 class="font-bold text-sm mb-1 text-base-900 dark:text-white leading-tight">
+                                    🛡️ ユーザーランク<br>
+                                    <span class="text-[10px] text-indigo-500 font-black tracking-wider">(LIVER RANK)</span>
+                                </h5>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-1">
+                                    あなたのレベルを示す称号。<br>開始日数と成果で変動します。
+                                </p>
                             </div>
-                            <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-[11px]">
-                                <span class="font-bold block mb-1">🔥 Streak</span>
-                                「休肝」か「完済」の継続日数。ボーナスに影響します。
+                            <div class="p-4 rounded-2xl bg-base-50 dark:bg-base-800/50 border border-base-100 dark:border-base-700">
+                                <h5 class="font-bold text-sm mb-1 text-base-900 dark:text-white leading-tight">
+                                    🔥 ストリーク<br>
+                                    <span class="text-[10px] text-orange-500 font-black tracking-wider">(Streak)</span>
+                                </h5>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight mt-1">
+                                    「休肝」か「完済」の継続日数。<br>ボーナス倍率に影響します。
+                                </p>
                             </div>
                         </div>
 
                         <div class="p-4 rounded-2xl bg-base-50 dark:bg-base-800/50 border border-base-100 dark:border-base-700">
-                            <h5 class="font-bold text-sm mb-2 flex items-center gap-2">📅 カレンダー & ヒートマップ</h5>
+                            <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
+                                📅 カレンダー & ヒートマップ<br class="sm:hidden">
+                                <span class="hidden sm:inline"> </span>(Weekly & Heatmap)
+                            </h5>
                             <div class="space-y-3 text-xs text-gray-600 dark:text-gray-300">
                                 <div>
                                     <strong class="block text-base-900 dark:text-white mb-0.5">Weekly (上段)</strong>
-                                    直近1週間の詳細ログです。日付をタップすると履歴の確認・修正ができます。
+                                    直近1週間の詳細ログ。タップで履歴を修正できます。
                                 </div>
                                 <div>
                                     <strong class="block text-base-900 dark:text-white mb-0.5">Heatmap (下段)</strong>
-                                    過去の習慣を可視化します。行動が良い日ほどリッチなアイコン（メダルなど）が表示されます。
-                                </div>
-                                <div class="bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-lg text-[10px] text-indigo-600 dark:text-indigo-300 font-bold flex gap-1">
-                                    <i class="ph-bold ph-info"></i>
-                                    <span>ランク基準やアイコン（評価）の詳細は「Game Mechanics」を参照</span>
+                                    過去の習慣を可視化。良い行動の日ほどリッチなアイコンになります。
                                 </div>
                             </div>
                         </div>
+
+                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-3 rounded-xl text-[10px] text-indigo-600 dark:text-indigo-300 font-bold flex items-center justify-center gap-2 mt-2">
+                            <i class="ph-bold ph-info text-lg"></i>
+                            <span>ランク基準やアイコン（評価）の詳細は<br>下部の「Game Mechanics」を参照</span>
+                        </div>
+
                     </div>
                 </section>
 

@@ -96,7 +96,9 @@ export function renderBeerTank(currentBalanceKcal) {
             // 借金量に応じて液体が増える (最大3本分で100%)
             const debtCans = Math.abs(canCount);
             const rawRatio = (debtCans / APP.TANK_MAX_CANS) * 100;
-            fillRatio = Math.max(10, Math.min(100, rawRatio)); // 最低10%は表示
+            // ★修正: 波打ち際(フチ)を見せるため、見た目の上限を94%で止める
+            // (内部的な数値 rawRatio は100%を超えても、表示だけは寸止めする)
+            fillRatio = Math.max(10, Math.min(94, rawRatio));
 
             cansText.textContent = canCount.toFixed(1);
             cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm";

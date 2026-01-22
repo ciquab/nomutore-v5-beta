@@ -34,46 +34,65 @@ body {
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- Orb (Liquid) Animations --- */
-@keyframes wave {
-    0% { transform: translateX(-50%) rotate(0deg); }
-    50% { transform: translateX(-50%) rotate(180deg); }
-    100% { transform: translateX(-50%) rotate(360deg); }
+/* --- Orb (Liquid) Animations & Styles [UPDATED] --- */
+
+/* 1. 基本のアニメーション定義 */
+/* 波: 形状がいびつな円を回転させて波を表現 */
+@keyframes wave-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 20px rgba(79, 70, 229, 0.3); }
-    50% { box-shadow: 0 0 40px rgba(79, 70, 229, 0.6); }
-}
-
+/* 禅モードの輝き */
 @keyframes zen-glow {
     0% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
     50% { box-shadow: 0 0 60px rgba(255, 215, 0, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.5); }
     100% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); }
 }
 
-/* --- Components --- */
+/* ほろ酔いゆらゆら (Tipsy Sway) - 借金過多時の演出 */
+@keyframes tipsy-sway {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(2deg); } /* 右へフラッ */
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-2deg); } /* 左へフラッ */
+    100% { transform: rotate(0deg); }
+}
 
-/* Orb Container */
+/* 内部の光のゆらぎ (Shimmer) */
+@keyframes internal-shimmer {
+    0% { transform: translate(-5%, -5%) scale(0.9); opacity: 0.2; }
+    50% { transform: translate(5%, 2%) scale(1.1); opacity: 0.5; }
+    100% { transform: translate(-2%, 8%) scale(0.95); opacity: 0.2; }
+}
+
+/* 泡の上昇 (Bubbles) */
+@keyframes bubble-rise {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-60px); }
+}
+
+
+/* --- Components (Orb Structure) --- */
+
+/* Orb Container (枠) */
 .orb-container {
     position: relative;
     width: 260px;
     height: 260px;
     border-radius: 50%;
+    
+    /* ベースのガラス質感 */
     background: linear-gradient(145deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4));
     box-shadow: 
         10px 10px 30px rgba(0,0,0,0.05), 
         -5px -5px 15px rgba(255,255,255,0.8),
         inset 5px 5px 10px rgba(0,0,0,0.02);
+        
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: hidden; /* はみ出した液体を切り取る */
     margin: 0 auto;
     z-index: 10;
     transition: all 0.5s ease;
@@ -87,35 +106,47 @@ body {
         inset 5px 5px 10px rgba(0,0,0,0.2);
 }
 
-/* Zen Mode: Golden Glow */
+/* Zen Mode (貯金時): 黄金の輝き */
 .orb-container.zen-mode {
     animation: zen-glow 3s infinite ease-in-out;
     border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
-/* Liquid Layers */
+/* Tipsy Mode (借金過多時): ほろ酔い揺れ */
+.orb-container.tipsy-mode {
+    animation: tipsy-sway 5s infinite ease-in-out;
+}
+
+
+/* --- Liquid Layers (液体) --- */
+
+/* 液体共通設定 */
 .liquid-layer {
     position: absolute;
     top: 100%; /* JSで制御 */
-    left: 50%;
-    width: 200%;
+    left: -50%; /* 中央配置の起点調整 */
+    width: 200%; /* 回転しても端が見えないように大きく */
     height: 200%;
-    border-radius: 40%;
-    transform: translateX(-50%);
+    
+    /* 波の形を作るための歪んだ楕円 */
+    border-radius: 40% 45%; 
+    
     transition: top 1.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
 }
 
+/* 背面の液体 (Liquid Back) - 少し遅れて動く影 */
 .liquid-back {
-    background: #fcd34d; /* amber-300 default */
+    background: #fcd34d; /* amber-300 */
     opacity: 0.5;
-    animation: wave 12s infinite linear;
+    animation: wave-rotate 10s infinite linear; /* ゆっくり回転 */
     z-index: 1;
 }
 
+/* 前面の液体 (Liquid Front) - メイン */
 .liquid-front {
-    background: #fbbf24; /* amber-400 default */
+    background: #fbbf24; /* amber-400 */
     opacity: 0.9;
-    animation: wave 8s infinite linear reverse;
+    animation: wave-rotate 6s infinite linear reverse; /* 逆回転 */
     z-index: 2;
     box-shadow: 0 -10px 20px rgba(0,0,0,0.05);
 }
@@ -123,7 +154,58 @@ body {
 .dark .liquid-back { opacity: 0.4; }
 .dark .liquid-front { opacity: 0.8; }
 
-/* Glass Panel */
+
+/* --- Advanced Liquid Effects (Shimmer & Bubbles) --- */
+
+/* 1. 光のゆらぎ (Shimmer) - ::beforeを使用 */
+/* 液体の中でぼんやり光る、魔法のような質感 */
+.liquid-front::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    
+    /* 白い光のグラデーション */
+    background: radial-gradient(
+        circle at 50% 50%, 
+        rgba(255, 255, 255, 0.3) 0%, 
+        transparent 70%
+    );
+    
+    animation: internal-shimmer 5s ease-in-out infinite alternate;
+    pointer-events: none;
+    border-radius: 40%;
+    z-index: 1; /* 液体内部(奥) */
+}
+
+/* 2. 炭酸の泡 (Bubbles) - ::afterを使用 */
+/* JSで .bubbling-liquid クラスがついた時だけ表示 */
+.liquid-front.bubbling-liquid::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    
+    /* 泡の模様 */
+    background-image: 
+        radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+        radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+    
+    opacity: 0.6;
+    animation: bubble-rise 4s linear infinite;
+    pointer-events: none;
+    z-index: 2; /* 光より手前 */
+}
+
+/* 借金レベルが高い時の高速泡 */
+.liquid-front.high-pressure::after {
+    animation-duration: 2.0s;
+    opacity: 0.7;
+}/* Glass Panel */
 .glass-panel {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);

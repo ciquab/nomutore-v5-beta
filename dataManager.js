@@ -2,6 +2,7 @@ import { APP } from './constants.js';
 import { db, Store } from './store.js';
 import { Calc } from './logic.js';
 import { UI, updateBeerSelectOptions, refreshUI } from './ui/index.js';
+import { CloudManager } from './cloudManager.js';
 
 export const DataManager = {
 

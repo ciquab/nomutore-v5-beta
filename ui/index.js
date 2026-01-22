@@ -418,6 +418,10 @@ export const UI = {
     handleActionSelect: handleActionSelect,
     renderSettings: Settings.render,
     handleSaveSettings: Settings.save,
+    
+    // ★ここが不足していました: DOM操作ユーティリティの登録
+    applyTheme,
+    toggleDryDay,
 
     // ★追加: 移植した CheckModal 関連の機能を UI オブジェクトに登録
     openCheckLibrary,      // これにより UI.openCheckLibrary() が有効になります
@@ -442,6 +446,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

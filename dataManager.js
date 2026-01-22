@@ -1,7 +1,7 @@
 import { APP } from './constants.js';
 import { db, Store } from './store.js';
 import { Calc } from './logic.js';
-import { UI, updateBeerSelectOptions, refreshUI } from './ui/index.js';
+import { UI, updateBeerSelectOptions, refreshUI, showMessage } from './ui/index.js';
 
 export const DataManager = {
 

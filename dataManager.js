@@ -1,7 +1,7 @@
 import { APP } from './constants.js';
 import { db, Store } from './store.js';
 import { Calc } from './logic.js';
-import { UI, updateBeerSelectOptions, refreshUI, showMessage } from './ui/index.js';
+import { UI, updateBeerSelectOptions, refreshUI } from './ui/index.js';
 
 export const DataManager = {
 
@@ -130,12 +130,12 @@ export const DataManager = {
             if(statusEl) statusEl.textContent = 'Uploading to Google Drive...';
             await CloudManager.uploadBackup(backupData);
             
-            showMessage('☁️ Googleドライブに保存しました', 'success');
+            UI.showMessage('☁️ Googleドライブに保存しました', 'success');
             if(statusEl) statusEl.textContent = `Last Backup: ${new Date().toLocaleString()}`;
             
         } catch (err) {
             console.error(err);
-            showMessage('バックアップ失敗: コンソールを確認してください', 'error');
+            UI.showMessage('バックアップ失敗: コンソールを確認してください', 'error');
             if(statusEl) statusEl.textContent = 'Error: Backup failed';
         }
     },
@@ -148,7 +148,7 @@ export const DataManager = {
             // 1. ダウンロード
             const data = await CloudManager.downloadBackup();
             if (!data) {
-                showMessage('ドライブ上にバックアップが見つかりません', 'error');
+                UI.showMessage('ドライブ上にバックアップが見つかりません', 'error');
                 if(statusEl) statusEl.textContent = 'File not found';
                 return;
             }
@@ -158,7 +158,7 @@ export const DataManager = {
             const success = await DataManager.restoreFromObject(data);
             
             if (success) {
-                showMessage('☁️ ドライブから復元しました', 'success');
+                UI.showMessage('☁️ ドライブから復元しました', 'success');
                 if(statusEl) statusEl.textContent = 'Restore Complete';
             } else {
                 if(statusEl) statusEl.textContent = 'Restore Cancelled';
@@ -166,7 +166,7 @@ export const DataManager = {
 
         } catch (err) {
             console.error(err);
-            showMessage('復元失敗: コンソールを確認してください', 'error');
+            UI.showMessage('復元失敗: コンソールを確認してください', 'error');
             if(statusEl) statusEl.textContent = 'Error: Restore failed';
         }
     },
@@ -232,7 +232,7 @@ export const DataManager = {
                 await DataManager.restoreFromObject(d);
             } catch(err) { 
                 console.error(err);
-                showMessage('読込失敗: データ形式が不正です','error'); 
+                UI.showMessage('読込失敗: データ形式が不正です','error'); 
             } 
             inputElement.value = ''; 
         }; 

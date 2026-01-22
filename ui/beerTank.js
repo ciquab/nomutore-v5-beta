@@ -115,14 +115,14 @@ export function renderBeerTank(currentBalanceKcal) {
                 // orbContainer(枠)に追加
                 orbContainer.appendChild(bubbleContainer);
                 
-                for (let i = 0; i < 15; i++) {
+                for (let i = 0; i < 10; i++) {
                     const bubble = document.createElement('div');
                     bubble.className = 'bubble-particle';
                     
-                    const size = Math.random() * 4 + 2; 
+                    const size = Math.random() * 5 + 2; 
                     const left = Math.random() * 80 + 10; 
-                    const duration = Math.random() * 2 + 2; 
-                    const delay = Math.random() * 4; 
+                    const duration = Math.random() * 3 + 4; 
+                    const delay = Math.random() * 7; 
                     
                     bubble.style.width = `${size}px`;
                     bubble.style.height = `${size}px`;

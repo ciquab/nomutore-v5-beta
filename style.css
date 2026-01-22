@@ -303,50 +303,87 @@ select:disabled {
 .animate-clink-right { animation: clink-right 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-toast-text { animation: toast-text-pop 1.5s ease-out forwards; }
 
-/* 23秒の長尺ループ。完全にランダムに見えるカオスな明滅 */
+/* --- 設定: モード別のアニメーション割り当て --- */
+
+/* ライトモード: 彩度を落とす「通電カット」演出 */
 .animate-neon-flicker {
-  animation: neon-flicker-chaos 23s infinite;
+  animation: neon-flicker-light 23s infinite;
 }
 
-@keyframes neon-flicker-chaos {
-  /* --- 基本状態: 点灯 (Opacity 1) --- */
+/* ダークモード: 闇に消える「点滅」演出 */
+.dark .animate-neon-flicker {
+  animation: neon-flicker-dark 23s infinite;
+}
+
+
+/* --- キーフレーム定義 --- */
+
+/* 【ライトモード用】 ガラス管に戻るリアルな明滅 */
+@keyframes neon-flicker-light {
+  /* ONの状態: カラー通常、不透明 */
+  0%, 100% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン1: 小さな瞬き */
+  2% { filter: grayscale(0) brightness(1); opacity: 1; }
+  2.1% { filter: grayscale(0.5) brightness(0.9); opacity: 0.8; } /* チカッ */
+  2.2% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン2: 接触不良 (ジジジッ) - ここが一番リアルになります */
+  25% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; } /* 完全に色が消える */
+  25.2% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.3% { filter: grayscale(0.8) brightness(0.8); opacity: 0.6; }
+  25.4% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.5% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
+  25.6% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン3: 電圧低下 */
+  45% { filter: grayscale(0) brightness(1); }
+  45.5% { filter: grayscale(0.4) brightness(0.9); } /* ぼんやり暗くなる */
+  46% { filter: grayscale(0) brightness(1); }
+
+  /* パターン4: 単発オフ */
+  80% { filter: grayscale(0) brightness(1); opacity: 1; }
+  80.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
+  80.3% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン5: 終了間際の揺らぎ */
+  95% { opacity: 1; }
+  95.1% { opacity: 0.9; }
+  95.2% { opacity: 1; }
+}
+
+/* 【ダークモード用】 闇に沈む明滅 (以前と同じリズム) */
+@keyframes neon-flicker-dark {
+  /* ONの状態 */
   0%, 100% { opacity: 1; }
 
-  /* パターン1: 開始早々の小さな瞬き */
+  /* パターン1 */
   2% { opacity: 1; }
   2.1% { opacity: 0.8; }
   2.2% { opacity: 1; }
 
-  /* --- 長い静寂 (約5秒) --- */
-
-  /* パターン2: 激しい接触不良 (ジジジッ) */
+  /* パターン2 */
   25% { opacity: 1; }
-  25.1% { opacity: 0; } /* 消灯 */
+  25.1% { opacity: 0; }
   25.2% { opacity: 1; }
-  25.3% { opacity: 0.3; } /* 薄暗い */
+  25.3% { opacity: 0.3; }
   25.4% { opacity: 1; }
-  25.5% { opacity: 0.1; } /* 消灯 */
+  25.5% { opacity: 0.1; }
   25.6% { opacity: 1; }
 
-  /* --- 静寂 --- */
-
-  /* パターン3: 電圧低下 (フワッと暗くなる) */
+  /* パターン3 */
   45% { opacity: 1; }
-  45.5% { opacity: 0.4; } /* ゆっくり暗く */
+  45.5% { opacity: 0.4; }
   46% { opacity: 1; }
 
-  /* --- かなり長い静寂 (約8秒) --- */
-  /* ここで「もう直ったかな？」と思わせます */
-
-  /* パターン4: 忘れた頃の単発ブラックアウト */
+  /* パターン4 */
   80% { opacity: 1; }
   80.1% { opacity: 0; }
   80.3% { opacity: 1; }
 
-  /* パターン5: 終了間際の微細なチラつき */
+  /* パターン5 */
   95% { opacity: 1; }
   95.1% { opacity: 0.9; }
   95.2% { opacity: 1; }
-  95.3% { opacity: 0.9; }
-  95.4% { opacity: 1; }
 }

@@ -108,6 +108,12 @@ export const DataManager = {
             UI.updateModeSelector();
             updateBeerSelectOptions(); 
             UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
+
+            // ★追加: 設定画面の入力欄を最新のデータで上書き表示する
+            if (UI.renderSettings) {
+                UI.renderSettings();
+               }
+
             await refreshUI(); 
             
             return true;
@@ -228,14 +234,26 @@ export const DataManager = {
         const r = new FileReader(); 
         r.onload = async (e) => { 
             try { 
-                const d = JSON.parse(e.target.result); 
-                // ★修正: 共通ロジックを利用
-                await DataManager.restoreFromObject(d);
+                // BOM対策（念のため入れておくと安全です）
+                const rawContent = e.target.result;
+                const jsonString = rawContent.charCodeAt(0) === 0xFEFF 
+                    ? rawContent.slice(1) 
+                    : rawContent;
+
+                const d = JSON.parse(jsonString); 
+                
+                // 復元処理を実行し、結果を受け取る
+                const success = await DataManager.restoreFromObject(d);
+                
+                // ★追加: 成功した場合のみメッセージを表示
+                if (success) {
+                    showMessage('✅ バックアップから復元しました', 'success');
+                }
             } catch(err) { 
                 console.error(err);
-                UI.showMessage('読込失敗: データ形式が不正です','error'); 
+                showMessage('読込失敗: データ形式が不正です', 'error'); 
             } 
-            inputElement.value = ''; 
+            inputElement.value = ''; // 次回同じファイルを選べるようにリセット
         }; 
         r.readAsText(f); 
     },

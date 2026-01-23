@@ -10,31 +10,36 @@ import { Feedback, showConfetti, showMessage } from './dom.js';
 const WIZARD_STEPS = [
     {
         id: 'step-profile',
-        title: 'Profile Settings', // UI上のタブ名と一致
+        title: 'Profile Settings',
         desc: '正確な消費カロリー計算のために、体重と身長を設定します。<br>※基礎代謝の概算に使用されます。',
         render: () => `
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-bold text-gray-500 mb-1 block">Weight (kg)</label>
-                        <input type="number" id="wiz-weight" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="60">
+                        <input type="number" id="wiz-weight" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="60">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 mb-1 block">Height (cm)</label>
-                        <input type="number" id="wiz-height" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="170">
+                        <input type="number" id="wiz-height" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="170">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs font-bold text-gray-500 mb-1 block">Age</label>
-                        <input type="number" id="wiz-age" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="30">
+                        <input type="number" id="wiz-age" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="30">
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 mb-1 block">Gender</label>
-                        <select id="wiz-gender" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
+                        <div class="relative">
+                            <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -56,7 +61,7 @@ const WIZARD_STEPS = [
     },
     {
         id: 'step-beer',
-        title: 'Favorite Beer', // UI上の設定項目名と一致
+        title: 'Favorite Beer',
         desc: 'よく飲むスタイルを設定してください。<br>ホーム画面の「本数換算」が、ここで選んだビールのカロリーを基準に表示されるようになります。',
         render: () => {
             const options = Object.keys(CALORIES.STYLES).map(k => `<option value="${k}">${k}</option>`).join('');
@@ -64,15 +69,25 @@ const WIZARD_STEPS = [
             <div class="space-y-4">
                 <div>
                     <label class="text-xs font-bold text-gray-500 mb-1 block">Favorite Beer 1 (Main)</label>
-                    <select id="wiz-mode1" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
-                        ${options}
-                    </select>
+                    <div class="relative">
+                        <select id="wiz-mode1" class="appearance-none w-full h-[50px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
+                            ${options}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <label class="text-xs font-bold text-gray-500 mb-1 block">Favorite Beer 2 (Sub)</label>
-                    <select id="wiz-mode2" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
-                        ${options}
-                    </select>
+                    <div class="relative">
+                        <select id="wiz-mode2" class="appearance-none w-full h-[50px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
+                            ${options}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                        </div>
+                    </div>
                 </div>
                 <p class="text-[10px] text-gray-400 text-center">※Settingsタブからいつでも変更できます。</p>
             </div>
@@ -89,7 +104,7 @@ const WIZARD_STEPS = [
     },
     {
         id: 'step-start',
-        title: 'Beer & Burn', // アプリのサブタイトル
+        title: 'Beer & Burn',
         desc: '',
         render: () => `
             <div class="text-center space-y-6 py-4">
@@ -131,6 +146,7 @@ export const Onboarding = {
         desc.innerHTML = step.desc;
         container.innerHTML = step.render();
         
+        // 初期値セット
         if (index === 0) {
             const w = document.getElementById('wiz-weight');
             if(w && localStorage.getItem(APP.STORAGE_KEYS.WEIGHT)) w.value = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT);
@@ -205,7 +221,7 @@ export const Onboarding = {
             showProgress: true,
             animate: true,
             allowClose: false,
-            doneBtnText: 'Finish', // ★変更: 終わりっぽく変更
+            doneBtnText: 'Finish',
             nextBtnText: 'Next',
             prevBtnText: 'Back',
             steps: [
@@ -233,14 +249,14 @@ export const Onboarding = {
                         title: 'Record', 
                         description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
                         side: 'top',
-                        align: 'center'
+                        align: 'center' // 画面中央下のタブバーにはcenterが最も安定します
                     } 
                 },
                 { 
                     element: '#liver-rank-card', 
                     popover: { 
                         title: 'Liver Rank', 
-                        description: 'あなたのランクです。<br>休肝日や運動を継続するとランクが上がります。'
+                        description: 'あなたのランクです。<br>休肝日や完済（ビールのカロリーを運動で相殺すること）を継続すると、ランクが上がります。'
                     } 
                 },
                 { 
@@ -249,17 +265,16 @@ export const Onboarding = {
                         title: 'Quick Actions',
                         description: 'よく使う機能をここからすぐに呼び出せます。',
                         side: 'top',
-                        align: 'end'
+                        align: 'center' // endだと右端に寄りすぎて矢印がズレるため、centerに変更して調整
                     } 
                 },
-                // ★追加: 最後にヘルプボタンを案内
                 {
-                    element: '#btn-help', // ヘッダーにある?ボタンのID（要確認：index.htmlにこのIDがあるか）
+                    element: '#btn-help', 
                     popover: {
                         title: 'Need Help?',
                         description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
                         side: 'bottom',
-                        align: 'end'
+                        align: 'end' // 右上のボタンなのでend（右寄せ）で正解
                     }
                 }
             ]

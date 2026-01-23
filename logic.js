@@ -2,6 +2,14 @@ import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANT
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export const Calc = {
+
+    // ユーザーのお気に入りビールのカロリーを取得するヘルパーを追加
+    getTargetBeerKcal: (settings) => {
+        const modes = settings.modes || { mode1: APP.DEFAULTS.MODE1 };
+        const targetStyle = StateManager.beerMode === 'mode1' ? modes.mode1 : modes.mode2;
+        return CALORIES.STYLES[targetStyle] || APP.DEFAULTS.BEER_KCAL;
+    },
+
     /**
      * 基礎代謝計算
      */
@@ -66,8 +74,8 @@ export const Calc = {
 
         const targetStyle = currentMode === 'mode1' ? modes.mode1 : modes.mode2;
         
-        const unitKcal = CALORIES.STYLES[targetStyle] || 140; 
-        const safeUnitKcal = unitKcal > 0 ? unitKcal : 140;
+        const unitKcal = CALORIES.STYLES[targetStyle] || APP.DEFAULTS.BEER_KCAL; 
+        const safeUnitKcal = unitKcal > 0 ? unitKcal : APP.DEFAULTS.BEER_KCAL;
         
         const canCount = currentKcal / safeUnitKcal;
         const displayMinutes = Calc.convertKcalToMinutes(Math.abs(currentKcal), baseEx, profile);
@@ -96,8 +104,8 @@ export const Calc = {
     },
 
     convertKcalToBeerCount: (kcal, styleName) => {
-        const unit = CALORIES.STYLES[styleName] || 140;
-        const safeUnit = unit > 0 ? unit : 140;
+        const unit = CALORIES.STYLES[styleName] || APP.DEFAULTS.BEER_KCAL;
+        const safeUnit = unit > 0 ? unit : APP.DEFAULTS.BEER_KCAL;
         return (kcal / safeUnit).toFixed(1);
     },
 
@@ -120,6 +128,8 @@ export const Calc = {
         let minTs = Number.MAX_SAFE_INTEGER;
         let found = false;
 
+        const defaultKcal = APP.DEFAULTS.BEER_KCAL;
+
         // ログのマップ化
         safeLogs.forEach(l => {
             if (l.timestamp < minTs) minTs = l.timestamp;
@@ -139,7 +149,7 @@ export const Calc = {
                 const burn = Calc.calculateExerciseBurn(mets, l.minutes, profile);
                 entry.balance += burn;
             } else if (l.type === 'beer') {
-                entry.balance -= 140; 
+                entry.balance -= defaultKcal; 
             }
         });
         
@@ -299,7 +309,7 @@ export const Calc = {
 
         let balance = 0;
         dayLogs.forEach(l => {
-            const val = l.kcal !== undefined ? l.kcal : (l.type === 'exercise' ? (l.minutes * Calc.burnRate(6.0, profile)) : -150);
+            const val = l.kcal !== undefined ? l.kcal : (l.type === 'exercise' ? (l.minutes * Calc.burnRate(6.0, profile)) : -APP.DEFAULTS.BEER_KCAL);
             balance += val;
         });
 

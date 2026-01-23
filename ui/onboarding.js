@@ -284,4 +284,56 @@ export const Onboarding = {
     }
 };
 
+/* ==========================================================================
+   Phase C: Landing Page (v5 Rich Edition)
+   ========================================================================== */
+
+/**
+ * LPの既読チェックと初期化
+ * main.js の initApp から呼ばれることを想定
+ */
+Onboarding.checkLandingPage = () => {
+    const lp = document.getElementById('landing-page');
+    if (!lp) return;
+
+    // v5用のLP既読フラグをチェック
+    if (localStorage.getItem('nomutore_lp_seen_v5')) {
+        lp.remove();
+        // LPが既読なら、そのままオンボーディング（ウィザード）が必要かチェック
+        Onboarding.start();
+        return;
+    }
+    
+    // 未読ならLPを表示（hiddenを外す）
+    lp.classList.remove('hidden');
+};
+
+/**
+ * LPを閉じてアプリ本編（またはウィザード）へ遷移
+ */
+Onboarding.closeLandingPage = () => {
+    const lp = document.getElementById('landing-page');
+    if (!lp) return;
+
+    // 期待感を高める触覚フィードバック
+    if (Feedback && Feedback.haptic) {
+        Feedback.haptic.medium();
+    }
+    
+    // フェードアウトアニメーション（CSSクラス適用）
+    lp.classList.add('landing-fade-out');
+    
+    setTimeout(() => {
+        lp.remove();
+        // 既読フラグを保存
+        localStorage.setItem('nomutore_lp_seen_v5', 'true');
+        
+        // プロフィール設定（体重）が未入力ならウィザードを開始
+        const hasWeight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT);
+        if (!hasWeight) {
+            Onboarding.start();
+        }
+    }, 1000);
+};
+
 window.Onboarding = Onboarding;

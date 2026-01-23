@@ -144,6 +144,11 @@ export const Feedback = {
     // ★修正: この行（initAudio）を追加してください
     initAudio: () => AudioEngine.init(),
 
+    // ★追加: 古い tap 呼び出しが残っていてもエラーにならないようにする
+    tap: () => {
+        if (HapticEngine.isSupported()) navigator.vibrate(10);
+    },
+
     // 既存のショートカットメソッドもHapticと連動させる（複合フィードバック）
     beer: () => { 
         showConfetti(); 
@@ -279,7 +284,7 @@ export const toggleModal = (modalId, show = true) => {
     const el = DOM.elements[modalId] || document.getElementById(modalId);
     if (!el) return;
     
-    if (show) Feedback.tap();
+    if (show && Feedback.haptic) Feedback.haptic.light();
 
     if (show) {
         el.classList.remove('hidden');
@@ -330,7 +335,8 @@ export const showMessage = (text, type = 'info', action = null) => {
             const btn = document.getElementById(btnId);
             if(btn) {
                 btn.onclick = () => {
-                    Feedback.tap();
+                    // シェアボタンのクリック感を追加
+                    if (Feedback.haptic) Feedback.haptic.light();
                     shareContent(shareText);
                 };
             }

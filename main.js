@@ -109,13 +109,6 @@ const initApp = async () => {
             UI.openTimer();
         }
 
-        // 7. Onboarding Check
-        // 【修正】新LPの表示チェック。start() ではなく checkLandingPage() を呼ぶ
-        if (window.Onboarding && window.Onboarding.checkLandingPage) {
-            setTimeout(() => {
-                window.Onboarding.checkLandingPage();
-            }, 800);
-        }
 
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する

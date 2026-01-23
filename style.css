@@ -590,3 +590,15 @@ select:disabled {
         display: none !important;
     }
 }
+
+/* --- Dark Mode Highlight Enhancements --- */
+.dark .driver-overlay path {
+    /* 1. オーバーレイをより濃くする (標準は0.5くらい → 0.85へ) */
+    /* これにより、背景のSlate-900をほぼ塗りつぶし、ハイライト部分との差を広げます */
+    fill: rgba(0, 0, 0, 0.85) !important;
+
+    /* 2. フォーカスリング（境界線）を追加 */
+    /* 切り抜かれた穴の周囲に白いラインを描画し、「ここを見て！」と強調します */
+    stroke: rgba(255, 255, 255, 0.4) !important;
+    stroke-width: 2px !important;
+}

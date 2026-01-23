@@ -654,3 +654,17 @@ select:disabled {
         opacity: 0;
     }
 }
+
+/* コンセプトアイコンの浮遊 */
+.concept-icon-float {
+    animation: concept-sway 3s ease-in-out infinite alternate;
+}
+.concept-icon-float-delay {
+    animation: concept-sway 3s ease-in-out infinite alternate-reverse;
+    animation-delay: 0.5s;
+}
+
+@keyframes concept-sway {
+    0% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.2)); }
+    100% { transform: translateY(-15px) rotate(5deg); filter: drop-shadow(0 0 25px rgba(79, 70, 229, 0.4)); }
+}

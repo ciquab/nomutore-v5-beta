@@ -342,32 +342,36 @@ Onboarding.checkLandingPage = () => {
     }
 };
 
-/**
- * LPを閉じてアプリ本編（またはウィザード）へ遷移
- */
+// LPを閉じてコンセプトページを表示
 Onboarding.closeLandingPage = () => {
     const lp = document.getElementById('landing-page');
-    if (!lp) return;
-
-    // 期待感を高める触覚フィードバック
-    if (Feedback && Feedback.haptic) {
-        Feedback.haptic.medium();
+    const concept = document.getElementById('concept-page');
+    
+    if (lp) {
+        lp.classList.add('landing-fade-out');
+        setTimeout(() => {
+            lp.remove();
+            if (concept) {
+                concept.classList.remove('hidden');
+                // 次のフレームでopacityを上げてふわっと出す
+                requestAnimationFrame(() => {
+                    concept.classList.add('opacity-100');
+                });
+            }
+        }, 800);
     }
-    
-    // フェードアウトアニメーション（CSSクラス適用）
-    lp.classList.add('landing-fade-out');
-    
-    setTimeout(() => {
-        lp.remove();
-        // 既読フラグを保存
-        localStorage.setItem('nomutore_lp_seen_v5', 'true');
-        
-        // プロフィール設定（体重）が未入力ならウィザードを開始
-        const hasWeight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT);
-        if (!hasWeight) {
-            Onboarding.start();
-        }
-    }, 1000);
 };
 
+// コンセプトページから本番のウィザードへ
+Onboarding.goToWizard = () => {
+    const concept = document.getElementById('concept-page');
+    if (concept) {
+        concept.classList.replace('opacity-100', 'opacity-0');
+        setTimeout(() => {
+            concept.remove();
+            // 既存の Onboarding.start() を呼び出し（onboarding-modalを表示する処理）
+            Onboarding.start(); 
+        }, 600);
+    }
+};
 window.Onboarding = Onboarding;

@@ -39,6 +39,13 @@ export const handleActionSelect = (type) => {
 
 export const getBeerFormData = () => {
     const dateVal = document.getElementById('beer-date').value;
+
+    // ★追加: 未来日付チェック
+    if (dateVal && dayjs(dateVal).isAfter(dayjs(), 'day')) {
+        showMessage('未来の日付は選択できません', 'error');
+        throw new Error('Future date selected'); // 処理を中断させるためにErrorを投げる
+    }
+
     const brewery = document.getElementById('beer-brewery').value;
     const brand = document.getElementById('beer-brand').value;
     const rating = parseInt(document.getElementById('beer-rating').value) || 0;
@@ -60,9 +67,16 @@ export const getBeerFormData = () => {
     const size = sizeSel.options[sizeSel.selectedIndex]?.value || '350';
     
     const count = parseInt(document.getElementById('beer-count').value) || 1;
+    // ★追加: 数値チェック
+    if (count <= 0) count = 1; // 0以下なら1に戻す
     
     const customAbv = Math.abs(parseFloat(document.getElementById('custom-abv').value) || 5.0);
+    // ★追加: ABVの範囲チェック (0〜100%)
+    if (customAbv > 100) customAbv = 100;
+
     const customMl = Math.abs(parseInt(document.getElementById('custom-amount').value) || 350);
+    // ★追加: 量のチェック (0以下防止)
+    if (customMl <= 0) customMl = 350;
 
     return {
         timestamp: ts,
@@ -97,7 +111,11 @@ export const resetBeerForm = (keepDate = false) => {
 export const searchUntappd = () => {
     const brewery = document.getElementById('beer-brewery').value;
     const brand = document.getElementById('beer-brand').value;
-    if (!brand) { alert('Please enter a Beer Name to search.'); return; }
+    // ★修正: alert ではなく showMessage を使用
+    if (!brand) { 
+        showMessage('検索するにはビール名を入力してください', 'error'); 
+        return; 
+    }
     const query = encodeURIComponent(`${brewery} ${brand}`.trim());
     window.open(`https://untappd.com/search?q=${query}`, '_blank');
 };
@@ -286,8 +304,6 @@ export const openCheckModal = async (dateStr) => {
 
     toggleModal('check-modal', true);
 };
-
-/* --- Exercise Modal Logic --- */
 
 /* --- Exercise Modal Logic --- */
 
@@ -795,4 +811,25 @@ export const adjustBeerCount = (delta) => {
     
     // ★追加: 軽い振動フィードバック
     Feedback.haptic.light(); 
+};
+
+export const validateInput = (dateStr, minutes = null) => {
+    // 日付チェック
+    if (dateStr && dayjs(dateStr).isAfter(dayjs(), 'day')) {
+        showMessage('未来の日付は記録できません', 'error');
+        return false;
+    }
+    
+    // 運動時間チェック (minutesが渡された場合のみ)
+    if (minutes !== null) {
+        if (minutes <= 0) {
+            showMessage('時間は1分以上で入力してください', 'error');
+            return false;
+        }
+        if (minutes > 1440) { // 24時間以上
+            showMessage('24時間を超える記録はできません', 'error');
+            return false;
+        }
+    }
+    return true;
 };

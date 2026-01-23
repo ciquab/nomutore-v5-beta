@@ -21,7 +21,8 @@ import {
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
-    openActionMenu, handleActionSelect
+    openActionMenu, handleActionSelect,
+    validateInput
 } from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -173,10 +174,16 @@ export const UI = {
         const bonusEl = document.getElementById('manual-apply-bonus');
         const applyBonus = bonusEl ? bonusEl.checked : true;
 
-        // 2. バリデーション (元のまま)
-        if (!date || !minutes || minutes <= 0) {
+        // 2. バリデーション
+        // まず未入力を弾く
+        if (!date || isNaN(minutes)) {
             showMessage('日付と時間を入力してください', 'error');
             return;
+        }
+
+        // 次に、未来日付や範囲の適正さをチェック (modal.jsからインポートした関数)
+        if (!validateInput(date, minutes)) {
+            return; // エラーメッセージは validateInput 内で表示済み
         }
 
         // 3. 保存処理 (元の引数の渡し方を維持)

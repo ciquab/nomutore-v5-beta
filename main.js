@@ -62,15 +62,20 @@ const initApp = async () => {
     try {
         console.log('App Initializing...');
 
-        // ★追加: Google Drive API 初期化 (非同期で裏で走らせておく)
+        // 1. 真っ先に onboarding の状態を確認する (setTimeout を外すか大幅に短くする)
+        if (window.Onboarding && window.Onboarding.checkLandingPage) {
+            // 既に LP 既読なら即座に showAppUI() が呼ばれ、ホーム画面が出る
+            window.Onboarding.checkLandingPage();
+        }
+
+        // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
         CloudManager.init().then(() => {
             console.log('CloudManager ready');
         }).catch(err => {
-            console.warn('CloudManager init failed (Offline?):', err);
+            console.warn('CloudManager init failed:', err);
         });
-        
-        // 1. Init DOM Elements
-        UI.init(); 
+
+        UI.init();
         
         // 2. Setup Event Listeners
         setupLifecycleListeners();

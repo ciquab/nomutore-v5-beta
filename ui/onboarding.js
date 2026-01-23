@@ -203,8 +203,9 @@ export const Onboarding = {
         const modal = document.getElementById('onboarding-modal');
         modal.classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
-            modal.classList.add('hidden');
-            Onboarding.startTour();
+        modal.classList.add('hidden');
+        // ★ ここで complete を呼び出す
+        Onboarding.complete();
         }, 300);
         
         localStorage.setItem('nomutore_onboarding_complete', 'true');
@@ -299,13 +300,11 @@ Onboarding.checkLandingPage = () => {
     // v5用のLP既読フラグをチェック
     if (localStorage.getItem('nomutore_lp_seen_v5')) {
         lp.remove();
-        // LPが既読なら、そのままオンボーディング（ウィザード）が必要かチェック
-        Onboarding.start();
+        // ★既読なら、ここでアプリ本体を表示する
+        Onboarding.showAppUI();
+        Onboarding.start(); // ウィザードが必要かチェック
         return;
     }
-
-    // 表示開始
-    lp.classList.remove('hidden');
 
     // --- 1. Power On 演出のトリガー（表示から0.3秒後に点火） ---
     const logo = lp.querySelector('img');
@@ -342,6 +341,19 @@ Onboarding.checkLandingPage = () => {
     }
 };
 
+// ★新設：アプリのUIを一斉に表示する関数
+Onboarding.showAppUI = () => {
+    const elements = [
+        document.querySelector('header'),
+        document.querySelector('main'),
+        document.querySelector('nav'),
+        document.getElementById('btn-fab-fixed')
+    ];
+    elements.forEach(el => {
+        if (el) el.classList.remove('hidden');
+    });
+};
+
 // LPを閉じてコンセプトページを表示
 Onboarding.closeLandingPage = () => {
     const lp = document.getElementById('landing-page');
@@ -353,10 +365,10 @@ Onboarding.closeLandingPage = () => {
             lp.remove();
             if (concept) {
                 concept.classList.remove('hidden');
-                // 次のフレームでopacityを上げてふわっと出す
-                requestAnimationFrame(() => {
-                    concept.classList.add('opacity-100');
-                });
+                requestAnimationFrame(() => concept.classList.add('opacity-100'));
+            } else {
+                // コンセプトページがない場合の保険
+                Onboarding.showAppUI();
             }
         }, 800);
     }
@@ -374,4 +386,13 @@ Onboarding.goToWizard = () => {
         }, 600);
     }
 };
+
+// E. 【新規追加】オンボーディングが完全に終了した時
+Onboarding.complete = () => {
+    localStorage.setItem('nomutore_onboarding_complete', 'true');
+    Onboarding.showAppUI(); // ★ここで初めてメイン画面を出す
+    Onboarding.startTour(); // チュートリアル開始
+};
+
+
 window.Onboarding = Onboarding;

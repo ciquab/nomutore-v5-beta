@@ -8,6 +8,7 @@ import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
 import { handleSaveSettings } from './ui/modal.js'; 
 import { CloudManager } from './cloudManager.js';
+import { Onboarding } from './ui/onboarding.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // HTMLからonclickで呼ぶためにwindowオブジェクトに登録
@@ -104,10 +105,12 @@ const initApp = async () => {
         }
 
         // 7. Onboarding Check
-        const hasWeight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT);
-        if (isFirstRun || !hasWeight) {
-            // 初回起動時はヘルプ（ガイド）を開く
-            setTimeout(() => UI.openHelp(true), 500);
+        // 旧ロジック（単純なHelp表示）は削除し、Onboardingモジュールに委譲
+        if (window.Onboarding) {
+            // UI描画の安定を待ってから開始
+            setTimeout(() => {
+                window.Onboarding.start();
+            }, 800);
         }
 
     } catch (e) {

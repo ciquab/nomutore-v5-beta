@@ -495,3 +495,75 @@ select:disabled {
   95.1% { opacity: 0.9; }
   95.2% { opacity: 1; }
 }
+
+/* --- onboarding.js Custom Theme (Glassmorphism) --- */
+.driver-popover.driverjs-theme {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    border-radius: 1.5rem; /* rounded-3xl */
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.1), 
+        0 8px 10px -6px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px);
+    padding: 1.5rem;
+    font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+}
+
+.dark .driver-popover.driverjs-theme {
+    background-color: rgba(15, 23, 42, 0.95); /* base-900 */
+    color: #f1f5f9;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.driver-popover-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: #4f46e5; /* indigo-600 */
+}
+
+.dark .driver-popover-title {
+    color: #818cf8; /* indigo-400 */
+}
+
+.driver-popover-description {
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+.dark .driver-popover-description {
+    color: #94a3b8;
+}
+
+.driver-popover-footer button {
+    border-radius: 0.5rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 0.5rem 1rem;
+    text-shadow: none;
+}
+
+.driver-popover-next-btn {
+    background-color: #4f46e5 !important; /* indigo-600 */
+    color: white !important;
+    border: none !important;
+}
+
+.driver-popover-prev-btn {
+    background-color: transparent !important;
+    color: #94a3b8 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+.dark .driver-popover-prev-btn {
+    border-color: #334155 !important;
+}
+
+/* Highlight Overlay Styling */
+.driver-overlay path {
+    fill: rgba(0, 0, 0, 0.7) !important; /* 暗めのオーバーレイ */
+}

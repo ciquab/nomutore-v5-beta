@@ -716,7 +716,10 @@ export const handleSaveSettings = async () => {
         if(headerSel) {
             headerSel.options[0].text = m1;
             headerSel.options[1].text = m2;
+
         }
+
+        updateModeSelector();
 
         showMessage('設定を保存しました', 'success');
         document.dispatchEvent(new CustomEvent('refresh-ui'));
@@ -765,7 +768,27 @@ export const openHelp = (isFirstTime = false) => {
 };
 
 export const openLogDetail = (id) => { /* TODO: 実装が必要であれば */ };
-export const updateModeSelector = () => { /* Header selector update logic if separated */ };
+
+export const updateModeSelector = () => {
+    // 1. 最新の設定値をローカルストレージ（またはStore）から取得
+    const m1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || 'Lager'; // APP.DEFAULTS.MODE1 でも可
+    const m2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || 'Ale';
+    
+    const headerSel = document.getElementById('header-mode-select');
+    const display = document.getElementById('beer-select-display'); // 表示用ラベル
+
+    if (headerSel) {
+        // 2. プルダウンの選択肢テキストを更新
+        headerSel.options[0].text = m1;
+        headerSel.options[1].text = m2;
+
+        // 3. 現在選択されている項目のテキストを表示用ラベルに反映
+        const selectedOption = headerSel.options[headerSel.selectedIndex];
+        if (display && selectedOption) {
+            display.textContent = selectedOption.text;
+        }
+    }
+};
 
 export const updateBeerSelectOptions = () => {
     const styleSel = document.getElementById('beer-select');

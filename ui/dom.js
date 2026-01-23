@@ -141,6 +141,9 @@ export const Feedback = {
     audio: AudioEngine,
     haptic: HapticEngine, // 追加
 
+    // ★修正: この行（initAudio）を追加してください
+    initAudio: () => AudioEngine.init(),
+
     // 既存のショートカットメソッドもHapticと連動させる（複合フィードバック）
     beer: () => { 
         showConfetti(); 

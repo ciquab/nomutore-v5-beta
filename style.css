@@ -34,6 +34,113 @@ body {
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ==========================================================================
+   Global Brand Animations (Nomutore Neon Signature)
+   ========================================================================== */
+
+/* ネオンの点滅設定（LP、ガイド、ヘッダー共通） */
+.animate-neon-flicker {
+    animation: neon-flicker-light 23s infinite;
+}
+.dark .animate-neon-flicker {
+    animation: neon-flicker-dark 23s infinite;
+}
+
+/* --- [v5] Power On Effect --- */
+.neon-power-on {
+    animation: neon-initial-startup 1.5s ease-out forwards, 
+               neon-flicker-light 23s infinite 1.5s;
+}
+.dark .neon-power-on {
+    animation: neon-initial-startup 1.5s ease-out forwards, 
+               neon-flicker-dark 23s infinite 1.5s;
+}
+
+/* 起動時の「バチバチッ」演出：0%のblurを削除してクッキリさせました */
+@keyframes neon-initial-startup {
+    0% { opacity: 0; filter: grayscale(1) brightness(0); }
+    5% { opacity: 0.8; filter: grayscale(0.2) brightness(1.5); }
+    7% { opacity: 0.1; }
+    12% { opacity: 0.6; }
+    14% { opacity: 0.2; }
+    20% { opacity: 1; filter: grayscale(0) brightness(1.2); }
+    25% { opacity: 0.8; }
+    30% { opacity: 1; }
+    100% { opacity: 1; filter: grayscale(0) brightness(1); }
+}
+
+/* --- キーフレーム定義 --- */
+
+/* 【ライトモード用】 ガラス管に戻るリアルな明滅 */
+@keyframes neon-flicker-light {
+  /* ONの状態: カラー通常、不透明 */
+  0%, 100% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン1: 小さな瞬き */
+  2% { filter: grayscale(0) brightness(1); opacity: 1; }
+  2.1% { filter: grayscale(0.5) brightness(0.9); opacity: 0.8; } /* チカッ */
+  2.2% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン2: 接触不良 (ジジジッ) - ここが一番リアルになります */
+  25% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; } /* 完全に色が消える */
+  25.2% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.3% { filter: grayscale(0.8) brightness(0.8); opacity: 0.6; }
+  25.4% { filter: grayscale(0) brightness(1); opacity: 1; }
+  25.5% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
+  25.6% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン3: 電圧低下 */
+  45% { filter: grayscale(0) brightness(1); }
+  45.5% { filter: grayscale(0.4) brightness(0.9); } /* ぼんやり暗くなる */
+  46% { filter: grayscale(0) brightness(1); }
+
+  /* パターン4: 単発オフ */
+  80% { filter: grayscale(0) brightness(1); opacity: 1; }
+  80.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
+  80.3% { filter: grayscale(0) brightness(1); opacity: 1; }
+
+  /* パターン5: 終了間際の揺らぎ */
+  95% { opacity: 1; }
+  95.1% { opacity: 0.9; }
+  95.2% { opacity: 1; }
+}
+
+/* 【ダークモード用】 闇に沈む明滅 (以前と同じリズム) */
+@keyframes neon-flicker-dark {
+  /* ONの状態 */
+  0%, 100% { opacity: 1; }
+
+  /* パターン1 */
+  2% { opacity: 1; }
+  2.1% { opacity: 0.8; }
+  2.2% { opacity: 1; }
+
+  /* パターン2 */
+  25% { opacity: 1; }
+  25.1% { opacity: 0; }
+  25.2% { opacity: 1; }
+  25.3% { opacity: 0.3; }
+  25.4% { opacity: 1; }
+  25.5% { opacity: 0.1; }
+  25.6% { opacity: 1; }
+
+  /* パターン3 */
+  45% { opacity: 1; }
+  45.5% { opacity: 0.4; }
+  46% { opacity: 1; }
+
+  /* パターン4 */
+  80% { opacity: 1; }
+  80.1% { opacity: 0; }
+  80.3% { opacity: 1; }
+
+  /* パターン5 */
+  95% { opacity: 1; }
+  95.1% { opacity: 0.9; }
+  95.2% { opacity: 1; }
+}
+
 /* =========================================
    Orb (Liquid) Animations & Components [UPDATED]
    ========================================= */
@@ -411,90 +518,6 @@ select:disabled {
 .animate-clink-right { animation: clink-right 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 .animate-toast-text { animation: toast-text-pop 1.5s ease-out forwards; }
 
-/* --- 設定: モード別のアニメーション割り当て --- */
-
-/* ライトモード: 彩度を落とす「通電カット」演出 */
-.animate-neon-flicker {
-  animation: neon-flicker-light 23s infinite;
-}
-
-/* ダークモード: 闇に消える「点滅」演出 */
-.dark .animate-neon-flicker {
-  animation: neon-flicker-dark 23s infinite;
-}
-
-
-/* --- キーフレーム定義 --- */
-
-/* 【ライトモード用】 ガラス管に戻るリアルな明滅 */
-@keyframes neon-flicker-light {
-  /* ONの状態: カラー通常、不透明 */
-  0%, 100% { filter: grayscale(0) brightness(1); opacity: 1; }
-
-  /* パターン1: 小さな瞬き */
-  2% { filter: grayscale(0) brightness(1); opacity: 1; }
-  2.1% { filter: grayscale(0.5) brightness(0.9); opacity: 0.8; } /* チカッ */
-  2.2% { filter: grayscale(0) brightness(1); opacity: 1; }
-
-  /* パターン2: 接触不良 (ジジジッ) - ここが一番リアルになります */
-  25% { filter: grayscale(0) brightness(1); opacity: 1; }
-  25.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; } /* 完全に色が消える */
-  25.2% { filter: grayscale(0) brightness(1); opacity: 1; }
-  25.3% { filter: grayscale(0.8) brightness(0.8); opacity: 0.6; }
-  25.4% { filter: grayscale(0) brightness(1); opacity: 1; }
-  25.5% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
-  25.6% { filter: grayscale(0) brightness(1); opacity: 1; }
-
-  /* パターン3: 電圧低下 */
-  45% { filter: grayscale(0) brightness(1); }
-  45.5% { filter: grayscale(0.4) brightness(0.9); } /* ぼんやり暗くなる */
-  46% { filter: grayscale(0) brightness(1); }
-
-  /* パターン4: 単発オフ */
-  80% { filter: grayscale(0) brightness(1); opacity: 1; }
-  80.1% { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
-  80.3% { filter: grayscale(0) brightness(1); opacity: 1; }
-
-  /* パターン5: 終了間際の揺らぎ */
-  95% { opacity: 1; }
-  95.1% { opacity: 0.9; }
-  95.2% { opacity: 1; }
-}
-
-/* 【ダークモード用】 闇に沈む明滅 (以前と同じリズム) */
-@keyframes neon-flicker-dark {
-  /* ONの状態 */
-  0%, 100% { opacity: 1; }
-
-  /* パターン1 */
-  2% { opacity: 1; }
-  2.1% { opacity: 0.8; }
-  2.2% { opacity: 1; }
-
-  /* パターン2 */
-  25% { opacity: 1; }
-  25.1% { opacity: 0; }
-  25.2% { opacity: 1; }
-  25.3% { opacity: 0.3; }
-  25.4% { opacity: 1; }
-  25.5% { opacity: 0.1; }
-  25.6% { opacity: 1; }
-
-  /* パターン3 */
-  45% { opacity: 1; }
-  45.5% { opacity: 0.4; }
-  46% { opacity: 1; }
-
-  /* パターン4 */
-  80% { opacity: 1; }
-  80.1% { opacity: 0; }
-  80.3% { opacity: 1; }
-
-  /* パターン5 */
-  95% { opacity: 1; }
-  95.1% { opacity: 0.9; }
-  95.2% { opacity: 1; }
-}
 
 /* --- onboarding.js Custom Theme (Glassmorphism) --- */
 .driver-popover.driverjs-theme {
@@ -571,34 +594,77 @@ select:disabled {
 /* --- Driver.js Mobile Optimization (Card Style) --- */
 @media (max-width: 640px) {
     .driver-popover.driverjs-theme {
-        /* ライブラリの計算位置を無視して、画面下部（または上部）にどっしり構える */
-        left: 16px !important;  /* 画面左端から16px */
-        right: 16px !important; /* 画面右端から16px */
-        width: auto !important; /* 幅は自動（左右の余白に合わせる） */
+        left: 16px !important;
+        right: 16px !important;
+        width: auto !important;
         max-width: none !important;
-        
-        /* ボックスの配置計算を安定させる */
         box-sizing: border-box !important;
-        
-        /* 少し影を強めて「浮いている感」を出す */
         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2) !important;
     }
 
-    /* モバイルでは矢印（シッポ）を非表示にする */
-    /* これにより「ズレ」という概念自体をなくす */
     .driver-popover-arrow {
         display: none !important;
     }
-}
+} 
 
 /* --- Dark Mode Highlight Enhancements --- */
 .dark .driver-overlay path {
-    /* 1. オーバーレイをより濃くする (標準は0.5くらい → 0.85へ) */
-    /* これにより、背景のSlate-900をほぼ塗りつぶし、ハイライト部分との差を広げます */
     fill: rgba(0, 0, 0, 0.85) !important;
-
-    /* 2. フォーカスリング（境界線）を追加 */
-    /* 切り抜かれた穴の周囲に白いラインを描画し、「ここを見て！」と強調します */
     stroke: rgba(255, 255, 255, 0.4) !important;
     stroke-width: 2px !important;
+}
+
+/* =========================================
+   6. Landing Page Rich Effects (v5)
+   ========================================= */
+
+/* LP専用の泡コンテナ：格子ドットを強制排除 */
+#landing-page .bubble-container {
+    position: absolute;
+    inset: 0;
+    background-image: none !important; /* 格子ドットを無効化 */
+    background-color: transparent;
+    z-index: 0;
+}
+
+/* 泡のデザイン：ドットに見えないよう、光彩と不規則な透過を与えます */
+.lp-bubble {
+    position: absolute;
+    background: radial-gradient(circle at 30% 30%, rgba(251, 191, 36, 0.6), rgba(251, 191, 36, 0.1));
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: lp-bubble-float-up linear infinite;
+    z-index: 1;
+}
+
+@keyframes lp-bubble-float-up {
+    0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        transform: translateY(-10vh) scale(1.2);
+        opacity: 0;
+    }
+}
+
+/* コンセプトアイコンの浮遊 */
+.concept-icon-float {
+    animation: concept-sway 3s ease-in-out infinite alternate;
+}
+.concept-icon-float-delay {
+    animation: concept-sway 3s ease-in-out infinite alternate-reverse;
+    animation-delay: 0.5s;
+}
+
+@keyframes concept-sway {
+    0% { transform: translateY(0) rotate(-5deg); filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.2)); }
+    100% { transform: translateY(-15px) rotate(5deg); filter: drop-shadow(0 0 25px rgba(79, 70, 229, 0.4)); }
 }

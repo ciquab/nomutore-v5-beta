@@ -1,5 +1,4 @@
-/* timer.js */
-// ★修正: CALORIES を追加インポート
+/* ui/timer.js */
 import { APP, EXERCISE, BEER_COLORS, CALORIES } from '../constants.js'; 
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
@@ -21,6 +20,7 @@ const formatTime = (ms) => {
 
 export const Timer = {
     init: () => {
+        console.log('[Timer] init called');
         const el = document.getElementById('timer-exercise-select');
         if (el && el.children.length === 0) {
             Object.keys(EXERCISE).forEach(k => {
@@ -57,39 +57,47 @@ export const Timer = {
     },
 
     setRandomBeerBackground: () => {
-        const colors = (typeof BEER_COLORS !== 'undefined') ? BEER_COLORS : { 'Golden Ale': 'linear-gradient(to top, #eab308, #facc15)' };
-        
-        const styleKeys = Object.keys(colors);
-        const randomKey = styleKeys[Math.floor(Math.random() * styleKeys.length)];
-        let backgroundStyle = colors[randomKey];
+        try {
+            const colors = (typeof BEER_COLORS !== 'undefined') ? BEER_COLORS : { 'Golden Ale': 'linear-gradient(to top, #eab308, #facc15)' };
+            const styleKeys = Object.keys(colors);
+            const randomKey = styleKeys[Math.floor(Math.random() * styleKeys.length)];
+            let backgroundStyle = colors[randomKey];
 
-        if (backgroundStyle.startsWith('#')) {
-            backgroundStyle = `linear-gradient(to bottom right, ${backgroundStyle}, #1a1a1a)`;
-        }
-        
-        currentBeerStyleName = randomKey;
+            if (backgroundStyle.startsWith('#')) {
+                backgroundStyle = `linear-gradient(to bottom right, ${backgroundStyle}, #1a1a1a)`;
+            }
+            
+            currentBeerStyleName = randomKey;
 
-        const modal = document.getElementById('timer-modal');
-        if (modal) {
-            modal.classList.remove('bg-base-900');
-            modal.style.background = backgroundStyle;
+            const modal = document.getElementById('timer-modal');
+            if (modal) {
+                modal.classList.remove('bg-base-900');
+                modal.style.background = backgroundStyle;
+            }
+        } catch(e) {
+            console.error('[Timer] BG Error:', e);
         }
     },
 
     toggle: () => {
+        console.log('[Timer] toggle called. isRunning:', isRunning);
         if (isRunning) {
             Timer.pause();
-            // ★追加: 停止時の中振動
             if (Feedback && Feedback.haptic) Feedback.haptic.medium();
         } else {
+            console.log('[Timer] Attempting to start...');
             Timer.start();
-            // ★追加: 開始時の中振動
+            console.log('[Timer] Start executed.');
             if (Feedback && Feedback.haptic) Feedback.haptic.medium();
         }
     },
 
     start: () => {
-        if (isRunning && timerInterval) return;
+        console.log('[Timer] start() entered');
+        if (isRunning && timerInterval) {
+            console.log('[Timer] Already running, ignoring.');
+            return;
+        }
         
         if (!currentBeerStyleName) Timer.setRandomBeerBackground();
 
@@ -101,6 +109,7 @@ export const Timer = {
         isRunning = true;
         Timer.updateUI(true);
 
+        console.log('[Timer] Loop starting...');
         timerInterval = setInterval(() => {
             const currentNow = Date.now();
             const diff = currentNow - startTimestamp;
@@ -108,6 +117,7 @@ export const Timer = {
 
             const display = document.getElementById('timer-display');
             if(display) display.textContent = formatTime(diff);
+            // else console.warn('[Timer] Display element missing!');
 
             Timer.updateCalculations(diff);
 
@@ -130,20 +140,13 @@ export const Timer = {
 
         const beerEl = document.getElementById('timer-beer');
         if(beerEl) {
-            // ★修正: 設定されている「Favorite Beer 1」を基準にする
-            const modes = Store.getModes(); // 設定を取得
-            const refStyle = modes.mode1 || '国産ピルスナー'; // デフォルトは国産ピルスナー
+            const modes = Store.getModes(); 
+            const refStyle = modes.mode1 || '国産ピルスナー'; 
             
-            // 定義から350mlあたりのカロリーを取得 (未定義なら140kcalとする)
             const kcalPer350 = CALORIES.STYLES[refStyle] || 140;
-            
-            // 1mlあたりのカロリーを算出
             const kcalPer1ml = kcalPer350 / 350;
-
-            // 何ml飲めるか = 消費カロリー / 1mlあたりのカロリー
             const ml = burned / kcalPer1ml;
 
-            // 整数で表示
             beerEl.textContent = Math.floor(ml);
         }
 
@@ -160,12 +163,10 @@ export const Timer = {
         }
     },
 
-    // ... (updateRing, createBubble, pause, finish, reset, updateUI はそのまま) ...
     updateRing: (burnedKcal) => {
         const ring = document.getElementById('timer-ring');
         if (!ring) return;
 
-        // ここも「Favorite Beer 1」の1本分(350ml)を1周とするのが自然
         const modes = Store.getModes();
         const refStyle = modes.mode1 || '国産ピルスナー';
         const TARGET_KCAL = CALORIES.STYLES[refStyle] || 140;
@@ -213,6 +214,7 @@ export const Timer = {
     },
 
     pause: () => {
+        console.log('[Timer] pause() called');
         if (!isRunning) return;
 
         localStorage.setItem(APP.STORAGE_KEYS.TIMER_ACCUMULATED, accumulatedTime);
@@ -226,16 +228,16 @@ export const Timer = {
     },
 
     finish: async () => {
-        // ★追加: 完了時の成功振動
+        console.log('[Timer] finish() called');
         if (Feedback && Feedback.haptic) Feedback.haptic.success();
-
         Timer.pause();
         
         const totalMs = accumulatedTime;
         const minutes = Math.round(totalMs / 60000);
 
         if (minutes > 0) {
-            const type = document.getElementById('timer-exercise-select').value;
+            const typeEl = document.getElementById('timer-exercise-select');
+            const type = typeEl ? typeEl.value : 'other';
             
             document.dispatchEvent(new CustomEvent('save-exercise', {
                 detail: {
@@ -255,6 +257,7 @@ export const Timer = {
     },
 
     reset: () => {
+        console.log('[Timer] reset() called');
         Timer.pause();
         localStorage.removeItem(APP.STORAGE_KEYS.TIMER_START);
         localStorage.removeItem(APP.STORAGE_KEYS.TIMER_ACCUMULATED);
@@ -279,27 +282,26 @@ export const Timer = {
 
         if (display) display.textContent = '00:00';
         if (kcalEl) kcalEl.textContent = '0.0';
-        if (beerEl) beerEl.textContent = '0'; // 整数表記
+        if (beerEl) beerEl.textContent = '0'; 
         if (ring) ring.style.background = 'transparent';
         
         Timer.updateUI(false);
-
-        // ★追加: リセット時の軽振動
         if (Feedback && Feedback.haptic) Feedback.haptic.light();
     },
 
     updateUI: (running) => {
+        console.log('[Timer] updateUI called. running:', running);
         const toggleBtn = document.getElementById('btn-timer-toggle');
         const icon = document.getElementById('icon-timer-toggle');
         const finishBtn = document.getElementById('btn-timer-finish');
         const resetBtn = document.getElementById('btn-timer-reset');
+        
         const select = document.getElementById('timer-exercise-select');
         const wrapper = select ? select.parentElement : null;
 
         if (running) {
-            icon.className = 'ph-fill ph-pause text-3xl';
-            finishBtn.classList.add('hidden');
-            // ★追加: 走行中はリセットできないので隠す
+            if(icon) icon.className = 'ph-fill ph-pause text-3xl';
+            if(finishBtn) finishBtn.classList.add('hidden');
             if(resetBtn) resetBtn.classList.add('hidden');
             
             if(select) {
@@ -308,15 +310,13 @@ export const Timer = {
                 if(wrapper) wrapper.classList.add('opacity-50');
             }
         } else {
-            icon.className = 'ph-fill ph-play text-3xl ml-1';
+            if(icon) icon.className = 'ph-fill ph-play text-3xl ml-1';
             
             if (accumulatedTime > 0) {
-                finishBtn.classList.remove('hidden');
-                // ★追加: 一時停止中 かつ 時間が経過していれば リセットボタンを表示
+                if(finishBtn) finishBtn.classList.remove('hidden');
                 if(resetBtn) resetBtn.classList.remove('hidden');
             } else {
-                finishBtn.classList.add('hidden');
-                // ★追加: 0秒の状態ならリセットボタンは不要なので隠す
+                if(finishBtn) finishBtn.classList.add('hidden');
                 if(resetBtn) resetBtn.classList.add('hidden');
             }
             

@@ -182,6 +182,11 @@ export const Onboarding = {
      * アプリ本体の隠されているUIを一括表示する
      */
     showAppUI: () => {
+        // 先行ガードで追加したスタイルを無効化（もしあれば）
+    const styleGuards = document.querySelectorAll('style');
+    styleGuards.forEach(s => {
+        if (s.textContent.includes('#landing-page')) s.remove();
+    });
         const elements = [
             document.querySelector('header'),
             document.querySelector('main'),

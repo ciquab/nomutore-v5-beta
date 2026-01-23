@@ -39,6 +39,18 @@
 
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white bg-base-50 dark:bg-black text-base-900 dark:text-gray-100">
+    <script>
+        // JSモジュールのロードを待たずに、LocalStorageを爆速でチェック
+        (function() {
+            const lpSeen = localStorage.getItem('nomutore_lp_seen_v5');
+            const onboardingComplete = localStorage.getItem('nomutore_onboarding_complete');
+
+            if (lpSeen && onboardingComplete) {
+                // 継続ユーザーなら、描画が始まる前にLPとコンセプトページを物理的に隠す
+                document.write('<style>#landing-page, #concept-page { display: none !important; }</style>');
+            }
+        })();
+    </script>
 
     <div id="landing-page" class="fixed inset-0 z-[600] flex flex-col items-center justify-center bg-[#0f172a] overflow-hidden">
     <div class="bubble-container absolute inset-0 z-0"></div>

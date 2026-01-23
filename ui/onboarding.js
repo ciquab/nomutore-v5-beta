@@ -3,8 +3,10 @@ import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';
 import { Feedback, showConfetti, showMessage } from './dom.js';
 
+let currentStepIndex = 0;
+
 /* ==========================================================================
-   Phase A: Initial Setup
+   Phase A: Initial Setup (Wizard Steps)
    ========================================================================== */
 
 const WIZARD_STEPS = [
@@ -122,12 +124,36 @@ const WIZARD_STEPS = [
     }
 ];
 
-let currentStepIndex = 0;
+/* ==========================================================================
+   Phase B: Onboarding Logic
+   ========================================================================== */
 
 export const Onboarding = {
     
+    /**
+     * アプリ本体の隠されているUIを一括表示する
+     */
+    showAppUI: () => {
+        const elements = [
+            document.querySelector('header'),
+            document.querySelector('main'),
+            document.querySelector('nav'),
+            document.getElementById('btn-fab-fixed')
+        ];
+        elements.forEach(el => {
+            if (el) el.classList.remove('hidden');
+        });
+    },
+
+    /**
+     * オンボーディング（ウィザード）開始
+     * 完了済みならアプリ本体を表示して終了する
+     */
     start: async () => {
-        if (localStorage.getItem('nomutore_onboarding_complete')) return;
+        if (localStorage.getItem('nomutore_onboarding_complete')) {
+            Onboarding.showAppUI(); // ★ここが重要：完了済みなら本体を表示
+            return;
+        }
         Onboarding.showWizard(0);
     },
 
@@ -203,18 +229,22 @@ export const Onboarding = {
         const modal = document.getElementById('onboarding-modal');
         modal.classList.add('opacity-0', 'scale-95');
         setTimeout(() => {
-        modal.classList.add('hidden');
-        // ★ ここで complete を呼び出す
-        Onboarding.complete();
+            modal.classList.add('hidden');
+            Onboarding.complete(); // ★ completeの中でshowAppUIを呼ぶ
         }, 300);
         
-        localStorage.setItem('nomutore_onboarding_complete', 'true');
         showConfetti();
         document.dispatchEvent(new CustomEvent('refresh-ui'));
     },
 
+    complete: () => {
+        localStorage.setItem('nomutore_onboarding_complete', 'true');
+        Onboarding.showAppUI();
+        Onboarding.startTour();
+    },
+
     /* ==========================================================================
-       Phase B: UI Tour
+       Phase C: UI Tour (Driver.js)
        ========================================================================== */
     
     startTour: () => {
@@ -250,7 +280,7 @@ export const Onboarding = {
                         title: 'Record', 
                         description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
                         side: 'top',
-                        align: 'center' // 画面中央下のタブバーにはcenterが最も安定します
+                        align: 'center'
                     } 
                 },
                 { 
@@ -266,7 +296,7 @@ export const Onboarding = {
                         title: 'Quick Actions',
                         description: 'よく使う機能をここからすぐに呼び出せます。',
                         side: 'top',
-                        align: 'center' // endだと右端に寄りすぎて矢印がズレるため、centerに変更して調整
+                        align: 'center'
                     } 
                 },
                 {
@@ -275,7 +305,7 @@ export const Onboarding = {
                         title: 'Need Help?',
                         description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
                         side: 'bottom',
-                        align: 'end' // 右上のボタンなのでend（右寄せ）で正解
+                        align: 'end'
                     }
                 }
             ]
@@ -286,27 +316,21 @@ export const Onboarding = {
 };
 
 /* ==========================================================================
-   Phase C: Landing Page (v5 Rich Edition)
+   Phase D: Landing Page & Concept (v5 Rich Edition)
    ========================================================================== */
 
-/**
- * LPの既読チェックと初期化
- * main.js の initApp から呼ばれることを想定
- */
 Onboarding.checkLandingPage = () => {
     const lp = document.getElementById('landing-page');
     if (!lp) return;
 
-    // v5用のLP既読フラグをチェック
     if (localStorage.getItem('nomutore_lp_seen_v5')) {
         lp.remove();
-        // ★既読なら、ここでアプリ本体を表示する
         Onboarding.showAppUI();
-        Onboarding.start(); // ウィザードが必要かチェック
+        Onboarding.start();
         return;
     }
 
-    // --- 1. Power On 演出のトリガー（表示から0.3秒後に点火） ---
+    // --- Power On 演出 ---
     const logo = lp.querySelector('img');
     if (logo) {
         setTimeout(() => {
@@ -315,50 +339,33 @@ Onboarding.checkLandingPage = () => {
         }, 300);
     }
 
-    // --- 2. 有機的な泡の生成 ---
+    // --- 有機的な泡の生成 ---
     const bubbleContainer = lp.querySelector('.bubble-container');
     if (bubbleContainer) {
         bubbleContainer.innerHTML = ''; 
-        // 泡の数を増やし、よりランダムに
         for (let i = 0; i < 30; i++) {
             const bubble = document.createElement('div');
             bubble.className = 'lp-bubble';
-            
-            const size = Math.random() * 15 + 5; // 5px〜20px
+            const size = Math.random() * 15 + 5;
             const left = Math.random() * 100;
-            const delay = Math.random() * 8;     // バラバラに昇り始める
-            const duration = Math.random() * 5 + 5; // 5s〜10sのゆったりした速度
-
+            const delay = Math.random() * 8;
+            const duration = Math.random() * 5 + 5;
             Object.assign(bubble.style, {
-                width: `${size}px`,
-                height: `${size}px`,
-                left: `${left}%`,
-                animationDelay: `${delay}s`,
-                animationDuration: `${duration}s`
+                width: `${size}px`, height: `${size}px`, left: `${left}%`,
+                animationDelay: `${delay}s`, animationDuration: `${duration}s`
             });
             bubbleContainer.appendChild(bubble);
         }
     }
 };
 
-// ★新設：アプリのUIを一斉に表示する関数
-Onboarding.showAppUI = () => {
-    const elements = [
-        document.querySelector('header'),
-        document.querySelector('main'),
-        document.querySelector('nav'),
-        document.getElementById('btn-fab-fixed')
-    ];
-    elements.forEach(el => {
-        if (el) el.classList.remove('hidden');
-    });
-};
-
-// LPを閉じてコンセプトページを表示
 Onboarding.closeLandingPage = () => {
     const lp = document.getElementById('landing-page');
     const concept = document.getElementById('concept-page');
     
+    // v5既読フラグを立てる
+    localStorage.setItem('nomutore_lp_seen_v5', 'true');
+
     if (lp) {
         lp.classList.add('landing-fade-out');
         setTimeout(() => {
@@ -367,32 +374,21 @@ Onboarding.closeLandingPage = () => {
                 concept.classList.remove('hidden');
                 requestAnimationFrame(() => concept.classList.add('opacity-100'));
             } else {
-                // コンセプトページがない場合の保険
                 Onboarding.showAppUI();
             }
         }, 800);
     }
 };
 
-// コンセプトページから本番のウィザードへ
 Onboarding.goToWizard = () => {
     const concept = document.getElementById('concept-page');
     if (concept) {
         concept.classList.replace('opacity-100', 'opacity-0');
         setTimeout(() => {
             concept.remove();
-            // 既存の Onboarding.start() を呼び出し（onboarding-modalを表示する処理）
             Onboarding.start(); 
         }, 600);
     }
 };
-
-// E. 【新規追加】オンボーディングが完全に終了した時
-Onboarding.complete = () => {
-    localStorage.setItem('nomutore_onboarding_complete', 'true');
-    Onboarding.showAppUI(); // ★ここで初めてメイン画面を出す
-    Onboarding.startTour(); // チュートリアル開始
-};
-
 
 window.Onboarding = Onboarding;

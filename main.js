@@ -138,28 +138,7 @@ const setupGlobalListeners = () => {
         touchEndX = e.changedTouches[0].screenX;
         handleSwipe();
     }, {passive: true});
-
-    // Coach Mark Logic (初回のみ)
-    const KEY = 'nomutore_coach_shown_v4';
-    if (!localStorage.getItem(KEY)) {
-        showSwipeCoachMark();
-    }
 };
-
-const showSwipeCoachMark = () => {
-    const KEY = 'nomutore_seen_swipe_hint';
-    if (localStorage.getItem(KEY)) return;
-    const el = document.getElementById('swipe-coach-mark');
-    if (!el) return;
-    el.classList.remove('hidden');
-    requestAnimationFrame(() => el.classList.remove('opacity-0'));
-    setTimeout(() => {
-        el.classList.add('opacity-0');
-        setTimeout(() => el.classList.add('hidden'), 1000);
-        localStorage.setItem(KEY, 'true');
-    }, 3000);
-};
-
 
 /* ==========================================================================
    Event Bindings (Global)

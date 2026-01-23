@@ -543,89 +543,13 @@ export const openCheckLibrary = () => {
 
 /* --- Settings Logic --- */
 
-/* ui/modal.js */
-
-// ヘルパー: セレクトボックスに選択肢を注入する
-const fillSelect = (el, obj, isKeyOnly = false) => {
-    if (!el) return;
-    el.innerHTML = '';
-    const entries = isKeyOnly ? Object.keys(obj) : Object.entries(obj);
-    
-    entries.forEach(item => {
-        const opt = document.createElement('option');
-        if (isKeyOnly) {
-            opt.value = item;
-            opt.textContent = item;
-        } else {
-            const [key, val] = item;
-            opt.value = key;
-            opt.textContent = val.icon ? `${val.icon} ${val.label}` : val.label;
-        }
-        el.appendChild(opt);
-    });
-};
-
-/**
- * アプリ起動時に一度だけ呼ぶ、記録用モーダルの選択肢生成
- */
-export const setupModalOptions = () => {
-    fillSelect(document.getElementById('exercise-select'), EXERCISE);
-    fillSelect(document.getElementById('beer-size'), SIZE_DATA);
-    
-    // 初期値のセット
-    const beerSize = document.getElementById('beer-size');
-    if (beerSize) beerSize.value = '350';
-    
-    const defRec = Store.getDefaultRecordExercise();
-    const exSel = document.getElementById('exercise-select');
-    if (exSel && defRec) exSel.value = defRec;
-};
-
-/**
- * 設定画面を開くたびに呼ぶ、値の同期ロジック
- */
 export const renderSettings = () => {
-    const profile = Store.getProfile();
-    const modes = Store.getModes();
-
-    // 1. プロフィール値の同期
-    const inputs = {
-        'weight-input': profile.weight,
-        'height-input': profile.height,
-        'age-input': profile.age,
-        'gender-input': profile.gender
-    };
-    Object.entries(inputs).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val;
-    });
-
-    // 2. プルダウンの選択肢生成（未生成の場合のみ）
-    const mode1Sel = document.getElementById('setting-mode-1');
-    const mode2Sel = document.getElementById('setting-mode-2');
-    const baseExSel = document.getElementById('setting-base-exercise');
-    const defRecExSel = document.getElementById('setting-default-record-exercise');
-
-    // ビールスタイル選択肢
-    if (mode1Sel && mode1Sel.children.length === 0) {
-        fillSelect(mode1Sel, CALORIES.STYLES, true);
-        fillSelect(mode2Sel, CALORIES.STYLES, true);
-    }
-    // 運動種別選択肢
-    if (baseExSel && baseExSel.children.length === 0) {
-        fillSelect(baseExSel, EXERCISE);
-        fillSelect(defRecExSel, EXERCISE);
-    }
-
-    // 3. 現在の設定値を反映
-    if (mode1Sel) mode1Sel.value = modes.mode1;
-    if (mode2Sel) mode2Sel.value = modes.mode2;
-    if (baseExSel) baseExSel.value = Store.getBaseExercise();
-    if (defRecExSel) defRecExSel.value = Store.getDefaultRecordExercise();
-
-    // 4. 期間設定
     const currentMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
     const periodSel = document.getElementById('setting-period-mode');
+    const durationInput = document.getElementById('setting-period-duration');
+    const durationContainer = document.getElementById('setting-period-duration-container');
+    const savedDuration = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_DURATION) || APP.DEFAULTS.PERIOD_DURATION;
+
     if (periodSel) {
         periodSel.value = currentMode;
         periodSel.onchange = () => {
@@ -636,6 +560,56 @@ export const renderSettings = () => {
         else durationContainer.classList.add('hidden');
     }
     if (durationInput) durationInput.value = savedDuration;
+
+    // ★追加: プロフィール値の反映
+    const profile = Store.getProfile();
+    const wInput = document.getElementById('weight-input');
+    const hInput = document.getElementById('height-input');
+    const aInput = document.getElementById('age-input');
+    const gInput = document.getElementById('gender-input');
+
+    if (wInput) wInput.value = profile.weight;
+    if (hInput) hInput.value = profile.height;
+    if (aInput) aInput.value = profile.age;
+    if (gInput) gInput.value = profile.gender;
+
+    // ★修正: 設定画面のプルダウン選択肢生成ロジックを追加
+    const mode1Sel = document.getElementById('setting-mode-1');
+    const mode2Sel = document.getElementById('setting-mode-2');
+    // STYLE_METADATAがなければCALORIES.STYLESをフォールバックとして使う
+    const source = (typeof STYLE_METADATA !== 'undefined') ? STYLE_METADATA : CALORIES.STYLES;
+    const styles = Object.keys(source || {});
+    
+    [mode1Sel, mode2Sel].forEach(sel => {
+        if (sel && sel.children.length === 0) {
+            styles.forEach(style => {
+                const opt = document.createElement('option');
+                opt.value = style;
+                opt.textContent = style;
+                sel.appendChild(opt);
+            });
+        }
+    });
+    
+    if(mode1Sel) mode1Sel.value = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+    if(mode2Sel) mode2Sel.value = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+
+    const baseExSel = document.getElementById('setting-base-exercise');
+    const defRecExSel = document.getElementById('setting-default-record-exercise');
+    
+    [baseExSel, defRecExSel].forEach(sel => {
+        if (sel && sel.children.length === 0) {
+            Object.entries(EXERCISE).forEach(([key, val]) => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = val.label;
+                sel.appendChild(opt);
+            });
+        }
+    });
+
+    if(baseExSel) baseExSel.value = localStorage.getItem(APP.STORAGE_KEYS.BASE_EXERCISE) || APP.DEFAULTS.BASE_EXERCISE;
+    if(defRecExSel) defRecExSel.value = localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE;
 
     renderCheckEditor();
 };

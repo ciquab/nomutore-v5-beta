@@ -349,8 +349,7 @@ export const openTimer = (autoStart = false) => {
     const isRunning = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
     if (autoStart && !isRunning) {
         setTimeout(() => {
-            const toggleBtn = document.getElementById('btn-timer-toggle');
-            if (toggleBtn) toggleBtn.click(); 
+            Timer.start();
         }, 300);
     }
 };

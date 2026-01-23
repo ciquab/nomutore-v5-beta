@@ -265,9 +265,6 @@ export const UI = {
             });
         }
         
-        bind('btn-timer-toggle', 'click', Timer.toggle);
-        bind('btn-timer-finish', 'click', Timer.finish);
-        
         bind('btn-fab-fixed', 'click', () => {
              openActionMenu(null); 
         });

@@ -10,6 +10,52 @@ let currentStepIndex = 0;
    ========================================================================== */
 
 const WIZARD_STEPS = [
+　　{
+        id: 'step-welcome',
+        title: 'Welcome back?',
+        desc: 'はじめての方、またはデータを引き継ぐ方を選択してください。',
+        render: () => `
+            <div class="space-y-4">
+                <button onclick="document.getElementById('restore-options').classList.add('hidden'); Onboarding.nextStep();" 
+                        class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl">
+                            <i class="ph-fill ph-sparkle"></i>
+                        </div>
+                        <div>
+                            <div class="font-black text-base-900 dark:text-white">新規ではじめる</div>
+                            <div class="text-[10px] text-gray-500">新しく記録を開始します</div>
+                        </div>
+                    </div>
+                </button>
+
+                <button onclick="document.getElementById('restore-options').classList.toggle('hidden')" 
+                        class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left hover:border-indigo-300 transition-all">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
+                            <i class="ph-fill ph-cloud-arrow-down"></i>
+                        </div>
+                        <div>
+                            <div class="font-black text-base-900 dark:text-white">データを復元する</div>
+                            <div class="text-[10px] text-gray-500">以前のバックアップから引き継ぎます</div>
+                        </div>
+                    </div>
+                </button>
+
+                <div id="restore-options" class="hidden space-y-2 p-2 bg-gray-50 dark:bg-black/20 rounded-xl animate-fadeIn">
+                    <button onclick="Onboarding.handleCloudRestore()" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-google-logo text-indigo-500"></i> Google Driveから復元
+                    </button>
+                    <button onclick="document.getElementById('wizard-import-file').click()" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
+                        <i class="ph-fill ph-file-js text-amber-500"></i> JSONファイルを選択
+                    </button>
+                    <input type="file" id="wizard-import-file" class="hidden" onchange="Onboarding.handleJsonRestore(this)">
+                </div>
+            </div>
+        `,
+        // このステップ自体にバリデーションは不要（ボタンクリックで遷移するため）
+        validate: () => true 
+    },　
     {
         id: 'step-profile',
         title: 'Profile Settings',
@@ -173,11 +219,11 @@ export const Onboarding = {
         container.innerHTML = step.render();
         
         // 初期値セット
-        if (index === 0) {
+        if (index === 1) {
             const w = document.getElementById('wiz-weight');
             if(w && localStorage.getItem(APP.STORAGE_KEYS.WEIGHT)) w.value = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT);
         }
-        if (index === 1) {
+        if (index === 2) {
             const m1 = document.getElementById('wiz-mode1');
             if(m1) m1.value = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || '国産ピルスナー';
             const m2 = document.getElementById('wiz-mode2');
@@ -188,16 +234,29 @@ export const Onboarding = {
             `<div class="w-2 h-2 rounded-full transition-all ${i === index ? 'bg-indigo-600 w-4' : 'bg-gray-300'}"></div>`
         ).join('');
 
-        if (index === 0) btnPrev.classList.add('invisible');
-        else btnPrev.classList.remove('invisible');
+　　　　// --- 2. ボタンの表示制御（ここに追加） ---
+    
+    // Backボタン：最初のステップなら隠す
+    if (index === 0) btnPrev.classList.add('invisible');
+    else btnPrev.classList.remove('invisible');
 
+    // Nextボタン：ステップに応じた切り替え
+    if (index === 0) {
+        // Welcomeページでは、中のカードボタンで次に進ませるため、下のNextボタンは消す
+        btnNext.classList.add('hidden');
+    } else {
+        btnNext.classList.remove('hidden');
+        
         if (index === WIZARD_STEPS.length - 1) {
+            // 最後のステップ
             btnNext.textContent = "Start";
-            btnNext.className = "px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition transform hover:scale-105";
+            btnNext.className = "px-6 py-3 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95";
         } else {
+            // 中間のステップ
             btnNext.textContent = "Next";
-            btnNext.className = "px-6 py-3 bg-base-900 dark:bg-white text-white dark:text-base-900 rounded-xl font-bold hover:opacity-90 transition";
+            btnNext.className = "px-6 py-3 bg-base-900 dark:bg-white text-white dark:text-base-900 rounded-xl font-black hover:opacity-90 transition active:scale-95";
         }
+    }
 
         modal.classList.remove('hidden');
         setTimeout(() => {
@@ -389,6 +448,43 @@ Onboarding.goToWizard = () => {
             Onboarding.start(); 
         }, 600);
     }
+};
+
+// Google Drive 復元処理
+Onboarding.handleCloudRestore = async () => {
+    try {
+        if (!window.CloudManager) return;
+        showMessage('Google Driveを確認中...', 'info');
+        const success = await window.CloudManager.restore();
+        if (success) {
+            Onboarding.completeAfterRestore();
+        }
+    } catch (e) {
+        showMessage('復元に失敗しました', 'error');
+    }
+};
+
+// JSON ファイル復元処理
+Onboarding.handleJsonRestore = async (input) => {
+    try {
+        if (!window.DataManager) return;
+        const success = await window.DataManager.importJSON(input);
+        if (success) {
+            Onboarding.completeAfterRestore();
+        }
+    } catch (e) {
+        showMessage('ファイルの読み込みに失敗しました', 'error');
+    }
+};
+
+// 復元成功後の処理
+Onboarding.completeAfterRestore = () => {
+    showMessage('🎉 データの復元が完了しました', 'success');
+    localStorage.setItem('nomutore_onboarding_complete', 'true');
+    // 少し待ってからリロードしてデータを反映
+    setTimeout(() => {
+        location.reload(); 
+    }, 1500);
 };
 
 window.Onboarding = Onboarding;

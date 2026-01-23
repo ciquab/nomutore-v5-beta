@@ -255,14 +255,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const btnTimerStart = document.getElementById('btn-timer-start');
-    if(btnTimerStart) btnTimerStart.addEventListener('click', () => Timer.start());
-    
-    const btnTimerStop = document.getElementById('btn-timer-stop');
-    if(btnTimerStop) btnTimerStop.addEventListener('click', () => Timer.stop());
-    
+    // 1. 再生/一時停止ボタン (btn-timer-toggle)
+    const btnTimerToggle = document.getElementById('btn-timer-toggle');
+    if (btnTimerToggle) {
+        btnTimerToggle.addEventListener('click', () => {
+            Timer.toggle(); // 開始と一時停止を切り替える関数
+        });
+    }
+
+    // 2. 完了ボタン (btn-timer-finish)
+    const btnTimerFinish = document.getElementById('btn-timer-finish');
+    if (btnTimerFinish) {
+        btnTimerFinish.addEventListener('click', () => {
+            Timer.finish(); // 記録して終了
+        });
+    }
+
+    // 3. リセットボタン (btn-timer-reset)
     const btnTimerReset = document.getElementById('btn-timer-reset');
-    if(btnTimerReset) btnTimerReset.addEventListener('click', () => Timer.reset());
+    if (btnTimerReset) {
+        btnTimerReset.addEventListener('click', () => {
+            Timer.reset(); // 0に戻す
+        });
+    }
 
     initApp();
 });

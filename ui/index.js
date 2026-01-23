@@ -38,6 +38,17 @@ export const refreshUI = async () => {
         // ★修正: Stats用に「全期間のログ」も別途取得しておく
         // (IndexedDBは高速なので、ここで取得してもパフォーマンスへの影響は軽微です)
         const allLogs = await db.logs.toArray();
+
+　　　　// ★重要: 重複チェックデータの排除ロジックを追加
+        // 同じ日付が複数ある場合、isSaved: true のものを最優先で1件だけ残す
+        const checks = Object.values(rawChecks.reduce((acc, cur) => {
+            const dateStr = dayjs(cur.timestamp).format('YYYY-MM-DD');
+            // まだその日のデータがない、または「既存が未保存」で「今回が保存済み」なら上書き
+            if (!acc[dateStr] || (!acc[dateStr].isSaved && cur.isSaved)) {
+                acc[dateStr] = cur;
+            }
+            return acc;
+        }, {}));
         
         // バランス計算 (全ログ対象)
         const profile = Store.getProfile();

@@ -269,7 +269,7 @@ export const openCheckModal = async (dateStr) => {
             db.logs.where('timestamp').between(start, end, true, true).filter(l => l.type === 'beer').toArray()
         ]);
 
-        const existing = existingLogs.length > 0 ? existingLogs[0] : null;
+        const existing = existingLogs.find(c => c.isSaved === true) || (existingLogs.length > 0 ? existingLogs[0] : null);
         const hasBeer = beerLogs.length > 0;
 
         if (existing) {

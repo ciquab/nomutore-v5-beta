@@ -529,49 +529,70 @@ export const Service = {
     },
 
     saveDailyCheck: async (formData) => {
-        const ts = dayjs(formData.date).startOf('day').add(12, 'hour').valueOf();
+    // 1. 日付の正規化（その日の正午を基準にする）
+    const targetDay = dayjs(formData.date);
+    const ts = targetDay.startOf('day').add(12, 'hour').valueOf();
+    const start = targetDay.startOf('day').valueOf();
+    const end = targetDay.endOf('day').valueOf();
+    
+    // 2. その日の既存チェックを「すべて」取得する（重複データ対策）
+    const existingRecords = await db.checks
+        .where('timestamp')
+        .between(start, end, true, true)
+        .toArray();
+
+    // 3. 保存データの構築
+    const data = {
+        timestamp: ts,
+        isDryDay: formData.isDryDay,
+        weight: formData.weight,
+        isSaved: true // ★ユーザーが明示的に保存したことを示すフラグ
+    };
+
+    // カスタム項目（waistEaseなど）をすべてマージ
+    Object.keys(formData).forEach(key => {
+        if (key !== 'date') data[key] = formData[key];
+    });
+
+    if (existingRecords.length > 0) {
+        // --- 更新（Update） & 重複削除（Clean） ---
         
-        // 既存チェックを探す
-        const existing = await db.checks.where('timestamp')
-            .between(dayjs(ts).startOf('day').valueOf(), dayjs(ts).endOf('day').valueOf())
-            .first();
+        // 最初の1件を代表レコードとして更新
+        const primaryId = existingRecords[0].id;
+        await db.checks.update(primaryId, data);
 
-        // 基本データ
-        const data = {
-            timestamp: ts,
-            isDryDay: formData.isDryDay,
-            weight: formData.weight
-        };
-
-        // カスタム項目を含むすべての項目をマージ
-        Object.keys(formData).forEach(key => {
-            if (key !== 'date') data[key] = formData[key];
-        });
-
-        if (existing) {
-            await db.checks.update(existing.id, data);
-            showMessage('✅ デイリーチェックを更新しました', 'success');
-            Feedback.check(); 
-        } else {
-            await db.checks.add(data);
-            
-            // ★休肝日ならシェアボタンを出す
-            let shareAction = null;
-            if (formData.isDryDay) {
-                const shareText = Calc.generateShareText({ type: 'check', isDryDay: true });
-                shareAction = { type: 'share', text: shareText };
-            }
-            
-            showMessage('✅ デイリーチェックを記録しました', 'success', shareAction);
-            showConfetti();
-            Feedback.check();
-        }
-        
-        if (formData.weight) {
-            localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, formData.weight);
+        // ★重複（2件目以降）がある場合はすべて削除してDBを正常化する
+        if (existingRecords.length > 1) {
+            const redundantIds = existingRecords.slice(1).map(r => r.id);
+            await db.checks.bulkDelete(redundantIds);
+            console.log(`Cleaned up ${redundantIds.length} duplicate check records for ${formData.date}`);
         }
 
-        await Service.recalcImpactedHistory(ts);
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
+        showMessage('✅ デイリーチェックを更新しました', 'success');
+        Feedback.check(); 
+    } else {
+        // --- 新規登録（Add） ---
+        await db.checks.add(data);
+        
+        // 休肝日ならシェアボタンを出す
+        let shareAction = null;
+        if (formData.isDryDay) {
+            const shareText = Calc.generateShareText({ type: 'check', isDryDay: true });
+            shareAction = { type: 'share', text: shareText };
+        }
+        
+        showMessage('✅ デイリーチェックを記録しました', 'success', shareAction);
+        showConfetti();
+        Feedback.check();
     }
+    
+    // 体重を設定に反映
+    if (formData.weight) {
+        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, formData.weight);
+    }
+
+    // 4. 履歴の再計算とUI更新（ご提示いただいた必須の2行）
+    await Service.recalcImpactedHistory(ts);
+    document.dispatchEvent(new CustomEvent('refresh-ui'));
+}
 };

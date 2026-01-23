@@ -111,36 +111,57 @@ const AudioEngine = {
     }
 };
 
-const Haptics = {
-    light: () => { if (navigator.vibrate) navigator.vibrate(10); },
-    medium: () => { if (navigator.vibrate) navigator.vibrate(20); },
-    success: () => { if (navigator.vibrate) navigator.vibrate([10, 30, 10]); },
-    error: () => { if (navigator.vibrate) navigator.vibrate([50, 50, 50]); }
+export const HapticEngine = {
+    // 端末が振動APIに対応しているかチェック
+    isSupported: () => 'vibrate' in navigator,
+
+    // 1. Selection (カチッ): 軽量。UI操作、ボタンタップ
+    light: () => {
+        if (HapticEngine.isSupported()) navigator.vibrate(10); 
+    },
+
+    // 2. Impact (ドゥン): 中量。決定、トグル切り替え
+    medium: () => {
+        if (HapticEngine.isSupported()) navigator.vibrate(25);
+    },
+
+    // 3. Heavy/Notification (ブブッ): 重量。エラー、完了、警告
+    heavy: () => {
+        if (HapticEngine.isSupported()) navigator.vibrate([50, 30, 50]);
+    },
+
+    // 4. Success (タタンッ): 完了成功
+    success: () => {
+        if (HapticEngine.isSupported()) navigator.vibrate([30, 50, 30]);
+    }
 };
 
+// ★修正: Feedbackオブジェクトに haptic を追加してexport
 export const Feedback = {
-    beer: () => {
-        AudioEngine.playBeer();
-        Haptics.success();
+    audio: AudioEngine,
+    haptic: HapticEngine, // 追加
+
+    // 既存のショートカットメソッドもHapticと連動させる（複合フィードバック）
+    beer: () => { 
+        showConfetti(); 
+        AudioEngine.playTone(440, 'sine', 0.1); 
+        HapticEngine.medium(); // 追加
     },
-    success: () => {
-        AudioEngine.playSuccess();
-        Haptics.success();
+    success: () => { 
+        AudioEngine.playTone(880, 'sine', 0.1); 
+        HapticEngine.success(); // 追加
+    },
+    error: () => { 
+        AudioEngine.playTone(220, 'sawtooth', 0.2); 
+        HapticEngine.heavy(); // 追加
     },
     check: () => {
-        AudioEngine.playPop();
-        Haptics.light();
+        AudioEngine.playTone(600, 'sine', 0.05);
+        HapticEngine.light(); // 追加
     },
     delete: () => {
-        AudioEngine.playDelete();
-        Haptics.medium();
-    },
-    error: () => {
-        AudioEngine.playError();
-        Haptics.error();
-    },
-    tap: () => { Haptics.light(); },
-    initAudio: () => { AudioEngine.init(); AudioEngine.resume(); }
+        HapticEngine.medium(); // 追加
+    }
 };
 
 // --- Toast Animation Helper (New) ---
@@ -324,7 +345,15 @@ export const showMessage = (text, type = 'info', action = null) => {
 };
 
 export const toggleDryDay = (isDry) => {
-    Feedback.tap();
+
+    // ★追加: スイッチ切り替えの感触
+    // 既存のFeedbackオブジェクトが定義された後であれば Feedback.haptic.medium() が呼べます
+    // もし関数の定義位置が Feedback より前にある場合は、直接 HapticEngine.medium() を呼んでも構いません
+    if (typeof Feedback !== 'undefined' && Feedback.haptic) {
+        Feedback.haptic.medium();
+    } else if (typeof HapticEngine !== 'undefined') {
+        HapticEngine.medium();
+    }
 
     const section = document.getElementById('drinking-section');
     if (!section) return;

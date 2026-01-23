@@ -3,10 +3,9 @@
 import { APP, EXERCISE, BEER_COLORS, CALORIES } from '../constants.js'; 
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
-import { toggleModal } from './dom.js';
+import { toggleModal, Feedback } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-// ... (変数の定義などはそのまま) ...
 let timerInterval = null;
 let isRunning = false;
 let lastBurnedKcal = 0;
@@ -21,7 +20,6 @@ const formatTime = (ms) => {
 };
 
 export const Timer = {
-    // ... (init, checkResume, setRandomBeerBackground, toggle, start はそのまま) ...
     init: () => {
         const el = document.getElementById('timer-exercise-select');
         if (el && el.children.length === 0) {
@@ -81,8 +79,12 @@ export const Timer = {
     toggle: () => {
         if (isRunning) {
             Timer.pause();
+            // ★追加: 停止時の中振動
+            if (Feedback && Feedback.haptic) Feedback.haptic.medium();
         } else {
             Timer.start();
+            // ★追加: 開始時の中振動
+            if (Feedback && Feedback.haptic) Feedback.haptic.medium();
         }
     },
 
@@ -224,6 +226,9 @@ export const Timer = {
     },
 
     finish: async () => {
+        // ★追加: 完了時の成功振動
+        if (Feedback && Feedback.haptic) Feedback.haptic.success();
+
         Timer.pause();
         
         const totalMs = accumulatedTime;
@@ -278,18 +283,24 @@ export const Timer = {
         if (ring) ring.style.background = 'transparent';
         
         Timer.updateUI(false);
+
+        // ★追加: リセット時の軽振動
+        if (Feedback && Feedback.haptic) Feedback.haptic.light();
     },
 
     updateUI: (running) => {
         const toggleBtn = document.getElementById('btn-timer-toggle');
         const icon = document.getElementById('icon-timer-toggle');
         const finishBtn = document.getElementById('btn-timer-finish');
+        const resetBtn = document.getElementById('btn-timer-reset');
         const select = document.getElementById('timer-exercise-select');
         const wrapper = select ? select.parentElement : null;
 
         if (running) {
             icon.className = 'ph-fill ph-pause text-3xl';
             finishBtn.classList.add('hidden');
+            // ★追加: 走行中はリセットできないので隠す
+            if(resetBtn) resetBtn.classList.add('hidden');
             
             if(select) {
                 select.disabled = true;
@@ -301,8 +312,12 @@ export const Timer = {
             
             if (accumulatedTime > 0) {
                 finishBtn.classList.remove('hidden');
+                // ★追加: 一時停止中 かつ 時間が経過していれば リセットボタンを表示
+                if(resetBtn) resetBtn.classList.remove('hidden');
             } else {
                 finishBtn.classList.add('hidden');
+                // ★追加: 0秒の状態ならリセットボタンは不要なので隠す
+                if(resetBtn) resetBtn.classList.add('hidden');
             }
             
             if(select) {

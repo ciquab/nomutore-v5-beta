@@ -2,7 +2,7 @@ import { EXERCISE, CALORIES, SIZE_DATA, STYLE_METADATA, APP, CHECK_SCHEMA, CHECK
 import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
-import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage } from './dom.js';
+import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback } from './dom.js';
 import { Service } from '../service.js';
 import { Timer } from './timer.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -783,10 +783,17 @@ export const updateInputSuggestions = () => { };
 export const renderQuickButtons = () => { };
 export const closeModal = (id) => toggleModal(id, false);
 export const adjustBeerCount = (delta) => {
-    const el = document.getElementById('beer-count');
-    let v = parseInt(el.value) || 1;
-    v = Math.max(1, v + delta);
-    el.value = v;
-
+    const input = document.getElementById('beer-count');
+    if (!input) return;
+    
+    let val = parseInt(input.value);
+    if (isNaN(val)) val = 1;
+    
+    val += delta;
+    if (val < 1) val = 1;
+    
+    input.value = val;
+    
+    // ★追加: 軽い振動フィードバック
+    Feedback.haptic.light(); 
 };
-

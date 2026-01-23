@@ -1,5 +1,4 @@
 import { driver } from "https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.mjs";
-import "https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css";
 import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';
 import { Feedback, showConfetti, showMessage } from './dom.js';

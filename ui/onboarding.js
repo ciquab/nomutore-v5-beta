@@ -303,8 +303,44 @@ Onboarding.checkLandingPage = () => {
         Onboarding.start();
         return;
     }
-    
-    // 未読ならLPを表示（hiddenを外す）
+
+    // --- 1. Power On 演出のトリガー ---
+    const logo = lp.querySelector('img');
+    if (logo) {
+        logo.classList.remove('animate-neon-flicker', 'neon-power-on');
+        requestAnimationFrame(() => {
+            logo.classList.add('neon-power-on');
+        });
+    }
+
+    // --- 2. 有機的な泡の動的生成 ---
+    const bubbleContainer = lp.querySelector('.bubble-container');
+    if (bubbleContainer) {
+        // CSSの格子背景をクリア（透明にする）
+        bubbleContainer.style.backgroundImage = 'none';
+        bubbleContainer.innerHTML = ''; // 重複防止
+        
+        for (let i = 0; i < 25; i++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'lp-bubble';
+            
+            const size = Math.random() * 12 + 4;  // 4px〜16px
+            const left = Math.random() * 100;    // 0%〜100%
+            const delay = Math.random() * 5;     // 発生のタイミングをバラけさせる
+            const duration = Math.random() * 4 + 3; // 昇るスピードをバラけさせる
+
+            Object.assign(bubble.style, {
+                width: `${size}px`,
+                height: `${size}px`,
+                left: `${left}%`,
+                bottom: '-20px',
+                animationDelay: `${delay}s`,
+                animationDuration: `${duration}s`
+            });
+            bubbleContainer.appendChild(bubble);
+        }
+    }
+
     lp.classList.remove('hidden');
 };
 

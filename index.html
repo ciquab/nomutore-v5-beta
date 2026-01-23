@@ -40,56 +40,23 @@
 </head>
 <body class="antialiased selection:bg-indigo-500 selection:text-white bg-base-50 dark:bg-black text-base-900 dark:text-gray-100">
 
-    <div id="landing-page" class="fixed inset-0 z-[600] flex flex-col items-center justify-center bg-[#f8fafc] dark:bg-[#0f172a] transition-all duration-1000 overflow-hidden">
-    
-    <div class="absolute inset-0 z-0 pointer-events-none opacity-30 dark:opacity-20">
-        <div class="beer-ocean"></div>
-        <div class="bubble-container"></div>
-    </div>
+    <div id="landing-page" class="fixed inset-0 z-[600] flex flex-col items-center justify-center bg-[#0f172a] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/20 via-transparent to-amber-900/20 pointer-events-none"></div>
 
-    <div class="relative z-10 w-full max-w-sm px-10 flex flex-col items-center">
-        <div class="relative mb-10 group">
-            <div class="absolute -inset-4 bg-indigo-500/20 rounded-[2rem] blur-xl group-hover:bg-indigo-500/40 transition duration-1000"></div>
-            <img src="icon-192_2.png" class="relative w-28 h-28 rounded-[2.5rem] shadow-2xl animate-float">
-        </div>
-        
-        <div class="space-y-4 mb-12">
-            <h1 class="text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none italic">
-                NOMU<br><span class="text-indigo-600 dark:text-indigo-400">TORE.</span>
-            </h1>
-            <div class="h-1 w-12 bg-indigo-500 rounded-full mx-auto"></div>
-            <p class="text-base font-bold text-slate-500 dark:text-slate-400 leading-relaxed">
-                最高のビールは、<br>最高のコンディションから。
-            </p>
+    <div class="relative z-10 flex flex-col items-center text-center">
+        <div class="relative mb-12">
+            <div class="absolute -inset-10 bg-amber-500/20 blur-[60px] rounded-full animate-pulse-slow"></div>
+            <img src="logo-header.png" class="relative w-48 h-48 object-contain neon-power-on">
         </div>
 
-        <div class="grid grid-cols-1 gap-4 w-full mb-12">
-            <div class="flex items-center gap-4 text-left p-4 rounded-2xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-white/20">
-                <span class="text-2xl">⚖️</span>
-                <div>
-                    <h4 class="text-xs font-black dark:text-white uppercase tracking-widest">Balance</h4>
-                    <p class="text-[10px] font-bold text-slate-500">飲酒と運動の「実質ゼロ」を可視化</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-4 text-left p-4 rounded-2xl bg-white/50 dark:bg-white/5 backdrop-blur-sm border border-white/20">
-                <span class="text-2xl">🍺</span>
-                <div>
-                    <h4 class="text-xs font-black dark:text-white uppercase tracking-widest">Cellar</h4>
-                    <p class="text-[10px] font-bold text-slate-500">飲んだ銘柄をコレクションして楽しむ</p>
-                </div>
-            </div>
-        </div>
-
-        <button id="btn-start-app" onclick="Onboarding.closeLandingPage()" class="group relative w-full py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-xl shadow-2xl transition overflow-hidden">
-            <span class="relative z-10 flex items-center justify-center gap-2">
-                Get Started <i class="ph-bold ph-arrow-right text-lg group-hover:translate-x-1 transition-transform"></i>
-            </span>
-            <div class="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-        </button>
-        
-        <p class="mt-8 text-[9px] font-black text-slate-400 tracking-[0.3em] uppercase opacity-40">
-            Professional Beer Conditioning
+        <h1 class="text-3xl font-black text-white tracking-[0.2em] mb-4 italic">NOMUTORE.</h1>
+        <p class="text-xs font-bold text-slate-400 tracking-widest leading-loose">
+            CONDITIONING FOR BEER GEEKS
         </p>
+
+        <button onclick="Onboarding.closeLandingPage()" class="mt-16 px-12 py-4 bg-transparent border-2 border-white text-white rounded-full font-black tracking-[0.3em] hover:bg-white hover:text-slate-900 transition-all duration-500">
+            ENTER
+        </button>
     </div>
 </div>
 

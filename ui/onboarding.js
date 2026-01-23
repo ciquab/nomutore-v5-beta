@@ -2,6 +2,8 @@ import { driver } from "https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver
 import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';
 import { Feedback, showConfetti, showMessage } from './dom.js';
+import { DataManager } from '../dataManager.js';
+import { CloudManager } from '../cloudManager.js';
 
 let currentStepIndex = 0;
 
@@ -10,7 +12,7 @@ let currentStepIndex = 0;
    ========================================================================== */
 
 const WIZARD_STEPS = [
-　　{
+    {
         id: 'step-welcome',
         title: 'Welcome back?',
         desc: 'はじめての方、またはデータを引き継ぐ方を選択してください。',
@@ -55,7 +57,7 @@ const WIZARD_STEPS = [
         `,
         // このステップ自体にバリデーションは不要（ボタンクリックで遷移するため）
         validate: () => true 
-    },　
+    },
     {
         id: 'step-profile',
         title: 'Profile Settings',
@@ -234,7 +236,7 @@ export const Onboarding = {
             `<div class="w-2 h-2 rounded-full transition-all ${i === index ? 'bg-indigo-600 w-4' : 'bg-gray-300'}"></div>`
         ).join('');
 
-　　　　// --- 2. ボタンの表示制御（ここに追加） ---
+        // --- 2. ボタンの表示制御（ここに追加） ---
     
     // Backボタン：最初のステップなら隠す
     if (index === 0) btnPrev.classList.add('invisible');
@@ -453,28 +455,25 @@ Onboarding.goToWizard = () => {
 // Google Drive 復元処理
 Onboarding.handleCloudRestore = async () => {
     try {
-        if (!window.CloudManager) return;
-        showMessage('Google Driveを確認中...', 'info');
-        const success = await window.CloudManager.restore();
-        if (success) {
-            Onboarding.completeAfterRestore();
+            // インポートしていれば window. は不要で、存在チェックも不要になります
+            showMessage('Google Driveを確認中...', 'info');
+            const success = await CloudManager.restore();
+            if (success) Onboarding.completeAfterRestore();
+        } catch (e) { 
+            console.error(e);
+            showMessage('復元に失敗しました', 'error'); 
         }
-    } catch (e) {
-        showMessage('復元に失敗しました', 'error');
-    }
 };
 
 // JSON ファイル復元処理
 Onboarding.handleJsonRestore = async (input) => {
     try {
-        if (!window.DataManager) return;
-        const success = await window.DataManager.importJSON(input);
-        if (success) {
-            Onboarding.completeAfterRestore();
+            const success = await DataManager.importJSON(input);
+            if (success) Onboarding.completeAfterRestore();
+        } catch (e) { 
+            console.error(e);
+            showMessage('ファイルの読み込みに失敗しました', 'error'); 
         }
-    } catch (e) {
-        showMessage('ファイルの読み込みに失敗しました', 'error');
-    }
 };
 
 // 復元成功後の処理

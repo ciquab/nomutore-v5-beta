@@ -571,34 +571,64 @@ select:disabled {
 /* --- Driver.js Mobile Optimization (Card Style) --- */
 @media (max-width: 640px) {
     .driver-popover.driverjs-theme {
-        /* ライブラリの計算位置を無視して、画面下部（または上部）にどっしり構える */
-        left: 16px !important;  /* 画面左端から16px */
-        right: 16px !important; /* 画面右端から16px */
-        width: auto !important; /* 幅は自動（左右の余白に合わせる） */
+        left: 16px !important;
+        right: 16px !important;
+        width: auto !important;
         max-width: none !important;
-        
-        /* ボックスの配置計算を安定させる */
         box-sizing: border-box !important;
-        
-        /* 少し影を強めて「浮いている感」を出す */
         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2) !important;
     }
 
-    /* モバイルでは矢印（シッポ）を非表示にする */
-    /* これにより「ズレ」という概念自体をなくす */
     .driver-popover-arrow {
         display: none !important;
     }
-}
+} /* ✅ ここが「メディアクエリ」を閉じる非常に重要な括弧です */
 
 /* --- Dark Mode Highlight Enhancements --- */
 .dark .driver-overlay path {
-    /* 1. オーバーレイをより濃くする (標準は0.5くらい → 0.85へ) */
-    /* これにより、背景のSlate-900をほぼ塗りつぶし、ハイライト部分との差を広げます */
     fill: rgba(0, 0, 0, 0.85) !important;
-
-    /* 2. フォーカスリング（境界線）を追加 */
-    /* 切り抜かれた穴の周囲に白いラインを描画し、「ここを見て！」と強調します */
     stroke: rgba(255, 255, 255, 0.4) !important;
     stroke-width: 2px !important;
+}
+
+/* --- LP Rich Effects --- */
+
+/* ロゴの浮遊アニメーション */
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+
+/* 背景のビールオーシャン */
+.beer-ocean {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    height: 300px;
+    background: linear-gradient(transparent, #fbbf24);
+    filter: blur(40px);
+}
+
+/* 泡の上昇 */
+.bubble-container {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, #fbbf24 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: bubble-move 20s linear infinite;
+}
+
+@keyframes bubble-move {
+    from { background-position: 0 1000px; }
+    to { background-position: 0 0; }
+}
+
+/* LP離脱時のトランジション */
+.landing-fade-out {
+    opacity: 0 !important;
+    transform: scale(1.05) !important;
+    filter: blur(20px);
+    pointer-events: none;
 }

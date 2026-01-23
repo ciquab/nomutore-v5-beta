@@ -247,11 +247,11 @@ export const DataManager = {
                 
                 // ★追加: 成功した場合のみメッセージを表示
                 if (success) {
-                    showMessage('✅ バックアップから復元しました', 'success');
+                    UI.showMessage('✅ バックアップから復元しました', 'success');
                 }
             } catch(err) { 
                 console.error(err);
-                showMessage('読込失敗: データ形式が不正です', 'error'); 
+                UI.showMessage('読込失敗: データ形式が不正です', 'error'); 
             } 
             inputElement.value = ''; // 次回同じファイルを選べるようにリセット
         }; 

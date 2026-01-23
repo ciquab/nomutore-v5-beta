@@ -567,3 +567,26 @@ select:disabled {
 .driver-overlay path {
     fill: rgba(0, 0, 0, 0.7) !important; /* 暗めのオーバーレイ */
 }
+
+/* style.css の末尾に追加 */
+
+/* --- Driver.js Mobile Optimization --- */
+@media (max-width: 640px) {
+    .driver-popover.driverjs-theme {
+        /* スマホでは画面幅いっぱいにならず、少し余裕を持たせる */
+        max-width: 90vw !important;
+        
+        /* 左右のマージンを自動で確保 */
+        margin-left: auto !important;
+        margin-right: auto !important;
+        
+        /* ボックスの配置計算を安定させるための微調整 */
+        box-sizing: border-box !important;
+    }
+
+    /* 矢印（シッポ）の位置ズレを補正 */
+    .driver-popover-arrow {
+        /* シッポのサイズを少し小さくして、ズレを目立たなくする */
+        border-width: 6px !important;
+    }
+}

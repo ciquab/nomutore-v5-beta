@@ -33,7 +33,7 @@ export const refreshUI = async () => {
 
         // ★修正1: 常に全データを取得する (UIパーツの計算用)
         // ここでページネーション用の handler は使いません
-        const { logs, checks } = await Service.getAllDataForUI();
+        const { logs, checks: rawChecks } = await Service.getAllDataForUI();
 
         // ★修正: Stats用に「全期間のログ」も別途取得しておく
         // (IndexedDBは高速なので、ここで取得してもパフォーマンスへの影響は軽微です)

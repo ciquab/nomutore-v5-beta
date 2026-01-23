@@ -258,9 +258,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. 再生/一時停止ボタン (btn-timer-toggle)
     const btnTimerToggle = document.getElementById('btn-timer-toggle');
     if (btnTimerToggle) {
+        console.log("✅ ボタンは見つかりました: btn-timer-toggle"); // 起動時に出るはず
+        
         btnTimerToggle.addEventListener('click', () => {
-            Timer.toggle(); // 開始と一時停止を切り替える関数
+            console.log("👆 ボタンが押されました"); // クリック時に出るはず
+            
+            if (typeof Timer !== 'undefined') {
+                console.log("⏱ Timer.toggle() を実行します");
+                Timer.toggle();
+            } else {
+                console.error("❌ Timerオブジェクトが見つかりません！ importを確認してください");
+            }
         });
+    } else {
+        console.error("❌ ボタンが見つかりません: btn-timer-toggle");
     }
 
     // 2. 完了ボタン (btn-timer-finish)

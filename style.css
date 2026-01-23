@@ -568,25 +568,25 @@ select:disabled {
     fill: rgba(0, 0, 0, 0.7) !important; /* 暗めのオーバーレイ */
 }
 
-/* style.css の末尾に追加 */
-
-/* --- Driver.js Mobile Optimization --- */
+/* --- Driver.js Mobile Optimization (Card Style) --- */
 @media (max-width: 640px) {
     .driver-popover.driverjs-theme {
-        /* スマホでは画面幅いっぱいにならず、少し余裕を持たせる */
-        max-width: 90vw !important;
+        /* ライブラリの計算位置を無視して、画面下部（または上部）にどっしり構える */
+        left: 16px !important;  /* 画面左端から16px */
+        right: 16px !important; /* 画面右端から16px */
+        width: auto !important; /* 幅は自動（左右の余白に合わせる） */
+        max-width: none !important;
         
-        /* 左右のマージンを自動で確保 */
-        margin-left: auto !important;
-        margin-right: auto !important;
-        
-        /* ボックスの配置計算を安定させるための微調整 */
+        /* ボックスの配置計算を安定させる */
         box-sizing: border-box !important;
+        
+        /* 少し影を強めて「浮いている感」を出す */
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2) !important;
     }
 
-    /* 矢印（シッポ）の位置ズレを補正 */
+    /* モバイルでは矢印（シッポ）を非表示にする */
+    /* これにより「ズレ」という概念自体をなくす */
     .driver-popover-arrow {
-        /* シッポのサイズを少し小さくして、ズレを目立たなくする */
-        border-width: 6px !important;
+        display: none !important;
     }
 }

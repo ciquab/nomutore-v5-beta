@@ -31,7 +31,6 @@ export const APP = {
         PERIOD_MODE: 'weekly',
         PERIOD_DURATION: 14,
         ORB_STYLE: 'lager',
-        BEER_KCAL: 140,
         UNIT_MODE: 'kcal'
     },
     TANK_MAX_CANS: 3.0,

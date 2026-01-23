@@ -88,9 +88,6 @@ export const Service = {
         const allChecks = await db.checks.toArray();
         const profile = Store.getProfile();
 
-        // ★ 追加: 定数を取得
-        const defaultBeerKcal = APP.DEFAULTS.BEER_KCAL;
-
         // --- Optimization: Pre-calculate Maps to avoid O(N^2) ---
         const logMap = new Map();
         const checkMap = new Map();
@@ -114,7 +111,7 @@ export const Service = {
                 const burn = Calc.calculateExerciseBurn(mets, l.minutes, profile);
                 entry.balance += burn;
             } else if (l.type === 'beer') {
-                entry.balance -= defaultBeerKcal; 
+                entry.balance -= 140; 
             }
         });
 

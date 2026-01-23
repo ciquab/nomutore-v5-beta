@@ -478,12 +478,15 @@ Onboarding.handleJsonRestore = async (input) => {
 
 // 復元成功後の処理
 Onboarding.completeAfterRestore = () => {
-    showMessage('🎉 データの復元が完了しました', 'success');
+    // 1. 復元が完了したことをフラグで保存
     localStorage.setItem('nomutore_onboarding_complete', 'true');
-    // 少し待ってからリロードしてデータを反映
+    localStorage.setItem('nomutore_lp_seen_v5', 'true');
+
+    // 2. 少しだけ待ってからリロード（メッセージを読ませるため）
+    // リロードすることで、アプリが「設定済み状態」で一から立ち上がります
     setTimeout(() => {
-        location.reload(); 
-    }, 1500);
+        window.location.reload(); 
+    }, 1000);
 };
 
 window.Onboarding = Onboarding;

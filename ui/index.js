@@ -39,7 +39,7 @@ export const refreshUI = async () => {
         // (IndexedDBは高速なので、ここで取得してもパフォーマンスへの影響は軽微です)
         const allLogs = await db.logs.toArray();
 
-　　　　// ★重要: 重複チェックデータの排除ロジックを追加
+        // ★重要: 重複チェックデータの排除ロジックを追加
         // 同じ日付が複数ある場合、isSaved: true のものを最優先で1件だけ残す
         const checks = Object.values(rawChecks.reduce((acc, cur) => {
             const dateStr = dayjs(cur.timestamp).format('YYYY-MM-DD');

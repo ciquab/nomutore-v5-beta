@@ -170,6 +170,25 @@ export const CloudManager = {
     },
 
     /**
+     * onboarding.js から呼ばれる復元コマンド
+     */
+    restore: async () => {
+        try {
+            // 1. Google Driveからダウンロード (既存の downloadBackup を使用)
+            const data = await CloudManager.downloadBackup();
+            if (!data) return false;
+
+            // 2. DataManager の復元ロジックへ渡す
+            // ※ confirm() ダイアログは DataManager.restoreFromObject 内で出ます
+            const success = await DataManager.restoreFromObject(data);
+            return success;
+        } catch (err) {
+            console.error('Cloud Restore Bridge Error:', err);
+            throw err;
+        }
+    },
+  
+    /**
      * ヘルパー: バックアップファイルのIDを探す
      */
     findBackupFileId: async () => {

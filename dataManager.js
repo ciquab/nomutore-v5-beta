@@ -225,37 +225,45 @@ export const DataManager = {
     },
 
     /**
-     * JSONインポート (v4対応版はPhase 4で実装予定、現在はv3互換維持)
-     * ※現状はlogs/checksのみ復元
+     * JSONインポート (v4対応)
+     * onboarding.js から await できるように Promise 化
      */
     importJSON: (inputElement) => { 
-        if (!inputElement.files.length) return; 
-        const f = inputElement.files[0]; 
-        const r = new FileReader(); 
-        r.onload = async (e) => { 
-            try { 
-                // BOM対策（念のため入れておくと安全です）
-                const rawContent = e.target.result;
-                const jsonString = rawContent.charCodeAt(0) === 0xFEFF 
-                    ? rawContent.slice(1) 
-                    : rawContent;
+        return new Promise((resolve, reject) => {
+            if (!inputElement.files.length) return resolve(false); 
+            
+            const f = inputElement.files[0]; 
+            const r = new FileReader(); 
+            
+            r.onload = async (e) => { 
+                try { 
+                    const rawContent = e.target.result;
+                    const jsonString = rawContent.charCodeAt(0) === 0xFEFF 
+                        ? rawContent.slice(1) 
+                        : rawContent;
 
-                const d = JSON.parse(jsonString); 
-                
-                // 復元処理を実行し、結果を受け取る
-                const success = await DataManager.restoreFromObject(d);
-                
-                // ★追加: 成功した場合のみメッセージを表示
-                if (success) {
-                    UI.showMessage('✅ バックアップから復元しました', 'success');
-                }
-            } catch(err) { 
-                console.error(err);
-                UI.showMessage('読込失敗: データ形式が不正です', 'error'); 
-            } 
-            inputElement.value = ''; // 次回同じファイルを選べるようにリセット
-        }; 
-        r.readAsText(f); 
+                    const d = JSON.parse(jsonString); 
+                    
+                    // 1. 復元処理を実行（確認ダイアログが出ます）
+                    const success = await DataManager.restoreFromObject(d);
+                    
+                    // 2. ★メッセージ表示を残す
+                    if (success) {
+                        UI.showMessage('✅ バックアップから復元しました', 'success');
+                    }
+
+                    // 3. 呼び出し元（onboarding.js等）に結果を返す
+                    resolve(success);
+                } catch(err) { 
+                    console.error(err);
+                    UI.showMessage('読込失敗: データ形式が不正です', 'error'); 
+                    reject(err); 
+                } 
+                inputElement.value = ''; 
+            }; 
+            r.onerror = () => reject(new Error('File reading failed'));
+            r.readAsText(f); 
+        });
     },
 
     download: (data, filename, type) => { 

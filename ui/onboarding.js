@@ -31,7 +31,7 @@ const WIZARD_STEPS = [
                     </div>
                     <div>
                         <label class="text-xs font-bold text-gray-500 mb-1 block">Gender</label>
-                        <select id="wiz-gender" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm text-center">
+                        <select id="wiz-gender" class="w-full bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
@@ -205,7 +205,7 @@ export const Onboarding = {
             showProgress: true,
             animate: true,
             allowClose: false,
-            doneBtnText: 'OK',
+            doneBtnText: 'Finish', // ★変更: 終わりっぽく変更
             nextBtnText: 'Next',
             prevBtnText: 'Back',
             steps: [
@@ -213,36 +213,54 @@ export const Onboarding = {
                     element: '#beer-select-display', 
                     popover: {
                         title: 'Select Beer Style',
-                        description: 'タップでFavorite Beerを切り替えます。<br>選択中のビールのカロリーを基準に、タンクの残量表示（本数）が再計算されます。'
+                        description: 'タップでFavorite Beerを切り替えます。<br>選択中のビールのカロリーを基準に、タンクの残量表示（本数）が再計算されます。',
+                        side: 'bottom', 
+                        align: 'center'
                     }
                 },
                 { 
                     element: '.orb-container', 
                     popover: { 
-                        title: 'Balance', // UI上の表記と一致
-                        description: 'カロリー収支（Balance）を表示します。<br>飲んでプラスになった分を、運動で消費しましょう。' 
+                        title: 'Balance', 
+                        description: 'カロリー収支（Balance）を表示します。<br>飲んでプラスになった分を、運動で消費しましょう。',
+                        side: 'bottom',
+                        align: 'center'
                     } 
                 },
                 { 
                     element: '#nav-tab-record', 
                     popover: { 
-                        title: 'Record', // UI上の表記と一致
-                        description: 'ビールや運動の記録はここから行います。' 
+                        title: 'Record', 
+                        description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
+                        side: 'top',
+                        align: 'center'
                     } 
                 },
                 { 
                     element: '#liver-rank-card', 
                     popover: { 
-                        title: 'Liver Rank', // UI上の表記と一致
-                        description: 'あなたのランクです。<br>休肝日や運動を継続するとランクが上がります。' 
+                        title: 'Liver Rank', 
+                        description: 'あなたのランクです。<br>休肝日や運動を継続するとランクが上がります。'
                     } 
                 },
                 { 
                     element: '#btn-fab-fixed', 
                     popover: { 
                         title: 'Quick Actions',
-                        description: 'よく使う機能をここからすぐに呼び出せます。' 
+                        description: 'よく使う機能をここからすぐに呼び出せます。',
+                        side: 'top',
+                        align: 'end'
                     } 
+                },
+                // ★追加: 最後にヘルプボタンを案内
+                {
+                    element: '#btn-help', // ヘッダーにある?ボタンのID（要確認：index.htmlにこのIDがあるか）
+                    popover: {
+                        title: 'Need Help?',
+                        description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
+                        side: 'bottom',
+                        align: 'end'
+                    }
                 }
             ]
         });

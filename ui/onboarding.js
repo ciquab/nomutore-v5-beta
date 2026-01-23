@@ -304,44 +304,42 @@ Onboarding.checkLandingPage = () => {
         return;
     }
 
-    // --- 1. Power On 演出のトリガー ---
+    // 表示開始
+    lp.classList.remove('hidden');
+
+    // --- 1. Power On 演出のトリガー（表示から0.3秒後に点火） ---
     const logo = lp.querySelector('img');
     if (logo) {
-        logo.classList.remove('animate-neon-flicker', 'neon-power-on');
-        requestAnimationFrame(() => {
+        setTimeout(() => {
+            logo.classList.remove('opacity-0');
             logo.classList.add('neon-power-on');
-        });
+        }, 300);
     }
 
-    // --- 2. 有機的な泡の動的生成 ---
+    // --- 2. 有機的な泡の生成 ---
     const bubbleContainer = lp.querySelector('.bubble-container');
     if (bubbleContainer) {
-        // CSSの格子背景をクリア（透明にする）
-        bubbleContainer.style.backgroundImage = 'none';
-        bubbleContainer.innerHTML = ''; // 重複防止
-        
-        for (let i = 0; i < 25; i++) {
+        bubbleContainer.innerHTML = ''; 
+        // 泡の数を増やし、よりランダムに
+        for (let i = 0; i < 30; i++) {
             const bubble = document.createElement('div');
             bubble.className = 'lp-bubble';
             
-            const size = Math.random() * 12 + 4;  // 4px〜16px
-            const left = Math.random() * 100;    // 0%〜100%
-            const delay = Math.random() * 5;     // 発生のタイミングをバラけさせる
-            const duration = Math.random() * 4 + 3; // 昇るスピードをバラけさせる
+            const size = Math.random() * 15 + 5; // 5px〜20px
+            const left = Math.random() * 100;
+            const delay = Math.random() * 8;     // バラバラに昇り始める
+            const duration = Math.random() * 5 + 5; // 5s〜10sのゆったりした速度
 
             Object.assign(bubble.style, {
                 width: `${size}px`,
                 height: `${size}px`,
                 left: `${left}%`,
-                bottom: '-20px',
                 animationDelay: `${delay}s`,
                 animationDuration: `${duration}s`
             });
             bubbleContainer.appendChild(bubble);
         }
     }
-
-    lp.classList.remove('hidden');
 };
 
 /**

@@ -577,8 +577,6 @@
                 <h3 class="font-bold text-lg">Record Drink</h3>
                 <button onclick="UI.closeModal('beer-modal')" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center">✕</button>
             </div>
-            
-            <!-- ... (中略: 入力フォーム部分は変更なし) ... -->
             <div class="flex p-2 gap-2 bg-base-50 dark:bg-base-900">
                 <button id="tab-beer-preset" class="flex-1 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-sm transition">Preset</button>
                 <button id="tab-beer-custom" class="flex-1 py-2 text-xs font-bold rounded-xl text-gray-500 hover:bg-base-200 dark:hover:bg-base-800 transition">Custom</button>
@@ -608,6 +606,16 @@
                         <label class="text-[10px] font-bold text-gray-400 uppercase">Size</label>
                         <select id="beer-size" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1"></select>
                     </div>
+                    <div id="preset-abv-container">
+        <label class="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1">
+            ABV (%) <span class="lowercase font-normal opacity-60">(Override)</span>
+        </label>
+        <div class="relative mt-1">
+            <input type="number" id="preset-abv" step="0.1" placeholder="5.0" 
+                   class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3">
+            <span class="absolute right-4 top-3 text-gray-400 font-bold">%</span>
+        </div>
+    </div>
                 </div>
                 <div id="beer-input-custom" class="hidden space-y-4">
                     <div class="grid grid-cols-2 gap-4">
@@ -653,9 +661,18 @@
                         </div>
                         <div class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="untappd-check" class="sr-only peer">
+                            
                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
                         </div>
                     </label>
+                    <div id="beer-kcal-preview-container" class="mt-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border-2 border-dashed border-indigo-100 dark:border-indigo-800/50">
+            <div class="flex items-center justify-between">
+                <span class="text-[10px] font-black text-indigo-400 dark:text-indigo-500 uppercase tracking-widest">Estimated Debt</span>
+                <div id="beer-kcal-preview" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                    0 <span class="text-xs font-bold ml-1 text-gray-400">kcal</span>
+                </div>
+            </div>
+        </div>
                 </div>
             </div>
 

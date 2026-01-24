@@ -16,7 +16,7 @@ import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
 
 import { 
-    getBeerFormData, resetBeerForm, openBeerModal, switchBeerInputTab, 
+    getBeerFormData, updateBeerKcalPreview, resetBeerForm, openBeerModal, switchBeerInputTab, 
     openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
@@ -429,6 +429,9 @@ export const UI = {
 
     updateBulkCount: updateBulkCount,
     
+    // ★追加: プレビュー更新関数をUIオブジェクトに紐づけ
+    updateBeerKcalPreview: updateBeerKcalPreview,
+ 
     openBeerModal: (e, d) => openBeerModal(e, d),
     openCheckModal: openCheckModal,
     openManualInput: openManualInput,

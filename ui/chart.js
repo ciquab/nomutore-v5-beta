@@ -21,7 +21,6 @@ export function renderChart(logs, checks) {
     }
 
     try {
-        // ★修正: StateManagerに頼らず、Canvasに紐付いている既存チャートを確実に破棄する
         const existingChart = Chart.getChart(ctxCanvas);
         if (existingChart) {
             existingChart.destroy();
@@ -42,7 +41,8 @@ export function renderChart(logs, checks) {
         const end = dayjs();
         while(current.isBefore(end) || current.isSame(end, 'day')) {
             const dStr = current.format('MM/DD');
-            dateMap.set(dStr, { date: dStr, balance: 0, weight: null, hasWeight: false });
+            // ★修正1: earned(稼ぎ)とconsumed(消費)を別々に集計するための箱を用意
+            dateMap.set(dStr, { date: dStr, earned: 0, consumed: 0, weight: null, hasWeight: false });
             current = current.add(1, 'day');
         }
 
@@ -51,7 +51,13 @@ export function renderChart(logs, checks) {
                 const dStr = dayjs(l.timestamp).format('MM/DD');
                 if (dateMap.has(dStr)) {
                     const val = l.kcal !== undefined ? l.kcal : (l.minutes * Calc.burnRate(6.0, profile));
-                    dateMap.get(dStr).balance += val;
+                    
+                    // ★修正2: プラスならEarned、マイナスならConsumedに加算（相殺させない）
+                    if (val > 0) {
+                        dateMap.get(dStr).earned += val;
+                    } else {
+                        dateMap.get(dStr).consumed += val; // 負の値として加算
+                    }
                 }
             }
         });
@@ -86,7 +92,8 @@ export function renderChart(logs, checks) {
                 datasets: [
                     { 
                         label: 'Earned', 
-                        data: dataArray.map(d => d.balance > 0 ? Math.round(Calc.convertKcalToMinutes(d.balance, baseEx, profile)) : 0), 
+                        // ★修正3: 純粋な稼ぎ分を表示
+                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.earned, baseEx, profile))), 
                         backgroundColor: '#10B981', 
                         borderRadius: 4,
                         stack: '0', 
@@ -95,7 +102,8 @@ export function renderChart(logs, checks) {
                     },
                     { 
                         label: 'Consumed', 
-                        data: dataArray.map(d => d.balance < 0 ? Math.round(Calc.convertKcalToMinutes(d.balance, baseEx, profile)) : 0), 
+                        // ★修正4: 純粋な消費（飲酒）分を表示。負の値なのでグラフは下向きに伸びます
+                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.consumed, baseEx, profile))), 
                         backgroundColor: '#EF4444', 
                         borderRadius: 4,
                         stack: '0', 
@@ -127,7 +135,7 @@ export function renderChart(logs, checks) {
                         grid: { display: false }
                     }, 
                     y: { 
-                        beginAtZero: true,
+                        beginAtZero: true, // 0を基準に上下に伸びる
                         position: 'left',
                         title: { display: false },
                         ticks: { color: textColor, font: { size: 10 } },
@@ -157,7 +165,6 @@ export function renderChart(logs, checks) {
             }
         });
         
-        // StateManagerへの保存は行うが、破棄ロジックは上記 Chart.getChart に任せる
         if (StateManager.setChart) {
             StateManager.setChart(newChart);
         }

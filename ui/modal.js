@@ -147,6 +147,21 @@ export const updateBeerKcalPreview = () => {
     }
 };
 
+/**
+ * 3. 本数調整（ボタン用）
+ */
+export const adjustBeerCount = (delta) => {
+    const el = document.getElementById('beer-count');
+    if (!el) return;
+
+    let val = parseInt(el.value) || 1;
+    val = Math.max(1, val + delta);
+    el.value = val;
+
+    // 手動でプレビュー更新
+    updateBeerKcalPreview();
+};
+
 export const resetBeerForm = (keepDate = false) => {
     if (!keepDate) document.getElementById('beer-date').value = dayjs().format('YYYY-MM-DD');
     
@@ -960,5 +975,6 @@ export const validateInput = (dateStr, minutes = null) => {
     }
     return true;
 };
+
 
 

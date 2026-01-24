@@ -147,6 +147,28 @@ export const updateBeerKcalPreview = () => {
     }
 };
 
+export const resetBeerForm = (keepDate = false) => {
+    if (!keepDate) document.getElementById('beer-date').value = dayjs().format('YYYY-MM-DD');
+    
+    const idField = document.getElementById('editing-log-id');
+    if(idField) idField.value = '';
+    
+    document.getElementById('beer-count').value = 1;
+    document.getElementById('beer-brewery').value = '';
+    document.getElementById('beer-brand').value = '';
+    document.getElementById('beer-rating').value = '0';
+    document.getElementById('beer-memo').value = '';
+    
+    // ★ 度数補正フィールドもリセット
+    const presetAbv = document.getElementById('preset-abv');
+    if(presetAbv) presetAbv.value = '';
+    
+    const untappdCheck = document.getElementById('untappd-check');
+    if(untappdCheck) untappdCheck.checked = false;
+    
+    switchBeerInputTab('preset');
+};
+
 export const searchUntappd = () => {
     const brewery = document.getElementById('beer-brewery').value;
     const brand = document.getElementById('beer-brand').value;

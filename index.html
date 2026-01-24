@@ -618,6 +618,25 @@
     </div>
                 </div>
                 <div id="beer-input-custom" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+        <label class="cursor-pointer">
+            <input type="radio" name="customType" value="sweet" checked class="peer hidden">
+            <div class="p-3 rounded-xl border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md transition-all text-center">
+                <div class="text-[10px] font-bold uppercase tracking-widest opacity-70">Standard</div>
+                <div class="text-sm font-bold mt-0.5">醸造 / カクテル</div>
+                <div class="text-[9px] opacity-80 mt-1">糖質あり (Beer/Wine)</div>
+            </div>
+        </label>
+
+        <label class="cursor-pointer">
+            <input type="radio" name="customType" value="dry" class="peer hidden">
+            <div class="p-3 rounded-xl border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md transition-all text-center">
+                <div class="text-[10px] font-bold uppercase tracking-widest opacity-70">Dry</div>
+                <div class="text-sm font-bold mt-0.5">蒸留酒 / 焼酎</div>
+                <div class="text-[9px] opacity-80 mt-1">糖質ゼロ (Whiskey/Gin)</div>
+            </div>
+        </label>
+                    </div>
                     <div class="grid grid-cols-2 gap-4">
                          <div>
                             <label class="text-[10px] font-bold text-gray-400 uppercase">ABV (%)</label>
@@ -1419,4 +1438,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -310,6 +310,15 @@ export const UI = {
             }
         });
 
+        // Service層などから 'refresh-ui' イベントが飛んできた時に、画面全体を再描画する
+        document.addEventListener('refresh-ui', () => {
+            // データベースの更新完了と描画タイミングの衝突を防ぐため、ごくわずかに遅らせる
+            setTimeout(() => {
+                // 現在ホームタブが開いている場合のみ、または全タブ更新
+                refreshUI(); 
+            }, 50);
+        });
+
         applyTheme(Store.getTheme());
     },
 
@@ -472,3 +481,4 @@ export {
     StateManager,
     toggleModal
 };
+

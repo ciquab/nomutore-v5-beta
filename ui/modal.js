@@ -109,6 +109,29 @@ export const getBeerFormData = () => {
 };
 
 /**
+ * ビールの本数を増減させ、プレビューを即座に更新する
+ */
+export const adjustBeerCount = (delta) => {
+    const el = document.getElementById('beer-count');
+    if (!el) return;
+
+    // 現在の値を取得（数値でない場合は1とする）
+    let val = parseInt(el.value) || 1;
+    
+    // 増減計算（1本未満にはならないようにガード）
+    val = Math.max(1, val + delta);
+    
+    // 画面の数値を更新
+    el.value = val;
+
+    // ★重要: JSで値を書き換えても oninput イベントは飛ばないので、
+    // ここで直接プレビュー関数を呼び出す
+    if (typeof updateBeerKcalPreview === 'function') {
+        updateBeerKcalPreview();
+    }
+};
+
+/**
  * 【復元】ビールモーダルの入力内容から推定カロリーをリアルタイム表示する
  */
 export const updateBeerKcalPreview = () => {
@@ -960,3 +983,4 @@ export const validateInput = (dateStr, minutes = null) => {
     }
     return true;
 };
+

@@ -148,18 +148,28 @@ export const updateBeerKcalPreview = () => {
 };
 
 /**
- * 3. 本数調整（ボタン用）
+ * 3. 本数調整（ボタン用）修正版
  */
 export const adjustBeerCount = (delta) => {
     const el = document.getElementById('beer-count');
     if (!el) return;
 
-    let val = parseInt(el.value) || 1;
+    let val = parseInt(el.value);
+    if (isNaN(val)) val = 1;
+
+    // 1未満にはならないように制限
     val = Math.max(1, val + delta);
     el.value = val;
 
-    // 手動でプレビュー更新
-    updateBeerKcalPreview();
+    // ★ここが重要：数値を書き換えたら手動でプレビューを更新する
+    if (typeof updateBeerKcalPreview === 'function') {
+        updateBeerKcalPreview();
+    }
+
+    // 元のコードにあった振動フィードバックも維持
+    if (typeof Feedback !== 'undefined' && Feedback.haptic) {
+        Feedback.haptic.light();
+    }
 };
 
 export const resetBeerForm = (keepDate = false) => {
@@ -939,21 +949,6 @@ export const updateBeerSelectOptions = () => {
 export const updateInputSuggestions = () => { };
 export const renderQuickButtons = () => { };
 export const closeModal = (id) => toggleModal(id, false);
-export const adjustBeerCount = (delta) => {
-    const input = document.getElementById('beer-count');
-    if (!input) return;
-    
-    let val = parseInt(input.value);
-    if (isNaN(val)) val = 1;
-    
-    val += delta;
-    if (val < 1) val = 1;
-    
-    input.value = val;
-    
-    // ★追加: 軽い振動フィードバック
-    Feedback.haptic.light(); 
-};
 
 export const validateInput = (dateStr, minutes = null) => {
     // 日付チェック
@@ -975,6 +970,7 @@ export const validateInput = (dateStr, minutes = null) => {
     }
     return true;
 };
+
 
 
 

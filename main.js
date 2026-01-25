@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             Feedback.beer();
             UI.showToastAnimation();
             UI.showConfetti();
-        ｝
+        }
        
         // Untappd連携
         if (data.useUntappd) {
@@ -377,6 +377,7 @@ const handleSwipe = () => {
     }
 
 };
+
 
 
 

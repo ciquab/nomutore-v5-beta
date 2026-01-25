@@ -530,7 +530,7 @@ bind('btn-save-exercise', 'click', async () => {
 
         // 3. modal.jsから読み込んだ元の関数に、抽出したデータを渡す
         _originalOpenDayDetail(date, dayLogs);
-    }
+    },
 
 };
 
@@ -546,6 +546,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

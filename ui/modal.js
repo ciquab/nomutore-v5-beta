@@ -124,14 +124,19 @@ export const updateBeerKcalPreview = () => {
         let abv, carb;
 
         if (isCustom) {
-            // カスタム入力時
+            // ▼▼▼ 修正箇所: カスタム時は custom-amount から容量を取得 ▼▼▼
+            sizeMl = parseInt(document.getElementById('custom-amount').value) || 350;
+            
             abv = parseFloat(document.getElementById('custom-abv').value) || 5.0;
             const typeEl = document.querySelector('input[name="customType"]:checked');
             const type = typeEl ? typeEl.value : 'sweet';
             // Dry（糖質オフ）なら糖質ゼロ、Sweetなら標準的な3.0で計算
             carb = (type === 'dry') ? 0.0 : 3.0;
         } else {
-            // プリセット選択時
+            // プリセット時は beer-size から取得
+            sizeMl = parseInt(document.getElementById('beer-size').value) || 0;
+            
+            const styleKey = document.getElementById('beer-select').value;
             const spec = STYLE_SPECS[styleKey] || { abv: 5.0, carb: 3.5 };
             const userAbvInput = document.getElementById('preset-abv').value;
             // 手入力があれば優先、なければスタイルのデフォルト
@@ -1113,6 +1118,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

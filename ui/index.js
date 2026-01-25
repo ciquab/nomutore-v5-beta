@@ -56,7 +56,7 @@ export const refreshUI = async () => {
         
         // 各コンポーネント再描画 (全データを渡す)
         renderBeerTank(balance);
-        renderLiverRank(checks, logs);
+        renderLiverRank(checks, allLogs);
         renderCheckStatus(checks, logs);
         
         // 週間カレンダーは今週分(logs)、ヒートマップは全期間(allLogs)を渡す
@@ -514,6 +514,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

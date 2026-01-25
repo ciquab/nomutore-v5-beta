@@ -864,35 +864,19 @@ export const handleSaveSettings = async () => {
 
 /* --- Help Modal Logic --- */
 
-// ★修正: 初回起動モード(isFirstTime)をサポート
-export const openHelp = (isFirstTime = false) => {
+// 最新版 openHelp (シンプル版)
+// HTML側に閉じるボタンの処理があるので、JSは「開く」と「スクロール」だけ担当します
+export const openHelp = (targetId = null) => {
     toggleModal('help-modal', true);
-    
-    // ボタンのテキストと挙動を切り替える
-    // help-modal内のボタンは onclick="UI.closeModal('help-modal')" になっているので、
-    // それを上書きするのではなく、閉じた後のコールバックを仕込む方が安全だが、
-    // ここではDOM操作でボタンのonclickを書き換える
-    
-    const footerBtn = document.querySelector('#help-modal button.w-full'); // 下部の大きなボタン
-    
-    if (footerBtn) {
-        if (isFirstTime) {
-            footerBtn.textContent = "Start Setup";
-            footerBtn.onclick = () => {
-                toggleModal('help-modal', false);
-                // 設定タブへ移動
-                // index.js経由でUI.switchTabを呼ぶ必要があるが、
-                // modal.jsはUIモジュールの一部なので、DOM操作でタブ切り替えをエミュレートするか、
-                // window.UIオブジェクト（main.jsで登録）を利用する
-                if (window.UI && window.UI.switchTab) {
-                    window.UI.switchTab('settings');
-                    showMessage('まずはプロフィールを設定しましょう！', 'info');
-                }
-            };
-        } else {
-            footerBtn.textContent = "OK, Let's Drink!";
-            footerBtn.onclick = () => toggleModal('help-modal', false);
-        }
+
+    // IDが指定されていた場合（LIVER RANK等）、そこへスクロール
+    if (targetId) {
+        setTimeout(() => {
+            const el = document.getElementById(targetId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 300); 
     }
 };
 
@@ -1120,6 +1104,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

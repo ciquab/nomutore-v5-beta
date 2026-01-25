@@ -240,6 +240,7 @@ export const UI = {
             
             // IDがない（新規作成時など）場合は何もしない
             if (!idVal) return;
+            if (!confirm('この運動記録を削除しますか？')) return;
 
                 // Service.deleteLog は削除後に自動で refresh-ui を発行します
                 await Service.deleteLog(parseInt(idVal));
@@ -504,6 +505,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

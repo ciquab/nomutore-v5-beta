@@ -106,8 +106,16 @@ export const updateLogListView = async (isLoadMore = false) => {
     }
 
     // データ取得
-    const totalCount = await db.logs.count();
-    const logs = await db.logs.orderBy('timestamp').reverse().limit(currentLimit).toArray();
+        // ★修正: Serviceからアーカイブ込みの全データを取得
+    const { allLogs } = await Service.getAllDataForUI();
+    
+    // 全期間のログを日付順（新しい順）に並べ替え
+    const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
+    
+    const totalCount = sortedLogs.length;
+    // 表示件数分（currentLimit）だけ切り出す
+    const logs = sortedLogs.slice(0, currentLimit);
+
 
     listEl.innerHTML = '';
 
@@ -230,3 +238,4 @@ updateLogListView.updateBulkCount = updateBulkCount;
 // ダミー関数（互換性維持）
 
 export const setFetchLogsHandler = (fn) => {};
+

@@ -137,26 +137,44 @@ export const UI = {
         }
 
         bind('btn-save-beer', 'click', () => {
-             // ★修正: バリデーション追加
-            // modal.js 側でチェックしても良いが、念のため
-            const dateEl = document.getElementById('beer-date');
-            if (!dateEl || !dateEl.value) {
-                showMessage('日付を選択してください', 'error');
-                return;
-            }
-            const data = getBeerFormData();
-            const event = new CustomEvent('save-beer', { detail: data });
-            document.dispatchEvent(event);
-            toggleModal('beer-modal', false);
-        });
+    // ★修正: 編集モード（IDがあるか）をチェック
+    const isEdit = !!document.getElementById('editing-log-id').value;
+
+    const dateEl = document.getElementById('beer-date');
+    if (!dateEl || !dateEl.value) {
+        showMessage('日付を選択してください', 'error');
+        return;
+    }
+
+    // ★追加: 常にタップ音を出す
+    Feedback.tap();
+
+    const data = getBeerFormData();
+    const event = new CustomEvent('save-beer', { detail: data });
+    document.dispatchEvent(event);
+
+    // ★追加: 新規登録の時だけお祝い演出を実行
+    if (!isEdit) {
+        UI.showConfetti();
+        UI.showToastAnimation('beer');
+        Feedback.beer();
+    }
+
+    toggleModal('beer-modal', false);
+});
 
         // 保存して次へ
         bind('btn-save-beer-next', 'click', () => {
+            Feedback.tap();
             const data = getBeerFormData();
             const event = new CustomEvent('save-beer', { detail: data });
             document.dispatchEvent(event);
-            
-            showMessage('Saved! Ready for next.', 'success');
+            // ★修正: 更新(IDあり)のときは静かなメッセージにする
+            const isEdit = !!document.getElementById('editing-log-id').value;
+            showMessage(
+                isEdit ? '更新しました！次にいきましょう。' : '! 記録しました！次にいきましょう。', 
+                isEdit ? 'info' : 'success'
+            );
             resetBeerForm(true); // 日付維持
             const container = document.querySelector('#beer-modal .overflow-y-auto');
             if(container) container.scrollTop = 0;
@@ -513,6 +531,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

@@ -330,10 +330,7 @@ export const openCheckModal = async (dateStr) => {
     if (displayEl) displayEl.textContent = d.format('MM/DD (ddd)');
     if (valueEl) valueEl.value = dateVal;
     // ▲▲▲ ここまで追加 ▲▲▲
-
-    const container = document.getElementById('check-items-container');
-
-
+    
     const container = document.getElementById('check-items-container');
     if (container) {
         container.innerHTML = '';
@@ -1128,6 +1125,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

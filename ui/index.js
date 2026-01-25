@@ -251,11 +251,6 @@ bind('btn-save-exercise', 'click', async () => {
         id: editId || null
     };
 
-    document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
-    
-    closeModal('exercise-modal');
-});
-
         document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
         
         // ★修正点2: 今回は「モーダル」なので、保存後に閉じる必要があります
@@ -546,6 +541,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

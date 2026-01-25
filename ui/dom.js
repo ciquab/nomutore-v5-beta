@@ -415,4 +415,22 @@ export const applyTheme = (themeName) => {
             icon.className = 'ph-fill ph-sun text-lg text-orange-500 transition-colors';
         }
     }
+
+};
+
+// ★追加: 監視と初期化を行う関数
+export const initTheme = () => {
+    // 1. システム(OS)側のダークモード切り替えを監視する
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        const currentSetting = localStorage.getItem(APP.STORAGE_KEYS.THEME);
+        
+        // 設定が「system」または「未設定」の時だけ、再適用する
+        if (!currentSetting || currentSetting === 'system') {
+            applyTheme('system'); // 再評価させる
+        }
+    });
+
+    // 2. アプリ起動時の適用
+    const stored = localStorage.getItem(APP.STORAGE_KEYS.THEME);
+    applyTheme(stored || 'system');
 };

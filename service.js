@@ -384,7 +384,7 @@ getAllDataForUI: async () => {
         if (id) {
             await db.logs.update(parseInt(id), logData);
             // 更新時はシェアボタン出さない（煩わしいため）
-            showMessage('📝 記録を更新しました', 'success');
+            showMessage('📝 記録を更新しました', 'info');
         } else {
             await db.logs.add(logData);
 
@@ -470,7 +470,7 @@ getAllDataForUI: async () => {
         
         if (id) {
             await db.logs.update(parseInt(id), logData);
-            showMessage('📝 運動記録を更新しました', 'success');
+            showMessage('📝 運動記録を更新しました', 'info');
         } else {
             await db.logs.add(logData);
             // ★シェア文言生成
@@ -511,7 +511,7 @@ getAllDataForUI: async () => {
 
             await db.logs.bulkDelete(ids);
             showMessage(`${ids.length}件削除しました`, 'success');
-             
+             Feedback.delete();
             await Service.recalcImpactedHistory(oldestTs);
             document.dispatchEvent(new CustomEvent('refresh-ui'));
         } catch (e) {
@@ -587,6 +587,7 @@ getAllDataForUI: async () => {
 }
 
 };
+
 
 
 

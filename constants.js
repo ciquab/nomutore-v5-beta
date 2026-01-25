@@ -124,7 +124,7 @@ export const CALORIES = {
     'フルーツビール': 160,
     'ノンアル': 50,
     'Custom': 150
-        ｝
+    }
 };
 
 export const BEER_COLORS = {
@@ -243,4 +243,5 @@ export const STYLE_SPECS = {
     'ノンアル': { abv: 0.0, carb: 2.0 }, 
     'Custom': { abv: 5.0, carb: 3.0 }
 };
+
 

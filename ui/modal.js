@@ -1064,23 +1064,26 @@ export const openDayDetail = async (dateStr) => {
             
             // アイテムのHTML生成
             el.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
-                        <i class="ph-fill ${iconClass} text-xl"></i>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200 line-clamp-1">${log.name}</span>
-                        <span class="text-[10px] text-gray-400 font-bold">
-                            ${isBeer ? log.style : (log.minutes + ' min')}
-                        </span>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
-                        ${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
-                    </span>
-                </div>
-            `;
+        <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
+                <i class="ph-fill ${iconClass} text-xl"></i>
+            </div>
+            <div class="flex flex-col overflow-hidden">
+                <span class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
+                    ${mainText}
+                </span>
+                <span class="text-[10px] text-gray-400 font-bold truncate">
+                    ${subText}
+                </span>
+            </div>
+        </div>
+        <div class="text-right shrink-0 ml-2">
+            <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
+                ${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
+            </span>
+        </div>
+    `;
+
             
             // クリックでそのログの編集を開く（既存の編集機能へ連携）
             el.onclick = () => {
@@ -1115,6 +1118,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

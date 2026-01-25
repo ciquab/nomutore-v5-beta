@@ -865,18 +865,27 @@ export const handleSaveSettings = async () => {
 /* --- Help Modal Logic --- */
 
 // 最新版 openHelp (シンプル版)
-// HTML側に閉じるボタンの処理があるので、JSは「開く」と「スクロール」だけ担当します
 export const openHelp = (targetId = null) => {
     toggleModal('help-modal', true);
 
-    // IDが指定されていた場合（LIVER RANK等）、そこへスクロール
+    // 1. スクロールする領域（コンテナ）を特定する
+    // Tailwindを使っている場合、通常は .overflow-y-auto がついている要素がスクロールします
+    const scrollContainer = document.querySelector('#help-modal .overflow-y-auto');
+
     if (targetId) {
+        // A. ターゲット指定あり（LIVER RANK等から）→ そこへスクロール
         setTimeout(() => {
             const el = document.getElementById(targetId);
             if (el) {
                 el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }, 300); 
+    } else {
+        // B. ターゲット指定なし（通常のヘルプボタン）→ トップへ戻す
+        if (scrollContainer) {
+            // アニメーションなしで即座にトップへ戻す（開いた瞬間には上にあるように見せる）
+            scrollContainer.scrollTop = 0;
+        }
     }
 };
 
@@ -1104,6 +1113,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

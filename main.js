@@ -4,6 +4,7 @@ import { Calc } from './logic.js';
 import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal } from './ui/index.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
+import { Feedback } from './ui/dom.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
 import { handleSaveSettings } from './ui/modal.js'; 
@@ -154,6 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Service内で IDがあれば update, なければ add を適切に処理してくれます
         await Service.saveBeerLog(data, existingId);
 
+       Feedback.beer();
+       
         // Untappd連携
         if (data.useUntappd) {
             const query = encodeURIComponent(`${data.brewery || ''} ${data.brand || ''}`.trim());
@@ -362,3 +365,4 @@ const handleSwipe = () => {
     }
 
 };
+

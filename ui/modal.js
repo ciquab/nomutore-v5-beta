@@ -170,8 +170,10 @@ export const adjustBeerCount = (delta) => {
     }
 
     // 元のコードにあった振動フィードバックも維持
-    if (typeof Feedback !== 'undefined' && Feedback.haptic) {
-        Feedback.haptic.light();
+     // ★修正：Feedbackが存在するかチェックしてから、tap() を呼ぶ
+    if (typeof Feedback !== 'undefined') {
+        if (Feedback.tap) Feedback.tap(); // 音を鳴らす
+        if (Feedback.haptic) Feedback.haptic.light(); // 振動させる
     }
 };
 
@@ -1125,6 +1127,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

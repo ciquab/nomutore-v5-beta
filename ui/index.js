@@ -2,7 +2,7 @@ import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
-import { DOM, toggleModal, showConfetti, showMessage, applyTheme, toggleDryDay } from './dom.js';
+import { DOM, toggleModal, showConfetti, showMessage, applyTheme, toggleDryDay, initTheme } from './dom.js';
 import { StateManager } from './state.js';
 
 import { renderBeerTank } from './beerTank.js';
@@ -319,7 +319,7 @@ export const UI = {
             }, 50);
         });
 
-        applyTheme(Store.getTheme());
+        initTheme();
     },
 
     switchTab: (tabId) => {
@@ -481,4 +481,5 @@ export {
     StateManager,
     toggleModal
 };
+
 

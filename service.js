@@ -476,8 +476,6 @@ export const Service = {
     },
 
     deleteLog: async (id) => {
-        if (!confirm('この記録を削除しますか？')) return;
-        
         try {
             const log = await db.logs.get(parseInt(id));
             const ts = log ? log.timestamp : Date.now();
@@ -580,4 +578,5 @@ export const Service = {
 }
 
 };
+
 

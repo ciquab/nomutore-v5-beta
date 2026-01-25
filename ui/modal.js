@@ -111,44 +111,42 @@ export const getBeerFormData = () => {
 /**
  * 【復元】ビールモーダルの入力内容から推定カロリーをリアルタイム表示する
  */
+
 export const updateBeerKcalPreview = () => {
     const previewEl = document.getElementById('beer-kcal-preview');
     if (!previewEl) return;
 
     try {
         const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
-        const styleKey = document.getElementById('beer-select').value;
-        const sizeMl = parseInt(document.getElementById('beer-size').value) || 0;
         const count = parseInt(document.getElementById('beer-count').value) || 1;
 
-        let abv, carb;
+        // ▼▼▼ 修正点1: ここでまとめて宣言（const sizeMl... の行は削除しました） ▼▼▼
+        let abv, carb, sizeMl;
 
         if (isCustom) {
-            // ▼▼▼ 修正箇所: カスタム時は custom-amount から容量を取得 ▼▼▼
+            // カスタムタブ: custom-amount から取得
             sizeMl = parseInt(document.getElementById('custom-amount').value) || 350;
             
             abv = parseFloat(document.getElementById('custom-abv').value) || 5.0;
             const typeEl = document.querySelector('input[name="customType"]:checked');
             const type = typeEl ? typeEl.value : 'sweet';
-            // Dry（糖質オフ）なら糖質ゼロ、Sweetなら標準的な3.0で計算
             carb = (type === 'dry') ? 0.0 : 3.0;
         } else {
-            // プリセット時は beer-size から取得
+            // プリセットタブ: beer-size から取得
             sizeMl = parseInt(document.getElementById('beer-size').value) || 0;
             
             const styleKey = document.getElementById('beer-select').value;
             const spec = STYLE_SPECS[styleKey] || { abv: 5.0, carb: 3.5 };
             const userAbvInput = document.getElementById('preset-abv').value;
-            // 手入力があれば優先、なければスタイルのデフォルト
             abv = (userAbvInput !== "") ? parseFloat(userAbvInput) : spec.abv;
             carb = spec.carb;
         }
 
-        // カロリー計算 (絶対値で表示)
+        // カロリー計算
         const kcal = Math.abs(Calc.calculateBeerDebit(sizeMl, abv, carb, count));
         previewEl.innerHTML = `${Math.round(kcal)} <span class="text-[10px] font-bold ml-1 text-gray-400">kcal</span>`;
     } catch (e) {
-        // 入力途中の不完全な数値によるエラーは無視
+        console.error(e); // エラーが見えるようにログに出力
     }
 };
 
@@ -1118,6 +1116,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

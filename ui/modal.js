@@ -1033,6 +1033,34 @@ export const openDayDetail = async (dateStr) => {
             const isBeer = log.type === 'beer';
             const iconBg = isBeer ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600';
             const iconClass = isBeer ? 'ph-beer-bottle' : 'ph-person-simple-run';
+
+            // ▼▼▼ ここを修正：表示テキストの作成ロジック ▼▼▼
+            let mainText = log.name; // デフォルト
+            let subText = '';
+
+            if (isBeer) {
+                // 【上の行】銘柄があれば銘柄、なければスタイル
+                if (log.brand && log.brand.trim()) {
+                    mainText = log.brand;
+                } else {
+                    mainText = log.style || log.name;
+                }
+                
+                // 本数が2本以上なら x2 のように個数を付ける
+                if (log.count && log.count > 1) {
+                    mainText += ` <span class="text-xs opacity-60">x${log.count}</span>`;
+                }
+
+                // 【下の行】スタイル + 分量(サイズ)
+                const sizeStr = log.size ? `${log.size}ml` : '';
+                // スタイル名とサイズを連結
+                subText = `${log.style || ''} ${sizeStr}`;
+            } else {
+                // 運動の場合
+                mainText = log.name;
+                subText = `${log.minutes} min`;
+            }
+            // ▲▲▲ 修正ここまで ▲▲▲
             
             // アイテムのHTML生成
             el.innerHTML = `
@@ -1087,6 +1115,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

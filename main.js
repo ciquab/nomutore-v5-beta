@@ -156,6 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await Service.saveBeerLog(data, existingId);
 
        Feedback.beer();
+       UI.showToastAnimation();
+       UI.showConfetti();
        
         // Untappd連携
         if (data.useUntappd) {
@@ -183,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
             Feedback.success();
+            UI.showConfetti();
             
             // モーダルが開いていれば閉じる（手動入力の場合）
             toggleModal('exercise-modal', false);
@@ -211,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('confirm-rollover', async () => {
         toggleModal('rollover-modal', false);
         await refreshUI();
+       Feedback.success();
         UI.showConfetti();
     });
     
@@ -367,6 +371,7 @@ const handleSwipe = () => {
     }
 
 };
+
 
 
 

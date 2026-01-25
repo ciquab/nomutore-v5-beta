@@ -137,40 +137,53 @@ export const HapticEngine = {
 };
 
 // ★修正: Feedbackオブジェクトに haptic を追加してexport
+
 export const Feedback = {
     audio: AudioEngine,
-    haptic: HapticEngine, // 追加
+    haptic: HapticEngine, 
 
-    // ★修正: この行（initAudio）を追加してください
     initAudio: () => AudioEngine.init(),
 
-    // ★追加: 古い tap 呼び出しが残っていてもエラーにならないようにする
+    // タップ音（チェックボックスなど）
     tap: () => {
+        // ★修正: playPop（軽い音）を使う
+        if (AudioEngine.playPop) AudioEngine.playPop();
+        else AudioEngine.playTone(600, 'sine', 0.05); 
+        
         if (HapticEngine.isSupported()) navigator.vibrate(10);
     },
 
-    // 既存のショートカットメソッドもHapticと連動させる（複合フィードバック）
+    // ビール保存（さきほど直した部分）
     beer: () => { 
-        showConfetti(); 
-        AudioEngine.playTone(440, 'sine', 0.1); 
-        HapticEngine.medium(); // 追加
+        showConfetti();
+        if (AudioEngine.playBeer) AudioEngine.playBeer();
+        else AudioEngine.playTone(2000, 'sine', 0.4);
+        HapticEngine.medium(); 
     },
+
+    // 運動保存（成功音）
     success: () => { 
-        AudioEngine.playTone(880, 'sine', 0.1); 
-        HapticEngine.success(); // 追加
+        // ★修正: playSuccess（3連音）を使う
+        if (AudioEngine.playSuccess) AudioEngine.playSuccess();
+        else AudioEngine.playTone(880, 'sine', 0.1);
+        
+        HapticEngine.success(); 
     },
-    error: () => { 
-        AudioEngine.playTone(220, 'sawtooth', 0.2); 
-        HapticEngine.heavy(); // 追加
-    },
-    check: () => {
-        AudioEngine.playTone(600, 'sine', 0.05);
-        HapticEngine.light(); // 追加
-    },
+
+    // 削除アクション
     delete: () => {
-        HapticEngine.medium(); // 追加
+        // ★修正: playDelete（低い音）を使う
+        if (AudioEngine.playDelete) AudioEngine.playDelete();
+        HapticEngine.heavy();
+    },
+
+    // エラー
+    error: () => {
+        if (AudioEngine.playError) AudioEngine.playError();
+        HapticEngine.notification();
     }
 };
+
 
 // --- Toast Animation Helper (New) ---
 export const showToastAnimation = () => {
@@ -434,3 +447,4 @@ export const initTheme = () => {
     const stored = localStorage.getItem(APP.STORAGE_KEYS.THEME);
     applyTheme(stored || 'system');
 };
+

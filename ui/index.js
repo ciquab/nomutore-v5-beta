@@ -63,7 +63,7 @@ export const refreshUI = async () => {
         await renderWeeklyAndHeatUp(logs, checks);
         renderHeatmap(allLogs, checks); // ★全データで描画するように追加・修正
         
-        renderChart(logs, checks);
+        renderChart(allLogs, checks);
         
         // タブごとの個別更新処理
         const cellarMode = StateManager.cellarViewMode;
@@ -514,6 +514,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

@@ -155,9 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Service内で IDがあれば update, なければ add を適切に処理してくれます
         await Service.saveBeerLog(data, existingId);
 
-       Feedback.beer();
-       UI.showToastAnimation();
-       UI.showConfetti();
+        // ★修正: 新規登録（existingId が null）の時だけ演出を実行
+        if (!existingId) {
+            Feedback.beer();
+            UI.showToastAnimation();
+            UI.showConfetti();
+        ｝
        
         // Untappd連携
         if (data.useUntappd) {
@@ -184,8 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
-            Feedback.success();
-            UI.showConfetti();
+            // ★修正: 新規登録（id が 未定義/null）の時だけ演出を実行
+            if (!id) {
+                Feedback.success();
+                UI.showConfetti();
+            }
             
             // モーダルが開いていれば閉じる（手動入力の場合）
             toggleModal('exercise-modal', false);
@@ -371,6 +377,7 @@ const handleSwipe = () => {
     }
 
 };
+
 
 
 

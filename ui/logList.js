@@ -69,14 +69,14 @@ export const deleteSelectedLogs = async () => {
     const checkboxes = document.querySelectorAll('.log-checkbox:checked');
     if (checkboxes.length === 0) return;
 
-    if (!confirm(`Are you sure you want to delete ${checkboxes.length} items?`)) return;
+    if (!confirm(`合計 ${checkboxes.length} 件の記録を削除しますか？`)) return;
 
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
     
     try {
     // Service側のメソッドを呼ぶ（ここでDB削除、再計算、UI更新イベント発行まで行われる）
-    await Service.bulkDeleteLogs(ids);
-
+    await Service.bulkDeleteLogs(ids);　
+        
     // 編集モード解除とUI更新のみこちらで行う
     StateManager.setIsEditMode(false);
     updateBulkActionUI();
@@ -89,7 +89,7 @@ export const deleteSelectedLogs = async () => {
     await updateLogListView(false); 
 } catch (e) {
     console.error(e);
-    alert('Failed to delete logs.');
+    alert('記録の削除に失敗しました。');
 }
 };
 
@@ -228,4 +228,5 @@ export const updateLogListView = async (isLoadMore = false) => {
 updateLogListView.updateBulkCount = updateBulkCount;
 
 // ダミー関数（互換性維持）
+
 export const setFetchLogsHandler = (fn) => {};

@@ -61,7 +61,6 @@ export const refreshUI = async () => {
         
         // 週間カレンダーは今週分(logs)、ヒートマップは全期間(allLogs)を渡す
         await renderWeeklyAndHeatUp(logs, checks);
-        renderHeatmap(allLogs, checks); // ★全データで描画するように追加・修正
         
         renderChart(allLogs, checks);
         
@@ -514,6 +513,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

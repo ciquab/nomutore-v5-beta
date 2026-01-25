@@ -480,8 +480,7 @@ export const UI = {
 
     showConfetti: showConfetti,
     showMessage: showMessage,
-    showToastAnimation: showToastAnimation,
-    
+    showToastAnimation: showToastAnimation, 
     openActionMenu: openActionMenu,
     handleActionSelect: handleActionSelect,
     
@@ -505,6 +504,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

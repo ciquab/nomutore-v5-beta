@@ -971,6 +971,125 @@ export const validateInput = (dateStr, minutes = null) => {
     return true;
 };
 
+/* modal.js に追加 */
+
+/**
+ * 指定した日付の詳細モーダルを開く
+ * @param {string} dateStr 'YYYY-MM-DD' 形式
+ */
+export const openDayDetail = async (dateStr) => {
+    const d = dayjs(dateStr);
+    
+    // 1. 日付表示更新
+    document.getElementById('day-detail-date').textContent = d.format('MM/DD (ddd)');
+    
+    // 2. その日のデータを取得
+    const start = d.startOf('day').valueOf();
+    const end = d.endOf('day').valueOf();
+    
+    // StoreやDBから取得（ここではdbを直接叩く例ですが、StoreにあるならそれでもOK）
+    const logs = await db.logs.where('timestamp').between(start, end, true, true).reverse().toArray();
+    
+    // 3. 計算（Earned, Consumed, Balance）
+    let earned = 0;
+    let consumed = 0;
+    
+    logs.forEach(log => {
+        // ビールは負の値で保存されている前提（例: -150）
+        // 運動は正の値（例: +200）
+        const kcal = log.kcal || 0;
+        if (kcal > 0) earned += kcal;
+        else consumed += kcal; // 負の値を足していく（絶対値は増える）
+    });
+    
+    const balance = earned + consumed; // プラスとマイナスの相殺結果
+    
+    // 数値の整形表示
+    document.getElementById('day-detail-earned').textContent = `+${Math.round(earned)}`;
+    document.getElementById('day-detail-consumed').textContent = Math.round(consumed); // 既にマイナスがついている想定
+    
+    const balEl = document.getElementById('day-detail-balance');
+    const balVal = Math.round(balance);
+    balEl.textContent = (balVal > 0 ? '+' : '') + balVal;
+    // バランスの色分け（プラスなら勝ち＝青、マイナスなら負け＝赤 など、お好みで調整）
+    
+    // 4. リストの描画（簡易版LogListレンダラー）
+    const listContainer = document.getElementById('day-detail-list');
+    listContainer.innerHTML = '';
+    
+    if (logs.length === 0) {
+        listContainer.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-40 text-gray-400 opacity-60">
+                <i class="ph-duotone ph-notebook text-4xl mb-2"></i>
+                <span class="text-xs font-bold">No logs for this day</span>
+            </div>
+        `;
+    } else {
+        logs.forEach(log => {
+            const el = document.createElement('div');
+            // logListと同じようなデザインクラスを適用
+            el.className = "flex items-center justify-between p-3 bg-white dark:bg-base-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm";
+            
+            const isBeer = log.type === 'beer';
+            const iconBg = isBeer ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600';
+            const iconClass = isBeer ? 'ph-beer-bottle' : 'ph-person-simple-run';
+            
+            // アイテムのHTML生成
+            el.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
+                        <i class="ph-fill ${iconClass} text-xl"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-bold text-gray-800 dark:text-gray-200 line-clamp-1">${log.name}</span>
+                        <span class="text-[10px] text-gray-400 font-bold">
+                            ${isBeer ? log.style : (log.minutes + ' min')}
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
+                        ${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
+                    </span>
+                </div>
+            `;
+            
+            // クリックでそのログの編集を開く（既存の編集機能へ連携）
+            el.onclick = () => {
+                toggleModal('day-detail-modal', false);
+                // 少し待ってから編集モーダルを開く
+                setTimeout(() => {
+                    if(isBeer) openBeerModal(null, null, log);
+                    else openManualInput(null, log);
+                }, 200);
+            };
+            
+            listContainer.appendChild(el);
+        });
+    }
+
+    // 5. ボタンのアクション設定
+    // 「ログ追加」ボタン
+    document.getElementById('btn-day-add-log').onclick = () => {
+        // アクションメニューを開く（日付を指定して）
+        if (typeof openActionMenu === 'function') {
+            toggleModal('day-detail-modal', false);
+            setTimeout(() => openActionMenu(dateStr), 200);
+        }
+    };
+    
+    // 「Daily Check」ボタン（元の機能）
+    document.getElementById('btn-day-check').onclick = () => {
+        toggleModal('day-detail-modal', false);
+        setTimeout(() => openCheckModal(dateStr), 200);
+    };
+
+    // モーダル表示
+    toggleModal('day-detail-modal', true);
+};
+
+
+
 
 
 

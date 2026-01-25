@@ -182,6 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
+           Feedback.success();
             
             // モーダルが開いていれば閉じる（手動入力の場合）
             toggleModal('exercise-modal', false);
@@ -365,4 +366,5 @@ const handleSwipe = () => {
     }
 
 };
+
 

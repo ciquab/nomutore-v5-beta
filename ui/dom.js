@@ -155,7 +155,6 @@ export const Feedback = {
 
     // ビール保存（さきほど直した部分）
     beer: () => { 
-        showConfetti();
         if (AudioEngine.playBeer) AudioEngine.playBeer();
         else AudioEngine.playTone(2000, 'sine', 0.4);
         HapticEngine.medium(); 
@@ -447,4 +446,5 @@ export const initTheme = () => {
     const stored = localStorage.getItem(APP.STORAGE_KEYS.THEME);
     applyTheme(stored || 'system');
 };
+
 

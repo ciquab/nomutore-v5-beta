@@ -285,7 +285,7 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
     
     const saveBtn = document.getElementById('btn-save-beer');
     if (saveBtn) {
-        saveBtn.textContent = log ? 'Update Drink' : 'Save Drink';
+        saveBtn.textContent = log ? 'Update Drink' : 'Log Drink';
     }
 
     // 初回プレビュー実行
@@ -322,6 +322,17 @@ export const openCheckModal = async (dateStr) => {
     const dateVal = d.format('YYYY-MM-DD');
     const dateInput = document.getElementById('check-date');
     if(dateInput) dateInput.value = dateVal;
+
+    // ▼▼▼ ここから追加 ▼▼▼
+    // 日付表示バッジの更新
+    const displayEl = document.getElementById('daily-check-date-display');
+    const valueEl = document.getElementById('daily-check-date-value');
+    if (displayEl) displayEl.textContent = d.format('MM/DD (ddd)');
+    if (valueEl) valueEl.value = dateVal;
+    // ▲▲▲ ここまで追加 ▲▲▲
+
+    const container = document.getElementById('check-items-container');
+
 
     const container = document.getElementById('check-items-container');
     if (container) {
@@ -383,7 +394,7 @@ export const openCheckModal = async (dateStr) => {
 
     // Reset button text to default
     const saveBtn = document.getElementById('btn-save-check');
-    if (saveBtn) saveBtn.textContent = 'Save Check';
+    if (saveBtn) saveBtn.textContent = 'Log Check';
 
     const isDryInput = document.getElementById('check-is-dry');
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
@@ -479,7 +490,7 @@ export const openManualInput = (dateStr = null, log = null) => {
             bonusCheck.checked = !!hasBonus;
         }
     } else {
-        if (saveBtn) saveBtn.textContent = 'Save Workout';
+        if (saveBtn) saveBtn.textContent = 'Log Workout';
         
         // デフォルト選択
         if (typeSel) typeSel.value = localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE;
@@ -1117,6 +1128,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

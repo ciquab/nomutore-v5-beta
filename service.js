@@ -17,25 +17,33 @@ export const Service = {
      * UI表示用にデータを取得する
      * Permanentモードなら全期間、それ以外なら期間開始日以降のデータを返す
      */
-    getAllDataForUI: async () => {
-        const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
-        
-        // Permanentモードなら、無条件で全データを返す
-        if (mode === 'permanent') {
-            const logs = await db.logs.toArray();
-            const checks = await db.checks.toArray();
-            return { logs, checks };
-        }
+    /* service (2).js 20行目付近 */
+getAllDataForUI: async () => {
+    const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
+    const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
+    const start = startStr ? parseInt(startStr) : 0;
 
-        // それ以外（Weekly/Monthly/Custom）は、現在の期間（PERIOD_START以降）のみ返す
-        const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
-        const start = startStr ? parseInt(startStr) : 0;
+    // 1. 全データ（表示用）
+    const allLogs = await db.logs.toArray();
+    const checks = await db.checks.toArray();
+    
+    // アーカイブがあれば合体させる
+    let mergedLogs = [...allLogs];
+    const archives = await db.period_archives.toArray();
+    archives.forEach(arch => {
+        if (arch.logs) mergedLogs = mergedLogs.concat(arch.logs);
+    });
 
-        const logs = await db.logs.where('timestamp').aboveOrEqual(start).toArray();
-        const checks = await db.checks.toArray(); // Checksは全期間取得（Streak計算等のため）
-        
-        return { logs, checks };
-    },
+    // 2. 期間内データ（借金計算用）
+    let periodLogs = allLogs;
+    if (mode !== 'permanent') {
+        periodLogs = allLogs.filter(l => l.timestamp >= start);
+    }
+
+    // 呼び出し側（main/ui）に合わせて3つ返却する
+    return { logs: periodLogs, checks, allLogs: mergedLogs };
+},
+
 
     getLogsWithPagination: async (offset, limit) => {
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
@@ -295,7 +303,7 @@ export const Service = {
         }
 
         if (shouldRollover) {
-            // アーカイブ処理
+            // アーカイブ処理のトランザクション
             await db.transaction('rw', db.logs, db.period_archives, async () => {
                 // 次の期間開始前までのログを取得
                 const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
@@ -303,19 +311,20 @@ export const Service = {
                 if (logsToArchive.length > 0) {
                     const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
                     
-                    // アーカイブテーブルに追加
+                    // 1. 【変更】アーカイブには「サマリー」だけ追加、またはログを複製して保存
                     await db.period_archives.add({
                         startDate: storedStart,
                         endDate: nextStart - 1,
                         mode: mode,
                         totalBalance: totalBalance,
-                        logs: logsToArchive, // ログ本体もJSONとして保存しておく
+                        logs: logsToArchive, // 複製を保存
                         createdAt: Date.now()
                     });
 
-                    // メインテーブルから削除
-                    const idsToDelete = logsToArchive.map(l => l.id);
-                    await db.logs.bulkDelete(idsToDelete);
+                    // 2. 【超重要】ここをコメントアウト！
+                    // メインテーブルからの削除（bulkDelete）をやめる
+                    // const idsToDelete = logsToArchive.map(l => l.id);
+                    // await db.logs.bulkDelete(idsToDelete);
                 }
 
                 // 新しい開始日を設定
@@ -578,5 +587,6 @@ export const Service = {
 }
 
 };
+
 
 

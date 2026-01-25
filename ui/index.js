@@ -22,7 +22,7 @@ import {
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect,
-    validateInput
+    validateInput, openDayDetail
 } from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -465,7 +465,8 @@ export const UI = {
     // ★追加: これがないとDataManagerからの呼び出しでエラーになる
     updateModeSelector: updateModeSelector,
     applyTheme: applyTheme,
-    toggleDryDay: toggleDryDay 
+    toggleDryDay: toggleDryDay,
+    openDayDetail: openDayDetail
 
 };
 
@@ -481,5 +482,6 @@ export {
     StateManager,
     toggleModal
 };
+
 
 

@@ -203,44 +203,59 @@ export const UI = {
         });
 
         // --- 運動の保存処理 ---
-    bind('btn-save-exercise', 'click', async () => {
-        // 1. 各値の取得
-        const date = document.getElementById('manual-date').value;
-        const minutes = parseInt(document.getElementById('manual-minutes').value, 10);
-        const key = document.getElementById('exercise-select').value;
-        
-        const idField = document.getElementById('editing-exercise-id');
-        const editId = idField && idField.value ? parseInt(idField.value) : null;
+    /* ui/index.js 内の運動保存イベント */
 
-        // ★修正点1: エラーの原因だったIDを修正
-        // 元: document.getElementById('manual-bonus').checked;
-        // 今: document.getElementById('manual-apply-bonus')...
-        const bonusEl = document.getElementById('manual-apply-bonus');
-        const applyBonus = bonusEl ? bonusEl.checked : true;
+bind('btn-save-exercise', 'click', async () => {
+    // --- 1. IDの取得と判定タグの作成 ---
+    const idField = document.getElementById('editing-exercise-id');
+    const editId = idField && idField.value ? parseInt(idField.value) : null;
+    const isEdit = !!editId; // IDがあれば編集モード
 
-        // 2. バリデーション
-        // まず未入力を弾く
-        if (!date || isNaN(minutes)) {
-            showMessage('日付と時間を入力してください', 'error');
-            return;
-        }
+    // ★追加: ボタンを押した瞬間のタップ音（いつでも鳴らす）
+    Feedback.tap();
 
-        // 次に、未来日付や範囲の適正さをチェック (modal.jsからインポートした関数)
-        if (!validateInput(date, minutes)) {
-            return; // エラーメッセージは validateInput 内で表示済み
-        }
+    const date = document.getElementById('manual-date').value;
+    const minutes = parseInt(document.getElementById('manual-minutes').value, 10);
+    const key = document.getElementById('exercise-select').value;
+    
+    const bonusEl = document.getElementById('manual-apply-bonus');
+    const applyBonus = bonusEl ? bonusEl.checked : true;
 
-        // 3. 保存処理 (元の引数の渡し方を維持)
-        // イベントを発火させるだけにします。実際の保存処理は main.js が受け取って行います。
-        const detail = {
-            exerciseKey: key,
-            minutes: minutes,
-            date: date,
-            applyBonus: applyBonus,
-            id: editId || null // editIdがあれば入れ、なければnull
-        };
+    // --- 2. バリデーション ---
+    if (!date || isNaN(minutes)) {
+        showMessage('日付と時間を入力してください', 'error');
+        return;
+    }
 
-        // 'save-exercise' イベントを投げる
+    if (!validateInput(date, minutes)) {
+        return;
+    }
+
+    // --- 3. 演出の実行（新規の時だけ） ---
+    if (!isEdit) {
+        // ★新規登録の時だけ、盛大にお祝いする
+        UI.showConfetti();
+        UI.showToastAnimation('exercise');
+        Feedback.success(); // または Feedback.exercise()
+    } else {
+        // ★更新の時は、静かなメッセージを出す（任意）
+        showMessage('📝 運動記録を更新しました', 'info');
+    }
+
+    // --- 4. 保存処理の発火 ---
+    const detail = {
+        exerciseKey: key,
+        minutes: minutes,
+        date: date,
+        applyBonus: applyBonus,
+        id: editId || null
+    };
+
+    document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
+    
+    closeModal('exercise-modal');
+});
+
         document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
         
         // ★修正点2: 今回は「モーダル」なので、保存後に閉じる必要があります
@@ -531,6 +546,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

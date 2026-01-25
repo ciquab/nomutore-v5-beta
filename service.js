@@ -403,15 +403,9 @@ export const Service = {
             shareAction = { type: 'share', text: shareText };
 
             if (Math.abs(kcal) > 500) {
-                showMessage(`🍺 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です😱`, 'error', shareAction);
-                Feedback.beer();
-                // ★追加: 飲みすぎでも乾杯！
-                showToastAnimation(); 
+                showMessage(`🍺 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です😱`, 'error', shareAction); 
             } else {
-                showMessage('🍺 記録しました！', 'success', shareAction);
-                Feedback.beer();
-                // ★追加: 飲みすぎでも乾杯！
-                showToastAnimation(); 
+                showMessage('🍺 記録しました！', 'success', shareAction);   
             }
             
             // Untappd連携
@@ -474,10 +468,7 @@ export const Service = {
             const shareText = Calc.generateShareText(logData, 100); 
             const shareAction = { type: 'share', text: shareText };
             
-            showMessage(`🏃‍♀️ ${Math.round(minutes)}分の運動を記録しました！`, 'success', shareAction);
-            showConfetti();
-            Feedback.success();
-
+            showMessage(`🏃‍♀️ ${Math.round(minutes)}分の運動を記録しました！`, 'success', shareAction);        
         }
 
         await Service.recalcImpactedHistory(ts);
@@ -493,14 +484,12 @@ export const Service = {
             
             await db.logs.delete(parseInt(id));
             showMessage('削除しました', 'success');
-            Feedback.delete();
             
             await Service.recalcImpactedHistory(ts);
             document.dispatchEvent(new CustomEvent('refresh-ui'));
         } catch (e) {
             console.error(e);
-            showMessage('削除に失敗しました', 'error');
-            Feedback.error();
+            showMessage('削除に失敗しました', 'error');     
         }
     },
 
@@ -515,14 +504,12 @@ export const Service = {
 
             await db.logs.bulkDelete(ids);
             showMessage(`${ids.length}件削除しました`, 'success');
-            Feedback.delete();
-            
+             
             await Service.recalcImpactedHistory(oldestTs);
             document.dispatchEvent(new CustomEvent('refresh-ui'));
         } catch (e) {
             console.error(e);
             showMessage('一括削除に失敗しました', 'error');
-            Feedback.error();
         }
     },
 
@@ -567,7 +554,7 @@ export const Service = {
         }
 
         showMessage('✅ デイリーチェックを更新しました', 'success');
-        Feedback.check(); 
+        
     } else {
         // --- 新規登録（Add） ---
         await db.checks.add(data);
@@ -579,9 +566,7 @@ export const Service = {
             shareAction = { type: 'share', text: shareText };
         }
         
-        showMessage('✅ デイリーチェックを記録しました', 'success', shareAction);
-        showConfetti();
-        Feedback.check();
+        showMessage('✅ デイリーチェックを記録しました', 'success', shareAction);  
     }
     
     // 体重を設定に反映
@@ -595,3 +580,4 @@ export const Service = {
 }
 
 };
+

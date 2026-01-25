@@ -2,7 +2,7 @@ import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
-import { DOM, toggleModal, showConfetti, showMessage, applyTheme, toggleDryDay, initTheme } from './dom.js';
+import { DOM, toggleModal, showConfetti, showMessage, applyTheme, toggleDryDay, initTheme, Feedback } from './dom.js';
 import { StateManager } from './state.js';
 
 import { renderBeerTank } from './beerTank.js';
@@ -169,6 +169,26 @@ export const UI = {
         
         bind('btn-search-untappd', 'click', searchUntappd);
 
+        // 🍺 ビールの削除ボタン
+        bind('btn-delete-beer', 'click', async () => {
+            const idVal = document.getElementById('editing-log-id').value;
+            if (!idVal) return;
+
+            if (!confirm('このビール記録を削除しますか？')) return;
+
+            try {
+                // 削除実行
+                await Service.deleteLog(parseInt(idVal));
+                
+                // 音を鳴らす
+                Feedback.delete();
+                
+                // 画面を更新して閉じる
+                toggleModal('beer-modal', false);
+                await refreshUI();
+            } catch (e) { console.error(e); }
+        });
+
         // --- 運動の保存処理 ---
     bind('btn-save-exercise', 'click', async () => {
         // 1. 各値の取得
@@ -223,6 +243,8 @@ export const UI = {
 
                 // Service.deleteLog は削除後に自動で refresh-ui を発行します
                 await Service.deleteLog(parseInt(idVal));
+
+            Feedback.delete();
                 
                 // モーダルを閉じる
                 closeModal('exercise-modal');
@@ -482,6 +504,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

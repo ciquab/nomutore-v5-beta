@@ -384,7 +384,7 @@ getAllDataForUI: async () => {
         if (id) {
             await db.logs.update(parseInt(id), logData);
             // 更新時はシェアボタン出さない（煩わしいため）
-            showMessage('📝 記録を更新しました', 'info');
+            showMessage('📝 記録を更新しました', 'success');
         } else {
             await db.logs.add(logData);
 
@@ -470,7 +470,7 @@ getAllDataForUI: async () => {
         
         if (id) {
             await db.logs.update(parseInt(id), logData);
-            showMessage('📝 運動記録を更新しました', 'info');
+            showMessage('📝 運動記録を更新しました', 'success');
         } else {
             await db.logs.add(logData);
             // ★シェア文言生成
@@ -587,6 +587,7 @@ getAllDataForUI: async () => {
 }
 
 };
+
 
 
 

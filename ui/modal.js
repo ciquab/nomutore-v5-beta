@@ -312,6 +312,7 @@ export const switchBeerInputTab = (mode) => {
         btnPreset.classList.remove(...activeClasses); btnPreset.classList.add(...inactiveClasses);
         btnCustom.classList.remove(...inactiveClasses); btnCustom.classList.add(...activeClasses);
     }
+    updateBeerKcalPreview();
 };
 
 /* --- Check Modal Logic --- */
@@ -1116,6 +1117,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

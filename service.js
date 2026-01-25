@@ -504,9 +504,7 @@ export const Service = {
         }
     },
 
-    bulkDeleteLogs: async (ids) => {
-        if (!confirm(`${ids.length}件のデータを削除しますか？`)) return;
-        
+    bulkDeleteLogs: async (ids) => { 
         try {
             // 再計算のために最も古い日付を取得
             let oldestTs = Date.now();
@@ -595,4 +593,5 @@ export const Service = {
     await Service.recalcImpactedHistory(ts);
     document.dispatchEvent(new CustomEvent('refresh-ui'));
 }
+
 };

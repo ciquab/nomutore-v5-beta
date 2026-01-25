@@ -15,7 +15,7 @@ const WIZARD_STEPS = [
     {
         id: 'step-welcome',
         title: 'Welcome back?',
-        desc: '始め方を選択してください。',
+        desc: '開始方法を選択してください。',
         render: () => `
             <div class="space-y-4">
                 <button onclick="document.getElementById('restore-options').classList.add('hidden'); Onboarding.nextStep();" 
@@ -496,3 +496,4 @@ Onboarding.completeAfterRestore = () => {
 
 
 window.Onboarding = Onboarding;
+

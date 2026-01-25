@@ -1031,7 +1031,9 @@ export const openDayDetail = async (dateStr) => {
             el.className = "flex items-center justify-between p-3 bg-white dark:bg-base-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm";
             
             const isBeer = log.type === 'beer';
-            const iconBg = isBeer ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600';
+            const iconBg = isBeer 
+    ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500' 
+    : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
             const iconClass = isBeer ? 'ph-beer-bottle' : 'ph-person-simple-run';
 
             // ▼▼▼ ここを修正：表示テキストの作成ロジック ▼▼▼
@@ -1118,6 +1120,7 @@ export const openDayDetail = async (dateStr) => {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

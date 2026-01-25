@@ -22,7 +22,7 @@ import {
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect,
-    validateInput, openDayDetail
+    validateInput, openDayDetail as _originalOpenDayDetail
 } from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -31,13 +31,8 @@ export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
-        // ★修正1: 常に全データを取得する (UIパーツの計算用)
-        // ここでページネーション用の handler は使いません
-        const { logs, checks: rawChecks } = await Service.getAllDataForUI();
-
-        // ★修正: Stats用に「全期間のログ」も別途取得しておく
-        // (IndexedDBは高速なので、ここで取得してもパフォーマンスへの影響は軽微です)
-        const allLogs = await db.logs.toArray();
+        // ★Serviceから「期間内(logs)」と「全部(allLogs)」を同時にもらう
+        const { logs, checks: rawChecks, allLogs } = await Service.getAllDataForUI();
 
         // ★重要: 重複チェックデータの排除ロジックを追加
         // 同じ日付が複数ある場合、isSaved: true のものを最優先で1件だけ残す
@@ -64,9 +59,10 @@ export const refreshUI = async () => {
         renderLiverRank(checks, logs);
         renderCheckStatus(checks, logs);
         
-        // カレンダーとヒートマップ (アーカイブ結合等の処理を含む)
+        // 週間カレンダーは今週分(logs)、ヒートマップは全期間(allLogs)を渡す
         await renderWeeklyAndHeatUp(logs, checks);
-
+        renderHeatmap(allLogs, checks); // ★全データで描画するように追加・修正
+        
         renderChart(logs, checks);
         
         // タブごとの個別更新処理
@@ -489,7 +485,20 @@ export const UI = {
     updateModeSelector: updateModeSelector,
     applyTheme: applyTheme,
     toggleDryDay: toggleDryDay,
-    openDayDetail: openDayDetail
+    // ★カレンダー/ヒートマップクリック時の詳細表示を「全期間対応」にする
+    openDayDetail: async (date) => {
+        // 1. Serviceから全データを取得
+        const { allLogs } = await Service.getAllDataForUI();
+        
+        // 2. クリックされた日付のログを全データから抽出
+        const targetDateStr = dayjs(date).format('YYYY-MM-DD');
+        const dayLogs = allLogs.filter(log => 
+            dayjs(log.timestamp).format('YYYY-MM-DD') === targetDateStr
+        );
+
+        // 3. modal.jsから読み込んだ元の関数に、抽出したデータを渡す
+        _originalOpenDayDetail(date, dayLogs);
+    }
 
 };
 
@@ -505,6 +514,7 @@ export {
     StateManager,
     toggleModal
 };
+
 
 
 

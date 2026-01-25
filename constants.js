@@ -86,6 +86,7 @@ export const CHECK_PRESETS = {
 };
 
 export const CALORIES = {
+    STYLES: {
     // 定番・ラガー系
     '国産ピルスナー': 145,
     '糖質オフ/新ジャンル': 100, // 平均値を少し下げ調整
@@ -123,6 +124,7 @@ export const CALORIES = {
     'フルーツビール': 160,
     'ノンアル': 50,
     'Custom': 150
+        ｝
 };
 
 export const BEER_COLORS = {
@@ -241,3 +243,4 @@ export const STYLE_SPECS = {
     'ノンアル': { abv: 0.0, carb: 2.0 }, 
     'Custom': { abv: 5.0, carb: 3.0 }
 };
+

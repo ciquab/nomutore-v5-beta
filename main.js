@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
-           Feedback.success();
+            Feedback.success();
             
             // モーダルが開いていれば閉じる（手動入力の場合）
             toggleModal('exercise-modal', false);
@@ -202,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
         if (ids.length > 0) {
             await Service.bulkDeleteLogs(ids);
+            Feedback.delete();
         } else {
             UI.toggleEditMode();
         }
@@ -366,5 +367,6 @@ const handleSwipe = () => {
     }
 
 };
+
 
 

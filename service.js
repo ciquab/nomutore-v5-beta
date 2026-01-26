@@ -27,12 +27,9 @@ getAllDataForUI: async () => {
     const allLogs = await db.logs.toArray();
     const checks = await db.checks.toArray();
     
-    // アーカイブがあれば合体させる
-    let mergedLogs = [...allLogs];
-    const archives = await db.period_archives.toArray();
-    archives.forEach(arch => {
-        if (arch.logs) mergedLogs = mergedLogs.concat(arch.logs);
-    });
+    // ★修正: db.logsから削除しない運用に変えたため、アーカイブとの結合は不要（重複する）
+    // アーカイブテーブルは「サマリー情報の保持」としてのみ利用し、生ログはdb.logsを正とする
+    const mergedLogs = allLogs;
 
     // 2. 期間内データ（借金計算用）
     let periodLogs = allLogs;
@@ -86,131 +83,134 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * 【修正版】履歴変更に伴う影響（Streakボーナス、アーカイブ残高など）を再計算する
-     * $O(N^2)$ 問題を解消した最適化バージョン
-     * @param {number} changedTimestamp - 変更があったログの日時
+     * 履歴の再計算（Race Condition対策済み版）
+     * トランザクション内で実行することで、計算中のデータ競合を防ぐ
      */
     recalcImpactedHistory: async (changedTimestamp) => {
-        // 1. 全データを取得（計算用）
-        const allLogs = await db.logs.toArray();
-        const allChecks = await db.checks.toArray();
-        const profile = Store.getProfile();
-
-        // --- Optimization: Pre-calculate Maps to avoid O(N^2) ---
-        const logMap = new Map();
-        const checkMap = new Map();
-        let minTs = Number.MAX_SAFE_INTEGER;
-        let found = false;
-
-        allLogs.forEach(l => {
-            if (l.timestamp < minTs) minTs = l.timestamp;
-            found = true;
-            const d = dayjs(l.timestamp).format('YYYY-MM-DD');
-            if (!logMap.has(d)) logMap.set(d, { hasBeer: false, hasExercise: false, balance: 0 });
+        // 'rw' (読み書き) モードでトランザクションを開始
+        // logs, checks, period_archives の3つのテーブルをロックします
+        return db.transaction('rw', db.logs, db.checks, db.period_archives, async () => {
             
-            const entry = logMap.get(d);
-            if (l.type === 'beer') entry.hasBeer = true;
-            if (l.type === 'exercise') entry.hasExercise = true;
-            
-            if (l.kcal !== undefined) {
-                entry.balance += l.kcal;
-            } else if (l.type === 'exercise') {
-                const mets = EXERCISE[l.exerciseKey] ? EXERCISE[l.exerciseKey].mets : 3.0;
-                const burn = Calc.calculateExerciseBurn(mets, l.minutes, profile);
-                entry.balance += burn;
-            } else if (l.type === 'beer') {
-                entry.balance -= 140; 
-            }
-        });
+            // 1. 全データを取得（計算用）
+            // トランザクション内なので、この時点でデータはロックされています
+            const allLogs = await db.logs.toArray();
+            const allChecks = await db.checks.toArray();
+            const profile = Store.getProfile();
 
-        allChecks.forEach(c => {
-            if (c.timestamp < minTs) minTs = c.timestamp;
-            found = true;
-            const d = dayjs(c.timestamp).format('YYYY-MM-DD');
-            checkMap.set(d, c.isDryDay);
-        });
+            // --- Optimization: Pre-calculate Maps to avoid O(N^2) ---
+            const logMap = new Map();
+            const checkMap = new Map();
+            let minTs = Number.MAX_SAFE_INTEGER;
+            let found = false;
 
-        const firstDate = found ? dayjs(minTs).startOf('day') : dayjs();
-        // ----------------------------------------
-
-        // 2. 変更日以降のすべての日付について再計算
-        const startDate = dayjs(changedTimestamp).startOf('day');
-        const today = dayjs().endOf('day');
-        
-        let currentDate = startDate;
-        let updateCount = 0;
-        let safeGuard = 0;
-
-        while (currentDate.isBefore(today) || currentDate.isSame(today, 'day')) {
-            if (safeGuard++ > 365) break; // 無限ループ防止
-
-            const dayStart = currentDate.startOf('day').valueOf();
-            const dayEnd = currentDate.endOf('day').valueOf();
-
-            // その時点でのStreak (Optimized call)
-            const streak = Calc.getStreakFromMap(logMap, checkMap, firstDate, currentDate);
-            
-            // ボーナス倍率
-            const creditInfo = Calc.calculateExerciseCredit(100, streak); // 100はダミー
-            const bonusMultiplier = creditInfo.bonusMultiplier;
-
-            // その日の運動ログを探して更新
-            const daysExerciseLogs = allLogs.filter(l => l.type === 'exercise' && l.timestamp >= dayStart && l.timestamp <= dayEnd);
-            
-            for (const log of daysExerciseLogs) {
-                const mets = EXERCISE[log.exerciseKey] ? EXERCISE[log.exerciseKey].mets : 3.0;
-                const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
-                const updatedCredit = Calc.calculateExerciseCredit(baseBurn, streak);
+            allLogs.forEach(l => {
+                if (l.timestamp < minTs) minTs = l.timestamp;
+                found = true;
+                const d = dayjs(l.timestamp).format('YYYY-MM-DD');
+                if (!logMap.has(d)) logMap.set(d, { hasBeer: false, hasExercise: false, balance: 0 });
                 
-                // メモ欄の更新（"Streak Bonus x1.2" のような文字列を置換）
-                let newMemo = log.memo || '';
-                // 既存のボーナスタグを消す
-                newMemo = newMemo.replace(/Streak Bonus x[0-9.]+/g, '').trim();
+                const entry = logMap.get(d);
+                if (l.type === 'beer') entry.hasBeer = true;
+                if (l.type === 'exercise') entry.hasExercise = true;
                 
-                if (bonusMultiplier > 1.0) {
-                    const bonusTag = `Streak Bonus x${bonusMultiplier.toFixed(1)}`;
-                    newMemo = newMemo ? `${newMemo} ${bonusTag}` : bonusTag;
+                if (l.kcal !== undefined) {
+                    entry.balance += l.kcal;
+                } else if (l.type === 'exercise') {
+                    const mets = EXERCISE[l.exerciseKey] ? EXERCISE[l.exerciseKey].mets : 3.0;
+                    const burn = Calc.calculateExerciseBurn(mets, l.minutes, profile);
+                    entry.balance += burn;
+                } else if (l.type === 'beer') {
+                    entry.balance -= 140; 
                 }
+            });
 
-                // 値が変わる場合のみDB更新
-                if (Math.abs(log.kcal - updatedCredit.kcal) > 0.1 || log.memo !== newMemo) {
-                    await db.logs.update(log.id, {
-                        kcal: updatedCredit.kcal,
-                        memo: newMemo
-                    });
-                    updateCount++;
-                }
-            }
+            allChecks.forEach(c => {
+                if (c.timestamp < minTs) minTs = c.timestamp;
+                found = true;
+                const d = dayjs(c.timestamp).format('YYYY-MM-DD');
+                checkMap.set(d, c.isDryDay);
+            });
 
-            currentDate = currentDate.add(1, 'day');
-        }
+            const firstDate = found ? dayjs(minTs).startOf('day') : dayjs();
+            // ----------------------------------------
 
-        if (updateCount > 0) {
-            console.log(`[Service] Recalculated ${updateCount} exercise logs due to streak change.`);
-        }
-
-        // 3. 過去アーカイブ（期間確定済みデータ）の再集計
-        // 変更された日付を含む、またはそれ以降のアーカイブの totalBalance を更新する
-        try {
-            const affectedArchives = await db.period_archives.where('endDate').aboveOrEqual(changedTimestamp).toArray();
+            // 2. 変更日以降のすべての日付について再計算
+            const startDate = dayjs(changedTimestamp).startOf('day');
+            const today = dayjs().endOf('day');
             
-            for (const archive of affectedArchives) {
-                // アーカイブ期間内のログを再取得して合計
-                // (startDateが変更日より後のアーカイブも、Streak変化で運動カロリーが変わっている可能性があるため再計算)
-                if (archive.startDate <= changedTimestamp) {
-                    // 変更日がアーカイブ期間内、あるいはそれ以前の場合
-                    const periodLogs = await db.logs.where('timestamp').between(archive.startDate, archive.endDate, true, true).toArray();
-                    const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
+            let currentDate = startDate;
+            let updateCount = 0;
+            let safeGuard = 0;
+
+            while (currentDate.isBefore(today) || currentDate.isSame(today, 'day')) {
+                if (safeGuard++ > 365) break; // 無限ループ防止
+
+                const dayStart = currentDate.startOf('day').valueOf();
+                const dayEnd = currentDate.endOf('day').valueOf();
+
+                // その時点でのStreak (Optimized call)
+                const streak = Calc.getStreakFromMap(logMap, checkMap, firstDate, currentDate);
+                
+                // ボーナス倍率
+                const creditInfo = Calc.calculateExerciseCredit(100, streak); // 100はダミー
+                const bonusMultiplier = creditInfo.bonusMultiplier;
+
+                // その日の運動ログを探して更新
+                const daysExerciseLogs = allLogs.filter(l => l.type === 'exercise' && l.timestamp >= dayStart && l.timestamp <= dayEnd);
+                
+                for (const log of daysExerciseLogs) {
+                    const mets = EXERCISE[log.exerciseKey] ? EXERCISE[log.exerciseKey].mets : 3.0;
+                    const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
+                    const updatedCredit = Calc.calculateExerciseCredit(baseBurn, streak);
                     
-                    await db.period_archives.update(archive.id, {
-                        totalBalance: totalBalance,
-                        updatedAt: Date.now()
-                    });
+                    // メモ欄の更新（"Streak Bonus x1.2" のような文字列を置換）
+                    let newMemo = log.memo || '';
+                    newMemo = newMemo.replace(/Streak Bonus x[0-9.]+/g, '').trim();
+                    
+                    if (bonusMultiplier > 1.0) {
+                        const bonusTag = `Streak Bonus x${bonusMultiplier.toFixed(1)}`;
+                        newMemo = newMemo ? `${newMemo} ${bonusTag}` : bonusTag;
+                    }
+
+                    // 値が変わる場合のみDB更新
+                    // トランザクション内なので await しても安全です
+                    if (Math.abs(log.kcal - updatedCredit.kcal) > 0.1 || log.memo !== newMemo) {
+                        await db.logs.update(log.id, {
+                            kcal: updatedCredit.kcal,
+                            memo: newMemo
+                        });
+                        updateCount++;
+                    }
                 }
+
+                currentDate = currentDate.add(1, 'day');
             }
-        } catch (e) {
-            console.error('[Service] Failed to update archives:', e);
-        }
+
+            if (updateCount > 0) {
+                console.log(`[Service] Recalculated ${updateCount} exercise logs due to streak change.`);
+            }
+
+            // 3. 過去アーカイブ（期間確定済みデータ）の再集計
+            try {
+                // トランザクション内なので一貫性が保たれます
+                const affectedArchives = await db.period_archives.where('endDate').aboveOrEqual(changedTimestamp).toArray();
+                
+                for (const archive of affectedArchives) {
+                    if (archive.startDate <= changedTimestamp) {
+                        const periodLogs = await db.logs.where('timestamp').between(archive.startDate, archive.endDate, true, true).toArray();
+                        const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
+                        
+                        await db.period_archives.update(archive.id, {
+                            totalBalance: totalBalance,
+                            updatedAt: Date.now()
+                        });
+                    }
+                }
+            } catch (e) {
+                console.error('[Service] Failed to update archives within transaction:', e);
+                throw e; // エラーを投げてトランザクションをロールバックさせる
+            }
+        });
     },
 
     updatePeriodSettings: async (newMode) => {
@@ -303,35 +303,38 @@ getAllDataForUI: async () => {
         }
 
         if (shouldRollover) {
-            // アーカイブ処理のトランザクション
-            await db.transaction('rw', db.logs, db.period_archives, async () => {
-                // 次の期間開始前までのログを取得
-                const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
+    await db.transaction('rw', db.logs, db.period_archives, async () => {
+        const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
+        
+        if (logsToArchive.length > 0) {
+            // ★追加: 既に同じ開始日のアーカイブが存在しないかチェック
+            const existingArchive = await db.period_archives
+                .where('startDate').equals(storedStart)
+                .first();
+
+            if (!existingArchive) {
+                const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
                 
-                if (logsToArchive.length > 0) {
-                    const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
-                    
-                    // 1. 【変更】アーカイブには「サマリー」だけ追加、またはログを複製して保存
-                    await db.period_archives.add({
-                        startDate: storedStart,
-                        endDate: nextStart - 1,
-                        mode: mode,
-                        totalBalance: totalBalance,
-                        logs: logsToArchive, // 複製を保存
-                        createdAt: Date.now()
-                    });
-
-                    // 2. 【超重要】ここをコメントアウト！
-                    // メインテーブルからの削除（bulkDelete）をやめる
-                    // const idsToDelete = logsToArchive.map(l => l.id);
-                    // await db.logs.bulkDelete(idsToDelete);
-                }
-
-                // 新しい開始日を設定
-                localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, nextStart);
-            });
-            return true;
+                await db.period_archives.add({
+                    startDate: storedStart,
+                    endDate: nextStart - 1,
+                    mode: mode,
+                    totalBalance: totalBalance,
+                    logs: logsToArchive, 
+                    createdAt: Date.now()
+                });
+            } else {
+                console.warn('[Service] Archive for this period already exists. Skipping creation.');
+            }
+            
+            // 削除ロジックはコメントアウトのままでOK
         }
+
+        // アーカイブ作成の成否に関わらず、期間は進める（無限ループ防止）
+        localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, nextStart);
+    });
+    return true;
+}
 
         return false;
     },

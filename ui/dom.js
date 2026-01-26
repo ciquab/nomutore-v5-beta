@@ -5,12 +5,14 @@ import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm';
 
 const AudioEngine = {
     ctx: null,
-    
+    noiseBuffer: null,
+
     init: () => {
         if (!AudioEngine.ctx) {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (AudioContext) {
                 AudioEngine.ctx = new AudioContext();
+                AudioEngine.createNoiseBuffer();
             }
         }
     },
@@ -21,6 +23,19 @@ const AudioEngine = {
         }
     },
 
+    // ノイズバッファ生成（液体音・紙音用）
+    createNoiseBuffer: () => {
+        if (!AudioEngine.ctx) return;
+        const bufferSize = AudioEngine.ctx.sampleRate * 2; // 2 seconds
+        const buffer = AudioEngine.ctx.createBuffer(1, bufferSize, AudioEngine.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        AudioEngine.noiseBuffer = buffer;
+    },
+
+    // 汎用トーン再生
     playTone: (freq, type, duration, startTime = 0, vol = 0.1) => {
         if (!AudioEngine.ctx) AudioEngine.init();
         const ctx = AudioEngine.ctx;
@@ -42,42 +57,89 @@ const AudioEngine = {
         osc.stop(ctx.currentTime + startTime + duration);
     },
 
-    // 🍺 乾杯音 (Clink)
-    // ★修正: リアルなグラス音の合成ロジック
-    // 複数の正弦波（Sine wave）を重ねて、ガラス特有の不協和音と共鳴を再現します
+    // ノイズ再生
+    playNoise: (duration, filterFreq = 1000, vol = 0.1, startTime = 0) => {
+        if (!AudioEngine.ctx || !AudioEngine.noiseBuffer) AudioEngine.init();
+        const ctx = AudioEngine.ctx;
+        if (!ctx) return;
+
+        const src = ctx.createBufferSource();
+        src.buffer = AudioEngine.noiseBuffer;
+        
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = filterFreq;
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(vol, ctx.currentTime + startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+
+        src.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        src.start(ctx.currentTime + startTime);
+        src.stop(ctx.currentTime + startTime + duration);
+    },
+
+    // 🔘 UIクリック音 (Clicky)
+    playClick: () => {
+        AudioEngine.playTone(800, 'sine', 0.05, 0, 0.05);
+        AudioEngine.playNoise(0.03, 3000, 0.02);
+    },
+
+    // 🔢 ダイヤル音 (Tick)
+    playTick: () => {
+        AudioEngine.playTone(400, 'triangle', 0.03, 0, 0.05);
+    },
+
+    // ⏱ タイマー秒針 (Soft Tick)
+    playSoftTick: () => {
+        AudioEngine.playTone(1200, 'sine', 0.02, 0, 0.01);
+    },
+
+    // 🔔 完了/成功音 (Success Chord)
+    playSuccess: () => {
+        const t = 0;
+        AudioEngine.playTone(523.25, 'sine', 0.4, t, 0.1);
+        AudioEngine.playTone(659.25, 'sine', 0.4, t + 0.1, 0.1);
+        AudioEngine.playTone(783.99, 'sine', 0.8, t + 0.2, 0.1);
+    },
+
+    // 🗑️ 削除音 (Delete)
+    playDelete: () => {
+        AudioEngine.playNoise(0.3, 500, 0.15); 
+        AudioEngine.playTone(100, 'sawtooth', 0.2, 0, 0.05);
+    },
+
+    // 🍺 乾杯＆注ぐ音 (Beer Hybrid)
+    // ★修正: あなたの素晴らしいグラス音コード + 炭酸ノイズ
     playBeer: () => {
         if (!AudioEngine.ctx) AudioEngine.init();
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
         const t = ctx.currentTime;
 
-        // グラスの響きを構成する成分（周波数Hz, 持続秒数, 音量）
-        // 余韻(d)を全体的に短縮しました (例: 1.2s -> 0.6s)
+        // 1. リアルなグラス音 (ご提示のコード)
         const partials = [
-            // Glass 1 (Main)
-            { f: 1400, d: 0.6, v: 0.15 }, // 基音 (Fundamental)
-            { f: 3600, d: 0.2, v: 0.08 }, // 倍音1 (Attack)
-            { f: 6200, d: 0.08, v: 0.04 }, // 倍音2 (Click)
-
-            // Glass 2 (Harmony/Dissonance)
-            { f: 1650, d: 0.5, v: 0.12 }, // 基音 (2nd glass)
+            { f: 1400, d: 0.6, v: 0.15 }, // 基音
+            { f: 3600, d: 0.2, v: 0.08 }, // 倍音1
+            { f: 6200, d: 0.08, v: 0.04 }, // 倍音2
+            { f: 1650, d: 0.5, v: 0.12 }, // 基音2 (不協和音)
             { f: 4100, d: 0.15, v: 0.06 }, // 倍音1
-            
-            // Impact Transient (衝突瞬間の高音ノイズ成分)
-            { f: 8000, d: 0.04, v: 0.03 } 
+            { f: 8000, d: 0.04, v: 0.03 }  // 衝突音
         ];
 
         partials.forEach(p => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             
-            osc.type = 'sine'; // ガラス音は正弦波が最適
+            osc.type = 'sine';
             osc.frequency.setValueAtTime(p.f, t);
             
-            // エンベロープ（音量変化）の設定
             gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(p.v, t + 0.005); // 5msで急激に立ち上がり（打撃感）
-            gain.gain.exponentialRampToValueAtTime(0.001, t + p.d); // 余韻を残して減衰
+            gain.gain.linearRampToValueAtTime(p.v, t + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + p.d);
             
             osc.connect(gain);
             gain.connect(ctx.destination);
@@ -85,104 +147,112 @@ const AudioEngine = {
             osc.start(t);
             osc.stop(t + p.d);
         });
-    },
 
-    // 🏃‍♀️ 達成音
-    playSuccess: () => {
-        AudioEngine.playTone(880, 'sine', 0.15, 0, 0.1);
-        AudioEngine.playTone(1109, 'sine', 0.15, 0.1, 0.1);
-        AudioEngine.playTone(1318, 'sine', 0.4, 0.2, 0.1);
-    },
-
-    // ✅ チェック音
-    playPop: () => {
-        AudioEngine.playTone(600, 'sine', 0.1, 0, 0.1);
-    },
-    
-    // 🗑️ 削除音
-    playDelete: () => {
-        AudioEngine.playTone(150, 'sawtooth', 0.2, 0, 0.1);
-    },
-
-    // ⚠️ エラー音
-    playError: () => {
-        AudioEngine.playTone(150, 'sawtooth', 0.3, 0, 0.1);
-        AudioEngine.playTone(100, 'sawtooth', 0.3, 0.1, 0.1);
+        // 2. 液体/炭酸の音 (追加演出)
+        // グラスが鳴った0.1秒後から「シュワァ...」と注ぐ音を入れる
+        // duration: 1.5s, filter: 800Hz (こもった音), vol: 0.1, delay: 0.1s
+        AudioEngine.playNoise(1.5, 800, 0.1, 0.1); 
     }
 };
 
-export const HapticEngine = {
-    // 端末が振動APIに対応しているかチェック
+// --- Haptics Engine ---
+const HapticEngine = {
     isSupported: () => 'vibrate' in navigator,
 
-    // 1. Selection (カチッ): 軽量。UI操作、ボタンタップ
-    light: () => {
-        if (HapticEngine.isSupported()) navigator.vibrate(10); 
-    },
+    // 極軽量 (UI操作)
+    selection: () => { if (HapticEngine.isSupported()) navigator.vibrate(5); }, // カチッ
+    
+    // 軽量 (ボタン)
+    light: () => { if (HapticEngine.isSupported()) navigator.vibrate(10); }, // コトッ
+    
+    // 中量 (決定)
+    medium: () => { if (HapticEngine.isSupported()) navigator.vibrate(20); }, // ドゥン
+    
+    // 重量 (エラー/警告)
+    heavy: () => { if (HapticEngine.isSupported()) navigator.vibrate([40, 20, 40]); }, // ブブッ
 
-    // 2. Impact (ドゥン): 中量。決定、トグル切り替え
-    medium: () => {
-        if (HapticEngine.isSupported()) navigator.vibrate(25);
-    },
+    // 鼓動 (タイマー)
+    heartbeat: () => { if (HapticEngine.isSupported()) navigator.vibrate(15); }, // ドクン
 
-    // 3. Heavy/Notification (ブブッ): 重量。エラー、完了、警告
-    heavy: () => {
-        if (HapticEngine.isSupported()) navigator.vibrate([50, 30, 50]);
-    },
-
-    // 4. Success (タタンッ): 完了成功
-    success: () => {
-        if (HapticEngine.isSupported()) navigator.vibrate([30, 50, 30]);
-    }
+    // 成功 (完了)
+    success: () => { if (HapticEngine.isSupported()) navigator.vibrate([20, 50, 20]); } // タタン
 };
 
-// ★修正: Feedbackオブジェクトに haptic を追加してexport
-
+// --- Feedback Interface (API) ---
 export const Feedback = {
     audio: AudioEngine,
     haptic: HapticEngine, 
-
     initAudio: () => AudioEngine.init(),
 
-    // タップ音（チェックボックスなど）
-    tap: () => {
-        // ★修正: playPop（軽い音）を使う
-        if (AudioEngine.playPop) AudioEngine.playPop();
-        else AudioEngine.playTone(600, 'sine', 0.05); 
-        
-        if (HapticEngine.isSupported()) navigator.vibrate(10);
+    // --- 1. UI Micro-interactions (日常操作) ---
+
+    // タブ切り替え / モーダル開閉 / スイッチ
+    // 軽い「カチッ」 + 極短振動
+    uiSwitch: () => {
+        AudioEngine.playClick(); // playPopの代わり
+        HapticEngine.selection();
     },
 
-    // ビール保存（さきほど直した部分）
+    // 数値カウンター (+/-) 
+    // 木片のような「コリッ」 + 極短振動
+    uiDial: () => {
+        AudioEngine.playTick(); 
+        HapticEngine.selection();
+    },
+
+    // 一般的なボタンタップ
+    // 少し柔らかいクリック感
+    tap: () => {
+        AudioEngine.playClick();
+        HapticEngine.light();
+    },
+
+    // --- 2. Action Feedback (意味のある操作) ---
+
+    // ビール保存 / 乾杯
+    // グラス音 + 炭酸音 + 重めの振動
     beer: () => { 
-        if (AudioEngine.playBeer) AudioEngine.playBeer();
-        else AudioEngine.playTone(2000, 'sine', 0.4);
+        AudioEngine.playBeer();
         HapticEngine.medium(); 
     },
 
-    // 運動保存（成功音）
-    success: () => { 
-        // ★修正: playSuccess（3連音）を使う
-        if (AudioEngine.playSuccess) AudioEngine.playSuccess();
-        else AudioEngine.playTone(880, 'sine', 0.1);
-        
-        HapticEngine.success(); 
-    },
-
     // 削除アクション
+    // 紙を丸める音 + 警告振動
     delete: () => {
-        // ★修正: playDelete（低い音）を使う
-        if (AudioEngine.playDelete) AudioEngine.playDelete();
+        AudioEngine.playDelete();
         HapticEngine.heavy();
     },
 
-    // エラー
+    // 完了 / 成功 / 完済
+    // 3和音のチャイム + 祝祭振動
+    success: () => { 
+        AudioEngine.playSuccess();
+        HapticEngine.success(); 
+    },
+
+    // エラー / バリデーション
+    // 不協和音 + 警告振動
     error: () => {
-        if (AudioEngine.playError) AudioEngine.playError();
-        HapticEngine.notification();
+        // AudioEngineにplayErrorがない場合はToneで代用
+        AudioEngine.playTone(150, 'sawtooth', 0.3);
+        HapticEngine.heavy();
+    },
+
+    // --- 3. Immersive Feedback (没入演出) ---
+
+    // タイマーの秒針 (毎秒)
+    // 非常に静かな音のみ (振動なし)
+    timerTick: () => {
+        AudioEngine.playSoftTick();
+    },
+
+    // タイマーの鼓動 (1分毎)
+    // 重低音 + 心拍振動
+    timerBeat: () => {
+        AudioEngine.playTone(200, 'sine', 0.1);
+        HapticEngine.heartbeat();
     }
 };
-
 
 // --- Toast Animation Helper (New) ---
 export const showToastAnimation = () => {
@@ -296,7 +366,7 @@ export const toggleModal = (modalId, show = true) => {
     const el = DOM.elements[modalId] || document.getElementById(modalId);
     if (!el) return;
     
-    if (show && Feedback.haptic) Feedback.haptic.light();
+    if (show) Feedback.uiSwitch();
 
     if (show) {
         el.classList.remove('hidden');

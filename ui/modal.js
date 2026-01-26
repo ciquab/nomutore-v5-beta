@@ -2,7 +2,7 @@ import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP, CHECK_
 import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
-import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback } from './dom.js';
+import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback, showToastAnimation } from './dom.js';
 import { Service } from '../service.js';
 import { Timer } from './timer.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -154,6 +154,10 @@ export const updateBeerKcalPreview = () => {
  * 3. 本数調整（ボタン用）修正版
  */
 export const adjustBeerCount = (delta) => {
+
+    // ★追加: ダイヤルを回すような「コリッ」とした感触
+    Feedback.uiDial();
+
     const el = document.getElementById('beer-count');
     if (!el) return;
 
@@ -270,10 +274,13 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
     // スタイル選択時にプレースホルダーを更新
     const styleSel = document.getElementById('beer-select');
     if (styleSel && abvInput) {
-        styleSel.addEventListener('change', () => {
-            const spec = STYLE_SPECS[styleSel.value];
-            if (spec) abvInput.placeholder = spec.abv;
-        });
+        styleSel.onchange = () => {
+    updateBeerKcalPreview(); // 既存の処理
+    
+    // 追加: プレースホルダー更新
+    const spec = STYLE_SPECS[styleSel.value];
+    if (spec && abvInput) abvInput.placeholder = spec.abv;
+    };
         // 初期プレースホルダー設定
         const initialSpec = STYLE_SPECS[styleSel.value];
         if (initialSpec) abvInput.placeholder = initialSpec.abv;
@@ -1128,19 +1135,67 @@ export const openDayDetail = async (dateStr) => {
     toggleModal('day-detail-modal', true);
 };
 
+/**
+ * クイックログボタンを履歴に基づいて動的に更新する
+ */
+export const refreshQuickLogButtons = async () => {
+    // 1. 全履歴データを取得
+    const { allLogs } = await Service.getAllDataForUI();
+    
+    // 2. 統計ロジックを呼び出し、飲酒回数順のリストを取得
+    const stats = Calc.getBeerStats(allLogs);
+    const topBeer = (stats.beerStats && stats.beerStats.length > 0) 
+        ? stats.beerStats[0] 
+        : null;
 
+    const btn1 = document.getElementById('quick-name-1');
+    const slot1 = document.querySelector('[onclick*="quickLogBeer(\'mode1\')"]');
 
+    if (topBeer && btn1) {
+        // --- 履歴がある場合: 最頻銘柄をスロット1に配置 ---
+        btn1.textContent = topBeer.name; // 銘柄名 (例: "Yona Yona Ale")
+        
+        // ボタンのメタデータを銘柄名に合わせて更新（内部処理用）
+        slot1.dataset.style = topBeer.style;
+        slot1.dataset.brand = topBeer.name;
+        slot1.dataset.brewery = topBeer.brewery;
+        
+        // ラベルを「Most Frequent」に変更して、動的に選ばれていることを示す
+        const label = slot1.querySelector('p:first-child');
+        if (label) label.textContent = "Most Frequent";
+    } else {
+        // --- 履歴がない場合: デフォルトのお気に入り(Lager等)を表示 ---
+        const modes = Store.getModes();
+        if (btn1) btn1.textContent = modes.mode1;
+    }
+};
 
+export const quickLogBeer = async (slotKey) => {
+    const slot = document.querySelector(`[onclick*="quickLogBeer('${slotKey}')"]`);
+    const modes = Store.getModes();
 
+    // 1. ボタンに保持されたカスタム銘柄情報があれば優先、なければ設定値
+    const style = slot.dataset.style || modes[slotKey];
+    const brand = slot.dataset.brand || "";
+    const brewery = slot.dataset.brewery || "";
 
+    Feedback.beer();
+    showToastAnimation('beer');
 
+    const data = {
+        timestamp: Date.now(),
+        style: style,
+        brand: brand,
+        brewery: brewery,
+        size: "350",
+        count: 1,
+        isCustom: false,
+        useUntappd: false,
+        memo: "Quick Log (History-based)"
+    };
 
-
-
-
-
-
-
-
-
-
+    await Service.saveBeerLog(data);
+    
+    // 記録後、統計が変わる可能性があるためボタンを再更新
+    await refreshQuickLogButtons();
+};

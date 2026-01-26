@@ -144,6 +144,23 @@
 </div>
             </section>
 
+<section id="quick-log-area" class="grid grid-cols-2 gap-3 mb-4">
+    <button onclick="UI.quickLogBeer('mode1')" class="glass-panel p-3 rounded-2xl flex items-center gap-3 active:scale-95 transition-all border-l-4 border-amber-400">
+        <span class="text-2xl">🍺</span>
+        <div class="text-left overflow-hidden">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Quick Log 1</p>
+            <p id="quick-name-1" class="text-xs font-black truncate text-base-900 dark:text-white">Lager</p>
+        </div>
+    </button>
+    <button onclick="UI.quickLogBeer('mode2')" class="glass-panel p-3 rounded-2xl flex items-center gap-3 active:scale-95 transition-all border-l-4 border-indigo-400">
+        <span class="text-2xl">🍹</span>
+        <div class="text-left overflow-hidden">
+            <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Quick Log 2</p>
+            <p id="quick-name-2" class="text-xs font-black truncate text-base-900 dark:text-white">Hazy IPA</p>
+        </div>
+    </button>
+</section>
+
             <section class="grid grid-cols-2 gap-3 items-stretch">
                 <div id="liver-rank-card" class="glass-panel p-4 rounded-2xl relative overflow-hidden group transition hover:border-indigo-300 dark:hover:border-indigo-700 cursor-pointer" onclick="UI.openHelp('game-mechanics')">
                     </div>
@@ -505,7 +522,9 @@
                 <i class="ph-bold ph-books"></i>
                 <span class="label">Cellar</span>
             </button>
-            <button id="nav-tab-settings" class="nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400" onclick="UI.switchTab('settings')">
+            <button id="nav-tab-settings" 
+    class="nav-item flex-1 flex flex-col items-center justify-center py-2 text-gray-400 hover:text-indigo-500 transition-colors relative"
+    onclick="UI.renderSettings(); UI.switchTab('settings');">
                 <i class="ph-bold ph-gear"></i>
                 <span class="label">Settings</span>
             </button>
@@ -930,15 +949,15 @@
 
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                    <div class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Earned</div>
+                    <div class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">PAYBACK</div>
                     <div id="day-detail-earned" class="text-base font-black text-emerald-600 dark:text-emerald-400 mt-0.5 font-['Outfit']">0</div>
                 </div>
                 <div class="p-2.5 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800/50">
-                    <div class="text-[9px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">Consumed</div>
+                    <div class="text-[9px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">DEBT</div>
                     <div id="day-detail-consumed" class="text-base font-black text-red-600 dark:text-red-400 mt-0.5 font-['Outfit']">0</div>
                 </div>
                 <div class="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                    <div class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Balance</div>
+                    <div class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">BALANCE</div>
                     <div id="day-detail-balance" class="text-base font-black text-indigo-600 dark:text-indigo-400 mt-0.5 font-['Outfit']">0</div>
                 </div>
             </div>

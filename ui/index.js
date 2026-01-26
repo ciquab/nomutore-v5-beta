@@ -22,7 +22,7 @@ import {
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect,
-    validateInput, openDayDetail as _originalOpenDayDetail
+    validateInput, openDayDetail as _originalOpenDayDetail, refreshQuickLogButtons, quickLogBeer
 } from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -369,6 +369,7 @@ bind('btn-save-exercise', 'click', async () => {
     },
 
     switchTab: (tabId) => {
+        Feedback.uiSwitch();
         // 1. Cellar以外のタブへ行くときは、編集モードを強制解除してUIを隠す
         if (tabId !== 'cellar') {
             StateManager.setIsEditMode(false);
@@ -526,6 +527,9 @@ bind('btn-save-exercise', 'click', async () => {
         // 3. modal.jsから読み込んだ元の関数に、抽出したデータを渡す
         _originalOpenDayDetail(date, dayLogs);
     },
+
+    refreshQuickLogButtons, // 追加
+    quickLogBeer,           // 追加
 
 };
 

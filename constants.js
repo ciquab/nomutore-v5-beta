@@ -1,3 +1,76 @@
+// ==========================================================================
+// 1. Calculation Constants & Specs (Master Data)
+//    計算の整合性を保つため、定義を先頭に配置します
+// ==========================================================================
+
+export const STYLE_SPECS = {
+    // 定番・ラガー系
+    '国産ピルスナー': { abv: 5.0, carb: 3.0 }, // スーパードライなどの平均
+    '糖質オフ/新ジャンル': { abv: 4.5, carb: 1.5 }, // 糖質75%オフやゼロ系を考慮して平均値を下げる
+    'ピルスナー': { abv: 5.0, carb: 3.2 },
+    'ドルトムンター': { abv: 5.5, carb: 3.8 }, // エビスなどに近い、少しボディがあるタイプ
+    'シュバルツ': { abv: 5.0, carb: 3.5 }, // 黒ラガー
+
+    // エール系（ライト〜ミディアム）
+    'アンバーエール': { abv: 5.5, carb: 3.6 },
+    'ゴールデンエール': { abv: 5.0, carb: 3.2 },
+    'ペールエール': { abv: 5.0, carb: 3.0 },
+    'ジャパニーズエール': { abv: 5.5, carb: 3.5 }, // プレモル香るエールなど
+
+    // 小麦・白ビール系
+    'ヴァイツェン': { abv: 5.5, carb: 4.0 },
+    'ベルジャンホワイト': { abv: 5.0, carb: 4.2 },
+    'セゾン': { abv: 6.0, carb: 2.5 }, // ドライなので糖質は低い
+
+    // IPA系
+    'セッションIPA': { abv: 4.5, carb: 3.0 },
+    'IPA (West Coast)': { abv: 6.5, carb: 3.8 },
+    'Hazy IPA': { abv: 7.0, carb: 4.5 }, // 濁りと甘みで糖質高め
+    'Hazyペールエール': { abv: 5.5, carb: 4.0 }, // Hazy IPAよりは軽め
+    'ダブルIPA (DIPA)': { abv: 8.0, carb: 5.0 }, // アルコールも糖も多い
+
+    // 黒・高アルコール系
+    'ポーター': { abv: 5.5, carb: 4.0 },
+    'スタウト': { abv: 6.0, carb: 4.5 },
+    'インペリアルスタウト': { abv: 9.0, carb: 5.5 },
+    'ベルジャン・トリペル': { abv: 8.5, carb: 4.5 },
+    'バーレイワイン': { abv: 10.0, carb: 6.0 },
+
+    // その他
+    'サワーエール': { abv: 5.0, carb: 3.5 },
+    'フルーツビール': { abv: 5.0, carb: 5.0 }, // 果汁分で糖質高め
+    'ノンアル': { abv: 0.0, carb: 2.0 }, 
+    'Custom': { abv: 5.0, carb: 3.0 }
+};
+
+export const ALCOHOL_CONSTANTS = {
+    ETHANOL_DENSITY: 0.789,
+    CARB_CALORIES: 4.0
+};
+
+// --- 自動計算ロジック ---
+// logic.js内の計算式と完全に一致させます (350ml缶換算)
+const calculateStandardKcal = (spec) => {
+    const ml = 350;
+    const alcoholKcal = ml * (spec.abv / 100) * ALCOHOL_CONSTANTS.ETHANOL_DENSITY * 7.0;
+    const carbKcal = (ml / 100) * spec.carb * ALCOHOL_CONSTANTS.CARB_CALORIES;
+    return Math.round(alcoholKcal + carbKcal);
+};
+
+export const CALORIES = {
+    // 固定値ではなく、SPECSから動的に生成する
+    STYLES: {}
+};
+
+// スタイル一覧からカロリー表を生成
+Object.keys(STYLE_SPECS).forEach(key => {
+    CALORIES.STYLES[key] = calculateStandardKcal(STYLE_SPECS[key]);
+});
+
+// ==========================================================================
+// 2. App Constants & Settings
+// ==========================================================================
+
 export const APP = {
     STORAGE_KEYS: {
         LOGS: 'hazy_payback_logs', 
@@ -85,47 +158,6 @@ export const CHECK_PRESETS = {
     'liver': { label: '肝臓いたわり', icon: '🏥', ids: ['waterOk', 'fiberOk', 'supplement', 'finishTime', 'sleepQuality'] }
 };
 
-export const CALORIES = {
-    STYLES: {
-    // 定番・ラガー系
-    '国産ピルスナー': 145,
-    '糖質オフ/新ジャンル': 100, // 平均値を少し下げ調整
-    'ピルスナー': 140,
-    'ドルトムンター': 155,
-    'シュバルツ': 150,
-
-    // エール系
-    'アンバーエール': 165,
-    'ゴールデンエール': 150,
-    'ペールエール': 160,
-    'ジャパニーズエール': 160,
-
-    // 小麦・白ビール系
-    'ヴァイツェン': 175,
-    'ベルジャンホワイト': 165,
-    'セゾン': 160,
-
-    // IPA系
-    'セッションIPA': 130,
-    'IPA (West Coast)': 190,
-    'Hazy IPA': 220,
-    'Hazyペールエール': 170,
-    'ダブルIPA (DIPA)': 260,
-
-    // 黒・高アルコール系
-    'ポーター': 170,
-    'スタウト': 200,
-    'インペリアルスタウト': 280,
-    'ベルジャン・トリペル': 250,
-    'バーレイワイン': 320,
-
-    // その他
-    'サワーエール': 140,
-    'フルーツビール': 160,
-    'ノンアル': 50,
-    'Custom': 150
-    }
-};
 
 export const BEER_COLORS = {
     'pale': 'linear-gradient(to top, #fde047, #fef08a)',
@@ -199,49 +231,5 @@ export const EXERCISE = {
 
 export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': { label: '500ml (ロング缶)', ratio: 1.43 }, '473': { label: '473ml (USパイント)', ratio: 1.35 }, '568': { label: '568ml (UKパイント)', ratio: 1.62 }, '250': { label: '250ml (小グラス)', ratio: 0.71 }, '1000': { label: '1L (マース)', ratio: 2.86 } };
 
-export const ALCOHOL_CONSTANTS = {
-    ETHANOL_DENSITY: 0.789,
-    CARB_CALORIES: 4.0
-};
-
-export const STYLE_SPECS = {
-    // 定番・ラガー系
-    '国産ピルスナー': { abv: 5.0, carb: 3.0 }, // スーパードライなどの平均
-    '糖質オフ/新ジャンル': { abv: 4.5, carb: 1.5 }, // 糖質75%オフやゼロ系を考慮して平均値を下げる
-    'ピルスナー': { abv: 5.0, carb: 3.2 },
-    'ドルトムンター': { abv: 5.5, carb: 3.8 }, // エビスなどに近い、少しボディがあるタイプ
-    'シュバルツ': { abv: 5.0, carb: 3.5 }, // 黒ラガー
-
-    // エール系（ライト〜ミディアム）
-    'アンバーエール': { abv: 5.5, carb: 3.6 },
-    'ゴールデンエール': { abv: 5.0, carb: 3.2 },
-    'ペールエール': { abv: 5.0, carb: 3.0 },
-    'ジャパニーズエール': { abv: 5.5, carb: 3.5 }, // プレモル香るエールなど
-
-    // 小麦・白ビール系
-    'ヴァイツェン': { abv: 5.5, carb: 4.0 },
-    'ベルジャンホワイト': { abv: 5.0, carb: 4.2 },
-    'セゾン': { abv: 6.0, carb: 2.5 }, // ドライなので糖質は低い
-
-    // IPA系
-    'セッションIPA': { abv: 4.5, carb: 3.0 },
-    'IPA (West Coast)': { abv: 6.5, carb: 3.8 },
-    'Hazy IPA': { abv: 7.0, carb: 4.5 }, // 濁りと甘みで糖質高め
-    'Hazyペールエール': { abv: 5.5, carb: 4.0 }, // Hazy IPAよりは軽め
-    'ダブルIPA (DIPA)': { abv: 8.0, carb: 5.0 }, // アルコールも糖も多い
-
-    // 黒・高アルコール系
-    'ポーター': { abv: 5.5, carb: 4.0 },
-    'スタウト': { abv: 6.0, carb: 4.5 },
-    'インペリアルスタウト': { abv: 9.0, carb: 5.5 },
-    'ベルジャン・トリペル': { abv: 8.5, carb: 4.5 },
-    'バーレイワイン': { abv: 10.0, carb: 6.0 },
-
-    // その他
-    'サワーエール': { abv: 5.0, carb: 3.5 },
-    'フルーツビール': { abv: 5.0, carb: 5.0 }, // 果汁分で糖質高め
-    'ノンアル': { abv: 0.0, carb: 2.0 }, 
-    'Custom': { abv: 5.0, carb: 3.0 }
-};
 
 

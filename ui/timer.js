@@ -10,6 +10,7 @@ let isRunning = false;
 let lastBurnedKcal = 0;
 let accumulatedTime = 0;
 let currentBeerStyleName = null; 
+let lastTickSec = 0;
 
 const formatTime = (ms) => {
     const totalSec = Math.floor(ms / 1000);
@@ -43,9 +44,16 @@ export const Timer = {
         }
 
         if (start) {
+            // 【修正】リロード復帰時、accumulatedTime を再計算してから start() を呼ぶ
+            // これがないと accumulatedTime=0 のまま start() が走り、時間がリセットされてしまう
+            const startTimeVal = parseInt(start);
+            accumulatedTime = Date.now() - startTimeVal;
+
             Timer.start(); 
             toggleModal('timer-modal', true);
         } else if (accumulated > 0) {
+            // 一時停止状態の復元
+            accumulatedTime = accumulated; // 変数にも戻す
             isRunning = false;
             Timer.updateUI(false);
             
@@ -109,6 +117,9 @@ export const Timer = {
         isRunning = true;
         Timer.updateUI(true);
 
+        // ★追加: 再開時にいきなり音が鳴らないよう、現在の秒数で初期化
+        lastTickSec = Math.floor(accumulatedTime / 1000);
+
         console.log('[Timer] Loop starting...');
         timerInterval = setInterval(() => {
             const currentNow = Date.now();
@@ -117,7 +128,24 @@ export const Timer = {
 
             const display = document.getElementById('timer-display');
             if(display) display.textContent = formatTime(diff);
-            // else console.warn('[Timer] Display element missing!');
+            
+            // ==================================================
+            // ★追加: 秒針と鼓動のサウンドロジック (Tick & Beat)
+            // ==================================================
+            const currentSec = Math.floor(diff / 1000);
+            
+            // 秒数が切り替わった瞬間だけ実行
+            if (currentSec > lastTickSec) {
+                // 1分ごと (60, 120, 180...) -> 鼓動 (Heartbeat)
+                if (currentSec > 0 && currentSec % 60 === 0) {
+                    if (Feedback && Feedback.timerBeat) Feedback.timerBeat();
+                } else {
+                    // それ以外 -> 秒針 (Tick)
+                    if (Feedback && Feedback.timerTick) Feedback.timerTick();
+                }
+                lastTickSec = currentSec; // 秒数を更新
+            }
+            // ==================================================
 
             Timer.updateCalculations(diff);
 
@@ -239,21 +267,37 @@ export const Timer = {
             const typeEl = document.getElementById('timer-exercise-select');
             const type = typeEl ? typeEl.value : 'other';
             
-            document.dispatchEvent(new CustomEvent('save-exercise', {
-                detail: {
-                    exerciseKey: type,
-                    minutes: minutes,
-                    date: dayjs().format('YYYY-MM-DD'),
-                    applyBonus: true
+            toggleModal('timer-modal', false);
+
+            setTimeout(() => {
+                // main.js で window.UI が登録されている前提
+                if (window.UI && window.UI.openManualInput) {
+                    // 完了データを渡してモーダルを開く
+                    const dummyLog = {
+                        minutes: minutes,
+                        exerciseKey: type,
+                        memo: 'Timer Record',
+                        timestamp: Date.now(),
+                        applyBonus: true
+                    };
+                    
+                    // 第2引数にログデータを渡してフォームにセットさせる
+                    window.UI.openManualInput(null, dummyLog);
+                    
+                    // ★修正: データ渡し成功後にリセットを実行
+                    Timer.reset();
+                } else {
+                    // ★追加: 万が一UIが見つからない場合の救済（リセットせずアラートを出す）
+                    console.error('UI.openManualInput not found');
+                    alert('エラー: 記録画面を開けませんでした。\n(データ保護のためリセットを中止しました。画面をリロードせず管理者へ報告してください)');
                 }
-            }));
+            }, 300);
             
         } else {
             alert('1分未満のため記録しませんでした。');
+            Timer.reset(); 
+            toggleModal('timer-modal', false);
         }
-
-        Timer.reset();
-        toggleModal('timer-modal', false);
     },
 
     reset: () => {
@@ -265,6 +309,7 @@ export const Timer = {
         accumulatedTime = 0;
         lastBurnedKcal = 0;
         currentBeerStyleName = null; 
+        lastTickSec = 0; // ★追加: 秒数カウンターもリセット
         
         const container = document.getElementById('timer-bubbles-container');
         if (container) container.innerHTML = '';

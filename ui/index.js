@@ -293,21 +293,21 @@ export const UI = {
         bind('tab-beer-custom', 'click', () => switchBeerInputTab('custom'));
 
 // =========================================================
-// 1. ビール本数調整 (二重音対策: JS側で制御)
+// 1. ビール本数調整 (二重音・重複発火対策)
 // =========================================================
-// HTMLのonclickを削除したので、ここでイベントを登録します
 const btnBeerMinus = document.getElementById('btn-beer-minus');
 const btnBeerPlus = document.getElementById('btn-beer-plus');
 
 if (btnBeerMinus) {
-    btnBeerMinus.addEventListener('click', () => {
-        // UI.adjustBeerCount は内部で Feedback.uiDial() を呼んでいるはずなので
-        // ここでは呼ぶ必要はありません。呼んでいない場合は adjustBeerCount を修正します。
+    // pointerdown を使うことで、マウスとタッチの重複を防ぎ、反応速度も上がります
+    btnBeerMinus.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // 重複イベント（clickなど）を防止
         adjustBeerCount(-1);
     });
 }
 if (btnBeerPlus) {
-    btnBeerPlus.addEventListener('click', () => {
+    btnBeerPlus.addEventListener('pointerdown', (e) => {
+        e.preventDefault(); // 重複イベント（clickなど）を防止
         adjustBeerCount(1);
     });
 }

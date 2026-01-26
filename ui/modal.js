@@ -341,13 +341,11 @@ export const openCheckModal = async (dateStr) => {
     const dateInput = document.getElementById('check-date');
     if(dateInput) dateInput.value = dateVal;
 
-    // ▼▼▼ ここから追加 ▼▼▼
     // 日付表示バッジの更新
     const displayEl = document.getElementById('daily-check-date-display');
     const valueEl = document.getElementById('daily-check-date-value');
     if (displayEl) displayEl.textContent = d.format('MM/DD (ddd)');
     if (valueEl) valueEl.value = dateVal;
-    // ▲▲▲ ここまで追加 ▲▲▲
     
     const container = document.getElementById('check-items-container');
     if (container) {
@@ -407,7 +405,6 @@ export const openCheckModal = async (dateStr) => {
     const wEl = document.getElementById('check-weight');
     if(wEl) wEl.value = '';
 
-    // Reset button text to default
     const saveBtn = document.getElementById('btn-save-check');
     if (saveBtn) saveBtn.textContent = 'Log Check';
 
@@ -428,14 +425,10 @@ export const openCheckModal = async (dateStr) => {
             db.logs.where('timestamp').between(start, end, true, true).filter(l => l.type === 'beer').toArray()
         ]);
 
-        // ★判定ロジックの修正
-        // 実際にユーザーが「保存」したデータがあるか探す
         const existingSaved = existingLogs.find(c => c.isSaved === true);
-        // ビール記録などで自動生成されたデータも含めて最初の1件を得る（表示の復元用）
         const anyRecord = existingLogs.length > 0 ? existingLogs[0] : null;
         const hasBeer = beerLogs.length > 0;
 
-        // 表示の復元には anyRecord を使う
         if (anyRecord) {
             setCheck('check-is-dry', anyRecord.isDryDay);
             syncDryDayUI(anyRecord.isDryDay);
@@ -447,16 +440,18 @@ export const openCheckModal = async (dateStr) => {
             } catch(e) {}
             
             schema.forEach(item => {
-                if (existing[item.id] !== undefined) {
-                    setCheck(`check-${item.id}`, existing[item.id]);
+                // anyRecord を参照するように修正
+                if (anyRecord[item.id] !== undefined) {
+                    setCheck(`check-${item.id}`, anyRecord[item.id]);
                 }
             });
-            if(wEl) wEl.value = existing.weight || '';
+            // anyRecord を参照するように修正
+            if(wEl) wEl.value = anyRecord.weight || '';
 
-            // ★ボタン文字の判定：実際にSaveされたデータがある場合のみ Update
             if (saveBtn) {
                 saveBtn.textContent = existingSaved ? 'Update Check' : 'Log Check';
-        }
+            }
+        } // if (anyRecord) の閉じカッコ
 
         if (hasBeer) {
             setCheck('check-is-dry', false); 
@@ -465,7 +460,9 @@ export const openCheckModal = async (dateStr) => {
             if (dryLabelContainer) dryLabelContainer.classList.add('opacity-50', 'pointer-events-none');
             if (dryLabelText) dryLabelText.innerHTML = "Is today a Dry Day? <span class='text-[10px] text-red-500 font-bold ml-2'>(Alcohol Recorded)</span>";
         }
-    } catch (e) { console.error("Failed to fetch check data:", e); }
+    } catch (e) { 
+        console.error("Failed to fetch check data:", e); 
+    }
 
     toggleModal('check-modal', true);
 };

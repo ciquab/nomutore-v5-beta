@@ -1149,35 +1149,61 @@ export const openDayDetail = async (dateStr) => {
 /**
  * クイックログボタンを履歴に基づいて動的に更新する
  */
+/**
+ * クイックログボタンを履歴に基づいて動的に更新する
+ */
 export const refreshQuickLogButtons = async () => {
     // 1. 全履歴データを取得
     const { allLogs } = await Service.getAllDataForUI();
+    const modes = Store.getModes(); // デフォルト設定も取得しておく
     
     // 2. 統計ロジックを呼び出し、飲酒回数順のリストを取得
     const stats = Calc.getBeerStats(allLogs);
-    const topBeer = (stats.beerStats && stats.beerStats.length > 0) 
-        ? stats.beerStats[0] 
-        : null;
+    const rankedBeers = stats.beerStats || [];
 
+    // --- Slot 1 (ランキング1位) の処理 ---
+    const topBeer = rankedBeers.length > 0 ? rankedBeers[0] : null;
     const btn1 = document.getElementById('quick-name-1');
     const slot1 = document.querySelector('[onclick*="quickLogBeer(\'mode1\')"]');
 
-    if (topBeer && btn1) {
-        // --- 履歴がある場合: 最頻銘柄をスロット1に配置 ---
-        btn1.textContent = topBeer.name; // 銘柄名 (例: "Yona Yona Ale")
-        
-        // ボタンのメタデータを銘柄名に合わせて更新（内部処理用）
+    if (topBeer && btn1 && slot1) {
+        // 履歴あり: ランキング1位を表示
+        btn1.textContent = topBeer.name; 
         slot1.dataset.style = topBeer.style;
         slot1.dataset.brand = topBeer.name;
         slot1.dataset.brewery = topBeer.brewery;
         
-        // ラベルを「Most Frequent」に変更して、動的に選ばれていることを示す
+        // ラベル更新
         const label = slot1.querySelector('p:first-child');
-        if (label) label.textContent = "Most Frequent";
-    } else {
-        // --- 履歴がない場合: デフォルトのお気に入り(Lager等)を表示 ---
-        const modes = Store.getModes();
-        if (btn1) btn1.textContent = modes.mode1;
+        if (label) label.textContent = "No.1 Frequent"; // 1位であることを明示
+        slot1.classList.add('border-amber-400'); // 色の強調（任意）
+    } else if (btn1) {
+        // 履歴なし: 設定値 (Favorite 1)
+        btn1.textContent = modes.mode1;
+        const label = slot1?.querySelector('p:first-child');
+        if (label) label.textContent = "Quick Log 1";
+    }
+
+    // --- Slot 2 (ランキング2位) の処理 --- ★ここを追加
+    const secondBeer = rankedBeers.length > 1 ? rankedBeers[1] : null;
+    const btn2 = document.getElementById('quick-name-2');
+    const slot2 = document.querySelector('[onclick*="quickLogBeer(\'mode2\')"]');
+
+    if (secondBeer && btn2 && slot2) {
+        // 履歴あり(2種類以上): ランキング2位を表示
+        btn2.textContent = secondBeer.name;
+        slot2.dataset.style = secondBeer.style;
+        slot2.dataset.brand = secondBeer.name;
+        slot2.dataset.brewery = secondBeer.brewery;
+
+        // ラベル更新
+        const label = slot2.querySelector('p:first-child');
+        if (label) label.textContent = "No.2 Frequent"; // 2位であることを明示
+    } else if (btn2) {
+        // 履歴不足: 設定値 (Favorite 2)
+        btn2.textContent = modes.mode2;
+        const label = slot2?.querySelector('p:first-child');
+        if (label) label.textContent = "Quick Log 2";
     }
 };
 

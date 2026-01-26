@@ -2,7 +2,7 @@
 import { APP, EXERCISE, BEER_COLORS, CALORIES } from '../constants.js'; 
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
-import { toggleModal, Feedback } from './dom.js';
+import { toggleModal, Feedback, showConfetti } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 let timerInterval = null;
@@ -260,6 +260,8 @@ export const Timer = {
         
         // 1. 成功フィードバック (音と振動)
         if (Feedback && Feedback.haptic) Feedback.haptic.success();
+
+        showConfetti();
         
         Timer.pause();
         

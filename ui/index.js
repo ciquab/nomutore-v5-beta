@@ -235,7 +235,6 @@ bind('btn-save-exercise', 'click', async () => {
     if (!isEdit) {
         // ★新規登録の時だけ、盛大にお祝いする
         UI.showConfetti();
-        UI.showToastAnimation('exercise');
         Feedback.success(); // または Feedback.exercise()
     } else {
         // ★更新の時は、静かなメッセージを出す（任意）

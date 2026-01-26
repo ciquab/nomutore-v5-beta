@@ -270,10 +270,12 @@ export const UI = {
         });
 
         bind('btn-save-check', 'click', () => {
+            // 判定用に「保存済みデータ」の存在をチェック（音の出し分け用）
+            const isUpdate = document.getElementById('btn-save-check').textContent === 'Update Check';
             const date = document.getElementById('check-date').value;
             const isDryDay = document.getElementById('check-is-dry').checked;
             const weight = document.getElementById('check-weight').value;
-            
+
             // ★追加: 動的スキーマから値を取得
             let schema = CHECK_SCHEMA;
             try {
@@ -289,6 +291,16 @@ export const UI = {
                 const el = document.getElementById(`check-${item.id}`);
                 detail[item.id] = el ? el.checked : false;
             });
+
+            // ★追加: 音と演出の実行
+            if (!isUpdate) {
+            // 新規登録時：運動と同じく盛大に
+            Feedback.success(); 
+            showConfetti();
+            } else {
+            // 更新時：控えめなタップ音
+            Feedback.tap();
+            }
 
             document.dispatchEvent(new CustomEvent('save-check', { detail }));
             toggleModal('check-modal', false);

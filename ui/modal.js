@@ -428,12 +428,17 @@ export const openCheckModal = async (dateStr) => {
             db.logs.where('timestamp').between(start, end, true, true).filter(l => l.type === 'beer').toArray()
         ]);
 
-        const existing = existingLogs.find(c => c.isSaved === true) || (existingLogs.length > 0 ? existingLogs[0] : null);
+        // ★判定ロジックの修正
+        // 実際にユーザーが「保存」したデータがあるか探す
+        const existingSaved = existingLogs.find(c => c.isSaved === true);
+        // ビール記録などで自動生成されたデータも含めて最初の1件を得る（表示の復元用）
+        const anyRecord = existingLogs.length > 0 ? existingLogs[0] : null;
         const hasBeer = beerLogs.length > 0;
 
-        if (existing) {
-            setCheck('check-is-dry', existing.isDryDay);
-            syncDryDayUI(existing.isDryDay);
+        // 表示の復元には anyRecord を使う
+        if (anyRecord) {
+            setCheck('check-is-dry', anyRecord.isDryDay);
+            syncDryDayUI(anyRecord.isDryDay);
             
             let schema = CHECK_SCHEMA;
             try {
@@ -448,8 +453,9 @@ export const openCheckModal = async (dateStr) => {
             });
             if(wEl) wEl.value = existing.weight || '';
 
-            // ★修正: データが存在する場合は Update Check に変更
-            if (saveBtn) saveBtn.textContent = 'Update Check';
+            // ★ボタン文字の判定：実際にSaveされたデータがある場合のみ Update
+            if (saveBtn) {
+                saveBtn.textContent = existingSaved ? 'Update Check' : 'Log Check';
         }
 
         if (hasBeer) {

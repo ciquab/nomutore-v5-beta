@@ -91,6 +91,9 @@ export const UI = {
     setFetchAllDataHandler: (fn) => { UI._fetchAllDataHandler = fn; },
 
     init: () => {
+        // ★追加: 二重初期化（イベントの二重登録）を防ぐガード
+        if (UI.isInitialized) return;
+        
         DOM.init();
         
         const bind = (id, event, fn) => {
@@ -209,31 +212,33 @@ export const UI = {
             const editId = idField && idField.value ? parseInt(idField.value) : null;
             const isEdit = !!editId;
 
-            // タップ音
-            Feedback.tap();
-
             const date = document.getElementById('manual-date').value;
-            const minutes = parseInt(document.getElementById('manual-minutes').value, 10);
+            const minutesInput = document.getElementById('manual-minutes').value;
+            const minutes = parseInt(minutesInput, 10);
             const key = document.getElementById('exercise-select').value;
             
             const bonusEl = document.getElementById('manual-apply-bonus');
             const applyBonus = bonusEl ? bonusEl.checked : true;
 
             // 2. バリデーション
-            if (!date || isNaN(minutes)) {
-                showMessage('日付と時間を入力してください', 'error');
-                return;
+            if (!date || isNaN(minutes) || minutes <= 0) {
+                Feedback.error(); // ★明示的にエラー音を鳴らす
+                showMessage('日付と時間を正しく入力してください', 'error');
+                return; // ここで終了。完了音へは行かない
             }
 
+            // modal.js 側の詳細チェック
             if (!validateInput(date, minutes)) {
-                return;
+                // validateInput 内でエラー音が鳴るように修正(後述)
+                return; 
             }
 
-            // 3. 演出
             if (!isEdit) {
+                // 新規登録成功時のみ演出
                 UI.showConfetti();
-                Feedback.success();
+                Feedback.success(); // ★完了音だけが鳴る
             } else {
+                Feedback.tap(); // 更新時は軽い音のみ
                 showMessage('📝 運動記録を更新しました', 'info');
             }
 
@@ -406,6 +411,8 @@ if (checkModal) {
         });
 
         initTheme();
+
+        UI.isInitialized = true;
     },
 
     switchTab: (tabId) => {

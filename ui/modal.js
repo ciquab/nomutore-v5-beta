@@ -978,17 +978,20 @@ export const closeModal = (id) => toggleModal(id, false);
 export const validateInput = (dateStr, minutes = null) => {
     // 日付チェック
     if (dateStr && dayjs(dateStr).isAfter(dayjs(), 'day')) {
+        Feedback.error(); // ★追加
         showMessage('未来の日付は記録できません', 'error');
         return false;
     }
     
-    // 運動時間チェック (minutesが渡された場合のみ)
+    // 運動時間チェック
     if (minutes !== null) {
         if (minutes <= 0) {
+            Feedback.error(); // ★追加
             showMessage('時間は1分以上で入力してください', 'error');
             return false;
         }
-        if (minutes > 1440) { // 24時間以上
+        if (minutes > 1440) {
+            Feedback.error(); // ★追加
             showMessage('24時間を超える記録はできません', 'error');
             return false;
         }

@@ -229,7 +229,7 @@ export const Feedback = {
     success: () => { AudioEngine.playSuccess(); HapticEngine.success(); },
     error: () => { AudioEngine.playTone(150, 'sawtooth', 0.3); HapticEngine.heavy(); },
     timerTick: () => { AudioEngine.playSoftTick(); },
-    timerBeat: () => { AudioEngine.playTone(200, 'sine', 0.1); HapticEngine.heartbeat(); }
+    timerBeat: () => { AudioEngine.playTone(200, 'sine', 0.1); HapticEngine.heartbeat(); },
     save: () => {
         AudioEngine.playSaveClick();
         if (Feedback.haptic) Feedback.haptic.light(); // 軽い振動もセット

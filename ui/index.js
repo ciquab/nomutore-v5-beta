@@ -203,74 +203,65 @@ export const UI = {
         });
 
         // --- 運動の保存処理 ---
-    /* ui/index.js 内の運動保存イベント */
+        bind('btn-save-exercise', 'click', async () => {
+            // 1. IDの取得
+            const idField = document.getElementById('editing-exercise-id');
+            const editId = idField && idField.value ? parseInt(idField.value) : null;
+            const isEdit = !!editId;
 
-bind('btn-save-exercise', 'click', async () => {
-    // --- 1. IDの取得と判定タグの作成 ---
-    const idField = document.getElementById('editing-exercise-id');
-    const editId = idField && idField.value ? parseInt(idField.value) : null;
-    const isEdit = !!editId; // IDがあれば編集モード
+            // タップ音
+            Feedback.tap();
 
-    // ★追加: ボタンを押した瞬間のタップ音（いつでも鳴らす）
-    Feedback.tap();
+            const date = document.getElementById('manual-date').value;
+            const minutes = parseInt(document.getElementById('manual-minutes').value, 10);
+            const key = document.getElementById('exercise-select').value;
+            
+            const bonusEl = document.getElementById('manual-apply-bonus');
+            const applyBonus = bonusEl ? bonusEl.checked : true;
 
-    const date = document.getElementById('manual-date').value;
-    const minutes = parseInt(document.getElementById('manual-minutes').value, 10);
-    const key = document.getElementById('exercise-select').value;
-    
-    const bonusEl = document.getElementById('manual-apply-bonus');
-    const applyBonus = bonusEl ? bonusEl.checked : true;
+            // 2. バリデーション
+            if (!date || isNaN(minutes)) {
+                showMessage('日付と時間を入力してください', 'error');
+                return;
+            }
 
-    // --- 2. バリデーション ---
-    if (!date || isNaN(minutes)) {
-        showMessage('日付と時間を入力してください', 'error');
-        return;
-    }
+            if (!validateInput(date, minutes)) {
+                return;
+            }
 
-    if (!validateInput(date, minutes)) {
-        return;
-    }
+            // 3. 演出
+            if (!isEdit) {
+                UI.showConfetti();
+                Feedback.success();
+            } else {
+                showMessage('📝 運動記録を更新しました', 'info');
+            }
 
-    // --- 3. 演出の実行（新規の時だけ） ---
-    if (!isEdit) {
-        // ★新規登録の時だけ、盛大にお祝いする
-        UI.showConfetti();
-        Feedback.success(); // または Feedback.exercise()
-    } else {
-        // ★更新の時は、静かなメッセージを出す（任意）
-        showMessage('📝 運動記録を更新しました', 'info');
-    }
+            // 4. 保存イベント発火
+            const detail = {
+                exerciseKey: key,
+                minutes: minutes,
+                date: date,
+                applyBonus: applyBonus,
+                id: editId || null
+            };
 
-    // --- 4. 保存処理の発火 ---
-    const detail = {
-        exerciseKey: key,
-        minutes: minutes,
-        date: date,
-        applyBonus: applyBonus,
-        id: editId || null
-    };
+            document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
+            
+            closeModal('exercise-modal');
+        });
 
-        document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
-        
-        // ★修正点2: 今回は「モーダル」なので、保存後に閉じる必要があります
-        closeModal('exercise-modal');
-    });
-
-        // ★ここに追加: 運動の削除ボタンの処理
+        // --- 運動の削除ボタン ---
         bind('btn-delete-exercise', 'click', async () => {
             const idVal = document.getElementById('editing-exercise-id').value;
             
-            // IDがない（新規作成時など）場合は何もしない
             if (!idVal) return;
             if (!confirm('この運動記録を削除しますか？')) return;
 
-                // Service.deleteLog は削除後に自動で refresh-ui を発行します
-                await Service.deleteLog(parseInt(idVal));
-
+            await Service.deleteLog(parseInt(idVal));
             Feedback.delete();
                 
-                // モーダルを閉じる
-                closeModal('exercise-modal');
+            closeModal('exercise-modal');
         });
 
         bind('btn-save-check', 'click', () => {
@@ -300,6 +291,56 @@ bind('btn-save-exercise', 'click', async () => {
 
         bind('tab-beer-preset', 'click', () => switchBeerInputTab('preset'));
         bind('tab-beer-custom', 'click', () => switchBeerInputTab('custom'));
+
+// =========================================================
+// 1. ビール本数調整 (二重音対策: JS側で制御)
+// =========================================================
+// HTMLのonclickを削除したので、ここでイベントを登録します
+const btnBeerMinus = document.getElementById('btn-beer-minus');
+const btnBeerPlus = document.getElementById('btn-beer-plus');
+
+if (btnBeerMinus) {
+    btnBeerMinus.addEventListener('click', () => {
+        // UI.adjustBeerCount は内部で Feedback.uiDial() を呼んでいるはずなので
+        // ここでは呼ぶ必要はありません。呼んでいない場合は adjustBeerCount を修正します。
+        adjustBeerCount(-1);
+    });
+}
+if (btnBeerPlus) {
+    btnBeerPlus.addEventListener('click', () => {
+        adjustBeerCount(1);
+    });
+}
+
+// =========================================================
+// 2. デイリーチェック (音の追加)
+// =========================================================
+
+// A. 休肝日トグル (check-is-dry)
+// スイッチ切り替え音 (uiSwitch)
+const checkIsDry = document.getElementById('check-is-dry');
+if (checkIsDry) {
+    checkIsDry.addEventListener('change', () => {
+        Feedback.uiSwitch(); // カチッ
+        // toggleDryDay() は onchange="UI.toggleDryDay()" で呼ばれている可能性がありますが、
+        // 音はここで鳴らすのが確実です。
+    });
+}
+
+// B. その他のチェックボックス (動的生成対応)
+// チェックリストの親要素に対してイベント委譲を設定します
+const checkListContainer = document.getElementById('check-list-container'); // ※モーダル内のリスト親要素IDを確認
+// もし親要素にIDがない場合は、モーダル全体('check-modal')から絞り込みます
+const checkModal = document.getElementById('check-modal');
+
+if (checkModal) {
+    checkModal.addEventListener('change', (e) => {
+        // 休肝日トグル以外で、チェックボックスが変更された場合
+        if (e.target.type === 'checkbox' && e.target.id !== 'check-is-dry') {
+            Feedback.tap(); // 軽いタップ音
+        }
+    });
+}
         
         const themeSel = document.getElementById('theme-input');
         if(themeSel) themeSel.addEventListener('change', (e) => {
@@ -544,18 +585,3 @@ export {
     StateManager,
     toggleModal
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -257,7 +257,10 @@ export const Timer = {
 
     finish: async () => {
         console.log('[Timer] finish() called');
+        
+        // 1. 成功フィードバック (音と振動)
         if (Feedback && Feedback.haptic) Feedback.haptic.success();
+        
         Timer.pause();
         
         const totalMs = accumulatedTime;
@@ -267,33 +270,23 @@ export const Timer = {
             const typeEl = document.getElementById('timer-exercise-select');
             const type = typeEl ? typeEl.value : 'other';
             
-            toggleModal('timer-modal', false);
-
-            setTimeout(() => {
-                // main.js で window.UI が登録されている前提
-                if (window.UI && window.UI.openManualInput) {
-                    // 完了データを渡してモーダルを開く
-                    const dummyLog = {
-                        minutes: minutes,
-                        exerciseKey: type,
-                        memo: 'Timer Record',
-                        timestamp: Date.now(),
-                        applyBonus: true
-                    };
-                    
-                    // 第2引数にログデータを渡してフォームにセットさせる
-                    window.UI.openManualInput(null, dummyLog);
-                    
-                    // ★修正: データ渡し成功後にリセットを実行
-                    Timer.reset();
-                } else {
-                    // ★追加: 万が一UIが見つからない場合の救済（リセットせずアラートを出す）
-                    console.error('UI.openManualInput not found');
-                    alert('エラー: 記録画面を開けませんでした。\n(データ保護のためリセットを中止しました。画面をリロードせず管理者へ報告してください)');
+            // 2. 即座に保存イベントを発火 (モーダルは開かない)
+            document.dispatchEvent(new CustomEvent('save-exercise', {
+                detail: {
+                    exerciseKey: type,
+                    minutes: minutes,
+                    date: dayjs().format('YYYY-MM-DD'),
+                    applyBonus: true,
+                    isTimer: true // ★重要: これでmain.jsに「タイマー経由だよ」と伝える
                 }
-            }, 300);
+            }));
             
+            // 3. タイマー画面を閉じてリセット
+            toggleModal('timer-modal', false);
+            Timer.reset();
+
         } else {
+            // 1分未満の場合
             alert('1分未満のため記録しませんでした。');
             Timer.reset(); 
             toggleModal('timer-modal', false);

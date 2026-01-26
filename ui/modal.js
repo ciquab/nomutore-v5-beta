@@ -2,7 +2,7 @@ import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP, CHECK_
 import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
-import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback, showToastAnimation } from './dom.js';
+import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback, showToastAnimation, Feedback } from './dom.js';
 import { Service } from '../service.js';
 import { Timer } from './timer.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -24,6 +24,15 @@ export const openActionMenu = (dateStr = null) => {
 };
 
 export const handleActionSelect = (type) => {
+    // ★追加: ユーザーがタップしたこの瞬間に、オーディオエンジンを「叩き起こす」
+    // これにより、後の処理で音がブロックされるのを防ぎます
+    if (Feedback) {
+        Feedback.initAudio();
+        if (Feedback.audio && Feedback.audio.resume) {
+            Feedback.audio.resume();
+        }
+    }
+
     const hiddenDate = document.getElementById('action-menu-target-date');
     const dateStr = hiddenDate ? hiddenDate.value : (StateManager.selectedDate || getTodayString());
     
@@ -512,11 +521,13 @@ export const openManualInput = (dateStr = null, log = null) => {
 export const openTimer = (autoStart = false) => {
     Timer.init();
     toggleModal('timer-modal', true);
+    
     const isRunning = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
+    
     if (autoStart && !isRunning) {
-        setTimeout(() => {
-            Timer.start();
-        }, 300);
+        // ★修正: setTimeout を削除し、即時実行に変更
+        // 遅延（300ms）があると、iOS等で「ユーザー操作外」とみなされ音が鳴りません
+        Timer.start();
     }
 };
 

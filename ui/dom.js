@@ -8,12 +8,18 @@ const AudioEngine = {
     noiseBuffer: null,
 
     init: () => {
-        if (!AudioEngine.ctx) {
+        // すでに有効な Context があれば何もしない
+        if (AudioEngine.ctx && AudioEngine.ctx.state !== 'closed') {
+            return;
+        }
+        try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (AudioContext) {
                 AudioEngine.ctx = new AudioContext();
                 AudioEngine.createNoiseBuffer();
             }
+        } catch (e) {
+            console.warn('AudioContext init failed:', e);
         }
     },
 
@@ -23,10 +29,9 @@ const AudioEngine = {
         }
     },
 
-    // ノイズバッファ生成（液体音・紙音用）
     createNoiseBuffer: () => {
         if (!AudioEngine.ctx) return;
-        const bufferSize = AudioEngine.ctx.sampleRate * 2; // 2 seconds
+        const bufferSize = AudioEngine.ctx.sampleRate * 2;
         const buffer = AudioEngine.ctx.createBuffer(1, bufferSize, AudioEngine.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -35,89 +40,100 @@ const AudioEngine = {
         AudioEngine.noiseBuffer = buffer;
     },
 
-    // 汎用トーン再生
+    // 汎用トーン再生 (安全ガード付き・設定維持)
     playTone: (freq, type, duration, startTime = 0, vol = 0.1) => {
-        if (!AudioEngine.ctx) AudioEngine.init();
+        if (!AudioEngine.ctx || AudioEngine.ctx.state === 'closed') AudioEngine.init();
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
 
-        // --- 安全策: 数値が不正な場合のデフォルト値設定 ---
-        const f = freq || 440;
-        const d = duration || 0.1;
-        const s = startTime || 0;
-        const v = vol || 0.1;
+        // --- 修正ポイント1: 数値の安全確保 (non-finite対策) ---
+        const f = Number.isFinite(freq) ? freq : 440;
+        const d = Number.isFinite(duration) ? duration : 0.1;
+        const s = Number.isFinite(startTime) ? startTime : 0;
+        const v = Number.isFinite(vol) ? vol : 0.1;
 
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain(); // 修正ポイント2: try-catch内で作成
 
-        osc.type = type;
-        osc.frequency.setValueAtTime(f, ctx.currentTime + s);
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(f, ctx.currentTime + s);
 
-        gain.gain.setValueAtTime(v, ctx.currentTime + s);
-        
-        // 第2引数の時間を計算し、有限な数値であることを確認
-        const endTime = ctx.currentTime + s + d;
-        if (isFinite(endTime)) {
-            // 0.0001 にすることで、より確実にエラーを回避
-            gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+            gain.gain.setValueAtTime(v, ctx.currentTime + s);
+            
+            const endTime = ctx.currentTime + s + d;
+            // 修正ポイント3: endTimeが有限であることを確認し、目標値を0.0001にする
+            if (Number.isFinite(endTime)) {
+                gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+            }
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(ctx.currentTime + s);
+            osc.stop(Number.isFinite(endTime) ? endTime : ctx.currentTime + s + 0.1);
+        } catch (e) {
+            console.warn('playTone error:', e);
         }
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(ctx.currentTime + s);
-        osc.stop(isFinite(endTime) ? endTime : ctx.currentTime + 0.1);
     },
 
-    // ノイズ再生
+    // ノイズ再生 (安全ガード付き・設定維持)
     playNoise: (duration, filterFreq = 1000, vol = 0.1, startTime = 0) => {
         if (!AudioEngine.ctx || !AudioEngine.noiseBuffer) AudioEngine.init();
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
 
-        const d = duration || 0.1;
-        const s = startTime || 0;
+        const d = Number.isFinite(duration) ? duration : 0.1;
+        const s = Number.isFinite(startTime) ? startTime : 0;
+        const f = Number.isFinite(filterFreq) ? filterFreq : 1000;
+        const v = Number.isFinite(vol) ? vol : 0.1;
 
-        const src = ctx.createBufferSource();
-        src.buffer = AudioEngine.noiseBuffer;
-        
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = filterFreq;
+        try {
+            const src = ctx.createBufferSource();
+            src.buffer = AudioEngine.noiseBuffer;
+            
+            const filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = f;
 
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(vol, ctx.currentTime + s);
+            const gain = ctx.createGain();
+            gain.gain.setValueAtTime(v, ctx.currentTime + s);
 
-        const endTime = ctx.currentTime + s + d;
-        if (isFinite(endTime)) {
-            gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+            const endTime = ctx.currentTime + s + d;
+            if (Number.isFinite(endTime)) {
+                gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+            }
+
+            src.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+
+            src.start(ctx.currentTime + s);
+            src.stop(Number.isFinite(endTime) ? endTime : ctx.currentTime + s + 0.1);
+        } catch (e) {
+            console.warn('playNoise error:', e);
         }
-
-        src.connect(filter);
-        filter.connect(gain);
-        gain.connect(ctx.destination);
-
-        src.start(ctx.currentTime + s);
-        src.stop(isFinite(endTime) ? endTime : ctx.currentTime + 0.1);
     },
 
-    // 🔘 UIクリック音 (Clicky)
+    // 🔘 UIクリック音 (Clicky) - 設定維持
     playClick: () => {
         AudioEngine.playTone(800, 'sine', 0.05, 0, 0.05);
         AudioEngine.playNoise(0.03, 3000, 0.02);
     },
 
-    // 🔢 ダイヤル音 (Tick)
+    // 🔢 ダイヤル音 (Tick) - 設定維持
     playTick: () => {
         AudioEngine.playTone(400, 'triangle', 0.03, 0, 0.05);
     },
 
-    // ⏱ タイマー秒針 (Soft Tick)
+    // ⏱ タイマー秒針 (Soft Tick) - 設定維持
     playSoftTick: () => {
         AudioEngine.playTone(1200, 'sine', 0.02, 0, 0.01);
     },
 
-    // 🔔 完了/成功音 (Success Chord)
+    // 🔔 完了/成功音 (Success Chord) - 設定維持
     playSuccess: () => {
         const t = 0;
         AudioEngine.playTone(523.25, 'sine', 0.4, t, 0.1);
@@ -125,154 +141,86 @@ const AudioEngine = {
         AudioEngine.playTone(783.99, 'sine', 0.8, t + 0.2, 0.1);
     },
 
-    // 🗑️ 削除音 (Delete)
+    // 🗑️ 削除音 (Delete) - 設定維持
     playDelete: () => {
         AudioEngine.playNoise(0.3, 500, 0.15); 
         AudioEngine.playTone(100, 'sawtooth', 0.2, 0, 0.05);
     },
 
-    // 🍺 乾杯＆注ぐ音 (Beer Hybrid)
-    // ★修正: あなたの素晴らしいグラス音コード + 炭酸ノイズ
+    // 🍺 乾杯＆注ぐ音 (Beer Hybrid) - 設定維持
     playBeer: () => {
         if (!AudioEngine.ctx) AudioEngine.init();
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
         const t = ctx.currentTime;
 
-        // 1. リアルなグラス音 (ご提示のコード)
         const partials = [
-            { f: 1400, d: 0.6, v: 0.15 }, // 基音
-            { f: 3600, d: 0.2, v: 0.08 }, // 倍音1
-            { f: 6200, d: 0.08, v: 0.04 }, // 倍音2
-            { f: 1650, d: 0.5, v: 0.12 }, // 基音2 (不協和音)
-            { f: 4100, d: 0.15, v: 0.06 }, // 倍音1
-            { f: 8000, d: 0.04, v: 0.03 }  // 衝突音
+            { f: 1400, d: 0.6, v: 0.15 }, { f: 3600, d: 0.2, v: 0.08 },
+            { f: 6200, d: 0.08, v: 0.04 }, { f: 1650, d: 0.5, v: 0.12 },
+            { f: 4100, d: 0.15, v: 0.06 }, { f: 8000, d: 0.04, v: 0.03 }
         ];
 
         partials.forEach(p => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(p.f, t);
-            
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(p.v, t + 0.005);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + p.d);
-            
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
-            osc.start(t);
-            osc.stop(t + p.d);
+            try {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(p.f, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(p.v, t + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + p.d);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + p.d);
+            } catch(e) {}
         });
 
-        // 2. 液体/炭酸の音 (追加演出)
-        // グラスが鳴った0.1秒後から「シュワァ...」と注ぐ音を入れる
-        // duration: 1.5s, filter: 800Hz (こもった音), vol: 0.1, delay: 0.1s
         AudioEngine.playNoise(1.5, 800, 0.1, 0.1); 
     }
 };
 
-// --- Haptics Engine ---
+// --- Haptics Engine --- (維持)
 const HapticEngine = {
     isSupported: () => 'vibrate' in navigator,
-
-    // 極軽量 (UI操作)
-    selection: () => { if (HapticEngine.isSupported()) navigator.vibrate(5); }, // カチッ
-    
-    // 軽量 (ボタン)
-    light: () => { if (HapticEngine.isSupported()) navigator.vibrate(10); }, // コトッ
-    
-    // 中量 (決定)
-    medium: () => { if (HapticEngine.isSupported()) navigator.vibrate(20); }, // ドゥン
-    
-    // 重量 (エラー/警告)
-    heavy: () => { if (HapticEngine.isSupported()) navigator.vibrate([40, 20, 40]); }, // ブブッ
-
-    // 鼓動 (タイマー)
-    heartbeat: () => { if (HapticEngine.isSupported()) navigator.vibrate(15); }, // ドクン
-
-    // 成功 (完了)
-    success: () => { if (HapticEngine.isSupported()) navigator.vibrate([20, 50, 20]); } // タタン
+    selection: () => { if (HapticEngine.isSupported()) navigator.vibrate(5); },
+    light: () => { if (HapticEngine.isSupported()) navigator.vibrate(10); },
+    medium: () => { if (HapticEngine.isSupported()) navigator.vibrate(20); },
+    heavy: () => { if (HapticEngine.isSupported()) navigator.vibrate([40, 20, 40]); },
+    heartbeat: () => { if (HapticEngine.isSupported()) navigator.vibrate(15); },
+    success: () => { if (HapticEngine.isSupported()) navigator.vibrate([20, 50, 20]); }
 };
 
-// --- Feedback Interface (API) ---
+// --- Feedback Interface (API) --- (設定維持)
 export const Feedback = {
     audio: AudioEngine,
     haptic: HapticEngine, 
     initAudio: () => AudioEngine.init(),
 
-    // --- 1. UI Micro-interactions (日常操作) ---
-
-    // 1. メニュー切り替え：重厚感のあるスイッチ音（周波数を少し下げる）
     uiSwitch: () => {
         AudioEngine.init();
         AudioEngine.resume();
-        // 周波数を 800Hz -> 600Hz に下げて「重み」を出す
-        AudioEngine.playTone(600, 0.05, 'square', 0.1); 
+        AudioEngine.playTone(600, 'square', 0.05, 0, 0.1); 
     },
 
-    // 2. 数字トグル：軽快で硬い音（周波数を上げ、減衰を速くする）
     uiDial: () => {
         AudioEngine.init();
         AudioEngine.resume();
-        // 周波数を 1200Hz に上げ、波形を 'sine' にして「コリッ」とした硬い音にする
-        AudioEngine.playTone(1200, 0.03, 'sine', 0.1); 
+        AudioEngine.playTone(1200, 'sine', 0.03, 0, 0.1); 
     },
 
-    // 3. チェックボックス：さらに高く、短い音（「ピッ」という電子音寄り）
     tap: () => {
         AudioEngine.init();
         AudioEngine.resume();
-        AudioEngine.playTone(1800, 0.02, 'sine', 0.05);
+        AudioEngine.playTone(1800, 'sine', 0.02, 0, 0.05);
     },
 
-    // --- 2. Action Feedback (意味のある操作) ---
-
-    // ビール保存 / 乾杯
-    // グラス音 + 炭酸音 + 重めの振動
-    beer: () => { 
-        AudioEngine.playBeer();
-        HapticEngine.medium(); 
-    },
-
-    // 削除アクション
-    // 紙を丸める音 + 警告振動
-    delete: () => {
-        AudioEngine.playDelete();
-        HapticEngine.heavy();
-    },
-
-    // 完了 / 成功 / 完済
-    // 3和音のチャイム + 祝祭振動
-    success: () => { 
-        AudioEngine.playSuccess();
-        HapticEngine.success(); 
-    },
-
-    // エラー / バリデーション
-    // 不協和音 + 警告振動
-    error: () => {
-        // AudioEngineにplayErrorがない場合はToneで代用
-        AudioEngine.playTone(150, 'sawtooth', 0.3);
-        HapticEngine.heavy();
-    },
-
-    // --- 3. Immersive Feedback (没入演出) ---
-
-    // タイマーの秒針 (毎秒)
-    // 非常に静かな音のみ (振動なし)
-    timerTick: () => {
-        AudioEngine.playSoftTick();
-    },
-
-    // タイマーの鼓動 (1分毎)
-    // 重低音 + 心拍振動
-    timerBeat: () => {
-        AudioEngine.playTone(200, 'sine', 0.1);
-        HapticEngine.heartbeat();
-    }
+    beer: () => { AudioEngine.playBeer(); HapticEngine.medium(); },
+    delete: () => { AudioEngine.playDelete(); HapticEngine.heavy(); },
+    success: () => { AudioEngine.playSuccess(); HapticEngine.success(); },
+    error: () => { AudioEngine.playTone(150, 'sawtooth', 0.3); HapticEngine.heavy(); },
+    timerTick: () => { AudioEngine.playSoftTick(); },
+    timerBeat: () => { AudioEngine.playTone(200, 'sine', 0.1); HapticEngine.heartbeat(); }
 };
 
 // --- Toast Animation Helper (New) ---

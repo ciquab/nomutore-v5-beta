@@ -186,25 +186,27 @@ export const Feedback = {
 
     // --- 1. UI Micro-interactions (日常操作) ---
 
-    // タブ切り替え / モーダル開閉 / スイッチ
-    // 軽い「カチッ」 + 極短振動
+    // 1. メニュー切り替え：重厚感のあるスイッチ音（周波数を少し下げる）
     uiSwitch: () => {
-        AudioEngine.playClick(); // playPopの代わり
-        HapticEngine.selection();
+        AudioEngine.init();
+        AudioEngine.resume();
+        // 周波数を 800Hz -> 600Hz に下げて「重み」を出す
+        AudioEngine.playTone(600, 0.05, 'square', 0.1); 
     },
 
-    // 数値カウンター (+/-) 
-    // 木片のような「コリッ」 + 極短振動
+    // 2. 数字トグル：軽快で硬い音（周波数を上げ、減衰を速くする）
     uiDial: () => {
-        AudioEngine.playTick(); 
-        HapticEngine.selection();
+        AudioEngine.init();
+        AudioEngine.resume();
+        // 周波数を 1200Hz に上げ、波形を 'sine' にして「コリッ」とした硬い音にする
+        AudioEngine.playTone(1200, 0.03, 'sine', 0.1); 
     },
 
-    // 一般的なボタンタップ
-    // 少し柔らかいクリック感
+    // 3. チェックボックス：さらに高く、短い音（「ピッ」という電子音寄り）
     tap: () => {
-        AudioEngine.playClick();
-        HapticEngine.light();
+        AudioEngine.init();
+        AudioEngine.resume();
+        AudioEngine.playTone(1800, 0.02, 'sine', 0.05);
     },
 
     // --- 2. Action Feedback (意味のある操作) ---

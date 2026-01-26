@@ -257,18 +257,17 @@ export const Timer = {
 
     finish: async () => {
         console.log('[Timer] finish() called');
-        
-        // 1. 成功フィードバック (音と振動)
-        if (Feedback && Feedback.haptic) Feedback.haptic.success();
-
-        showConfetti();
-        
+          
         Timer.pause();
         
         const totalMs = accumulatedTime;
         const minutes = Math.round(totalMs / 60000);
 
         if (minutes > 0) {
+            // 1. 成功フィードバック (音と振動)
+            if (Feedback && Feedback.haptic) Feedback.haptic.success();
+            showConfetti();
+
             const typeEl = document.getElementById('timer-exercise-select');
             const type = typeEl ? typeEl.value : 'other';
             

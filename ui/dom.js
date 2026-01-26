@@ -117,6 +117,15 @@ const AudioEngine = {
         }
     },
 
+    // ⚙️ 設定保存時の音（短いダブル・クリック）
+    playSaveClick: () => {
+        const t = AudioEngine.ctx.currentTime;
+        // 1つ目の音：カチッ（高め）
+        AudioEngine.playTone(800, 'sine', 0.05, 0, 0.08);
+        // 2つ目の音：コッ（低め・0.05秒後）
+        AudioEngine.playTone(400, 'sine', 0.03, 0.05, 0.1);
+    },
+
     // 🔘 UIクリック音 (Clicky) - 設定維持
     playClick: () => {
         AudioEngine.playTone(800, 'sine', 0.05, 0, 0.05);
@@ -221,6 +230,10 @@ export const Feedback = {
     error: () => { AudioEngine.playTone(150, 'sawtooth', 0.3); HapticEngine.heavy(); },
     timerTick: () => { AudioEngine.playSoftTick(); },
     timerBeat: () => { AudioEngine.playTone(200, 'sine', 0.1); HapticEngine.heartbeat(); }
+    save: () => {
+        AudioEngine.playSaveClick();
+        if (Feedback.haptic) Feedback.haptic.light(); // 軽い振動もセット
+    }
 };
 
 // --- Toast Animation Helper (New) ---

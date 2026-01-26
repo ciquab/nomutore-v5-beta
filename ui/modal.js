@@ -885,6 +885,11 @@ export const handleSaveSettings = async () => {
 
         updateModeSelector();
 
+        // 保存成功のフィードバック音
+        if (typeof Feedback !== 'undefined' && Feedback.save) {
+            Feedback.save();
+        }
+
         showMessage('設定を保存しました', 'success');
         document.dispatchEvent(new CustomEvent('refresh-ui'));
 

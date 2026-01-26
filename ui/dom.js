@@ -41,20 +41,32 @@ const AudioEngine = {
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
 
+        // --- 安全策: 数値が不正な場合のデフォルト値設定 ---
+        const f = freq || 440;
+        const d = duration || 0.1;
+        const s = startTime || 0;
+        const v = vol || 0.1;
+
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = type;
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + startTime);
+        osc.frequency.setValueAtTime(f, ctx.currentTime + s);
 
-        gain.gain.setValueAtTime(vol, ctx.currentTime + startTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+        gain.gain.setValueAtTime(v, ctx.currentTime + s);
+        
+        // 第2引数の時間を計算し、有限な数値であることを確認
+        const endTime = ctx.currentTime + s + d;
+        if (isFinite(endTime)) {
+            // 0.0001 にすることで、より確実にエラーを回避
+            gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+        }
 
         osc.connect(gain);
         gain.connect(ctx.destination);
 
-        osc.start(ctx.currentTime + startTime);
-        osc.stop(ctx.currentTime + startTime + duration);
+        osc.start(ctx.currentTime + s);
+        osc.stop(isFinite(endTime) ? endTime : ctx.currentTime + 0.1);
     },
 
     // ノイズ再生
@@ -62,6 +74,9 @@ const AudioEngine = {
         if (!AudioEngine.ctx || !AudioEngine.noiseBuffer) AudioEngine.init();
         const ctx = AudioEngine.ctx;
         if (!ctx) return;
+
+        const d = duration || 0.1;
+        const s = startTime || 0;
 
         const src = ctx.createBufferSource();
         src.buffer = AudioEngine.noiseBuffer;
@@ -71,15 +86,19 @@ const AudioEngine = {
         filter.frequency.value = filterFreq;
 
         const gain = ctx.createGain();
-        gain.gain.setValueAtTime(vol, ctx.currentTime + startTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + startTime + duration);
+        gain.gain.setValueAtTime(vol, ctx.currentTime + s);
+
+        const endTime = ctx.currentTime + s + d;
+        if (isFinite(endTime)) {
+            gain.gain.exponentialRampToValueAtTime(0.0001, endTime);
+        }
 
         src.connect(filter);
         filter.connect(gain);
         gain.connect(ctx.destination);
 
-        src.start(ctx.currentTime + startTime);
-        src.stop(ctx.currentTime + startTime + duration);
+        src.start(ctx.currentTime + s);
+        src.stop(isFinite(endTime) ? endTime : ctx.currentTime + 0.1);
     },
 
     // 🔘 UIクリック音 (Clicky)

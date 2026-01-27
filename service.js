@@ -272,13 +272,13 @@ getAllDataForUI: async () => {
         } else if (mode === 'monthly') {
             return now.startOf('month').valueOf();
         } else if (mode === 'custom') {
-            // カスタム期間は「現在」を起点にするか、「前回のリセット日」を維持するか...
-            // シンプルに「今日から」にする
+            // カスタム期間は「現在」を起点にする
             return now.startOf('day').valueOf();
         }
         return 0;
     },
 
+    // ★修正: 自動リセット処理を抜本的に変更
     checkPeriodRollover: async () => {
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
         
@@ -294,70 +294,87 @@ getAllDataForUI: async () => {
             return false;
         }
 
-        const startDate = dayjs(storedStart);
         const now = dayjs();
         let shouldRollover = false;
         let nextStart = null;
 
+        // --- A. Weekly / Monthly (自動更新) ---
         if (mode === 'weekly') {
             const currentWeekStart = getStartOfWeek(now);
-            // 保存されている開始週と、現在の週頭が違うならリセット
+            const startDate = dayjs(storedStart);
             if (!currentWeekStart.isSame(startDate, 'day')) {
-                shouldRollover = true;
+                // 週が変わっている -> 自動アーカイブ実行
                 nextStart = currentWeekStart.valueOf();
+                await Service.archiveAndReset(storedStart, nextStart, mode);
+                return true; // モーダル（完了報告）を表示
             }
         } else if (mode === 'monthly') {
             const currentMonthStart = now.startOf('month');
+            const startDate = dayjs(storedStart);
             if (!currentMonthStart.isSame(startDate, 'day')) {
-                shouldRollover = true;
+                // 月が変わっている -> 自動アーカイブ実行
                 nextStart = currentMonthStart.valueOf();
+                await Service.archiveAndReset(storedStart, nextStart, mode);
+                return true;
             }
-        } else if (mode === 'custom') {
-            const duration = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_DURATION)) || 14;
-            const limitDate = startDate.add(duration, 'day');
-            if (now.isAfter(limitDate) || now.isSame(limitDate)) {
-                shouldRollover = true;
-                nextStart = limitDate.valueOf(); // 次の期間は「期限切れ日」からスタート（あるいは今日から？）
-                // 連続性を保つなら limitDate だが、アプリを使ってない期間があるとズレる。
-                // ここではシンプルに limitDate (予定されていた次の開始日) にする
-            }
-        }
-
-        if (shouldRollover) {
-    await db.transaction('rw', db.logs, db.period_archives, async () => {
-        const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
-        
-        if (logsToArchive.length > 0) {
-            // ★追加: 既に同じ開始日のアーカイブが存在しないかチェック
-            const existingArchive = await db.period_archives
-                .where('startDate').equals(storedStart)
-                .first();
-
-            if (!existingArchive) {
-                const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
-                
-                await db.period_archives.add({
-                    startDate: storedStart,
-                    endDate: nextStart - 1,
-                    mode: mode,
-                    totalBalance: totalBalance,
-                    logs: logsToArchive, 
-                    createdAt: Date.now()
-                });
-            } else {
-                console.warn('[Service] Archive for this period already exists. Skipping creation.');
-            }
+        } 
+        // --- B. Custom (手動更新待機) ---
+        else if (mode === 'custom') {
+            // Durationではなく「終了日(PERIOD_END_DATE)」を見るように変更
+            const endDateTs = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE));
             
-            // 削除ロジックはコメントアウトのままでOK
-        }
+            // 終了日が設定されており、かつ今日がその日を過ぎている場合
+            if (endDateTs && now.isAfter(dayjs(endDateTs).endOf('day'))) {
+                // ★ここではアーカイブを実行しない！
+                // 「期間終了」という事実だけをUIに伝え、ユーザーに選択させる
+                
+                // モーダルの文言書き換え用のDOM操作（Service層でやるべきではないが、簡易実装として許容）
+                const label = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL) || 'Project';
+                const titleEl = document.getElementById('rollover-title');
+                const descEl = document.getElementById('rollover-desc');
+                
+                if(titleEl) titleEl.textContent = `${label} Completed!`;
+                if(descEl) descEl.innerHTML = "期間が終了しました。<br>次のアクションを選択してください。";
 
-        // アーカイブ作成の成否に関わらず、期間は進める（無限ループ防止）
-        localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, nextStart);
-    });
-    return true;
-}
+                return true; // checkStatus.js で toggleModal('rollover-modal', true) される
+            }
+        }
 
         return false;
+    },
+
+    // ★追加: アーカイブ作成と期間リセットを行う独立メソッド
+    // checkPeriodRollover から切り出しました
+    archiveAndReset: async (currentStart, nextStart, mode) => {
+        return db.transaction('rw', db.logs, db.period_archives, async () => {
+            // 次の期間開始日より前のログを全て取得
+            const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
+            
+            if (logsToArchive.length > 0) {
+                // 既に同じ開始日のアーカイブが存在しないかチェック
+                const existingArchive = await db.period_archives
+                    .where('startDate').equals(currentStart)
+                    .first();
+
+                if (!existingArchive) {
+                    const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
+                    
+                    await db.period_archives.add({
+                        startDate: currentStart,
+                        endDate: nextStart - 1,
+                        mode: mode,
+                        totalBalance: totalBalance,
+                        logs: logsToArchive, 
+                        createdAt: Date.now()
+                    });
+                } else {
+                    console.warn('[Service] Archive for this period already exists. Skipping creation.');
+                }
+            }
+
+            // 期間開始日を更新
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, nextStart);
+        });
     },
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---

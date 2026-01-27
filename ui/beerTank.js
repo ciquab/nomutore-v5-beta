@@ -3,6 +3,7 @@ import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { StateManager } from './state.js';
 import { DOM, escapeHtml } from './dom.js';
+import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export function renderBeerTank(currentBalanceKcal) {
     const profile = Store.getProfile();
@@ -59,6 +60,37 @@ export function renderBeerTank(currentBalanceKcal) {
         liquidFront.classList.remove('bubbling-liquid', 'high-pressure');
 
         let fillRatio = 0;
+
+        // --- Customモード時の残り日数カウントダウン ---
+        const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
+        const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
+        const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
+
+        // 既存のCountdown要素があれば削除（重複防止）
+        const existingCount = document.getElementById('tank-custom-countdown');
+        if (existingCount) existingCount.remove();
+
+        if (mode === 'custom' && endDateTs) {
+            const end = dayjs(parseInt(endDateTs));
+            const now = dayjs();
+            const daysLeft = end.diff(now, 'day'); // 残り日数
+
+            if (orbContainer) {
+                // バッジを作成
+                const badge = document.createElement('div');
+                badge.id = 'tank-custom-countdown';
+                badge.className = "absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-20 animate-bounce-slow";
+                
+                // ラベル表示（例: "Trip: 3 Days Left"）
+                badge.innerHTML = `
+                    <div class="text-[9px] opacity-80 font-bold uppercase tracking-wider leading-none mb-0.5">${escapeHtml(customLabel || 'Project')}</div>
+                    <div class="text-xs font-black leading-none text-center">
+                        ${daysLeft >= 0 ? `${daysLeft} <span class="text-[9px] font-normal">DAYS LEFT</span>` : 'ENDED'}
+                    </div>
+                `;
+                orbContainer.appendChild(badge);
+            }
+        }
 
         // --- 3. モード別表示ロジック ---
         if (currentBalanceKcal >= 0) {

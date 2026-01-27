@@ -90,6 +90,8 @@ export const APP = {
         PERIOD_MODE: 'hazy_payback_balance_mode',
         PERIOD_START: 'hazy_payback_period_start',
         PERIOD_DURATION: 'hazy_payback_period_duration',
+        PERIOD_END_DATE: 'nomutore_period_end_date', // カスタム終了日
+        CUSTOM_LABEL: 'nomutore_custom_period_label', // カスタム期間名 (例: 北海道旅行)
         CHECK_SCHEMA: 'hazy_payback_check_schema',
         ORB_STYLE: 'hazy_payback_orb_style',
         UNIT_MODE: 'hazy_payback_unit_mode',

@@ -21,8 +21,8 @@ import {
     updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
     closeModal, adjustBeerCount, searchUntappd,
     openTimer, closeTimer,
-    openActionMenu, handleActionSelect,
-    validateInput, openDayDetail as _originalOpenDayDetail, refreshQuickLogButtons, quickLogBeer
+    openActionMenu, handleActionSelect,handleSaveSettings, 
+    validateInput, openDayDetail as _originalOpenDayDetail, refreshQuickLogButtons, quickLogBeer, handleRolloverAction
 } from './modal.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -587,8 +587,10 @@ if (checkModal) {
         _originalOpenDayDetail(date, dayLogs);
     },
 
-    refreshQuickLogButtons, // 追加
-    quickLogBeer,           // 追加
+    refreshQuickLogButtons, 
+    quickLogBeer,           
+    handleRolloverAction: handleRolloverAction, 
+    handleSaveSettings: handleSaveSettings,
 
 };
 

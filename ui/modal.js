@@ -752,22 +752,42 @@ export const openCheckLibrary = () => {
 /* --- Settings Logic --- */
 
 export const renderSettings = () => {
+    // 1. Period Mode 設定
     const currentMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
     const periodSel = document.getElementById('setting-period-mode');
-    const durationInput = document.getElementById('setting-period-duration');
-    const durationContainer = document.getElementById('setting-period-duration-container');
-    const savedDuration = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_DURATION) || APP.DEFAULTS.PERIOD_DURATION;
+    
+    // 新しいカスタム設定パネルの要素取得
+    const customSettings = document.getElementById('custom-period-settings');
+    const customStart = document.getElementById('custom-start-date');
+    const customEnd = document.getElementById('custom-end-date');
+    const customLabel = document.getElementById('custom-period-label');
 
     if (periodSel) {
         periodSel.value = currentMode;
-        periodSel.onchange = () => {
-            if (periodSel.value === 'custom') durationContainer.classList.remove('hidden');
-            else durationContainer.classList.add('hidden');
+
+        // モード変更時の表示切り替えロジック
+        const toggleCustom = () => {
+            if (periodSel.value === 'custom') {
+                // Customモードならパネルを表示
+                if (customSettings) customSettings.classList.remove('hidden');
+                
+                // 保存済みの値をフォームに充填
+                const startTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
+                const endTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
+                const label = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
+                
+                if (startTs && customStart) customStart.value = dayjs(parseInt(startTs)).format('YYYY-MM-DD');
+                if (endTs && customEnd) customEnd.value = dayjs(parseInt(endTs)).format('YYYY-MM-DD');
+                if (label && customLabel) customLabel.value = label;
+            } else {
+                // それ以外なら隠す
+                if (customSettings) customSettings.classList.add('hidden');
+            }
         };
-        if (currentMode === 'custom') durationContainer.classList.remove('hidden');
-        else durationContainer.classList.add('hidden');
+
+        periodSel.onchange = toggleCustom;
+        toggleCustom(); // 初期実行して現在の状態を反映
     }
-    if (durationInput) durationInput.value = savedDuration;
 
     // ★追加: プロフィール値の反映
     const profile = Store.getProfile();
@@ -893,11 +913,35 @@ export const handleSaveSettings = async () => {
     try {
         const periodSel = document.getElementById('setting-period-mode');
         const newMode = periodSel ? periodSel.value : 'weekly';
-        const durationInput = document.getElementById('setting-period-duration');
-        if (durationInput && durationInput.value) {
-            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_DURATION, durationInput.value);
+        // ▼▼▼ 修正: 古いduration処理を削除し、カスタム期間ロジックを追加 ▼▼▼
+        
+        if (newMode === 'custom') {
+            // --- Customモードの場合: 入力値を取得して手動保存 ---
+            const startDateVal = document.getElementById('custom-start-date').value;
+            const endDateVal = document.getElementById('custom-end-date').value;
+            const labelVal = document.getElementById('custom-period-label').value;
+
+            // バリデーション
+            if (!startDateVal || !endDateVal) {
+                showMessage('期間（開始日・終了日）を入力してください', 'error');
+                return; // ここで終了（finallyブロックが走りボタンは戻ります）
+            }
+            if (dayjs(endDateVal).isBefore(dayjs(startDateVal))) {
+                showMessage('終了日は開始日より後に設定してください', 'error');
+                return;
+            }
+
+            // localStorageに直接保存
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'custom');
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, dayjs(startDateVal).startOf('day').valueOf());
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, dayjs(endDateVal).endOf('day').valueOf());
+            localStorage.setItem(APP.STORAGE_KEYS.CUSTOM_LABEL, labelVal || 'Project');
+
+        } else {
+            // --- 通常モード (Weekly/Monthly/Permanent) の場合 ---
+            // Serviceに任せて開始日などを自動計算・保存
+            await Service.updatePeriodSettings(newMode);
         }
-        await Service.updatePeriodSettings(newMode);
 
         const w = document.getElementById('weight-input').value;
         const h = document.getElementById('height-input').value;
@@ -1291,4 +1335,49 @@ export const quickLogBeer = async (slotKey) => {
     
     // 記録後、統計が変わる可能性があるためボタンを再更新
     await refreshQuickLogButtons();
+};
+
+export const handleRolloverAction = async (action) => {
+    // modal.js内で import されている toggleModal を使用
+    toggleModal('rollover-modal', false);
+
+    if (action === 'weekly') {
+        // Weeklyに戻す
+        await Service.updatePeriodSettings('weekly');
+        showConfetti();
+        showMessage('Weeklyモードに戻りました', 'success');
+        // UI更新イベントを発火（refreshUIを直接インポートせずに済むテクニック）
+        document.dispatchEvent(new CustomEvent('refresh-ui'));
+        
+    } else if (action === 'new_custom') {
+        // 設定画面へ移動
+        // ★注意: UIオブジェクトはまだ作られていない可能性があるため、window.UI経由かDOM操作で移動
+        if (window.UI && window.UI.switchTab) {
+            window.UI.switchTab('settings');
+        } else {
+            // フォールバック: タブボタンを直接クリック
+            const settingsTab = document.getElementById('nav-tab-settings');
+            if(settingsTab) settingsTab.click();
+        }
+        
+        // 少し遅れてメッセージ
+        setTimeout(() => {
+            showMessage('新しい期間を設定してください', 'info');
+            // 設定パネルを開く演出（必要なら）
+            const pMode = document.getElementById('setting-period-mode');
+            if(pMode) {
+                pMode.value = 'custom';
+                pMode.dispatchEvent(new Event('change'));
+            }
+        }, 300);
+        
+    } else if (action === 'extend') {
+        // 延長処理
+        const currentEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE)) || Date.now();
+        const newEnd = dayjs(currentEnd).add(7, 'day').endOf('day').valueOf();
+        localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, newEnd);
+        
+        showMessage('期間を1週間延長しました', 'success');
+        document.dispatchEvent(new CustomEvent('refresh-ui'));
+    }
 };

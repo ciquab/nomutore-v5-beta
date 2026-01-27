@@ -31,6 +31,8 @@ export function renderBeerTank(currentBalanceKcal) {
     
     // オーブの親要素（揺れ用）と枠線（禅モード用）を取得
     const orbContainer = document.querySelector('.orb-container'); 
+    // ★追加: 新しいラッパーを取得
+    const tankWrapper = document.getElementById('tank-wrapper');
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
@@ -75,20 +77,19 @@ export function renderBeerTank(currentBalanceKcal) {
             const now = dayjs();
             const daysLeft = end.diff(now, 'day'); // 残り日数
 
-            if (orbContainer) {
+            if (tankWrapper) {
                 // バッジを作成
                 const badge = document.createElement('div');
                 badge.id = 'tank-custom-countdown';
-                badge.className = "absolute -top-2 -right-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-20 animate-bounce-slow";
+                badge.className = "absolute -top-2 -right-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-50 animate-bounce-slow"; // z-50で確実に手前に
                 
-                // ラベル表示（例: "Trip: 3 Days Left"）
                 badge.innerHTML = `
                     <div class="text-[9px] opacity-80 font-bold uppercase tracking-wider leading-none mb-0.5">${escapeHtml(customLabel || 'Project')}</div>
                     <div class="text-xs font-black leading-none text-center">
                         ${daysLeft >= 0 ? `${daysLeft} <span class="text-[9px] font-normal">DAYS LEFT</span>` : 'ENDED'}
                     </div>
                 `;
-                orbContainer.appendChild(badge);
+                tankWrapper.appendChild(badge);
             }
         }
 

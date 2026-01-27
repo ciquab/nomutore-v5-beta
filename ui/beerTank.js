@@ -78,15 +78,16 @@ export function renderBeerTank(currentBalanceKcal) {
             const daysLeft = end.diff(now, 'day'); // 残り日数
 
             if (tankWrapper) {
-                // バッジを作成
                 const badge = document.createElement('div');
                 badge.id = 'tank-custom-countdown';
-                badge.className = "absolute -top-2 -right-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-50 animate-bounce-slow"; // z-50で確実に手前に
+                
+                // ★修正: 原色ベタ塗りをやめ、Glassmorphism調の控えめなデザインに変更
+                badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
                 
                 badge.innerHTML = `
-                    <div class="text-[9px] opacity-80 font-bold uppercase tracking-wider leading-none mb-0.5">${escapeHtml(customLabel || 'Project')}</div>
-                    <div class="text-xs font-black leading-none text-center">
-                        ${daysLeft >= 0 ? `${daysLeft} <span class="text-[9px] font-normal">DAYS LEFT</span>` : 'ENDED'}
+                    <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
+                    <div class="text-xs font-black leading-none font-mono">
+                        ${daysLeft >= 0 ? `${daysLeft}<span class="text-[9px] font-normal ml-0.5">days</span>` : 'END'}
                     </div>
                 `;
                 tankWrapper.appendChild(badge);

@@ -16,14 +16,22 @@ import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
 
 import { 
-    getBeerFormData, updateBeerKcalPreview, resetBeerForm, openBeerModal, switchBeerInputTab, 
-    openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
-    updateModeSelector, updateBeerSelectOptions, updateInputSuggestions, renderQuickButtons,
-    closeModal, adjustBeerCount, searchUntappd,
+    openBeerModal, openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
+    updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect,handleSaveSettings, 
     validateInput, openDayDetail as _originalOpenDayDetail, refreshQuickLogButtons, quickLogBeer, handleRolloverAction
 } from './modal.js';
+import {
+    getBeerFormData,
+    updateBeerKcalPreview,
+    resetBeerForm,
+    switchBeerInputTab,
+    updateBeerSelectOptions,
+    updateInputSuggestions,
+    adjustBeerCount,
+    searchUntappd
+} from './beerForm.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 

@@ -79,7 +79,7 @@ export function renderBeerTank(currentBalanceKcal) {
                 // バッジを作成
                 const badge = document.createElement('div');
                 badge.id = 'tank-custom-countdown';
-                badge.className = "absolute top-0 right-0 transform translate-x-2 -translate-y-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-20 animate-bounce-slow";
+                badge.className = "absolute -top-2 -right-2 bg-indigo-600 text-white shadow-lg rounded-lg px-2.5 py-1 z-20 animate-bounce-slow";
                 
                 // ラベル表示（例: "Trip: 3 Days Left"）
                 badge.innerHTML = `

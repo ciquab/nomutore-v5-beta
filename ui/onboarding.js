@@ -201,7 +201,7 @@ const WIZARD_STEPS = [
                             <i class="ph-bold ph-infinity"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">No Reset (Endless)</h4>
+                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Permanent (Endless)</h4>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                                 リセットなし。<br>過去の全記録を積み上げたいマニア向け。
                             </p>
@@ -409,15 +409,6 @@ export const Onboarding = {
                         align: 'center'
                     } 
                 },
-                {
-                    element: '#quick-log-area',
-                    popover: {
-                        title: 'Quick Log',
-                        description: 'あなたの飲酒履歴を学習し、<br>よく飲む銘柄が自動でセットされます。',
-                        side: 'bottom',
-                        align: 'center'
-                    }
-                },
                 { 
                     element: '#liver-rank-card', 
                     popover: { 
@@ -428,8 +419,8 @@ export const Onboarding = {
                 { 
                     element: '#btn-fab-fixed', 
                     popover: { 
-                        title: 'Quick Actions',
-                        description: 'よく使う機能をここからすぐに呼び出せます。',
+                        title: 'Action Menu',
+                        description: '「いつものビール」も「手動入力」も、すべてここから記録できます。',
                         side: 'top',
                         align: 'center'
                     } 

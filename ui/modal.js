@@ -1027,9 +1027,7 @@ export const openDayDetail = async (dateStr) => {
     toggleModal('day-detail-modal', true);
 };
 
-/**
- * クイックログボタンを履歴に基づいて動的に更新する
- */
+
 /**
  * クイックログボタンを履歴に基づいて動的に更新する
  */

@@ -66,10 +66,40 @@ const initApp = async () => {
     try {
         console.log('App Initializing...');
 
-        // 1. 真っ先に onboarding の状態を確認する (setTimeout を外すか大幅に短くする)
-        if (window.Onboarding && window.Onboarding.checkLandingPage) {
-            // 既に LP 既読なら即座に showAppUI() が呼ばれ、ホーム画面が出る
-            window.Onboarding.checkLandingPage();
+        // 1. スマート・スプラッシュ判定 (Smart Splash Logic)
+        const isOnboarded = localStorage.getItem('nomutore_onboarding_complete');
+        const lastLaunchKey = 'nomutore_last_launch_ts';
+        const lastLaunch = parseInt(localStorage.getItem(lastLaunchKey) || '0');
+        const now = Date.now();
+        const THRESHOLD = 6 * 60 * 60 * 1000; // 6時間 (テスト時は 10000=10秒 などに短縮して確認可)
+
+        if (!isOnboarded) {
+            // A. 初回ユーザー -> 既存の判定ロジックにお任せ (Wizardへ)
+            if (window.Onboarding && window.Onboarding.checkLandingPage) {
+                window.Onboarding.checkLandingPage();
+            }
+        } else {
+            // B. 既存ユーザー -> 時間経過判定
+            if (now - lastLaunch > THRESHOLD) {
+                // 久しぶり -> スプラッシュ再生 (playSplashがあれば実行)
+                console.log('✨ Showing Smart Splash (Time elapsed)');
+                if (window.Onboarding && window.Onboarding.playSplash) {
+                    window.Onboarding.playSplash();
+                } else {
+                    // フォールバック（メソッド未実装時）
+                    if (window.Onboarding && window.Onboarding.checkLandingPage) {
+                        window.Onboarding.checkLandingPage();
+                    }
+                }
+            } else {
+                // 直近の利用 -> 即ホーム画面へ (LPを即座に消す)
+                console.log('🚀 Skipping Splash (Quick Resume)');
+                if (window.Onboarding && window.Onboarding.checkLandingPage) {
+                    window.Onboarding.checkLandingPage();
+                }
+            }
+            // 最終起動時刻を更新
+            localStorage.setItem(lastLaunchKey, now.toString());
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う

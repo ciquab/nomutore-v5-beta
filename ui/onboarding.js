@@ -409,6 +409,15 @@ export const Onboarding = {
                         align: 'center'
                     } 
                 },
+                {
+                    element: '#quick-log-area',
+                    popover: {
+                        title: 'Quick Log',
+                        description: 'あなたの飲酒履歴を学習し、<br>よく飲む銘柄が自動でセットされます。',
+                        side: 'bottom',
+                        align: 'center'
+                    }
+                },
                 { 
                     element: '#liver-rank-card', 
                     popover: { 
@@ -562,6 +571,59 @@ Onboarding.setPeriodMode = (mode) => {
     Onboarding.nextStep();
 };
 
+
+Onboarding.playSplash = () => {
+    const lp = document.getElementById('landing-page');
+    const content = document.getElementById('lp-content'); // ボタンを含むコンテナ
+    
+    if (!lp) return;
+
+    // 1. LPを表示
+    lp.classList.remove('hidden');
+    
+    // 2. ボタンだけを特定して隠す（コンテナごと消すとレイアウトが崩れるため）
+    const startBtn = document.getElementById('btn-start-app');
+    if (startBtn) startBtn.classList.add('hidden');
+
+    // 3. ボタンの代わりに「Welcomeメッセージ」を挿入してレイアウトを維持する
+    // ※ 既存のメッセージがあれば消しておく
+    const existingMsg = document.getElementById('splash-welcome-msg');
+    if (existingMsg) existingMsg.remove();
+
+    const msg = document.createElement('div');
+    msg.id = 'splash-welcome-msg';
+    msg.className = 'mt-8 text-sm font-bold text-indigo-200 animate-pulse tracking-widest uppercase';
+    msg.textContent = 'Welcome Back';
+    
+    // ボタンがあった場所（content内）に追加
+    if (content) {
+        content.classList.remove('hidden'); // コンテナ自体は表示しておく
+        content.appendChild(msg);
+    }
+
+    // 4. クリックで即スキップ
+    const skipHandler = () => {
+        lp.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+            lp.classList.add('hidden');
+            lp.classList.remove('opacity-0', 'pointer-events-none');
+            
+            // 状態復帰（次回のために元に戻す）
+            if (startBtn) startBtn.classList.remove('hidden');
+            if (msg) msg.remove();
+            
+        }, 600);
+        lp.removeEventListener('click', skipHandler);
+    };
+    lp.addEventListener('click', skipHandler);
+
+    // 5. 自動フェードアウト (少し短縮してテンポアップ)
+    setTimeout(() => {
+        if (!lp.classList.contains('hidden')) {
+            skipHandler();
+        }
+    }, 2000); // 2秒で十分
+};
 
 window.Onboarding = Onboarding;
 

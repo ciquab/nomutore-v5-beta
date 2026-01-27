@@ -443,14 +443,14 @@ export const toggleDryDay = (isDry) => {
         if (label) label.classList.add('text-emerald-800');
         if (hint) {
             hint.classList.add('text-emerald-600/70');
-            hint.textContent = "Great! Keeping your liver healthy. ✨";
+            hint.textContent = "素晴らしい！肝臓が回復しています✨";
         }
     } else {
         section.classList.add('bg-orange-50', 'border-orange-100');
         if (label) label.classList.add('text-orange-800');
         if (hint) {
             hint.classList.add('text-orange-600/70');
-            hint.textContent = "Switch ON if you didn't drink alcohol.";
+            hint.textContent = "一滴も飲まなかった日はスイッチON";
         }
     }
 };

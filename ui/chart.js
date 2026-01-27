@@ -5,8 +5,9 @@ import { DOM } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export function renderChart(logs, checks) {
-    const ctxCanvas = document.getElementById('balanceChart');
-    if (!ctxCanvas || typeof Chart === 'undefined') return;
+    // まず古いCanvasを取得（IDで検索）
+    const oldCanvas = document.getElementById('balanceChart');
+    if (!oldCanvas || typeof Chart === 'undefined') return;
 
     // フィルタボタンの更新
     const filters = DOM.elements['chart-filters'] || document.getElementById('chart-filters');
@@ -21,10 +22,26 @@ export function renderChart(logs, checks) {
     }
 
     try {
-        const existingChart = Chart.getChart(ctxCanvas);
+        // 1. 既存のチャートインスタンスがあれば破棄
+        const existingChart = Chart.getChart(oldCanvas);
         if (existingChart) {
             existingChart.destroy();
         }
+
+        // ▼▼▼ 追加: Canvas要素自体を再生成してメモリリークを防止 (Memory Leak Fix) ▼▼▼
+        const parent = oldCanvas.parentNode;
+        const newCanvas = document.createElement('canvas');
+        
+        // IDとクラス名を引き継ぐ
+        newCanvas.id = 'balanceChart';
+        newCanvas.className = oldCanvas.className; 
+        
+        // 古いCanvasを新しいCanvasに置換（これで古いリスナーも消滅）
+        parent.replaceChild(newCanvas, oldCanvas);
+
+        // 以降は新しいCanvasに対して描画を行う
+        const ctxCanvas = newCanvas;
+        // ▲▲▲ 追加終了 ▲▲▲
 
         const now = dayjs();
         let cutoffDate = StateManager.chartRange === '1w' ? now.subtract(7, 'day').valueOf() :

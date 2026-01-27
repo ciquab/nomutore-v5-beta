@@ -1,4 +1,4 @@
-import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP, CHECK_SCHEMA, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS } from '../constants.js';
+import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP, CHECK_SCHEMA, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { Calc } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
@@ -411,10 +411,17 @@ export const openCheckModal = async (dateStr) => {
     const isDryInput = document.getElementById('check-is-dry');
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
     const dryLabelText = dryLabelContainer ? dryLabelContainer.querySelector('span.font-bold') : null;
+    const hint = document.querySelector('#drinking-section p'); // ヒント要素の取得
 
-    if (dryLabelText) dryLabelText.innerHTML = "Is today a Dry Day?";
+    // ★修正: ラベルを日本語化
+    if (dryLabelText) dryLabelText.innerHTML = "休肝日 <span class='text-xs opacity-70 font-normal ml-1'>(No Alcohol)</span>";
     if (isDryInput) isDryInput.disabled = false;
+    // 以前の状態をリセット
     if (dryLabelContainer) dryLabelContainer.classList.remove('opacity-50', 'pointer-events-none');
+    if (hint) {
+        hint.classList.remove('text-red-500', 'font-bold');
+        // syncDryDayUI(false) でデフォルトテキストが入っています
+    }
 
     try {
         const start = d.startOf('day').valueOf();
@@ -438,13 +445,46 @@ export const openCheckModal = async (dateStr) => {
                 const s = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
                 if (s) schema = JSON.parse(s);
             } catch(e) {}
-            
+
+            const renderedIds = new Set(['id', 'timestamp', 'isDryDay', 'weight', 'isSaved', 'date']); // 除外対象
             schema.forEach(item => {
                 // anyRecord を参照するように修正
                 if (anyRecord[item.id] !== undefined) {
                     setCheck(`check-${item.id}`, anyRecord[item.id]);
                 }
+                renderedIds.add(item.id);
             });
+
+            // ▼▼▼ 追加: スキーマにない「遺産項目」を探して表示する (Legacy Item Recovery) ▼▼▼
+            const container = document.getElementById('check-items-container');
+            const legacyKeys = Object.keys(anyRecord).filter(key => !renderedIds.has(key));
+
+            legacyKeys.forEach(key => {
+                // 値が true (チェックあり) の場合のみ復元表示する
+                if (anyRecord[key] === true) {
+                    // 辞書から定義を取得（廃止項目でもここなら取れる！）
+                    const spec = getCheckItemSpec(key);
+                    
+                    // DOM生成（通常の項目とは少し見た目を変えて「過去の遺産」感を出す）
+                    const div = document.createElement('div');
+                    div.className = "legacy-item-wrapper"; // 識別用クラス
+                    div.innerHTML = `
+                        <label class="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700 opacity-80 cursor-not-allowed">
+                            <input type="checkbox" checked disabled class="rounded text-amber-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1">
+                                    <span>${spec.icon}</span> ${spec.label}
+                                    <span class="text-[9px] bg-amber-200 dark:bg-amber-800 px-1 rounded text-amber-900 dark:text-amber-100 ml-1">Legacy</span>
+                                </span>
+                                <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70">現在はリストにありません</span>
+                            </div>
+                        </label>
+                    `;
+                    container.appendChild(div);
+                }
+            });
+            // ▲▲▲ 追加終了 ▲▲▲
+
             // anyRecord を参照するように修正
             if(wEl) wEl.value = anyRecord.weight || '';
 
@@ -457,8 +497,12 @@ export const openCheckModal = async (dateStr) => {
             setCheck('check-is-dry', false); 
             syncDryDayUI(false);             
             if (isDryInput) isDryInput.disabled = true;
-            if (dryLabelContainer) dryLabelContainer.classList.add('opacity-50', 'pointer-events-none');
-            if (dryLabelText) dryLabelText.innerHTML = "Is today a Dry Day? <span class='text-[10px] text-red-500 font-bold ml-2'>(Alcohol Recorded)</span>";
+            // ★修正: ビールがある場合、休肝日ラベル自体はいじらず、下のヒントテキストを赤字で書き換える
+            if (hint) {
+                hint.innerHTML = "<i class='ph-bold ph-beer-bottle'></i> 飲酒記録があるため、休肝日は選択できません";
+                hint.classList.remove('text-orange-600/70', 'text-emerald-600'); // 他の状態の色を消す
+                hint.classList.add('text-red-500', 'font-bold'); // 赤字強調
+            }
         }
     } catch (e) { 
         console.error("Failed to fetch check data:", e); 

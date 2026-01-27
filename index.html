@@ -653,7 +653,7 @@
         <label class="cursor-pointer">
             <input type="radio" name="customType" value="dry" class="peer hidden">
             <div class="p-3 rounded-xl border-2 border-transparent bg-gray-100 dark:bg-gray-800 text-gray-500 peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:shadow-md transition-all text-center">
-                <div class="text-[10px] font-bold uppercase tracking-widest opacity-70">Dry</div>
+                <div class="text-[10px] font-bold uppercase tracking-widest opacity-70">Spirits</div>
                 <div class="text-sm font-bold mt-0.5">蒸留酒 / 焼酎</div>
                 <div class="text-[9px] opacity-80 mt-1">糖質ゼロ (Whiskey/Gin)</div>
             </div>
@@ -757,13 +757,15 @@
                 
                 <div id="drinking-section" class="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl border border-orange-100 dark:border-orange-800/50 transition-all">
                     <label class="flex items-center justify-between cursor-pointer">
-                        <span class="font-bold text-orange-800 dark:text-orange-300">Is today a Dry Day?</span>
+                        <span class="font-bold text-orange-800 dark:text-orange-300">
+            休肝日 <span class="text-xs opacity-70 font-normal ml-1">(No Alcohol)</span>
+        </span>
                         <div class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="check-is-dry" class="sr-only peer" onchange="UI.toggleDryDay(this.checked)">
                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                         </div>
                     </label>
-                    <p class="text-[10px] text-orange-600/70 mt-2">Switch ON if you didn't drink alcohol.</p>
+                    <p class="text-[10px] text-orange-600/70 mt-2">一滴も飲まなかった日はスイッチON</p>
                 </div>
                 
                 <div id="check-items-container" class="grid grid-cols-2 gap-3">

@@ -2,7 +2,7 @@
 import { APP, EXERCISE, BEER_COLORS, CALORIES } from '../constants.js'; 
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
-import { toggleModal, Feedback, showConfetti } from './dom.js';
+import { toggleModal, Feedback, showConfetti, showMessage } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 let timerInterval = null;
@@ -11,6 +11,9 @@ let lastBurnedKcal = 0;
 let accumulatedTime = 0;
 let currentBeerStyleName = null; 
 let lastTickSec = 0;
+
+// ▼ 追加: タイムトラベラー対策（最大3時間）
+const MAX_ALLOWED_DURATION_MS = 3 * 60 * 60 * 1000;
 
 const formatTime = (ms) => {
     const totalSec = Math.floor(ms / 1000);
@@ -39,21 +42,58 @@ export const Timer = {
         const start = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
         const accumulated = parseInt(localStorage.getItem(APP.STORAGE_KEYS.TIMER_ACCUMULATED)) || 0;
         
+        // 背景設定（変更なし）
         if (!currentBeerStyleName) {
             Timer.setRandomBeerBackground();
         }
 
         if (start) {
-            // 【修正】リロード復帰時、accumulatedTime を再計算してから start() を呼ぶ
-            // これがないと accumulatedTime=0 のまま start() が走り、時間がリセットされてしまう
+            // --- ここから修正ブロック ---
+            
             const startTimeVal = parseInt(start);
-            accumulatedTime = Date.now() - startTimeVal;
+            const now = Date.now();
+            
+            // 1. 経過時間を計算 (リロードまでの時間)
+            const elapsedSinceStart = now - startTimeVal;
+
+            // 2. タイムトラベラー対策（異常値チェック）
+            // MAX_ALLOWED_DURATION_MS はファイルの先頭で定義済み (3 * 60 * 60 * 1000) と想定
+            if (elapsedSinceStart > MAX_ALLOWED_DURATION_MS) {
+                console.warn('[Timer] Detected unrealistic duration. Auto-stopping.');
+                
+                // A. 強制的に「3時間で停止」したことにする
+                accumulatedTime = MAX_ALLOWED_DURATION_MS; // 時間をキャップ
+                
+                // B. ストレージを「一時停止」状態に書き換える
+                // (次回リロード時は else if (accumulated > 0) のルートに入るようにする)
+                localStorage.setItem(APP.STORAGE_KEYS.TIMER_ACCUMULATED, accumulatedTime);
+                localStorage.removeItem(APP.STORAGE_KEYS.TIMER_START);
+                
+                // C. フラグを停止状態へ
+                isRunning = false;
+                Timer.updateUI(false);
+                
+                // D. 画面上の数字を「03:00:00」等の上限値に更新
+                const display = document.getElementById('timer-display');
+                if(display) display.textContent = formatTime(accumulatedTime);
+                Timer.updateCalculations(accumulatedTime);
+                
+                // E. ユーザーに通知してここで終了（start()は呼ばない！）
+                showMessage('⚠️ タイマーが長時間動作していたため、3時間で停止しました', 'warning');
+                return; 
+            }
+
+            // 3. 正常範囲内なら、計算した時間をセットして再開
+            accumulatedTime = elapsedSinceStart;
 
             Timer.start(); 
             toggleModal('timer-modal', true);
+            
+            // --- 修正ブロック終了 ---
+
         } else if (accumulated > 0) {
-            // 一時停止状態の復元
-            accumulatedTime = accumulated; // 変数にも戻す
+            // 一時停止状態の復元（変更なし）
+            accumulatedTime = accumulated; 
             isRunning = false;
             Timer.updateUI(false);
             
@@ -124,6 +164,20 @@ export const Timer = {
         timerInterval = setInterval(() => {
             const currentNow = Date.now();
             const diff = currentNow - startTimestamp;
+
+            // ★追加: アプリ起動中の3時間超えチェック
+            if (diff > MAX_ALLOWED_DURATION_MS) {
+                Timer.pause();
+                accumulatedTime = MAX_ALLOWED_DURATION_MS;
+                
+                // 表示を上限値に更新
+                const display = document.getElementById('timer-display');
+                if(display) display.textContent = formatTime(accumulatedTime);
+                Timer.updateCalculations(accumulatedTime);
+                
+                showMessage('⚠️ タイマー上限(3時間)に達しました', 'warning');
+                return;
+            }
             accumulatedTime = diff; 
 
             const display = document.getElementById('timer-display');

@@ -385,7 +385,7 @@ export const Onboarding = {
                     element: '#beer-select-display', 
                     popover: {
                         title: 'Select Beer Style',
-                        description: 'タップでFavorite Beerを切り替えます。<br>選択中のビールのカロリーを基準に、タンクの残量表示（本数）が再計算されます。',
+                        description: 'タップでFavorite Beerを切り替えます。<br>選択中のビールのカロリーを基準に、借金の換算本数が再計算されます。',
                         side: 'bottom', 
                         align: 'center'
                     }
@@ -394,7 +394,7 @@ export const Onboarding = {
                     element: '.orb-container', 
                     popover: { 
                         title: 'Balance', 
-                        description: 'カロリー収支（Balance）を表示します。<br>飲んでプラスになった分を、運動で消費しましょう。',
+                        description: 'カロリー収支（Balance）を表示します。<br>飲んで溜まった借金を、運動で返済しましょう。',
                         side: 'bottom',
                         align: 'center'
                     } 

@@ -149,6 +149,12 @@ const initApp = async () => {
             window.Timer.init();
         }
 
+        // 画面のロックを強制解除して表示する
+        document.querySelector('header')?.classList.remove('hidden');
+        document.querySelector('main')?.classList.remove('hidden');
+        // ホームタブを確実にアクティブにする
+        UI.switchTab('home');
+
 
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する

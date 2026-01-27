@@ -231,5 +231,40 @@ export const EXERCISE = {
 
 export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': { label: '500ml (ロング缶)', ratio: 1.43 }, '473': { label: '473ml (USパイント)', ratio: 1.35 }, '568': { label: '568ml (UKパイント)', ratio: 1.62 }, '250': { label: '250ml (小グラス)', ratio: 0.71 }, '1000': { label: '1L (マース)', ratio: 2.86 } };
 
+/* constants.js の末尾付近に追加してください */
 
+// ==========================================================================
+// 3. Check Item Master Definitions (Safe Lookup)
+// ==========================================================================
+
+// ★ 1. 廃止された項目（ライブラリからは消したが、過去ログ表示用に定義を残す場所）
+// 将来 CHECK_LIBRARY から何かを削除する場合、その定義をここに移動させてください。
+const DEPRECATED_CHECKS = [
+    // 例: { id: 'oldMetric', label: '旧指標', icon: '📦', desc: '廃止された項目' }
+];
+
+/**
+ * ★ 2. IDから項目の定義（アイコン・ラベル）を確実に取得する関数
+ * これを使えば、ライブラリにある項目も、廃止された項目も、正しく表示できます。
+ * @param {string} id 
+ * @returns {object} { id, label, icon, desc, ... }
+ */
+export const getCheckItemSpec = (id) => {
+    // A. 現在のライブラリから探す
+    for (const category of Object.values(CHECK_LIBRARY)) {
+        const found = category.find(item => item.id === id);
+        if (found) return found;
+    }
+
+    // B. デフォルト定義から探す
+    const schemaFound = CHECK_SCHEMA.find(item => item.id === id);
+    if (schemaFound) return schemaFound;
+
+    // C. 廃止リストから探す（将来用）
+    const deprecated = DEPRECATED_CHECKS.find(item => item.id === id);
+    if (deprecated) return deprecated;
+
+    // D. どうしても見つからない場合のフォールバック
+    return { id, label: id, icon: '❓', desc: 'Unknown Item' };
+};
 

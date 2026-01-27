@@ -132,6 +132,19 @@ getAllDataForUI: async () => {
             });
 
             const firstDate = found ? dayjs(minTs).startOf('day') : dayjs();
+
+            // ▼▼▼ 追加: 運動ログを日付で高速検索するためのMapを作成 (Performance Fix) ▼▼▼
+            const exerciseLogsByDate = new Map();
+            allLogs.forEach(l => {
+                if (l.type === 'exercise') {
+                    const dStr = dayjs(l.timestamp).format('YYYY-MM-DD');
+                    if (!exerciseLogsByDate.has(dStr)) {
+                        exerciseLogsByDate.set(dStr, []);
+                    }
+                    exerciseLogsByDate.get(dStr).push(l);
+                }
+            });
+
             // ----------------------------------------
 
             // 2. 変更日以降のすべての日付について再計算
@@ -143,11 +156,11 @@ getAllDataForUI: async () => {
             let safeGuard = 0;
 
             while (currentDate.isBefore(today) || currentDate.isSame(today, 'day')) {
-                if (safeGuard++ > 365) break; // 無限ループ防止
+                if (safeGuard++ > 3650) break; // 無限ループ防止
 
-                const dayStart = currentDate.startOf('day').valueOf();
-                const dayEnd = currentDate.endOf('day').valueOf();
-
+                // その日の文字列キーを取得
+                const dateStr = currentDate.format('YYYY-MM-DD');
+                
                 // その時点でのStreak (Optimized call)
                 const streak = Calc.getStreakFromMap(logMap, checkMap, firstDate, currentDate);
                 
@@ -155,10 +168,12 @@ getAllDataForUI: async () => {
                 const creditInfo = Calc.calculateExerciseCredit(100, streak); // 100はダミー
                 const bonusMultiplier = creditInfo.bonusMultiplier;
 
-                // その日の運動ログを探して更新
-                const daysExerciseLogs = allLogs.filter(l => l.type === 'exercise' && l.timestamp >= dayStart && l.timestamp <= dayEnd);
+                // ▼▼▼ 修正: Mapから一発で取得 (filterを使わない) ▼▼▼
+                const daysExerciseLogs = exerciseLogsByDate.get(dateStr) || [];
+                // ▲▲▲ 修正終了 ▲▲▲
                 
                 for (const log of daysExerciseLogs) {
+                    const profile = Store.getProfile(); // ループ内だが軽量なので許容、あるいはループ外に出すとなお良し
                     const mets = EXERCISE[log.exerciseKey] ? EXERCISE[log.exerciseKey].mets : 3.0;
                     const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
                     const updatedCredit = Calc.calculateExerciseCredit(baseBurn, streak);
@@ -196,15 +211,21 @@ getAllDataForUI: async () => {
                 const affectedArchives = await db.period_archives.where('endDate').aboveOrEqual(changedTimestamp).toArray();
                 
                 for (const archive of affectedArchives) {
-                    if (archive.startDate <= changedTimestamp) {
+                    // ★修正: if (archive.startDate <= changedTimestamp) を削除
+                    // 理由: ストリーク変更の影響は未来に及ぶため、修正日より後に開始したアーカイブも更新する必要があるからです。
+                    
+                    // queryでendDateによる絞り込みは済んでいるため、ここは無条件で更新してOKです
+                    // もし念を入れるなら if (archive.endDate >= changedTimestamp) ですが、クエリと同じ意味なので省略可
                         const periodLogs = await db.logs.where('timestamp').between(archive.startDate, archive.endDate, true, true).toArray();
                         const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
                         
+                        // ▼▼▼ 修正: logs (中身の配列) も最新状態で上書きする ▼▼▼
                         await db.period_archives.update(archive.id, {
                             totalBalance: totalBalance,
+                            logs: periodLogs, // <--- これを追加！ これで「ゾンビログ」が消滅します
                             updatedAt: Date.now()
                         });
-                    }
+                        // ▲▲▲ 修正終了 ▲▲▲
                 }
             } catch (e) {
                 console.error('[Service] Failed to update archives within transaction:', e);
@@ -590,8 +611,4 @@ getAllDataForUI: async () => {
 }
 
 };
-
-
-
-
 

@@ -156,10 +156,10 @@ const WIZARD_STEPS = [
     {
         id: 'step-period',
         title: 'Reset Cycle',
-        desc: '借金（カロリー）をリセットする間隔を選んでください。<br>オススメは「1週間」です。', // 文言変更
+        desc: '借金（カロリー）をリセットする間隔を選んでください。<br>オススメは「1週間」です。',
         render: () => `
             <div class="space-y-3">
-                <button onclick="localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'weekly'); Onboarding.nextStep();" 
+                <button onclick="Onboarding.setPeriodMode('weekly')" 
                         class="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-500 rounded-2xl text-left relative shadow-lg transform transition active:scale-95 group">
                     <div class="absolute -top-3 -right-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce">
                         RECOMMENDED
@@ -171,14 +171,15 @@ const WIZARD_STEPS = [
                         <div>
                             <h4 class="font-black text-sm text-gray-900 dark:text-white">Weekly Reset</h4>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
-                                毎週月曜日に<span class="font-bold text-red-500">借金をゼロ</span>にリセット。<br> <span class="text-indigo-600 dark:text-indigo-400 font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
+                                毎週月曜日に<span class="font-bold text-red-500">借金をゼロ</span>にリセット。<br>
+                                <span class="text-indigo-600 dark:text-indigo-400 font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
                                 と気持ちを切り替えられます。
                             </p>
                         </div>
                     </div>
                 </button>
 
-                <button onclick="localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'monthly'); Onboarding.nextStep();" 
+                <button onclick="Onboarding.setPeriodMode('monthly')" 
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
@@ -193,7 +194,7 @@ const WIZARD_STEPS = [
                     </div>
                 </button>
 
-                <button onclick="localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'permanent'); Onboarding.nextStep();" 
+                <button onclick="Onboarding.setPeriodMode('permanent')" 
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
@@ -551,6 +552,14 @@ Onboarding.completeAfterRestore = () => {
     setTimeout(() => {
         window.location.reload(); 
     }, 1000);
+};
+
+// ★追加: HTMLのonclickから呼ぶためのヘルパー関数
+Onboarding.setPeriodMode = (mode) => {
+    // モジュール内の APP 定数を使って安全に保存
+    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, mode);
+    // 次のステップへ
+    Onboarding.nextStep();
 };
 
 

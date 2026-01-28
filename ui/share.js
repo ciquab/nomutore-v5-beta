@@ -90,7 +90,7 @@ const openPhotoComposer = (imgSrc, log) => {
                         
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg">
-                                <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
+                                <img src="./logo-header.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                             </div>
                             <div class="flex flex-col text-white drop-shadow-md">
                                 <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wider leading-none mb-0.5">Logged with NOMUTORE</span>
@@ -265,7 +265,7 @@ const renderStatusCard = (container) => {
             <div class="flex justify-between items-center z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
-                        <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
+                        <img src="./logo-header.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
                     <div>
                         <h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1>
@@ -326,7 +326,7 @@ const renderBeerGraphicCard = (container, log) => {
             <div class="flex justify-between items-center z-10 opacity-90 border-b border-white/10 pb-4 mb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
-                        <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
+                        <img src="./logo-header.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
                     <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
                 </div>

@@ -35,10 +35,9 @@ self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
     );
-    self.skipWaiting(); // 直ちにアクティブ化
+    self.skipWaiting();
 });
 
-// アクティブ時: 旧キャッシュを削除
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((names) => {
@@ -47,47 +46,55 @@ self.addEventListener('activate', (event) => {
                     if (name !== CACHE_NAME) return caches.delete(name);
                 })
             );
-        }).then(() => self.clients.claim()) // 直ちにページを制御
+        }).then(() => self.clients.claim())
     );
 });
 
-// フェッチ時: キャッシュ戦略 (Stale-while-revalidate)
+// フェッチ処理 (Safe Clone Version)
 self.addEventListener('fetch', (event) => {
     // 1. http/https 以外のリクエストは無視
     if (!event.request.url.startsWith('http')) return;
 
-    // 2. GETメソッド以外は無視 (API通信など)
+    // 2. GETメソッド以外は無視
     if (event.request.method !== 'GET') return;
 
-    // 3. ★修正: 外部ドメイン(CDN)はSWで扱わず、ブラウザ標準の通信に任せる
-    // これにより、CORS設定の不整合によるエラーを回避します
+    // 3. 外部ドメイン(CDN)はSWで扱わず、ブラウザ標準の通信に任せる
     const url = new URL(event.request.url);
     if (url.origin !== location.origin) {
         return;
     }
 
-    // 4. ローカルファイルはキャッシュ優先＆裏で更新
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
+            // A. キャッシュがある場合: 即座にキャッシュを返し、裏で更新(SWR)
             if (cachedResponse) {
-                // キャッシュがあっても裏で最新を取りに行く
-                fetch(event.request).then((networkResponse) => {
-                    if (networkResponse && networkResponse.ok) {
-                        caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(event.request, networkResponse.clone());
-                        });
-                    }
-                }).catch(() => {});
+                event.waitUntil(
+                    fetch(event.request).then((networkResponse) => {
+                        if (networkResponse && networkResponse.ok) {
+                            const responseToCache = networkResponse.clone(); // 先にクローン
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(event.request, responseToCache);
+                            });
+                        }
+                    }).catch(() => {})
+                );
                 return cachedResponse;
             }
 
-            // キャッシュになければネットワークへ
+            // B. キャッシュがない場合: ネットワークへ
             return fetch(event.request).then((networkResponse) => {
-                if (networkResponse && networkResponse.ok) {
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, networkResponse.clone());
-                    });
+                // レスポンスが不正ならそのまま返す
+                if (!networkResponse || !networkResponse.ok) {
+                    return networkResponse;
                 }
+
+                // キャッシュ用にクローンを作成
+                const responseToCache = networkResponse.clone();
+
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(event.request, responseToCache);
+                });
+
                 return networkResponse;
             });
         })

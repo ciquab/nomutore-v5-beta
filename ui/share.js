@@ -179,7 +179,7 @@ const renderStatusCard = (container) => {
             <div class="flex justify-between items-center z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
-                        <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
+                        <img src="./logo-header.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
                     <div>
                         <h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1>
@@ -260,12 +260,15 @@ const renderBeerCard = (container, log) => {
             <div class="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-[50px]"></div>
             <div class="absolute bottom-[-10%] left-[-10%] w-48 h-48 bg-black/20 rounded-full blur-[40px]"></div>
 
-            <div class="flex justify-between items-start z-10 opacity-90 border-b border-white/10 pb-4 mb-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md overflow-hidden">
-                         <img src="./icon-192_2.png" class="w-full h-full object-cover" crossorigin="anonymous">
+            <div class="flex justify-between items-center z-10 opacity-90 border-b border-white/10 pb-4 mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
+                        <img src="./logo-header.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
-                    <span class="text-xs font-bold tracking-[0.2em] uppercase">BEER & BURN</span>
+                    <div>
+                        <h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1>
+                        <p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p>
+                    </div>
                 </div>
                 <span class="text-xs font-mono font-bold opacity-80">${date}</span>
             </div>

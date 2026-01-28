@@ -433,6 +433,10 @@ if (checkModal) {
 
         initTheme();
 
+        // ★修正: アプリ初期化時に必ずFABを表示する
+        const fab = document.getElementById('btn-fab-fixed');
+        if (fab) fab.classList.remove('hidden');
+
         UI.isInitialized = true;
     },
 

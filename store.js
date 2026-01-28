@@ -46,6 +46,17 @@ export const Store = {
     getTheme: () => localStorage.getItem(APP.STORAGE_KEYS.THEME) || APP.DEFAULTS.THEME,
     getDefaultRecordExercise: () => localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE,
 
+    // 最後に取得したデータを一時的に保持しておくための簡易キャッシュ
+    _cachedData: { logs: [], checks: [] },
+    
+    setCachedData: (logs, checks) => {
+        Store._cachedData = { logs, checks };
+    },
+    
+    getCachedData: () => {
+        return Store._cachedData;
+    },
+
     migrateV3ToV4: async () => {
         if (localStorage.getItem('v4_migration_complete')) {
             return false; 

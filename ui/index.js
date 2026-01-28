@@ -14,6 +14,7 @@ import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, se
 import { renderBeerStats } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
+import { Share } from './share.js';
 
 import { 
     openBeerModal, openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
@@ -436,57 +437,67 @@ if (checkModal) {
     },
 
     switchTab: (tabId) => {
-        Feedback.uiSwitch();
-        // 1. Cellar以外のタブへ行くときは、編集モードを強制解除してUIを隠す
-        if (tabId !== 'cellar') {
-            StateManager.setIsEditMode(false);
-            // ★追加: 削除ボタンを即座に隠す（チラつき防止）
-            const deleteBtn = document.getElementById('btn-delete-selected');
-            if (deleteBtn) deleteBtn.classList.add('translate-y-20', 'opacity-0');
-        }
+        // 同じタブなら何もしない（誤操作防止）
+        const currentTab = document.querySelector('.tab-content.active');
+        if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
-        // 2. 表示の切り替え
-        document.querySelectorAll('.tab-content').forEach(el => {
-            el.classList.remove('active');
-            el.style.display = 'none'; 
+        // ★ Phase 2: Reactive Transitions (View Transitions API)
+        DOM.withTransition(() => {
+            // Haptics (Phase 1)
+            Feedback.uiSwitch();
+
+            // 1. Cellar以外のタブへ行くときは、編集モードを強制解除してUIを隠す
+            if (tabId !== 'cellar') {
+                StateManager.setIsEditMode(false);
+                const deleteBtn = document.getElementById('btn-delete-selected');
+                if (deleteBtn) deleteBtn.classList.add('translate-y-20', 'opacity-0');
+            }
+
+            // 2. 表示の切り替え（CSSクラスベースに変更）
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+                // View Transition用にnameをリセット
+                el.style.viewTransitionName = ''; 
+                el.style.display = 'none'; 
+            });
+
+            const target = document.getElementById(`tab-${tabId}`);
+            if(target) {
+                target.style.display = 'block';
+                // Transitionのターゲットに設定
+                target.style.viewTransitionName = 'tab-content'; 
+                
+                // 微小遅延でクラス適用（アニメーション発火のため）
+                setTimeout(() => {
+                    window.scrollTo(0, 0); // スクロールリセット
+                    target.classList.add('active');
+                }, 10);
+            }
+
+            // 3. ナビゲーションバーの更新
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
+                const icon = el.querySelector('i');
+                if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold'); 
+            });
+
+            const activeNav = document.getElementById(`nav-tab-${tabId}`);
+            if(activeNav) {
+                activeNav.className = 'nav-item nav-pill-active'; // クラス名を一括設定
+                const icon = activeNav.querySelector('i');
+                if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
+            }
+
+            // 4. タブごとの初期化処理
+            if (tabId === 'cellar') {
+                updateLogListView(false); 
+                UI.switchCellarView(StateManager.cellarViewMode || 'logs');
+            } else if (tabId === 'home') {
+                refreshUI();
+            } else if (tabId === 'settings') {
+                renderSettings(); 
+            }
         });
-
-        const target = document.getElementById(`tab-${tabId}`);
-        if(target) {
-            target.style.display = 'block';
-            
-            // ★修正: 10ミリ秒だけ待ってからスクロールすることで、確実に最上部に戻ります
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-                target.classList.add('active');
-            }, 10);
-        }
-
-        document.querySelectorAll('.nav-item').forEach(el => {
-            el.classList.remove('nav-pill-active'); 
-            el.classList.add('p-3', 'hover:bg-base-100', 'dark:hover:bg-base-800', 'text-gray-400');
-            const icon = el.querySelector('i');
-            if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold'); 
-        });
-
-        const activeNav = document.getElementById(`nav-tab-${tabId}`);
-        if(activeNav) {
-            activeNav.classList.remove('p-3', 'hover:bg-base-100', 'dark:hover:bg-base-800', 'text-gray-400');
-            activeNav.classList.add('nav-pill-active');
-            const icon = activeNav.querySelector('i');
-            if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
-        }
-
-        if (tabId === 'cellar') {
-            updateLogListView(false); 
-            UI.switchCellarView(StateManager.cellarViewMode || 'logs');
-        } else if (tabId === 'home') {
-            refreshUI();
-        } else if (tabId === 'settings') {
-            renderSettings(); 
-        }
     },
 
     switchCellarView: (mode) => {
@@ -599,6 +610,7 @@ if (checkModal) {
     quickLogBeer,           
     handleRolloverAction: handleRolloverAction, 
     handleSaveSettings: handleSaveSettings,
+    share: Share.generateAndShare,
 
 };
 

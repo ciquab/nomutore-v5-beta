@@ -209,19 +209,22 @@ export const Feedback = {
     uiSwitch: () => {
         AudioEngine.init();
         AudioEngine.resume();
-        AudioEngine.playTone(600, 'square', 0.05, 0, 0.1); 
+        AudioEngine.playTone(600, 'square', 0.05, 0, 0.1);
+        if (Feedback.haptic) Feedback.haptic.selection();
     },
 
     uiDial: () => {
         AudioEngine.init();
         AudioEngine.resume();
-        AudioEngine.playTone(1200, 'sine', 0.03, 0, 0.1); 
+        AudioEngine.playTone(1200, 'sine', 0.03, 0, 0.1);
+        if (Feedback.haptic) Feedback.haptic.selection(); 
     },
 
     tap: () => {
         AudioEngine.init();
         AudioEngine.resume();
         AudioEngine.playTone(1800, 'sine', 0.02, 0, 0.05);
+        if (Feedback.haptic) Feedback.haptic.light();
     },
 
     beer: () => { AudioEngine.playBeer(); HapticEngine.medium(); },
@@ -262,7 +265,7 @@ export const showToastAnimation = () => {
     }, 1500);
 };
 
-// --- Existing DOM Logic ---
+// --- DOM Logic ---
 
 const shareContent = async (text) => {
     if (navigator.share) {
@@ -284,6 +287,22 @@ const shareContent = async (text) => {
 export const DOM = {
     isInitialized: false,
     elements: {},
+    
+    /**
+     * View Transitions APIの安全なラッパー
+     * 非対応ブラウザでは即時実行し、対応ブラウザではアニメーションさせる
+     */
+    withTransition: (callback) => {
+        // ユーザーが「視差効果を減らす」設定にしている場合はアニメーションしない
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        if (!document.startViewTransition || prefersReducedMotion) {
+            callback();
+            return;
+        }
+        document.startViewTransition(callback);
+    },
+
     init: () => {
         if (DOM.isInitialized) return;
         

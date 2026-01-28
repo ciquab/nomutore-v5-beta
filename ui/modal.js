@@ -13,24 +13,64 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 const getTodayString = () => dayjs().format('YYYY-MM-DD');
 
-/* --- Action Menu (Phase 1.5 New) --- */
+/* --- Action Menu (Phase 3: Share Integration & Design Fix) --- */
+
 export const openActionMenu = (dateStr = null) => {
     const targetDate = dateStr || getTodayString();
     StateManager.setSelectedDate(targetDate);
     
+    // 日付ラベル更新
     const label = document.getElementById('action-menu-date-label');
     if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
     
     const hiddenDate = document.getElementById('action-menu-target-date');
     if(hiddenDate) hiddenDate.value = targetDate;
 
+    // ★追加: シェアボタンの動的注入 (デザイン完全整合版)
+    injectShareButton();
+
     toggleModal('action-menu-modal', true);
 };
 
+// シェアボタンを注入する内部関数
+const injectShareButton = () => {
+    const modal = document.getElementById('action-menu-modal');
+    if (!modal) return;
+
+    // ボタンが入っているグリッドコンテナを探す
+    // index.htmlの構造上、2つ目の .grid がアクションボタン用
+    const grids = modal.querySelectorAll('.grid');
+    if (grids.length < 2) return;
+    
+    const actionGrid = grids[1]; // 2つ目のグリッド
+
+    // 既にボタンがあるかチェック
+    if (document.getElementById('btn-action-share')) return;
+
+    // ボタン生成 (index.htmlの既存ボタンと同じクラス構成を使用)
+    const shareBtn = document.createElement('button');
+    shareBtn.id = 'btn-action-share';
+    shareBtn.onclick = () => window.UI.handleActionSelect('share');
+    
+    // クラス設定: 横長レイアウト, col-span-2で幅一杯に
+    shareBtn.className = "col-span-2 flex items-center gap-3 px-3 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition active:scale-95 group";
+    
+    shareBtn.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+            <i class="ph-duotone ph-share-network text-2xl text-indigo-600 dark:text-indigo-500"></i>
+        </div>
+        <div class="flex flex-col items-start">
+            <span class="text-xs font-bold text-indigo-800 dark:text-indigo-200 leading-tight">ステータスをシェア</span>
+            <span class="text-[9px] font-bold text-indigo-400 dark:text-indigo-400 leading-none">SNS Card Generation</span>
+        </div>
+    `;
+
+    actionGrid.appendChild(shareBtn);
+};
+
 export const handleActionSelect = (type) => {
-    // ★追加: ユーザーがタップしたこの瞬間に、オーディオエンジンを「叩き起こす」
-    // これにより、後の処理で音がブロックされるのを防ぎます
-    if (Feedback) {
+    // Audio Context Resume (User Fix)
+    if (typeof Feedback !== 'undefined') {
         Feedback.initAudio();
         if (Feedback.audio && Feedback.audio.resume) {
             Feedback.audio.resume();
@@ -42,10 +82,21 @@ export const handleActionSelect = (type) => {
     
     toggleModal('action-menu-modal', false);
 
-    if (type === 'beer') openBeerModal(null, dateStr);
-    else if (type === 'exercise') openManualInput(dateStr);
-    else if (type === 'check') openCheckModal(dateStr);
-    else if (type === 'timer') openTimer(true);
+    // 遅延実行でモーダルが閉じるのを待つ
+    setTimeout(() => {
+        if (type === 'beer') openBeerModal(null, dateStr);
+        else if (type === 'exercise') openManualInput(null, { date: dateStr }); // 引数形式を修正
+        else if (type === 'check') openCheckModal(dateStr);
+        else if (type === 'timer') openTimer(true);
+        else if (type === 'share') {
+            // ★追加: シェア機能の呼び出し
+            if (window.UI && window.UI.share) {
+                window.UI.share('status');
+            } else {
+                console.error('Share module not loaded');
+            }
+        }
+    }, 100);
 };
 
 /* --- Beer Modal Logic --- */

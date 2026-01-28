@@ -26,6 +26,9 @@ getAllDataForUI: async () => {
     // 1. 全データ（表示用）
     const allLogs = await db.logs.toArray();
     const checks = await db.checks.toArray();
+
+    // ★追加: シェア機能のためにデータをキャッシュする
+    Store.setCachedData(allLogs, checks);
     
     // ★修正: db.logsから削除しない運用に変えたため、アーカイブとの結合は不要（重複する）
     // アーカイブテーブルは「サマリー情報の保持」としてのみ利用し、生ログはdb.logsを正とする

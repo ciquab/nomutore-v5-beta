@@ -16,7 +16,8 @@ let editState = {
     y: 0,
     isDragging: false,
     startX: 0,
-    startY: 0
+    startY: 0,
+    aspectRatio: '1 / 1'
 };
 
 export const Share = {
@@ -44,7 +45,7 @@ const startBeerPhotoFlow = (logData) => {
             const reader = new FileReader();
             reader.onload = (readerEvent) => {
                 // 状態リセット
-                editState = { scale: 1.0, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+                editState = { scale: 1.0, x: 0, y: 0, isDragging: false, startX: 0, startY: 0, aspectRatio: '1 / 1' };
                 openPhotoComposer(readerEvent.target.result, logData);
             };
             reader.readAsDataURL(file);
@@ -74,6 +75,24 @@ const openPhotoComposer = (imgSrc, log) => {
     // ★変更: 透過ロゴを使用 (logo-header.png)
     const logoSrc = "./logo-header.png";
 
+    // ★追加: アスペクト比の定義
+    const ratios = [
+        { label: '1:1', value: '1 / 1', icon: 'ph-square' },
+        { label: '3:4', value: '3 / 4', icon: 'ph-rectangle', class: 'rotate-0' },
+        { label: '9:16', value: '9 / 16', icon: 'ph-device-mobile' },
+        { label: '4:3', value: '4 / 3', icon: 'ph-rectangle', class: 'rotate-90' },
+        { label: '16:9', value: '16 / 9', icon: 'ph-monitor' }
+    ];
+
+    // ★追加: ボタンHTML生成
+    const ratioButtonsHtml = ratios.map(r => `
+        <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+                data-value="${r.value}">
+            <i class="ph-bold ${r.icon} text-lg ${r.class || ''}"></i>
+            <span class="text-[9px] font-bold">${r.label}</span>
+        </button>
+    `).join('');
+
     modal.innerHTML = `
         <div class="p-4 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
             <button id="btn-cancel-composer" class="text-sm font-bold text-gray-300 hover:text-white">Cancel</button>
@@ -81,15 +100,13 @@ const openPhotoComposer = (imgSrc, log) => {
             <button id="btn-generate-share" class="text-sm font-bold text-indigo-400 hover:text-indigo-300">Next</button>
         </div>
 
-        <div id="composer-touch-area" class="flex-1 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none">
+        <div id="composer-touch-area" class="flex-1 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
             
-            <div id="composer-canvas" class="relative w-full max-w-sm aspect-[3/4] bg-gray-900 shadow-2xl overflow-hidden pointer-events-none">
-                
-                <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
+            <div id="composer-canvas" class="relative w-full max-w-md bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out" 
+                 style="aspect-ratio: ${editState.aspectRatio};"> <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
 
-                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pt-20">
+                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pt-24">
                     <div class="flex items-end justify-between">
-                        
                         <div class="flex items-center gap-3">
                             <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1">
                                 <img src="${logoSrc}" class="w-full h-full object-contain opacity-90 drop-shadow-sm" crossorigin="anonymous">
@@ -100,52 +117,84 @@ const openPhotoComposer = (imgSrc, log) => {
                                 ${brewery ? `<span class="text-xs font-bold text-gray-300 line-clamp-1 mt-0.5">${escapeHtml(brewery)}</span>` : ''}
                             </div>
                         </div>
-
                         <div id="composer-stats" class="text-right text-white drop-shadow-md transition-opacity duration-300">
                             <div class="flex flex-col items-end">
                                 <span class="text-3xl font-black font-mono leading-none filter drop-shadow-lg">-${kcal}</span>
                                 <span class="text-[9px] font-bold uppercase text-red-400 tracking-wider">Debt Created</span>
                             </div>
                         </div>
-
                     </div>
-                    
                     <div class="absolute top-5 right-5 text-[10px] font-mono font-bold text-white/60 tracking-widest border border-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
                         ${date}
                     </div>
                 </div>
             </div>
             
-            <div class="absolute inset-0 pointer-events-none opacity-20 flex items-center justify-center">
-                <div class="w-full max-w-sm aspect-[3/4] border border-white/50 border-dashed"></div>
+            <div id="grid-overlay" class="absolute pointer-events-none opacity-20 flex items-center justify-center w-full max-w-md border border-white/50 border-dashed transition-all duration-300 ease-out"
+                 style="aspect-ratio: ${editState.aspectRatio};">
             </div>
         </div>
 
-        <div class="p-6 bg-base-900 border-t border-gray-800 z-20 flex flex-col gap-5 pb-8">
+        <div class="bg-base-900 border-t border-gray-800 z-20 flex flex-col pb-8 safe-area-bottom">
             
-            <div class="flex items-center gap-4">
-                <i class="ph-bold ph-minus text-gray-500"></i>
-                <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="w-full accent-indigo-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                <i class="ph-bold ph-plus text-gray-500"></i>
+            <div class="flex gap-2 p-3 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-center">
+                ${ratioButtonsHtml}
             </div>
 
-            <label class="flex items-center justify-between cursor-pointer p-3 bg-gray-800 rounded-xl active:bg-gray-700 transition">
-                <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
-                    <i class="ph-fill ph-fire text-orange-500"></i> Show Calories (Debt)
-                </span>
-                <div class="relative inline-flex items-center">
-                    <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
-                    <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+            <div class="p-5 flex flex-col gap-5">
+                <div class="flex items-center gap-4">
+                    <i class="ph-bold ph-minus text-gray-500"></i>
+                    <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="w-full accent-indigo-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <i class="ph-bold ph-plus text-gray-500"></i>
                 </div>
-            </label>
-            
-            <p class="text-[10px] text-gray-500 text-center">
-                Drag to Move • Pinch to Zoom
-            </p>
+
+                <label class="flex items-center justify-between cursor-pointer p-3 bg-gray-800 rounded-xl active:bg-gray-700 transition">
+                    <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
+                        <i class="ph-fill ph-fire text-orange-500"></i> Show Calories (Debt)
+                    </span>
+                    <div class="relative inline-flex items-center">
+                        <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                    </div>
+                </label>
+                
+                <p class="text-[10px] text-gray-500 text-center">
+                    Drag to Move • Pinch to Zoom
+                </p>
+            </div>
         </div>
     `;
 
     document.body.appendChild(modal);
+
+    // --- Logic ---
+    const canvas = document.getElementById('composer-canvas');
+    const grid = document.getElementById('grid-overlay');
+
+    // ★追加: アスペクト比切り替えロジック
+    const ratioBtns = modal.querySelectorAll('.ratio-btn');
+    ratioBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // 状態更新
+            editState.aspectRatio = btn.dataset.value;
+            
+            // UI更新
+            canvas.style.aspectRatio = editState.aspectRatio;
+            grid.style.aspectRatio = editState.aspectRatio;
+
+            // ボタンの見た目更新
+            ratioBtns.forEach(b => {
+                if (b === btn) {
+                    b.classList.remove('bg-gray-800', 'text-gray-400');
+                    b.classList.add('bg-indigo-600', 'text-white');
+                } else {
+                    b.classList.add('bg-gray-800', 'text-gray-400');
+                    b.classList.remove('bg-indigo-600', 'text-white');
+                }
+            });
+            Feedback.tap();
+        });
+    });
 
     // --- Interaction Logic (Pan & Zoom) ---
     const touchArea = document.getElementById('composer-touch-area');
@@ -302,8 +351,9 @@ const showPreviewModal = (dataUrl, file) => {
                 <h3 class="font-black text-lg text-base-900 dark:text-white">Ready to Share</h3>
                 <button id="btn-close-preview" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center text-gray-500">✕</button>
             </div>
-            <div class="p-4 bg-gray-100 dark:bg-black/50 flex-1 overflow-auto flex items-center justify-center">
-                <img src="${dataUrl}" class="w-full h-auto rounded-xl shadow-lg border border-white/10" alt="Share Image">
+            
+            <div class="p-4 bg-gray-100 dark:bg-black/50 flex-1 overflow-auto flex items-center justify-center min-h-[300px]">
+                <img src="${dataUrl}" class="w-full h-auto max-h-[60vh] object-contain rounded-xl shadow-lg border border-white/10" alt="Share Image">
             </div>
             <div class="p-4 bg-white dark:bg-base-900 border-t border-base-200 dark:border-base-800 flex gap-3">
                 <button id="btn-download-img" class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">

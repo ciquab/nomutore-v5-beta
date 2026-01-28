@@ -1,8 +1,8 @@
 import { toPng } from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm';
-import { APP, STYLE_METADATA } from '../constants.js';
+import { APP } from '../constants.js';
 import { Store } from '../store.js';
 import { Calc } from '../logic.js';
-import { DOM, showMessage, Feedback, escapeHtml, toggleModal } from './dom.js';
+import { showMessage, Feedback, escapeHtml, toggleModal } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /* =========================================
@@ -46,7 +46,16 @@ const startBeerPhotoFlow = (logData) => {
             const reader = new FileReader();
             reader.onload = (readerEvent) => {
                 // 状態リセット
-                editState = { scale: 1.0, x: 0, y: 0, isDragging: false, startX: 0, startY: 0, aspectRatio: '1 / 1' };
+                editState = { 
+                    scale: 1.0, 
+                    x: 0, 
+                    y: 0, 
+                    isDragging: false, 
+                    startX: 0, 
+                    startY: 0, 
+                    aspectRatio: '1 / 1',
+                    fontClass: 'font-sans' 
+                };
                 openPhotoComposer(readerEvent.target.result, logData);
             };
             reader.readAsDataURL(file);
@@ -72,11 +81,9 @@ const openPhotoComposer = (imgSrc, log) => {
     const brewery = log.brewery || '';
     const kcal = Math.abs(Math.round(log.kcal));
     const date = dayjs(log.timestamp).format('YYYY.MM.DD');
-
-    // ★変更: 透過ロゴを使用 (logo-header.png)
     const logoSrc = "./logo-header.png";
 
-    // ★追加: アスペクト比の定義
+    // アスペクト比
     const ratios = [
         { label: '1:1', value: '1 / 1', icon: 'ph-square' },
         { label: '3:4', value: '3 / 4', icon: 'ph-rectangle', class: 'rotate-0' },
@@ -85,7 +92,6 @@ const openPhotoComposer = (imgSrc, log) => {
         { label: '16:9', value: '16 / 9', icon: 'ph-monitor' }
     ];
 
-    // ★追加: ボタンHTML生成
     const ratioButtonsHtml = ratios.map(r => `
         <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
@@ -94,7 +100,7 @@ const openPhotoComposer = (imgSrc, log) => {
         </button>
     `).join('');
 
-    // ★追加: フォント定義リスト
+    // フォント
     const fonts = [
         { label: 'Basic', value: 'font-sans', family: 'Noto Sans JP' },
         { label: 'Mincho', value: 'font-mincho', family: 'Shippori Mincho B1' },
@@ -103,7 +109,6 @@ const openPhotoComposer = (imgSrc, log) => {
         { label: 'Retro', value: 'font-dot', family: 'DotGothic16' }
     ];
 
-    // ★追加: フォント選択ボタンHTML生成
     const fontButtonsHtml = fonts.map(f => `
         <button class="font-btn px-3 py-1.5 rounded-lg border border-gray-700 transition shrink-0 text-xs ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${f.value}" style="font-family: '${f.family}';">
@@ -121,6 +126,12 @@ const openPhotoComposer = (imgSrc, log) => {
             .font-brush { font-family: 'Yuji Syuku', serif; }
             .font-dot { font-family: 'DotGothic16', sans-serif; }
         </style>
+
+        <div class="px-4 py-3 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
+            <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
+            <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
+            <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
+        </div>
 
         <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
             
@@ -190,7 +201,7 @@ const openPhotoComposer = (imgSrc, log) => {
                     </label>
                     
                     <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
-                        <i class="ph-bold ph-hand-pointing"></i> Adjust
+                        <i class="ph-bold ph-hand-pointing"></i> Drag & Pinch
                     </span>
                 </div>
             </div>
@@ -201,21 +212,47 @@ const openPhotoComposer = (imgSrc, log) => {
     document.body.appendChild(modal);
 
     // --- Logic ---
-    const canvas = document.getElementById('composer-canvas');
-    const grid = document.getElementById('grid-overlay');
+    // ★修正: modal.querySelector を使って要素を取得する (document.getElementById ではない)
+    const canvas = modal.querySelector('#composer-canvas');
+    const grid = modal.querySelector('#grid-overlay');
+    const imgEl = modal.querySelector('#composer-img');
+    const zoomSlider = modal.querySelector('#zoom-slider');
+    const touchArea = modal.querySelector('#composer-touch-area');
+    const toggleKcal = modal.querySelector('#toggle-kcal');
+    const statsEl = modal.querySelector('#composer-stats');
+    const btnCancel = modal.querySelector('#btn-cancel-composer');
+    const btnGenerate = modal.querySelector('#btn-generate-share');
 
-    // ★追加: フォント切り替えロジック
+    // Ratio Switch
+    const ratioBtns = modal.querySelectorAll('.ratio-btn');
+    ratioBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            editState.aspectRatio = btn.dataset.value;
+            editState.scale = 1.0; editState.x = 0; editState.y = 0;
+            updateTransform();
+            
+            canvas.style.aspectRatio = editState.aspectRatio;
+            grid.style.aspectRatio = editState.aspectRatio;
+
+            ratioBtns.forEach(b => {
+                const isActive = b === btn;
+                b.classList.toggle('bg-indigo-600', isActive);
+                b.classList.toggle('text-white', isActive);
+                b.classList.toggle('bg-gray-800', !isActive);
+                b.classList.toggle('text-gray-400', !isActive);
+            });
+            Feedback.tap();
+        });
+    });
+
+    // Font Switch
     const fontBtns = modal.querySelectorAll('.font-btn');
     fontBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            // 前のクラスを削除
             if (editState.fontClass) canvas.classList.remove(editState.fontClass);
-            
-            // 新しいクラスを設定
             editState.fontClass = btn.dataset.value;
             canvas.classList.add(editState.fontClass);
 
-            // ボタンの見た目更新
             fontBtns.forEach(b => {
                 const isActive = b === btn;
                 b.classList.toggle('bg-indigo-600', isActive);
@@ -228,54 +265,19 @@ const openPhotoComposer = (imgSrc, log) => {
         });
     });
 
-    // ★追加: アスペクト比切り替えロジック
-    const ratioBtns = modal.querySelectorAll('.ratio-btn');
-    ratioBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // 状態更新
-            editState.aspectRatio = btn.dataset.value;
-
-            // ★追加: リセット処理 (画像サイズと位置を初期化して吸着させる)
-            editState.scale = 1.0;
-            editState.x = 0;
-            editState.y = 0;
-            updateTransform(); // 画像のstyleを更新
-            
-            // UI更新
-            canvas.style.aspectRatio = editState.aspectRatio;
-            grid.style.aspectRatio = editState.aspectRatio;
-
-            // ボタンの見た目更新
-            ratioBtns.forEach(b => {
-                if (b === btn) {
-                    b.classList.remove('bg-gray-800', 'text-gray-400');
-                    b.classList.add('bg-indigo-600', 'text-white');
-                } else {
-                    b.classList.add('bg-gray-800', 'text-gray-400');
-                    b.classList.remove('bg-indigo-600', 'text-white');
-                }
-            });
-            Feedback.tap();
-        });
-    });
-
-    // --- Interaction Logic (Pan & Zoom) ---
-    const touchArea = document.getElementById('composer-touch-area');
-    const imgEl = document.getElementById('composer-img');
-    const zoomSlider = document.getElementById('zoom-slider');
-
+    // Pan & Zoom
     const updateTransform = () => {
         imgEl.style.transform = `translate(${editState.x}px, ${editState.y}px) scale(${editState.scale})`;
         zoomSlider.value = editState.scale;
     };
 
-    // Slider Zoom
-    zoomSlider.oninput = (e) => {
-        editState.scale = parseFloat(e.target.value);
-        updateTransform();
-    };
+    if(zoomSlider) {
+        zoomSlider.oninput = (e) => {
+            editState.scale = parseFloat(e.target.value);
+            updateTransform();
+        };
+    }
 
-    // Mouse/Touch Events for Dragging
     const handleStart = (clientX, clientY) => {
         editState.isDragging = true;
         editState.startX = clientX - editState.x;
@@ -289,75 +291,59 @@ const openPhotoComposer = (imgSrc, log) => {
         updateTransform();
     };
 
-    const handleEnd = () => {
-        editState.isDragging = false;
-    };
+    const handleEnd = () => { editState.isDragging = false; };
 
-    // Mouse
-    touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
-    window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-    window.addEventListener('mouseup', handleEnd);
+    if(touchArea) {
+        touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
+        window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+        window.addEventListener('mouseup', handleEnd);
 
-    // Touch
-    touchArea.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 1) {
-            handleStart(e.touches[0].clientX, e.touches[0].clientY);
-        }
-    }, { passive: false });
+        touchArea.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) handleStart(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
 
-    touchArea.addEventListener('touchmove', (e) => {
-        if (e.touches.length === 1) {
-            e.preventDefault(); // Prevent scrolling
-            handleMove(e.touches[0].clientX, e.touches[0].clientY);
-        }
-    }, { passive: false });
+        touchArea.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1) {
+                e.preventDefault();
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            }
+        }, { passive: false });
 
-    touchArea.addEventListener('touchend', handleEnd);
+        touchArea.addEventListener('touchend', handleEnd);
+    }
 
+    if(toggleKcal) {
+        toggleKcal.onchange = (e) => {
+            statsEl.classList.toggle('opacity-0', !e.target.checked);
+            Feedback.tap();
+        };
+    }
 
-    // Buttons
-    document.getElementById('btn-cancel-composer').onclick = () => modal.remove();
+    if(btnCancel) btnCancel.onclick = () => modal.remove();
 
-    const toggleKcal = document.getElementById('toggle-kcal');
-    const statsEl = document.getElementById('composer-stats');
-    toggleKcal.onchange = (e) => {
-        statsEl.classList.toggle('opacity-0', !e.target.checked);
-        Feedback.tap();
-    };
-
-    // ★重要: エラー回避のため、ここでは「生成」だけを行い、完了後に「シェアボタン」を表示する
-    document.getElementById('btn-generate-share').onclick = async () => {
-        const loadingId = showLoadingOverlay('画像を生成中...');
-        const btn = document.getElementById('btn-generate-share');
-        btn.disabled = true;
-
-        try {
-            const element = document.getElementById('composer-canvas');
-            
-            // Generate Image
-            const dataUrl = await toPng(element, {
-                quality: 0.95,
-                pixelRatio: 2, // Retina display quality
-                cacheBust: true,
-                style: { transform: 'scale(1)', transformOrigin: 'top left' } // Reset transforms for capture
-            });
-
-            const blob = await (await fetch(dataUrl)).blob();
-            const file = new File([blob], `nomutore_beer_${dayjs().format('YYYYMMDD')}.png`, { type: 'image/png' });
-
-            hideLoadingOverlay(loadingId);
-            
-            // モーダルを閉じて、プレビューモーダル（シェア実行用）を開く
-            modal.remove();
-            showPreviewModal(dataUrl, file); // ここでユーザーがボタンを押すことでNotAllowedErrorを回避
-
-        } catch (e) {
-            console.error(e);
-            hideLoadingOverlay(loadingId);
-            showMessage('画像生成に失敗しました', 'error');
-            btn.disabled = false;
-        }
-    };
+    if(btnGenerate) {
+        btnGenerate.onclick = async () => {
+            const loadingId = showLoadingOverlay('画像を生成中...');
+            btnGenerate.disabled = true;
+            try {
+                const dataUrl = await toPng(canvas, {
+                    quality: 0.95, pixelRatio: 2, cacheBust: true,
+                    style: { transform: 'scale(1)', transformOrigin: 'top left' }
+                });
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], `nomutore_beer_${dayjs().format('YYYYMMDD')}.png`, { type: 'image/png' });
+                
+                hideLoadingOverlay(loadingId);
+                modal.remove();
+                showPreviewModal(dataUrl, file);
+            } catch (e) {
+                console.error(e);
+                hideLoadingOverlay(loadingId);
+                showMessage('画像生成に失敗しました', 'error');
+                btnGenerate.disabled = false;
+            }
+        };
+    }
 };
 
 
@@ -374,7 +360,7 @@ const generateGraphicCard = async (mode, data) => {
         container.style.zIndex = '-1';
         document.body.appendChild(container);
 
-        renderStatusCard(container, data); // 既存のステータスカード等はここ
+        renderStatusCard(container, data); 
 
         await new Promise(r => setTimeout(r, 800));
 
@@ -397,7 +383,7 @@ const generateGraphicCard = async (mode, data) => {
     }
 };
 
-/* --- 3. Share Trigger Modal (NotAllowedError回避用) --- */
+/* --- 3. Share Trigger Modal --- */
 
 const showPreviewModal = (dataUrl, file) => {
     const existing = document.getElementById('share-preview-modal');
@@ -418,6 +404,7 @@ const showPreviewModal = (dataUrl, file) => {
             <div class="p-4 bg-gray-100 dark:bg-black/50 flex-1 overflow-auto flex items-center justify-center min-h-[300px]">
                 <img src="${dataUrl}" class="w-full h-auto max-h-[60vh] object-contain rounded-xl shadow-lg border border-white/10" alt="Share Image">
             </div>
+
             <div class="p-4 bg-white dark:bg-base-900 border-t border-base-200 dark:border-base-800 flex gap-3">
                 <button id="btn-download-img" class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                     <i class="ph-bold ph-download-simple text-lg"></i> Save
@@ -432,17 +419,23 @@ const showPreviewModal = (dataUrl, file) => {
     `;
     document.body.appendChild(modal);
 
-    document.getElementById('btn-close-preview').onclick = () => modal.remove();
+    // ★修正: modal.querySelector を使用
+    const btnClose = modal.querySelector('#btn-close-preview');
+    if(btnClose) btnClose.onclick = () => modal.remove();
     
-    document.getElementById('btn-download-img').onclick = () => {
-        const a = document.createElement('a'); a.href = dataUrl; a.download = file.name; a.click();
-        Feedback.success(); showMessage('画像を保存しました', 'success'); modal.remove();
-        toggleModal('action-menu-modal', false);
-    };
+    const btnDownload = modal.querySelector('#btn-download-img');
+    if(btnDownload) {
+        btnDownload.onclick = () => {
+            const a = document.createElement('a'); a.href = dataUrl; a.download = file.name; a.click();
+            Feedback.success(); 
+            showMessage('画像を保存しました', 'success'); 
+            modal.remove();
+            toggleModal('action-menu-modal', false);
+        };
+    }
 
-    const shareBtn = document.getElementById('btn-share-native');
+    const shareBtn = modal.querySelector('#btn-share-native');
     if (shareBtn) {
-        // ★重要: ここはユーザーのクリック直後に navigator.share を呼ぶため、NotAllowedError は発生しない
         shareBtn.onclick = async () => {
             try { 
                 await navigator.share({ files: [file], title: 'NOMUTORE Log', text: APP.HASHTAGS }); 
@@ -456,23 +449,17 @@ const showPreviewModal = (dataUrl, file) => {
     }
 };
 
-/* --- Internal Renderers (For Status Card - same as before) --- */
+/* --- Internal Renderers (For Status Card) --- */
 const renderStatusCard = (container) => {
     const profile = Store.getProfile();
     const { logs, checks, periodLogs } = Store.getCachedData(); 
-    
     const balanceVal = Calc.calculateBalance(periodLogs);
     const isDebt = balanceVal < 0;
     const absBalance = Math.round(Math.abs(balanceVal));
     const gradeData = Calc.getRecentGrade(checks, logs, profile);
-
-    const bgClass = isDebt 
-        ? 'bg-gradient-to-br from-slate-900 to-slate-800' 
-        : 'bg-gradient-to-br from-indigo-900 to-slate-900';
-    
+    const bgClass = isDebt ? 'bg-gradient-to-br from-slate-900 to-slate-800' : 'bg-gradient-to-br from-indigo-900 to-slate-900';
     const accentColor = isDebt ? 'text-red-400' : 'text-emerald-400';
     const statusText = isDebt ? 'DEBT (借金)' : 'SAVINGS (貯金)';
-    
     const appUrl = window.location.href; 
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appUrl)}&bgcolor=ffffff&color=000000&margin=0`;
 
@@ -480,22 +467,15 @@ const renderStatusCard = (container) => {
         <div class="${bgClass} w-[600px] h-[400px] p-8 flex flex-col justify-between relative overflow-hidden font-sans text-white">
             <div class="absolute top-[-50px] right-[-50px] w-64 h-64 bg-indigo-500 rounded-full mix-blend-overlay filter blur-[60px] opacity-30"></div>
             <div class="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-amber-500 rounded-full mix-blend-overlay filter blur-[60px] opacity-20"></div>
-
             <div class="flex justify-between items-center z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
                         <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
-                    <div>
-                        <h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1>
-                        <p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p>
-                    </div>
+                    <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
                 </div>
-                <div class="text-right">
-                    <p class="text-xs text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p>
-                </div>
+                <div class="text-right"><p class="text-xs text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p></div>
             </div>
-
             <div class="flex-1 flex flex-col justify-center items-center z-10 mt-2">
                 <p class="text-sm font-bold text-gray-400 tracking-widest mb-2 border-b border-gray-600 pb-1 whitespace-nowrap">${statusText}</p>
                 <div class="text-8xl font-black ${accentColor} drop-shadow-2xl flex items-baseline gap-2 leading-none">
@@ -506,24 +486,18 @@ const renderStatusCard = (container) => {
                     <span class="text-2xl font-black text-amber-400 whitespace-nowrap">${gradeData.rank}</span>
                 </div>
             </div>
-
             <div class="flex justify-between items-end z-10 pt-4">
                 <div class="flex items-center gap-3">
                     <div class="w-14 h-14 bg-white p-1 rounded-lg shadow-lg">
                         <img src="${qrApiUrl}" class="w-full h-full" crossorigin="anonymous" alt="QR">
                     </div>
-                    <div class="text-[10px] text-gray-400 leading-tight font-bold opacity-80">
-                        Scan to join<br>the healthy drinkers.
-                    </div>
+                    <div class="text-[10px] text-gray-400 leading-tight font-bold opacity-80">Scan to join<br>the healthy drinkers.</div>
                 </div>
-                <div class="text-right">
-                    <p class="text-sm font-black italic opacity-30">#NOMUTORE</p>
-                </div>
+                <div class="text-right"><p class="text-sm font-black italic opacity-30">#NOMUTORE</p></div>
             </div>
         </div>
     `;
 };
-
 
 /* --- UI Helpers --- */
 const showLoadingOverlay = (text) => {

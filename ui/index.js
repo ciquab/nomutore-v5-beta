@@ -433,9 +433,15 @@ if (checkModal) {
 
         initTheme();
 
-        // ★修正: アプリ初期化時に必ずFABを表示する
+        // ★修正: FABの初期化 (hiddenを削除し、アニメーション用のクラスを付与)
         const fab = document.getElementById('btn-fab-fixed');
-        if (fab) fab.classList.remove('hidden');
+        if (fab) {
+            fab.classList.remove('hidden');
+            fab.classList.add('transition-all', 'duration-300', 'transform', 'ease-out');
+            // 初期状態はHomeなので表示
+            fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+            fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
+        }
 
         UI.isInitialized = true;
     },
@@ -450,17 +456,32 @@ if (checkModal) {
             // Haptics (Phase 1)
             Feedback.uiSwitch();
 
-            // 1. Cellar以外のタブへ行くときは、編集モードを強制解除してUIを隠す
+            // ★修正: FAB (＋ボタン) の表示制御 (アニメーション版)
+            const fab = document.getElementById('btn-fab-fixed');
+            if (fab) {
+                // Settings(保存ボタンと被る) と Record(画面自体がメニュー) では隠す
+                // Home と Cellar では表示する
+                const shouldShow = ['home', 'cellar'].includes(tabId);
+
+                if (shouldShow) {
+                    // 表示: 拡大して不透明に
+                    fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
+                    fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+                } else {
+                    // 非表示: 縮小して透明に (DOMからは消さないのでチカチカしない)
+                    fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
+                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+                }
+            }
+
             if (tabId !== 'cellar') {
                 StateManager.setIsEditMode(false);
                 const deleteBtn = document.getElementById('btn-delete-selected');
                 if (deleteBtn) deleteBtn.classList.add('translate-y-20', 'opacity-0');
             }
 
-            // 2. 表示の切り替え（CSSクラスベースに変更）
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
-                // View Transition用にnameをリセット
                 el.style.viewTransitionName = ''; 
                 el.style.display = 'none'; 
             });
@@ -468,17 +489,14 @@ if (checkModal) {
             const target = document.getElementById(`tab-${tabId}`);
             if(target) {
                 target.style.display = 'block';
-                // Transitionのターゲットに設定
                 target.style.viewTransitionName = 'tab-content'; 
                 
-                // 微小遅延でクラス適用（アニメーション発火のため）
                 setTimeout(() => {
-                    window.scrollTo(0, 0); // スクロールリセット
+                    window.scrollTo(0, 0); 
                     target.classList.add('active');
                 }, 10);
             }
 
-            // 3. ナビゲーションバーの更新
             document.querySelectorAll('.nav-item').forEach(el => {
                 el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
                 const icon = el.querySelector('i');
@@ -487,12 +505,11 @@ if (checkModal) {
 
             const activeNav = document.getElementById(`nav-tab-${tabId}`);
             if(activeNav) {
-                activeNav.className = 'nav-item nav-pill-active'; // クラス名を一括設定
+                activeNav.className = 'nav-item nav-pill-active'; 
                 const icon = activeNav.querySelector('i');
                 if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
             }
 
-            // 4. タブごとの初期化処理
             if (tabId === 'cellar') {
                 updateLogListView(false); 
                 UI.switchCellarView(StateManager.cellarViewMode || 'logs');
@@ -630,3 +647,4 @@ export {
     StateManager,
     toggleModal
 };
+

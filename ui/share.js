@@ -1,5 +1,5 @@
 import { toPng } from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm';
-import { APP } from '../constants.js';
+import { APP, STYLE_METADATA } from '../constants.js';
 import { Store } from '../store.js';
 import { Calc } from '../logic.js';
 import { DOM, showMessage, Feedback, escapeHtml } from './dom.js';
@@ -38,10 +38,11 @@ export const Share = {
             }
 
             // 画像読み込み待ち等のための微小な遅延
-            await new Promise(r => setTimeout(r, 100));
+            // QRコードなどの外部画像読み込みを待つため少し長めに確保
+            await new Promise(r => setTimeout(r, 500));
 
             // ★修正: ターゲット要素の取得を厳密にする
-            const targetElement = container.firstElementChild; // firstChild -> firstElementChild
+            const targetElement = container.firstElementChild;
             if (!targetElement) {
                 throw new Error('画像化する要素が見つかりません (Render failed)');
             }
@@ -49,7 +50,9 @@ export const Share = {
             // 4. DOMをPNG画像(Blob)に変換
             const dataUrl = await toPng(targetElement, { 
                 quality: 0.95,
-                pixelRatio: 2, 
+                pixelRatio: 2,
+                // 外部画像(QR等)のCORS対策
+                cacheBust: true, 
                 style: { transform: 'scale(1)', transformOrigin: 'top left' }
             });
 
@@ -93,15 +96,18 @@ export const Share = {
 
 // ステータスカード（借金・貯金・ランク）
 const renderStatusCard = (container) => {
+    // データ取得：キャッシュから直接計算して整合性を担保
     const profile = Store.getProfile();
-    const { logs, checks } = Store.getCachedData(); // ※Storeにキャッシュ取得メソッドが必要(後述)
-    // 無ければDBから取る必要があるが、今回は簡易的に計算済みの値を想定、あるいは再計算
-    // ここではデモ用にCalcを使う（本来はService経由でデータをもらうべき）
+    const { logs, checks } = Store.getCachedData(); 
     
-    // 簡易的に現状のステータスを取得（実際は引数で渡すのがベスト）
-    const balance = document.getElementById('tank-balance-kcal')?.textContent || "0";
-    const isDebt = balance.includes('-'); // マイナス表記かどうかで判断
+    // ★修正: DOMではなくロジックから値を算出
+    const balanceVal = Calc.calculateBalance(logs);
+    const isDebt = balanceVal < 0;
+    const absBalance = Math.round(Math.abs(balanceVal));
     
+    // ランク計算
+    const gradeData = Calc.getRecentGrade(checks, logs, profile);
+
     // テーマカラー
     const bgClass = isDebt 
         ? 'bg-gradient-to-br from-slate-900 to-slate-800' 
@@ -109,6 +115,10 @@ const renderStatusCard = (container) => {
     
     const accentColor = isDebt ? 'text-red-400' : 'text-emerald-400';
     const statusText = isDebt ? 'DEBT (借金)' : 'SAVINGS (貯金)';
+    
+    // ★QRコードURL (アプリのURLに変更してください)
+    const appUrl = window.location.href; 
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appUrl)}&bgcolor=ffffff&color=000000&margin=0`;
 
     container.innerHTML = `
         <div class="${bgClass} w-[600px] h-[400px] p-8 flex flex-col justify-between relative overflow-hidden font-sans text-white">
@@ -117,51 +127,50 @@ const renderStatusCard = (container) => {
 
             <div class="flex justify-between items-center z-10">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20">
-                        <span class="text-2xl">🍺</span>
+                    <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
+                        <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
                     <div>
-                        <h1 class="text-xl font-black tracking-widest">NOMUTORE</h1>
-                        <p class="text-[10px] text-gray-400 font-bold tracking-[0.2em] uppercase">Be Healthy, Drink Happily.</p>
+                        <h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1>
+                        <p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs text-gray-400 font-bold">${dayjs().format('YYYY.MM.DD')}</p>
+                    <p class="text-xs text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p>
                 </div>
             </div>
 
-            <div class="flex-1 flex flex-col justify-center items-center z-10 mt-4">
-                <p class="text-sm font-bold text-gray-400 tracking-widest mb-2 border-b border-gray-600 pb-1">${statusText}</p>
-                <div class="text-8xl font-black ${accentColor} drop-shadow-2xl flex items-baseline gap-2">
-                    ${balance} <span class="text-2xl text-gray-400 font-bold">kcal</span>
+            <div class="flex-1 flex flex-col justify-center items-center z-10 mt-2">
+                <p class="text-sm font-bold text-gray-400 tracking-widest mb-2 border-b border-gray-600 pb-1 whitespace-nowrap">${statusText}</p>
+                
+                <div class="text-8xl font-black ${accentColor} drop-shadow-2xl flex items-baseline gap-2 leading-none">
+                    ${absBalance} <span class="text-2xl text-gray-400 font-bold">kcal</span>
                 </div>
                 
-                <div class="mt-6 flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-sm">
-                    <span class="text-xs text-gray-400 font-bold uppercase">Current Rank</span>
-                    <span class="text-xl font-black text-amber-400">Liver A+</span>
+                <div class="mt-8 flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-sm">
+                    <span class="text-xs text-gray-400 font-bold uppercase whitespace-nowrap">Current Rank</span>
+                    <span class="text-2xl font-black text-amber-400 whitespace-nowrap">${gradeData.rank}</span>
                 </div>
             </div>
 
-            <div class="flex justify-between items-end z-10 border-t border-white/10 pt-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-16 h-16 bg-white p-1 rounded-lg">
-                        <div class="w-full h-full bg-gray-900 flex items-center justify-center">
-                            <i class="ph-bold ph-qr-code text-white text-2xl"></i>
-                        </div>
+            <div class="flex justify-between items-end z-10 pt-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-14 h-14 bg-white p-1 rounded-lg shadow-lg">
+                        <img src="${qrApiUrl}" class="w-full h-full" crossorigin="anonymous" alt="QR">
                     </div>
-                    <div class="text-[10px] text-gray-400 leading-tight">
+                    <div class="text-[10px] text-gray-400 leading-tight font-bold opacity-80">
                         Scan to join<br>the healthy drinkers.
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-black italic opacity-50">#NOMUTORE</p>
+                    <p class="text-sm font-black italic opacity-30">#NOMUTORE</p>
                 </div>
             </div>
         </div>
     `;
 };
 
-// ★本実装: ビール記録カード
+// ビール記録カード（飲んだ報告用）
 const renderBeerCard = (container, log) => {
     // データ整理
     const name = log.brand || log.name || 'Unknown Beer';
@@ -173,7 +182,7 @@ const renderBeerCard = (container, log) => {
     const rating = log.rating || 0;
     const date = dayjs(log.timestamp).format('YYYY.MM.DD HH:mm');
 
-    // スタイルに基づく色決定 (簡易判定ロジック)
+    // スタイルに基づく色決定
     let colorClass = 'from-amber-500 to-orange-600';
     let textColor = 'text-amber-100';
     
@@ -210,10 +219,10 @@ const renderBeerCard = (container, log) => {
 
             <div class="flex justify-between items-start z-10 opacity-90 border-b border-white/10 pb-4 mb-4">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
-                        <span class="text-lg">🍺</span>
+                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md overflow-hidden">
+                         <img src="./icon-192_2.png" class="w-full h-full object-cover" crossorigin="anonymous">
                     </div>
-                    <span class="text-xs font-bold tracking-[0.2em] uppercase">Be Healthy, Drink Happily.</span>
+                    <span class="text-xs font-bold tracking-[0.2em] uppercase">BEER & BURN</span>
                 </div>
                 <span class="text-xs font-mono font-bold opacity-80">${date}</span>
             </div>
@@ -252,6 +261,7 @@ const renderBeerCard = (container, log) => {
         </div>
     `;
 };
+
 
 /* --- UI Helpers --- */
 

@@ -96,16 +96,18 @@ export const Share = {
 
 // ステータスカード（借金・貯金・ランク）
 const renderStatusCard = (container) => {
-    // データ取得：キャッシュから直接計算して整合性を担保
+    // データ取得
     const profile = Store.getProfile();
-    const { logs, checks } = Store.getCachedData(); 
+    // ★修正: periodLogs も受け取る
+    const { logs, checks, periodLogs } = Store.getCachedData(); 
     
-    // ★修正: DOMではなくロジックから値を算出
-    const balanceVal = Calc.calculateBalance(logs);
+    // ★修正: バランス計算には「期間データ(periodLogs)」を使用
+    // これで画面のタンク表示と数値が一致します
+    const balanceVal = Calc.calculateBalance(periodLogs);
     const isDebt = balanceVal < 0;
     const absBalance = Math.round(Math.abs(balanceVal));
     
-    // ランク計算
+    // ランク計算には「全期間データ(logs)」を使用 (継続日数などを見るため)
     const gradeData = Calc.getRecentGrade(checks, logs, profile);
 
     // テーマカラー

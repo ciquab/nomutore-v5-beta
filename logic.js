@@ -20,6 +20,15 @@ export const Calc = {
         }
     },
 
+    // ★追加: 現在のカロリー収支（バランス）を計算する関数
+    // シェア機能やタンク表示で、渡された期間ログの収支合計を算出します
+    calculateBalance: (logs) => {
+        if (!logs || !Array.isArray(logs)) return 0;
+        return logs.reduce((total, log) => {
+            return total + (log.kcal || 0);
+        }, 0);
+    },
+
     calculateAlcoholCalories: (ml, abv, carbPer100ml) => {
         const _ml = ml || 0;
         const _abv = abv || 0;

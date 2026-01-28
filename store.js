@@ -47,11 +47,11 @@ export const Store = {
     getDefaultRecordExercise: () => localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE,
 
     // 最後に取得したデータを一時的に保持しておくための簡易キャッシュ
-    _cachedData: { logs: [], checks: [] },
+    _cachedData: { logs: [], checks: [], periodLogs: [] },
     
-    setCachedData: (logs, checks) => {
-        Store._cachedData = { logs, checks };
-    },
+    setCachedData: (logs, checks, periodLogs) => {
+        // periodLogsがない場合はlogs(全期間)で代用
+        Store._cachedData = { logs, checks, periodLogs: periodLogs || logs };
     
     getCachedData: () => {
         return Store._cachedData;

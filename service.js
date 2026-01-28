@@ -17,7 +17,7 @@ export const Service = {
      * UI表示用にデータを取得する
      * Permanentモードなら全期間、それ以外なら期間開始日以降のデータを返す
      */
-    /* service (2).js 20行目付近 */
+
 getAllDataForUI: async () => {
     const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
     const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
@@ -26,9 +26,6 @@ getAllDataForUI: async () => {
     // 1. 全データ（表示用）
     const allLogs = await db.logs.toArray();
     const checks = await db.checks.toArray();
-
-    // ★追加: シェア機能のためにデータをキャッシュする
-    Store.setCachedData(allLogs, checks);
     
     // ★修正: db.logsから削除しない運用に変えたため、アーカイブとの結合は不要（重複する）
     // アーカイブテーブルは「サマリー情報の保持」としてのみ利用し、生ログはdb.logsを正とする
@@ -39,6 +36,12 @@ getAllDataForUI: async () => {
     if (mode !== 'permanent') {
         periodLogs = allLogs.filter(l => l.timestamp >= start);
     }
+
+    // ★追加: シェア機能等のためにデータをキャッシュ
+        // 第1引数: 全期間ログ (ランク計算用)
+        // 第2引数: 全チェック
+        // 第3引数: 期間内ログ (収支計算用)
+        Store.setCachedData(mergedLogs, checks, periodLogs);
 
     // 呼び出し側（main/ui）に合わせて3つ返却する
     return { logs: periodLogs, checks, allLogs: mergedLogs };

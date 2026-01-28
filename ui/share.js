@@ -6,82 +6,59 @@ import { DOM, showMessage, Feedback, escapeHtml } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /* =========================================
-   Share Engine (DOM to Image)
+   Share Engine (Preview & Share)
    ========================================= */
 
 export const Share = {
     /**
-     * シェア用画像を生成し、Web Share API (またはダウンロード) を起動する
-     * @param {string} mode - 'status' | 'beer' | 'exercise'
-     * @param {object} data - ログデータなど
+     * シェア用画像を生成し、プレビューモーダルを表示する
      */
     generateAndShare: async (mode = 'status', data = null) => {
-        // 1. 生成中のローディング表示 & A11yアナウンス
         const loadingId = showLoadingOverlay('画像を生成しています...');
         
         try {
-            // 2. 一時的なコンテナを作成 (画面外に配置)
+            // 1. 一時的なコンテナを作成 (画面外)
             const container = document.createElement('div');
             container.style.position = 'fixed';
             container.style.top = '-9999px';
             container.style.left = '-9999px';
-            // SNSで見やすい比率 (1200x630 or 正方形) に近いサイズ感で作る
             container.style.width = '600px'; 
             container.style.zIndex = '-1';
             document.body.appendChild(container);
 
-            // 3. モードに応じたHTMLをレンダリング
+            // 2. HTMLレンダリング
             if (mode === 'status') {
                 renderStatusCard(container);
             } else if (mode === 'beer') {
                 renderBeerCard(container, data);
             }
 
-            // 画像読み込み待ち等のための微小な遅延
-            // QRコードなどの外部画像読み込みを待つため少し長めに確保
-            await new Promise(r => setTimeout(r, 500));
+            // 画像読み込み待ち (QRコード等)
+            await new Promise(r => setTimeout(r, 800));
 
-            // ★修正: ターゲット要素の取得を厳密にする
             const targetElement = container.firstElementChild;
             if (!targetElement) {
-                throw new Error('画像化する要素が見つかりません (Render failed)');
+                throw new Error('Render failed: Element not found');
             }
 
-            // 4. DOMをPNG画像(Blob)に変換
+            // 3. 画像化 (PNG)
             const dataUrl = await toPng(targetElement, { 
                 quality: 0.95,
                 pixelRatio: 2,
-                // 外部画像(QR等)のCORS対策
                 cacheBust: true, 
                 style: { transform: 'scale(1)', transformOrigin: 'top left' }
             });
 
-            // コンテナ削除
             document.body.removeChild(container);
-
-            // 5. Blob化してシェア
-            const blob = await (await fetch(dataUrl)).blob();
-            const file = new File([blob], `nomutore_${dayjs().format('YYYYMMDD_HHmmss')}.png`, { type: 'image/png' });
-
             hideLoadingOverlay(loadingId);
 
-            // Web Share API Level 2 (ファイル共有) 対応チェック
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'NOMUTORE Log',
-                    text: APP.HASHTAGS // constants.jsのハッシュタグ
-                });
-                Feedback.success();
-            } else {
-                // フォールバック: ダウンロード発火
-                const a = document.createElement('a');
-                a.href = dataUrl;
-                a.download = `nomutore_share.png`;
-                a.click();
-                showMessage('画像を保存しました！SNSに投稿してください。', 'success');
-                Feedback.success();
-            }
+            // 4. Blob化
+            const blob = await (await fetch(dataUrl)).blob();
+            const filename = `nomutore_${dayjs().format('YYYYMMDD_HHmmss')}.png`;
+            const file = new File([blob], filename, { type: 'image/png' });
+
+            // 5. プレビューモーダルを表示 (ここでユーザーにボタンを押させる)
+            showPreviewModal(dataUrl, file);
 
         } catch (error) {
             console.error('Share generation failed:', error);
@@ -92,25 +69,97 @@ export const Share = {
     }
 };
 
+/* --- Preview Modal (Dynamic UI) --- */
+
+const showPreviewModal = (dataUrl, file) => {
+    // 既存があれば消す
+    const existing = document.getElementById('share-preview-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'share-preview-modal';
+    modal.className = "fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in";
+    
+    // Web Share APIが使えるか判定
+    const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+
+    modal.innerHTML = `
+        <div class="bg-base-50 dark:bg-base-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center bg-white dark:bg-base-900">
+                <h3 class="font-black text-lg text-base-900 dark:text-white">Share Preview</h3>
+                <button id="btn-close-preview" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center text-gray-500">✕</button>
+            </div>
+            
+            <div class="p-4 bg-gray-100 dark:bg-black/50 flex-1 overflow-auto flex items-center justify-center">
+                <img src="${dataUrl}" class="w-full h-auto rounded-xl shadow-lg border border-white/10" alt="Share Image">
+            </div>
+
+            <div class="p-4 bg-white dark:bg-base-900 border-t border-base-200 dark:border-base-800 flex gap-3">
+                <button id="btn-download-img" class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                    <i class="ph-bold ph-download-simple text-lg"></i> Save
+                </button>
+                
+                ${canShare ? `
+                <button id="btn-share-native" class="flex-[2] py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
+                    <i class="ph-bold ph-share-network text-lg"></i> Share
+                </button>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Event Listeners
+    document.getElementById('btn-close-preview').onclick = () => modal.remove();
+    
+    // 保存ボタン
+    document.getElementById('btn-download-img').onclick = () => {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = file.name;
+        a.click();
+        Feedback.success();
+        showMessage('画像を保存しました', 'success');
+        modal.remove();
+    };
+
+    // シェアボタン (存在する場合)
+    const shareBtn = document.getElementById('btn-share-native');
+    if (shareBtn) {
+        shareBtn.onclick = async () => {
+            try {
+                await navigator.share({
+                    files: [file],
+                    title: 'NOMUTORE Log',
+                    text: APP.HASHTAGS 
+                });
+                Feedback.success();
+                modal.remove();
+            } catch (err) {
+                console.log('Share canceled or failed', err);
+                // シェアキャンセルはエラー扱いしなくて良い
+            }
+        };
+    }
+};
+
 /* --- Internal Renderers (Templates) --- */
 
-// ステータスカード（借金・貯金・ランク）
+// ステータスカード
 const renderStatusCard = (container) => {
-    // データ取得
     const profile = Store.getProfile();
-    // ★修正: periodLogs も受け取る
+    // 期間指定に対応したデータを取得
     const { logs, checks, periodLogs } = Store.getCachedData(); 
     
-    // ★修正: バランス計算には「期間データ(periodLogs)」を使用
-    // これで画面のタンク表示と数値が一致します
+    // バランス計算 (期間データ)
     const balanceVal = Calc.calculateBalance(periodLogs);
     const isDebt = balanceVal < 0;
     const absBalance = Math.round(Math.abs(balanceVal));
     
-    // ランク計算には「全期間データ(logs)」を使用 (継続日数などを見るため)
+    // ランク計算 (全期間データ)
     const gradeData = Calc.getRecentGrade(checks, logs, profile);
 
-    // テーマカラー
     const bgClass = isDebt 
         ? 'bg-gradient-to-br from-slate-900 to-slate-800' 
         : 'bg-gradient-to-br from-indigo-900 to-slate-900';
@@ -118,8 +167,8 @@ const renderStatusCard = (container) => {
     const accentColor = isDebt ? 'text-red-400' : 'text-emerald-400';
     const statusText = isDebt ? 'DEBT (借金)' : 'SAVINGS (貯金)';
     
-    // ★QRコードURL (アプリのURLに変更してください)
     const appUrl = window.location.href; 
+    // QRコードAPI (High quality)
     const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(appUrl)}&bgcolor=ffffff&color=000000&margin=0`;
 
     container.innerHTML = `
@@ -172,9 +221,8 @@ const renderStatusCard = (container) => {
     `;
 };
 
-// ビール記録カード（飲んだ報告用）
+// ビール記録カード
 const renderBeerCard = (container, log) => {
-    // データ整理
     const name = log.brand || log.name || 'Unknown Beer';
     const brewery = log.brewery || '';
     const style = log.style || 'Beer';
@@ -184,25 +232,19 @@ const renderBeerCard = (container, log) => {
     const rating = log.rating || 0;
     const date = dayjs(log.timestamp).format('YYYY.MM.DD HH:mm');
 
-    // スタイルに基づく色決定
     let colorClass = 'from-amber-500 to-orange-600';
-    let textColor = 'text-amber-100';
     
     const styleLower = style.toLowerCase();
     if (styleLower.includes('stout') || styleLower.includes('porter') || styleLower.includes('schwarz') || styleLower.includes('dark')) {
         colorClass = 'from-gray-900 to-black';
-        textColor = 'text-gray-400';
     } else if (styleLower.includes('ipa') || styleLower.includes('pale')) {
         colorClass = 'from-orange-400 to-amber-600';
     } else if (styleLower.includes('white') || styleLower.includes('weizen') || styleLower.includes('hazy')) {
         colorClass = 'from-yellow-200 to-orange-300';
-        textColor = 'text-yellow-800';
     } else if (styleLower.includes('lager') || styleLower.includes('pilsner')) {
         colorClass = 'from-yellow-400 to-amber-500';
-        textColor = 'text-yellow-100';
     }
 
-    // 星評価HTML
     let starsHtml = '';
     if (rating > 0) {
         starsHtml = `
@@ -214,7 +256,6 @@ const renderBeerCard = (container, log) => {
 
     container.innerHTML = `
         <div class="bg-gradient-to-br ${colorClass} w-[600px] h-[400px] p-8 flex flex-col relative overflow-hidden font-sans text-white">
-            
             <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
             <div class="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-[50px]"></div>
             <div class="absolute bottom-[-10%] left-[-10%] w-48 h-48 bg-black/20 rounded-full blur-[40px]"></div>
@@ -264,10 +305,8 @@ const renderBeerCard = (container, log) => {
     `;
 };
 
-
 /* --- UI Helpers --- */
 
-// A11y対応のローディングオーバーレイ
 const showLoadingOverlay = (text) => {
     const id = `loading-${Date.now()}`;
     const el = document.createElement('div');

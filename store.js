@@ -52,6 +52,7 @@ export const Store = {
     setCachedData: (logs, checks, periodLogs) => {
         // periodLogsがない場合はlogs(全期間)で代用
         Store._cachedData = { logs, checks, periodLogs: periodLogs || logs };
+    },
     
     getCachedData: () => {
         return Store._cachedData;

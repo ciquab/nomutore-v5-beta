@@ -451,9 +451,18 @@ getAllDataForUI: async () => {
                 }
             }
 
-            // ★シェア文言の生成
-            const shareText = Calc.generateShareText(logData, -500); // balanceは仮の値、または非同期で取得して渡す
-            shareAction = { type: 'share', text: shareText };
+            // ★修正: シェアアクションの生成 (画像シェア対応)
+            const { logs } = await Service.getAllDataForUI(); // 最新バランス取得用
+            const balance = Calc.calculateBalance(logs); // 現在のバランス
+            const shareText = Calc.generateShareText(logData, balance);
+            
+            const shareAction = { 
+                type: 'share', 
+                text: shareText, // テキストシェア用（フォールバック）
+                shareMode: 'image', // 画像モード指定
+                imageType: 'beer',  // ビールカード指定
+                imageData: logData  // カード生成用データ
+            };
 
             if (Math.abs(kcal) > 500) {
                 showMessage(`🍺 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です😱`, 'error', shareAction); 
@@ -467,6 +476,9 @@ getAllDataForUI: async () => {
                 window.open(`https://untappd.com/search?q=${query}`, '_blank');
             }
         }
+
+        // 2. データ更新通知
+        Store.setCachedData(await db.logs.toArray(), await db.checks.toArray()); // キャッシュ更新
         
         // 履歴影響再計算
         await Service.recalcImpactedHistory(data.timestamp);

@@ -2,7 +2,7 @@ import { toPng } from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm';
 import { APP } from '../constants.js';
 import { Store } from '../store.js';
 import { Calc } from '../logic.js';
-import { DOM, showMessage, Feedback } from './dom.js';
+import { DOM, showMessage, Feedback, escapeHtml } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /* =========================================
@@ -155,12 +155,97 @@ const renderStatusCard = (container) => {
     `;
 };
 
-// ビール記録カード（飲んだ報告用）
+// ★本実装: ビール記録カード
 const renderBeerCard = (container, log) => {
-    // 実際の実装は後ほど（今回は枠組みだけ）
-    container.innerHTML = `<div class="bg-amber-500 w-[600px] h-[400px]">Beer Card Placeholder</div>`;
-};
+    // データ整理
+    const name = log.brand || log.name || 'Unknown Beer';
+    const brewery = log.brewery || '';
+    const style = log.style || 'Beer';
+    const kcal = Math.abs(Math.round(log.kcal));
+    const amount = (log.size || 350) * (log.count || 1);
+    const count = log.count || 1;
+    const rating = log.rating || 0;
+    const date = dayjs(log.timestamp).format('YYYY.MM.DD HH:mm');
 
+    // スタイルに基づく色決定 (簡易判定ロジック)
+    let colorClass = 'from-amber-500 to-orange-600';
+    let textColor = 'text-amber-100';
+    
+    const styleLower = style.toLowerCase();
+    if (styleLower.includes('stout') || styleLower.includes('porter') || styleLower.includes('schwarz') || styleLower.includes('dark')) {
+        colorClass = 'from-gray-900 to-black';
+        textColor = 'text-gray-400';
+    } else if (styleLower.includes('ipa') || styleLower.includes('pale')) {
+        colorClass = 'from-orange-400 to-amber-600';
+    } else if (styleLower.includes('white') || styleLower.includes('weizen') || styleLower.includes('hazy')) {
+        colorClass = 'from-yellow-200 to-orange-300';
+        textColor = 'text-yellow-800';
+    } else if (styleLower.includes('lager') || styleLower.includes('pilsner')) {
+        colorClass = 'from-yellow-400 to-amber-500';
+        textColor = 'text-yellow-100';
+    }
+
+    // 星評価HTML
+    let starsHtml = '';
+    if (rating > 0) {
+        starsHtml = `
+            <div class="flex gap-1 text-yellow-400 text-2xl drop-shadow-sm">
+                ${'★'.repeat(rating)}${'<span class="opacity-30">★</span>'.repeat(5-rating)}
+            </div>
+        `;
+    }
+
+    container.innerHTML = `
+        <div class="bg-gradient-to-br ${colorClass} w-[600px] h-[400px] p-8 flex flex-col relative overflow-hidden font-sans text-white">
+            
+            <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/40 to-transparent pointer-events-none"></div>
+            <div class="absolute top-[-20%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-[50px]"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-48 h-48 bg-black/20 rounded-full blur-[40px]"></div>
+
+            <div class="flex justify-between items-start z-10 opacity-90 border-b border-white/10 pb-4 mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
+                        <span class="text-lg">🍺</span>
+                    </div>
+                    <span class="text-xs font-bold tracking-[0.2em] uppercase">Be Healthy, Drink Happily.</span>
+                </div>
+                <span class="text-xs font-mono font-bold opacity-80">${date}</span>
+            </div>
+
+            <div class="flex-1 flex flex-col justify-center z-10 pl-2">
+                ${brewery ? `<p class="text-xl font-bold opacity-80 mb-1 uppercase tracking-wide leading-none">${escapeHtml(brewery)}</p>` : ''}
+                
+                <h1 class="text-5xl font-black leading-tight mb-4 drop-shadow-md line-clamp-2 w-[95%]">
+                    ${escapeHtml(name)}
+                </h1>
+                
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="px-4 py-1.5 bg-black/20 backdrop-blur-md rounded-full text-sm font-bold border border-white/10">
+                        ${escapeHtml(style)}
+                    </div>
+                    ${starsHtml}
+                </div>
+
+                <div class="flex items-end gap-3 bg-black/20 self-start pr-8 pl-4 py-2 rounded-2xl backdrop-blur-sm border border-white/5">
+                    <span class="text-6xl font-black text-white drop-shadow-lg">-${kcal}</span>
+                    <div class="flex flex-col mb-2">
+                        <span class="text-xs font-bold uppercase opacity-60">Debt Created</span>
+                        <span class="text-sm font-bold opacity-90">kcal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="z-10 flex justify-between items-end mt-2">
+                <div class="text-xs font-bold opacity-70">
+                    Amount: ${amount}ml <span class="opacity-50">(${count} cans)</span>
+                </div>
+                <div class="text-xl font-black italic opacity-50">
+                    #NOMUTORE
+                </div>
+            </div>
+        </div>
+    `;
+};
 
 /* --- UI Helpers --- */
 

@@ -407,8 +407,8 @@ export const showMessage = (text, type = 'info', action = null) => {
     let content = `<span>${text}</span>`;
     
     if (action && action.type === 'share') {
-        const shareText = action.text || text;
         const btnId = `msg-btn-share-${Date.now()}`;
+        // アイコンをカメラに変更しても良いが、汎用的にShareアイコンのままにする
         content += `
             <button id="${btnId}" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full text-xs transition flex items-center gap-1">
                 <i class="ph-bold ph-share-network"></i> Share
@@ -418,9 +418,17 @@ export const showMessage = (text, type = 'info', action = null) => {
             const btn = document.getElementById(btnId);
             if(btn) {
                 btn.onclick = () => {
-                    // シェアボタンのクリック感を追加
-                    if (Feedback.haptic) Feedback.haptic.light();
-                    shareContent(shareText);
+                    // ★追加: 画像シェアモードのハンドリング
+                    if (action.shareMode === 'image' && window.UI && window.UI.share) {
+                        if (Feedback.haptic) Feedback.haptic.light();
+                        // Shareエンジンを起動 ('beer', logData)
+                        window.UI.share(action.imageType, action.imageData);
+                    } else {
+                        // 既存のテキストシェア
+                        if (Feedback.haptic) Feedback.haptic.light();
+                        const shareText = action.text || text;
+                        shareContent(shareText);
+                    }
                 };
             }
         }, 0);

@@ -105,6 +105,17 @@ export const UI = {
         
         DOM.init();
         
+        // ▼▼▼ ここから追加 ▼▼▼
+        // ★修正: 固定要素がアニメーションでチラつかないようにCSS設定を注入
+        const style = document.createElement('style');
+        style.textContent = `
+            header { view-transition-name: app-header; }
+            nav { view-transition-name: app-nav; }
+            #btn-fab-fixed { view-transition-name: app-fab; }
+        `;
+        document.head.appendChild(style);
+        // ▲▲▲ ここまで追加 ▲▲▲
+        
         const bind = (id, event, fn) => {
             const el = document.getElementById(id);
             if(el) el.addEventListener(event, fn);
@@ -647,4 +658,5 @@ export {
     StateManager,
     toggleModal
 };
+
 

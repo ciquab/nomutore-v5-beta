@@ -40,11 +40,17 @@ export const Share = {
             // 画像読み込み待ち等のための微小な遅延
             await new Promise(r => setTimeout(r, 100));
 
+            // ★修正: ターゲット要素の取得を厳密にする
+            const targetElement = container.firstElementChild; // firstChild -> firstElementChild
+            if (!targetElement) {
+                throw new Error('画像化する要素が見つかりません (Render failed)');
+            }
+
             // 4. DOMをPNG画像(Blob)に変換
-            const dataUrl = await toPng(container.firstChild, {
+            const dataUrl = await toPng(targetElement, { 
                 quality: 0.95,
-                pixelRatio: 2, // 高解像度化
-                style: { transform: 'scale(1)', transformOrigin: 'top left' } // スタイル崩れ防止
+                pixelRatio: 2, 
+                style: { transform: 'scale(1)', transformOrigin: 'top left' }
             });
 
             // コンテナ削除

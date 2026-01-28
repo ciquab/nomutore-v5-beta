@@ -17,7 +17,8 @@ let editState = {
     isDragging: false,
     startX: 0,
     startY: 0,
-    aspectRatio: '1 / 1'
+    aspectRatio: '1 / 1',
+    fontClass: 'font-sans'
 };
 
 export const Share = {
@@ -93,41 +94,65 @@ const openPhotoComposer = (imgSrc, log) => {
         </button>
     `).join('');
 
+    // ★追加: フォント定義リスト
+    const fonts = [
+        { label: 'Basic', value: 'font-sans', family: 'Noto Sans JP' },
+        { label: 'Mincho', value: 'font-mincho', family: 'Shippori Mincho B1' },
+        { label: 'Heavy', value: 'font-heavy', family: 'Dela Gothic One' },
+        { label: 'Brush', value: 'font-brush', family: 'Yuji Syuku' },
+        { label: 'Retro', value: 'font-dot', family: 'DotGothic16' }
+    ];
+
+    // ★追加: フォント選択ボタンHTML生成
+    const fontButtonsHtml = fonts.map(f => `
+        <button class="font-btn px-3 py-1.5 rounded-lg border border-gray-700 transition shrink-0 text-xs ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+                data-value="${f.value}" style="font-family: '${f.family}';">
+            ${f.label}
+        </button>
+    `).join('');
+
     modal.innerHTML = `
-        <div class="px-4 py-3 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
-            <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
-            <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
-            <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
-        </div>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Noto+Sans+JP:wght@500;700;900&family=Shippori+Mincho+B1:wght@700&family=Yuji+Syuku&display=swap');
+            
+            .font-sans { font-family: 'Noto Sans JP', sans-serif; }
+            .font-mincho { font-family: 'Shippori Mincho B1', serif; }
+            .font-heavy { font-family: 'Dela Gothic One', sans-serif; letter-spacing: 0.05em; }
+            .font-brush { font-family: 'Yuji Syuku', serif; }
+            .font-dot { font-family: 'DotGothic16', sans-serif; }
+        </style>
 
         <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
             
-            <div id="composer-canvas" class="relative bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out w-full h-auto max-w-md max-h-full" 
+            <div id="composer-canvas" class="relative bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out w-full h-auto max-w-md max-h-full ${editState.fontClass}" 
                  style="aspect-ratio: ${editState.aspectRatio};">
                 
                 <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
 
-                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pt-24">
+                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pt-24">
                     <div class="flex items-end justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1">
+                        
+                        <div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+                            <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1 shrink-0">
                                 <img src="${logoSrc}" class="w-full h-full object-contain opacity-90 drop-shadow-sm" crossorigin="anonymous">
                             </div>
-                            <div class="flex flex-col text-white drop-shadow-md">
-                                <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wider leading-none mb-1">Logged with NOMUTORE</span>
-                                <span class="text-xl font-black leading-none line-clamp-1 filter drop-shadow-lg">${escapeHtml(brand)}</span>
-                                ${brewery ? `<span class="text-xs font-bold text-gray-300 line-clamp-1 mt-0.5">${escapeHtml(brewery)}</span>` : ''}
+                            
+                            <div class="flex flex-col text-white drop-shadow-md overflow-hidden">
+                                <p class="text-[10px] font-bold text-gray-300 tracking-widest leading-none mb-1.5 opacity-80" style="font-family: 'Noto Sans JP', sans-serif;">
+                                    ${date} | NOMUTORE
+                                </p>
+                                <span class="text-xl font-bold leading-tight line-clamp-2 filter drop-shadow-lg break-words">${escapeHtml(brand)}</span>
+                                ${brewery ? `<span class="text-xs font-bold text-gray-300 line-clamp-1 mt-0.5 truncate">${escapeHtml(brewery)}</span>` : ''}
                             </div>
                         </div>
-                        <div id="composer-stats" class="text-right text-white drop-shadow-md transition-opacity duration-300">
+
+                        <div id="composer-stats" class="text-right text-white drop-shadow-md transition-opacity duration-300 shrink-0">
                             <div class="flex flex-col items-end">
-                                <span class="text-3xl font-black font-mono leading-none filter drop-shadow-lg">-${kcal}</span>
-                                <span class="text-[9px] font-bold uppercase text-red-400 tracking-wider">Debt Created</span>
+                                <span class="text-4xl font-bold leading-none filter drop-shadow-lg">-${kcal}</span>
+                                <span class="text-[9px] font-bold uppercase text-red-400 tracking-wider mt-0.5" style="font-family: 'Noto Sans JP', sans-serif;">Debt Created (kcal)</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="absolute top-5 right-5 text-[10px] font-mono font-bold text-white/60 tracking-widest border border-white/20 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                        ${date}
+
                     </div>
                 </div>
             </div>
@@ -143,8 +168,12 @@ const openPhotoComposer = (imgSrc, log) => {
                 ${ratioButtonsHtml}
             </div>
 
+            <div class="flex gap-2 px-4 py-2 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-start bg-base-950/50">
+                <span class="text-[10px] font-bold text-gray-500 self-center mr-1">FONT</span>
+                ${fontButtonsHtml}
+            </div>
+
             <div class="px-4 py-3 flex flex-col gap-3">
-                
                 <div class="flex items-center gap-3">
                     <i class="ph-bold ph-minus text-gray-500 text-xs"></i>
                     <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="flex-1 accent-indigo-500 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer">
@@ -157,11 +186,11 @@ const openPhotoComposer = (imgSrc, log) => {
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
                             <div class="w-7 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[10px] font-bold text-gray-400">Show Calories</span>
+                        <span class="text-[10px] font-bold text-gray-400">Calories</span>
                     </label>
                     
                     <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
-                        <i class="ph-bold ph-hand-pointing"></i> Drag & Pinch
+                        <i class="ph-bold ph-hand-pointing"></i> Adjust
                     </span>
                 </div>
             </div>
@@ -174,6 +203,30 @@ const openPhotoComposer = (imgSrc, log) => {
     // --- Logic ---
     const canvas = document.getElementById('composer-canvas');
     const grid = document.getElementById('grid-overlay');
+
+    // ★追加: フォント切り替えロジック
+    const fontBtns = modal.querySelectorAll('.font-btn');
+    fontBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // 前のクラスを削除
+            if (editState.fontClass) canvas.classList.remove(editState.fontClass);
+            
+            // 新しいクラスを設定
+            editState.fontClass = btn.dataset.value;
+            canvas.classList.add(editState.fontClass);
+
+            // ボタンの見た目更新
+            fontBtns.forEach(b => {
+                const isActive = b === btn;
+                b.classList.toggle('bg-indigo-600', isActive);
+                b.classList.toggle('text-white', isActive);
+                b.classList.toggle('border-indigo-500', isActive);
+                b.classList.toggle('bg-gray-800', !isActive);
+                b.classList.toggle('text-gray-400', !isActive);
+            });
+            Feedback.tap();
+        });
+    });
 
     // ★追加: アスペクト比切り替えロジック
     const ratioBtns = modal.querySelectorAll('.ratio-btn');

@@ -2,7 +2,7 @@ import { toPng } from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm';
 import { APP, STYLE_METADATA } from '../constants.js';
 import { Store } from '../store.js';
 import { Calc } from '../logic.js';
-import { DOM, showMessage, Feedback, escapeHtml } from './dom.js';
+import { DOM, showMessage, Feedback, escapeHtml, toggleModal } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /* =========================================
@@ -86,7 +86,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
     // ★追加: ボタンHTML生成
     const ratioButtonsHtml = ratios.map(r => `
-        <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
             <i class="ph-bold ${r.icon} text-lg ${r.class || ''}"></i>
             <span class="text-[9px] font-bold">${r.label}</span>
@@ -94,16 +94,18 @@ const openPhotoComposer = (imgSrc, log) => {
     `).join('');
 
     modal.innerHTML = `
-        <div class="p-4 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
-            <button id="btn-cancel-composer" class="text-sm font-bold text-gray-300 hover:text-white">Cancel</button>
-            <h3 class="font-black text-sm tracking-widest">EDIT PHOTO</h3>
-            <button id="btn-generate-share" class="text-sm font-bold text-indigo-400 hover:text-indigo-300">Next</button>
+        <div class="px-4 py-3 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
+            <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
+            <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
+            <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
         </div>
 
-        <div id="composer-touch-area" class="flex-1 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
+        <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
             
-            <div id="composer-canvas" class="relative w-full max-w-md bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out" 
-                 style="aspect-ratio: ${editState.aspectRatio};"> <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
+            <div id="composer-canvas" class="relative bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out w-full h-auto max-w-md max-h-full" 
+                 style="aspect-ratio: ${editState.aspectRatio};">
+                
+                <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
 
                 <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pt-24">
                     <div class="flex items-end justify-between">
@@ -130,38 +132,40 @@ const openPhotoComposer = (imgSrc, log) => {
                 </div>
             </div>
             
-            <div id="grid-overlay" class="absolute pointer-events-none opacity-20 flex items-center justify-center w-full max-w-md border border-white/50 border-dashed transition-all duration-300 ease-out"
+            <div id="grid-overlay" class="absolute pointer-events-none opacity-20 flex items-center justify-center border border-white/50 border-dashed transition-all duration-300 ease-out w-full h-auto max-w-md max-h-full"
                  style="aspect-ratio: ${editState.aspectRatio};">
             </div>
         </div>
 
-        <div class="bg-base-900 border-t border-gray-800 z-20 flex flex-col pb-8 safe-area-bottom">
+        <div class="bg-base-900 border-t border-gray-800 z-20 flex flex-col pb-safe">
             
-            <div class="flex gap-2 p-3 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-center">
+            <div class="flex gap-2 px-4 py-2 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-center">
                 ${ratioButtonsHtml}
             </div>
 
-            <div class="p-5 flex flex-col gap-5">
-                <div class="flex items-center gap-4">
-                    <i class="ph-bold ph-minus text-gray-500"></i>
-                    <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="w-full accent-indigo-500 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                    <i class="ph-bold ph-plus text-gray-500"></i>
+            <div class="px-4 py-3 flex flex-col gap-3">
+                
+                <div class="flex items-center gap-3">
+                    <i class="ph-bold ph-minus text-gray-500 text-xs"></i>
+                    <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="flex-1 accent-indigo-500 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <i class="ph-bold ph-plus text-gray-500 text-xs"></i>
                 </div>
 
-                <label class="flex items-center justify-between cursor-pointer p-3 bg-gray-800 rounded-xl active:bg-gray-700 transition">
-                    <span class="text-sm font-bold text-gray-300 flex items-center gap-2">
-                        <i class="ph-fill ph-fire text-orange-500"></i> Show Calories (Debt)
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-2 cursor-pointer bg-gray-800/50 px-3 py-1.5 rounded-lg active:bg-gray-800 transition">
+                        <div class="relative inline-flex items-center">
+                            <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
+                            <div class="w-7 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500"></div>
+                        </div>
+                        <span class="text-[10px] font-bold text-gray-400">Show Calories</span>
+                    </label>
+                    
+                    <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
+                        <i class="ph-bold ph-hand-pointing"></i> Drag & Pinch
                     </span>
-                    <div class="relative inline-flex items-center">
-                        <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
-                    </div>
-                </label>
-                
-                <p class="text-[10px] text-gray-500 text-center">
-                    Drag to Move • Pinch to Zoom
-                </p>
+                </div>
             </div>
+            <div class="h-4 bg-base-900"></div>
         </div>
     `;
 
@@ -177,6 +181,12 @@ const openPhotoComposer = (imgSrc, log) => {
         btn.addEventListener('click', () => {
             // 状態更新
             editState.aspectRatio = btn.dataset.value;
+
+            // ★追加: リセット処理 (画像サイズと位置を初期化して吸着させる)
+            editState.scale = 1.0;
+            editState.x = 0;
+            editState.y = 0;
+            updateTransform(); // 画像のstyleを更新
             
             // UI更新
             canvas.style.aspectRatio = editState.aspectRatio;
@@ -374,6 +384,7 @@ const showPreviewModal = (dataUrl, file) => {
     document.getElementById('btn-download-img').onclick = () => {
         const a = document.createElement('a'); a.href = dataUrl; a.download = file.name; a.click();
         Feedback.success(); showMessage('画像を保存しました', 'success'); modal.remove();
+        toggleModal('action-menu-modal', false);
     };
 
     const shareBtn = document.getElementById('btn-share-native');
@@ -384,6 +395,7 @@ const showPreviewModal = (dataUrl, file) => {
                 await navigator.share({ files: [file], title: 'NOMUTORE Log', text: APP.HASHTAGS }); 
                 Feedback.success(); 
                 modal.remove(); 
+                toggleModal('action-menu-modal', false);
             } catch (err) {
                 console.log('Share canceled');
             }

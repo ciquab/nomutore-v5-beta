@@ -82,20 +82,23 @@ export const handleActionSelect = (type) => {
     
     toggleModal('action-menu-modal', false);
 
-    // 遅延実行でモーダルが閉じるのを待つ
+    // ★修正ポイント: Shareだけは setTimeout を使わずに即時実行する
+    // これにより "User Gesture" (ユーザーの操作) として認識され、NotAllowedError を回避できます。
+    if (type === 'share') {
+        if (window.UI && window.UI.share) {
+            window.UI.share('status');
+        } else {
+            console.error('Share module not loaded');
+        }
+        return; // 遅延処理ブロックには進まずここで終了
+    }
+
+    // 他のモーダル切り替えは、アニメーションの干渉を防ぐために遅延させる
     setTimeout(() => {
         if (type === 'beer') openBeerModal(null, dateStr);
-        else if (type === 'exercise') openManualInput(null, { date: dateStr }); // 引数形式を修正
+        else if (type === 'exercise') openManualInput(null, { date: dateStr }); 
         else if (type === 'check') openCheckModal(dateStr);
         else if (type === 'timer') openTimer(true);
-        else if (type === 'share') {
-            // ★追加: シェア機能の呼び出し
-            if (window.UI && window.UI.share) {
-                window.UI.share('status');
-            } else {
-                console.error('Share module not loaded');
-            }
-        }
     }, 100);
 };
 

@@ -976,7 +976,7 @@ export const openLogDetail = (log) => {
 
             <div class="p-6 overflow-y-auto flex-1">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-gray-400">${date}</span>
+                    <span class="text-xs font-bold text-gray-400">${dateDisplay}</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
                         ${isBeer ? 'Beer Log' : 'Exercise'}
                     </span>

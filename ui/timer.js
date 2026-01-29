@@ -30,7 +30,7 @@ export const Timer = {
             Object.keys(EXERCISE).forEach(k => {
                 const o = document.createElement('option');
                 o.value = k;
-                o.textContent = EXERCISE[k].icon + ' ' + EXERCISE[k].label;
+                o.textContent = EXERCISE[k].label;
                 el.appendChild(o);
             });
             el.value = Store.getDefaultRecordExercise();

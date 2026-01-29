@@ -1,6 +1,6 @@
 import { db } from '../store.js';
 import { DOM, escapeHtml } from './dom.js';
-import { EXERCISE, CALORIES } from '../constants.js';
+import { EXERCISE, CALORIES, STYLE_METADATA } from '../constants.js';
 import { StateManager } from './state.js';
 import { Service } from '../service.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -152,14 +152,14 @@ export const updateLogListView = async (isLoadMore = false) => {
         
         let iconSizeClass = "w-12 h-12 text-xl";
         let colorClass = 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
-        let icon = '🍺';
+        let iconDef = 'ph-duotone ph-beer-bottle';
         let mainText = '';
         let subText = '';
         let rightContent = '';
 
         if (log.type === 'exercise') {
             const ex = EXERCISE[log.exerciseKey];
-            icon = ex ? ex.icon : '🏃';
+            iconDef = ex ? ex.icon : 'ph-duotone ph-sneaker-move';
             colorClass = 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
             mainText = log.name; 
             subText = `<span class="font-bold text-gray-600 dark:text-gray-300">${log.minutes} min</span> · -${Math.round(log.kcal)} kcal`;
@@ -167,6 +167,10 @@ export const updateLogListView = async (isLoadMore = false) => {
         } else if (log.type === 'beer') {
             const size = log.size || 350;
             const count = log.count || 1;
+
+            // ★修正: スタイル定義からアイコンクラスを取得
+            const styleMeta = STYLE_METADATA[log.style];
+            iconDef = styleMeta ? styleMeta.icon : 'ph-duotone ph-beer-bottle';
             
             if (log.brand) {
                 mainText = log.brewery ? `<span class="text-[10px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand);
@@ -183,6 +187,9 @@ export const updateLogListView = async (isLoadMore = false) => {
             }
         }
 
+        // ★修正: DOM.renderIconを通してHTMLタグ化
+        const iconHtml = DOM.renderIcon(iconDef, 'text-2xl');
+
         const checkboxHtml = StateManager.isEditMode ? `
             <div class="mr-2">
                 <input type="checkbox" class="log-checkbox checkbox checkbox-sm checkbox-primary rounded-md" data-id="${log.id}">
@@ -192,7 +199,7 @@ export const updateLogListView = async (isLoadMore = false) => {
         li.innerHTML = `
             ${checkboxHtml}
             <div class="${iconSizeClass} rounded-full ${colorClass} flex items-center justify-center shrink-0 shadow-inner">
-                ${icon}
+                ${iconHtml}
             </div>
 
             <div class="flex-1 min-w-0 cursor-pointer" onclick="UI.openLogDetail(${log.id})">

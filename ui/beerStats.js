@@ -226,14 +226,23 @@ function renderBeerList(beers) {
     }
 
     listEl.innerHTML = beers.map((beer, index) => {
-        let rankBadge = `<span class="text-xs font-bold text-gray-300 w-6 text-center">#${index + 1}</span>`;
-        if (index === 0) rankBadge = `<span class="text-lg">🥇</span>`;
-        if (index === 1) rankBadge = `<span class="text-lg">🥈</span>`;
-        if (index === 2) rankBadge = `<span class="text-lg">🥉</span>`;
+        let rankBadge = `<span class="text-gray-400 font-bold text-xs">#${index + 1}</span>`;
+        if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-yellow-500 drop-shadow-sm"></i>`;
+        if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-400 drop-shadow-sm"></i>`;
+        if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm"></i>`;
 
         const rating = beer.averageRating > 0 
             ? `<span class="flex items-center text-[10px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star"></i>${beer.averageRating.toFixed(1)}</span>`
             : '';
+
+        // ★修正: STYLE_METADATAからアイコン定義を取得してレンダリング
+        const styleMeta = STYLE_METADATA[beer.style];
+        const iconDef = styleMeta ? styleMeta.icon : 'ph-duotone ph-beer-bottle';
+        // 黒ビール系ならアイコン色を変えるなどの調整も可能
+        const iconColor = (styleMeta && styleMeta.color === 'black') ? 'text-gray-700 dark:text-gray-400' : 'text-amber-500';
+        
+        // DOM.renderIcon でHTML生成
+        const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
             <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700">

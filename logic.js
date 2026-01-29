@@ -282,17 +282,18 @@ export const Calc = {
         if (isRookie) {
             const rate = daysSinceStart > 0 ? (recentSuccessDays / daysSinceStart) : 0;
             
-            if (rate >= 0.7) return { rank: 'Rookie S', label: '新星 🌟', color: 'text-orange-500', bg: 'bg-orange-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 1.0 };
-            if (rate >= 0.4) return { rank: 'Rookie A', label: '期待の星 🔥', color: 'text-indigo-500', bg: 'bg-indigo-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.7 };
-            if (rate >= 0.25) return { rank: 'Rookie B', label: '駆け出し 🐣', color: 'text-green-500', bg: 'bg-green-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.4 };
-            return { rank: 'Beginner', label: 'たまご 🥚', color: 'text-gray-500', bg: 'bg-gray-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.25 };
+            if (rate >= 0.7) return { rank: 'Rookie S', label: '新星', color: 'text-orange-500', bg: 'bg-orange-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 1.0 };
+            if (rate >= 0.4) return { rank: 'Rookie A', label: '期待の星', color: 'text-indigo-500', bg: 'bg-indigo-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.7 };
+            if (rate >= 0.25) return { rank: 'Rookie B', label: '駆け出し', color: 'text-green-500', bg: 'bg-green-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.4 };
+            return { rank: 'Beginner', label: 'たまご', color: 'text-gray-500', bg: 'bg-gray-100', next: 1, current: recentSuccessDays, isRookie: true, rawRate: rate, targetRate: 0.25 };
         }
 
-        if (recentSuccessDays >= 20) return { rank: 'S', label: '神の肝臓 👼', color: 'text-purple-600', bg: 'bg-purple-100', next: null, current: recentSuccessDays };
-        if (recentSuccessDays >= 12) return { rank: 'A', label: '鉄の肝臓 🛡️', color: 'text-indigo-600', bg: 'bg-indigo-100', next: 20, current: recentSuccessDays };
-        if (recentSuccessDays >= 8)  return { rank: 'B', label: '健康志向 🌿', color: 'text-green-600', bg: 'bg-green-100', next: 12, current: recentSuccessDays };
+        // ラベルから絵文字を除去
+        if (recentSuccessDays >= 20) return { rank: 'S', label: '神の肝臓', color: 'text-purple-600', bg: 'bg-purple-100', next: null, current: recentSuccessDays };
+        if (recentSuccessDays >= 12) return { rank: 'A', label: '鉄の肝臓', color: 'text-indigo-600', bg: 'bg-indigo-100', next: 20, current: recentSuccessDays };
+        if (recentSuccessDays >= 8)  return { rank: 'B', label: '健康志向', color: 'text-green-600', bg: 'bg-green-100', next: 12, current: recentSuccessDays };
         
-        return { rank: 'C', label: '要注意 ⚠️', color: 'text-red-500', bg: 'bg-red-50', next: 8, current: recentSuccessDays };
+        return { rank: 'C', label: '要注意', color: 'text-red-500', bg: 'bg-red-50', next: 8, current: recentSuccessDays };
     },
 
     getRedemptionSuggestion: (debtKcal, profile) => {

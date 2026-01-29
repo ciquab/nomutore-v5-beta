@@ -84,7 +84,6 @@ export const handleActionSelect = (type) => {
     toggleModal('action-menu-modal', false);
 
     // ★修正ポイント: Shareだけは setTimeout を使わずに即時実行する
-    // これにより "User Gesture" (ユーザーの操作) として認識され、NotAllowedError を回避できます。
     if (type === 'share') {
         if (window.UI && window.UI.share) {
             window.UI.share('status');
@@ -229,12 +228,16 @@ export const openCheckModal = async (dateStr) => {
             const div = document.createElement('div');
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
+            
+            // ★修正: DOM.renderIcon を使用
+            const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-indigo-500 dark:text-indigo-400');
+
             div.innerHTML = `
                 <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
                     <input type="checkbox" id="check-${item.id}" class="rounded text-indigo-600 focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
-                            <span>${item.icon}</span> ${item.label}
+                            ${iconHtml} ${item.label}
                         </span>
                         ${item.desc ? `<span class="text-[9px] text-gray-400">${item.desc}</span>` : ''}
                     </div>
@@ -330,6 +333,9 @@ export const openCheckModal = async (dateStr) => {
                     // 辞書から定義を取得（廃止項目でもここなら取れる！）
                     const spec = getCheckItemSpec(key);
                     
+                    // ★修正: アイコンのレンダリング
+                    const iconHtml = DOM.renderIcon(spec.icon, 'text-lg text-amber-500');
+
                     // DOM生成（通常の項目とは少し見た目を変えて「過去の遺産」感を出す）
                     const div = document.createElement('div');
                     div.className = "legacy-item-wrapper"; // 識別用クラス
@@ -338,7 +344,7 @@ export const openCheckModal = async (dateStr) => {
                             <input type="checkbox" checked disabled class="rounded text-amber-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300">
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1">
-                                    <span>${spec.icon}</span> ${spec.label}
+                                    ${iconHtml} ${spec.label}
                                     <span class="text-[9px] bg-amber-200 dark:bg-amber-800 px-1 rounded text-amber-900 dark:text-amber-100 ml-1">Legacy</span>
                                 </span>
                                 <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70">現在はリストにありません</span>
@@ -360,7 +366,7 @@ export const openCheckModal = async (dateStr) => {
 
         if (hasBeer) {
             setCheck('check-is-dry', false); 
-            syncDryDayUI(false);             
+            syncDryDayUI(false);              
             if (isDryInput) isDryInput.disabled = true;
             // ★修正: ビールがある場合、休肝日ラベル自体はいじらず、下のヒントテキストを赤字で書き換える
             if (hint) {
@@ -399,7 +405,12 @@ export const openManualInput = (dateStr = null, log = null) => {
         Object.keys(EXERCISE).forEach(k => {
             const o = document.createElement('option');
             o.value = k;
-            o.textContent = EXERCISE[k].icon + ' ' + EXERCISE[k].label;
+            
+            // ★重要修正: select内のoptionにはHTMLタグ(<i>など)を入れられないため
+            // アイコン文字列(ph-...)を除去し、ラベルテキストのみを表示する
+            // 以前: o.textContent = EXERCISE[k].icon + ' ' + EXERCISE[k].label;
+            o.textContent = EXERCISE[k].label; 
+            
             typeSel.appendChild(o);
         });
     }
@@ -537,9 +548,12 @@ window.renderCheckLibrary = () => {
                 }
             };
 
+            // ★修正: アイコンのレンダリング
+            const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');
+
             btn.innerHTML = `
                 <input type="checkbox" id="lib-chk-${item.id}" class="hidden" ${isActive ? 'checked' : ''} value="${item.id}">
-                <span class="text-2xl">${item.icon}</span>
+                ${iconHtml}
                 <div class="flex-1 min-w-0">
                     <p class="text-xs font-bold text-base-900 dark:text-white truncate">${item.label}</p>
                     <p class="text-[9px] text-gray-400 truncate">${item.desc}</p>
@@ -695,6 +709,7 @@ export const renderSettings = () => {
             Object.entries(EXERCISE).forEach(([key, val]) => {
                 const opt = document.createElement('option');
                 opt.value = key;
+                // ★修正: プルダウンではテキストのみ表示
                 opt.textContent = val.label;
                 sel.appendChild(opt);
             });
@@ -727,9 +742,12 @@ const renderCheckEditor = () => {
         
         const deleteBtn = `<button onclick="deleteCheckItem(${index})" class="text-red-500 hover:bg-red-100 p-1 rounded"><i class="ph-bold ph-trash"></i></button>`;
 
+        // ★修正: アイコンのレンダリング
+        const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-gray-500');
+
         div.innerHTML = `
             <div class="flex items-center gap-3">
-                <span class="text-xl">${item.icon}</span>
+                ${iconHtml}
                 <div>
                     <p class="text-xs font-bold text-gray-800 dark:text-gray-200">${item.label}</p>
                     <p class="text-[10px] text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
@@ -753,13 +771,14 @@ window.deleteCheckItem = (index) => {
 window.addNewCheckItem = () => {
     const label = prompt('項目名を入力してください (例: 筋トレ)');
     if(!label) return;
-    const icon = prompt('アイコン絵文字を入力してください (例: 💪)', '💪');
+    // 絵文字入力指示は削除、デフォルトも削除
+    const icon = prompt('アイコン絵文字を入力してください (例: 💪)', '');
     const desc = prompt('説明を入力してください (例: 30分以上やった)', '');
     const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
 
     const id = `custom_${Date.now()}`;
     const newItem = {
-        id, label, icon: icon || '✅', type: 'boolean', desc, drinking_only: drinkingOnly
+        id, label, icon: icon || 'ph-duotone ph-check-circle', type: 'boolean', desc, drinking_only: drinkingOnly
     };
 
     let schema = [];

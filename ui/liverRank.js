@@ -5,6 +5,8 @@ import { DOM } from './dom.js';
 export function renderLiverRank(checks, logs) {
     const profile = Store.getProfile();
     const gradeData = Calc.getRecentGrade(checks, logs, profile);
+
+    const cleanLabel = gradeData.label;
     
     const card = DOM.elements['liver-rank-card'] || document.getElementById('liver-rank-card');
     if(!card) return;
@@ -16,35 +18,42 @@ export function renderLiverRank(checks, logs) {
         bar: "bg-gray-500"
     };
 
-    if (gradeData.rank.includes('S')) {
+    // ▼▼▼ 修正: 判定順序を変更（Rookieを最優先） ▼▼▼
+    if (gradeData.isRookie) {
+        // Rookie / Beginner 用のテーマ
+        if (gradeData.rank.includes('S')) theme.icon = 'ph-star';      // 新星
+        else if (gradeData.rank.includes('A')) theme.icon = 'ph-fire'; // 期待の星
+        else theme.icon = 'ph-egg';                                    // 駆け出し/たまご
+        
+        // logic.js で定義された色（オレンジやグレー等）を優先適用
+        theme.bg = gradeData.bg || "bg-orange-50"; 
+        theme.text = gradeData.color || "text-orange-900";
+        theme.bar = "bg-orange-500"; // プログレスバーもオレンジに
+
+    } else if (gradeData.rank.includes('S')) {
         theme = { 
             bg: "bg-purple-50", darkBg: "dark:bg-purple-900/20",
             text: "text-purple-900", darkText: "dark:text-purple-100",
-            icon: "text-purple-500", bar: "bg-purple-500"
+            icon: "ph-crown", bar: "bg-purple-500"
         };
     } else if (gradeData.rank.includes('A')) {
         theme = { 
             bg: "bg-indigo-50", darkBg: "dark:bg-indigo-900/20",
             text: "text-indigo-900", darkText: "dark:text-indigo-100",
-            icon: "text-indigo-500", bar: "bg-indigo-500"
+            icon: "ph-shield-check", bar: "bg-indigo-500"
         };
     } else if (gradeData.rank.includes('B')) {
         theme = { 
             bg: "bg-emerald-50", darkBg: "dark:bg-emerald-900/20",
             text: "text-emerald-900", darkText: "dark:text-emerald-100",
-            icon: "text-emerald-500", bar: "bg-emerald-500"
+            icon: "ph-leaf", bar: "bg-emerald-500"
         };
-    } else if (gradeData.rank.includes('C')) {
+    } else {
+        // Cランク または その他
         theme = { 
             bg: "bg-red-50", darkBg: "dark:bg-red-900/20",
             text: "text-red-900", darkText: "dark:text-red-100",
-            icon: "text-red-500", bar: "bg-red-500"
-        };
-    } else if (gradeData.isRookie) {
-        theme = {
-            bg: "bg-orange-50", darkBg: "dark:bg-orange-900/20",
-            text: "text-orange-900", darkText: "dark:text-orange-100",
-            icon: "text-orange-500", bar: "bg-orange-500"
+            icon: "ph-warning", bar: "bg-red-500"
         };
     }
 

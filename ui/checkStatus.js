@@ -119,13 +119,16 @@ function analyzeCondition(check, logs) {
 
     if (!drank && check.isDryDay) {
         if (check.waistEase && check.footLightness) {
-            return { short: "Perfect", desc: "休肝日・絶好調 ✨", score: 4 };
+            return { short: "Perfect", desc: "休肝日・絶好調", score: 4 }; // ✨削除
         }
-        return { short: "Rest Day", desc: "休肝日 🍵", score: 3 };
+        return { short: "Rest Day", desc: "休肝日", score: 3 }; // 🍵削除
     }
 
-    if (score >= 3) return { short: "Good", desc: "対策バッチリ 👍", score: 3 };
-    if (score >= 1) return { short: "Average", desc: "まずまず 🙂", score: 1 };
+    // 2. それ以外（飲酒日 or 休肝設定なし）の判定
+    // 元のロジック通り、シンプルにスコアだけで判定します
+    if (score >= 3) return { short: "Good", desc: "対策バッチリ", score: 3 }; // 👍削除
+    if (score >= 1) return { short: "Average", desc: "まずまず", score: 1 }; // 🙂削除
     
-    return { short: "Warning", desc: "不調気味... 😰", score: 0 };
+    // スコア0の場合
+    return { short: "Warning", desc: "不調気味", score: 0 }; // 😰削除
 }

@@ -303,6 +303,23 @@ export const DOM = {
         document.startViewTransition(callback);
     },
 
+    /**
+     * アイコン定義（クラス名または絵文字）を受け取り、HTML文字列を返す
+     * @param {string} iconDef - "ph-beer-bottle" or "🍺"
+     * @param {string} extraClasses - 追加のTailwindクラス
+     */
+    renderIcon: (iconDef, extraClasses = "") => {
+        if (!iconDef) return "";
+        
+        // Phosphor Icon (ph-) かどうか判定
+        if (iconDef.includes('ph-')) {
+            return `<i class="${iconDef} ${extraClasses}"></i>`;
+        } else {
+            // 絵文字の場合はそのままspanで囲む（後方互換性）
+            return `<span class="${extraClasses} font-emoji">${iconDef}</span>`;
+        }
+    },
+
     init: () => {
         if (DOM.isInitialized) return;
         

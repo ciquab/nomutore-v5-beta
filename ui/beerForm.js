@@ -223,6 +223,7 @@ export const updateBeerSelectOptions = () => {
             opt.textContent = key;
             styleSel.appendChild(opt);
         });
+        if (APP.DEFAULTS.MODE1) styleSel.value = APP.DEFAULTS.MODE1;
     }
 
     if (sizeSel && sizeSel.children.length === 0) {

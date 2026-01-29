@@ -336,18 +336,38 @@ body {
     }
 }
 
-/* Glass Panel */
+/* Glass Panel - Refined (High Quality) */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    /* 透明度を上げ、背景のボケ足を強くする */
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* 境界線: 上と左を明るくして「光」を表現 */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-left: 1px solid rgba(255, 255, 255, 0.7);
+    
+    /* 内部のハイライトと、色付きの影（Indigo） */
+    box-shadow: 
+        inset 1px 1px 0px rgba(255, 255, 255, 0.6),
+        0 8px 32px -8px rgba(79, 70, 229, 0.15); /* グレーではなくIndigo系の影 */
+        
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
+
 .dark .glass-panel {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    background: rgba(30, 41, 59, 0.4); /* base-900系 */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    
+    box-shadow: 
+        inset 1px 1px 0px rgba(255, 255, 255, 0.05),
+        0 8px 32px -8px rgba(0, 0, 0, 0.4);
 }
 
 /* Floating Nav */
@@ -708,4 +728,33 @@ select:disabled {
     opacity: 1;
     transform: translateY(0);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glow Shadows - 濁りのない影 */
+.shadow-glow-indigo {
+    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4) !important;
+}
+.dark .shadow-glow-indigo {
+    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2) !important;
+}
+
+/* Floating Nav専用の浮遊感 */
+.shadow-float {
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05), 
+                0 0 0 1px rgba(255,255,255,0.5) inset;
+}
+.dark .shadow-float {
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255,255,255,0.1) inset;
+}
+
+/* 数字を美しく見せるための調整 */
+.font-numeric {
+    font-feature-settings: "tnum"; /* 等幅数字 */
+    letter-spacing: -0.025em;      /* 少し詰める */
+}
+
+/* 小さなラベル用 */
+.text-label {
+    letter-spacing: 0.08em;        /* 少し広げる */
 }

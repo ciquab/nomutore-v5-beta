@@ -112,52 +112,53 @@ export const APP = {
     HASHTAGS: '#NOMUTORE #飲んだら動く' // SNSシェア用
 };
 
-// --- Daily Check Library & Presets (Phase 1.5) ---
+// --- Daily Check Library & Presets (Phase 2 Iconography) ---
 
-// 【重要】初期状態のスキーマ定義（復活させました）
+// 【重要】初期状態のスキーマ定義
 export const CHECK_SCHEMA = [
-    { id: 'waistEase', label: '腹周りの余裕', icon: '👖', type: 'boolean', desc: 'ベルトやズボンがきつくない' },
-    { id: 'footLightness', label: '足取りが軽い', icon: '🦶', type: 'boolean', desc: 'むくみや重さを感じない' },
-    { id: 'waterOk', label: 'チェイサー', icon: '💧', type: 'boolean', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
-    { id: 'fiberOk', label: '飲酒前繊維', icon: '🥦', type: 'boolean', desc: '飲む前に食物繊維をとった', drinking_only: true }
+    { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', type: 'boolean', desc: 'ベルトやズボンがきつくない' },
+    { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', type: 'boolean', desc: 'むくみや重さを感じない' },
+    { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', type: 'boolean', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
+    { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', type: 'boolean', desc: '飲む前に食物繊維をとった', drinking_only: true }
 ];
 
 // 項目ライブラリから初期選択されるID（内部ロジック用）
 export const CHECK_DEFAULT_IDS = ['waistEase', 'footLightness', 'waterOk', 'fiberOk'];
 
 // 項目ライブラリ（カテゴリー別）
+// 🍺, 👖 などの絵文字をすべて ph-duotone クラスに置換
 export const CHECK_LIBRARY = {
     general: [
-        { id: 'waistEase', label: '腹周りの余裕', icon: '👖', desc: 'ベルトやズボンがきつくない' },
-        { id: 'footLightness', label: '足取りが軽い', icon: '🦶', desc: 'むくみや重さを感じない' },
-        { id: 'sleepQuality', label: '睡眠の質', icon: '💤', desc: '朝スッキリ起きられた' },
-        { id: 'mood', label: '気分が良い', icon: '✨', desc: 'ストレスを感じていない' }
+        { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', desc: 'ベルトやズボンがきつくない' },
+        { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', desc: 'むくみや重さを感じない' },
+        { id: 'sleepQuality', label: '睡眠の質', icon: 'ph-duotone ph-moon-stars', desc: '朝スッキリ起きられた' },
+        { id: 'mood', label: '気分が良い', icon: 'ph-duotone ph-smiley', desc: 'ストレスを感じていない' }
     ],
     diet: [
-        { id: 'noSnack', label: '間食抜き', icon: '🈲', desc: 'お菓子・つまみを我慢した' },
-        { id: 'vegeFirst', label: 'ベジファースト', icon: '🥗', desc: '野菜から先に食べた' },
-        { id: 'proteinOk', label: 'タンパク質', icon: '🍗', desc: '体重x1g以上摂取した' },
-        { id: 'calorieLimit', label: '腹八分目', icon: '🍽️', desc: '食べ過ぎなかった' }
+        { id: 'noSnack', label: '間食抜き', icon: 'ph-duotone ph-cookie', desc: 'お菓子・つまみを我慢した' },
+        { id: 'vegeFirst', label: 'ベジファースト', icon: 'ph-duotone ph-bowl-food', desc: '野菜から先に食べた' },
+        { id: 'proteinOk', label: 'タンパク質', icon: 'ph-duotone ph-egg', desc: '体重x1g以上摂取した' },
+        { id: 'calorieLimit', label: '腹八分目', icon: 'ph-duotone ph-fork-knife', desc: '食べ過ぎなかった' }
     ],
     alcohol: [
-        { id: 'waterOk', label: 'チェイサー', icon: '💧', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
-        { id: 'fiberOk', label: '飲酒前繊維', icon: '🥦', desc: '飲む前に食物繊維をとった', drinking_only: true },
-        { id: 'supplement', label: 'サプリ摂取', icon: '💊', desc: 'ウコン/ヘパリーゼ等を飲んだ', drinking_only: true },
-        { id: 'finishTime', label: '早めの切り上げ', icon: '🕙', desc: '寝る2時間前に飲み終えた', drinking_only: true }
+        { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
+        { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', desc: '飲む前に食物繊維をとった', drinking_only: true },
+        { id: 'supplement', label: 'サプリ摂取', icon: 'ph-duotone ph-pill', desc: 'ウコン/ヘパリーゼ等を飲んだ', drinking_only: true },
+        { id: 'finishTime', label: '早めの切り上げ', icon: 'ph-duotone ph-clock', desc: '寝る2時間前に飲み終えた', drinking_only: true }
     ],
     muscle: [
-        { id: 'musclePain', label: '筋肉痛あり', icon: '💥', desc: '良いトレーニングができた' },
-        { id: 'stretch', label: 'ストレッチ', icon: '🧘', desc: '運動前後のケアをした' },
-        { id: 'stepsGoal', label: '歩数達成', icon: '👟', desc: '目標歩数を超えた' }
+        { id: 'musclePain', label: '筋肉痛あり', icon: 'ph-duotone ph-lightning', desc: '良いトレーニングができた' },
+        { id: 'stretch', label: 'ストレッチ', icon: 'ph-duotone ph-person-simple-tai-chi', desc: '運動前後のケアをした' },
+        { id: 'stepsGoal', label: '歩数達成', icon: 'ph-duotone ph-sneaker', desc: '目標歩数を超えた' }
     ]
 };
 
 // プリセット定義
 export const CHECK_PRESETS = {
-    'default': { label: '基本セット', icon: '🔰', ids: ['waistEase', 'footLightness', 'waterOk', 'fiberOk'] },
-    'diet': { label: 'ガチダイエット', icon: '📉', ids: ['waistEase', 'noSnack', 'vegeFirst', 'calorieLimit', 'fiberOk'] },
-    'muscle': { label: '筋トレ・ボディメイク', icon: '💪', ids: ['proteinOk', 'musclePain', 'sleepQuality', 'waterOk'] },
-    'liver': { label: '肝臓いたわり', icon: '🏥', ids: ['waterOk', 'fiberOk', 'supplement', 'finishTime', 'sleepQuality'] }
+    'default': { label: '基本セット', icon: 'ph-duotone ph-shield-check', ids: ['waistEase', 'footLightness', 'waterOk', 'fiberOk'] },
+    'diet': { label: 'ガチダイエット', icon: 'ph-duotone ph-trend-down', ids: ['waistEase', 'noSnack', 'vegeFirst', 'calorieLimit', 'fiberOk'] },
+    'muscle': { label: '筋トレ・ボディメイク', icon: 'ph-duotone ph-barbell', ids: ['proteinOk', 'musclePain', 'sleepQuality', 'waterOk'] },
+    'liver': { label: '肝臓いたわり', icon: 'ph-duotone ph-first-aid', ids: ['waterOk', 'fiberOk', 'supplement', 'finishTime', 'sleepQuality'] }
 };
 
 
@@ -174,31 +175,41 @@ export const BEER_COLORS = {
 };
 
 export const STYLE_METADATA = {
-    '国産ピルスナー': { color: 'gold', icon: '🍺' },
-    '糖質オフ/新ジャンル': { color: 'pale', icon: '🍺' },
-    'ピルスナー': { color: 'gold', icon: '🍺' },
-    'ドルトムンター': { color: 'gold', icon: '🍺' },
-    'シュバルツ': { color: 'black', icon: '🍺' },
-    'アンバーエール': { color: 'amber', icon: '🍺' },
-    'ゴールデンエール': { color: 'gold', icon: '🍺' },
-    'ペールエール': { color: 'copper', icon: '🍺' },
-    'ジャパニーズエール': { color: 'copper', icon: '🍺' },
-    'ヴァイツェン': { color: 'white', icon: '🥛' },
-    'ベルジャンホワイト': { color: 'white', icon: '🥛' },
-    'セゾン': { color: 'white', icon: '🥂' },
-    'セッションIPA': { color: 'copper', icon: '🍺' },
-    'IPA (West Coast)': { color: 'copper', icon: '🍺' },
-    'Hazy IPA': { color: 'hazy', icon: '🍹' },
-    'Hazyペールエール': { color: 'hazy', icon: '🍹' },
-    'ダブルIPA (DIPA)': { color: 'copper', icon: '🍺' },
-    'ポーター': { color: 'black', icon: '☕' },
-    'スタウト': { color: 'black', icon: '☕' },
-    'インペリアルスタウト': { color: 'black', icon: '☕' },
-    'ベルジャン・トリペル': { color: 'gold', icon: '🍷' },
-    'バーレイワイン': { color: 'amber', icon: '🍷' },
-    'サワーエール': { color: 'red', icon: '🍷' },
-    'フルーツビール': { color: 'red', icon: '🍒' },
-    'ノンアル': { color: 'green', icon: '🍃' },
+    // 🍺 → ph-beer-bottle 等へ置換
+    '国産ピルスナー': { color: 'gold', icon: 'ph-duotone ph-beer-bottle' },
+    '糖質オフ/新ジャンル': { color: 'pale', icon: 'ph-duotone ph-beer-bottle' },
+    'ピルスナー': { color: 'gold', icon: 'ph-duotone ph-beer-bottle' },
+    'ドルトムンター': { color: 'gold', icon: 'ph-duotone ph-beer-bottle' },
+    'シュバルツ': { color: 'black', icon: 'ph-duotone ph-beer-bottle' },
+    'アンバーエール': { color: 'amber', icon: 'ph-duotone ph-beer-bottle' },
+    'ゴールデンエール': { color: 'gold', icon: 'ph-duotone ph-beer-bottle' },
+    'ペールエール': { color: 'copper', icon: 'ph-duotone ph-beer-bottle' },
+    'ジャパニーズエール': { color: 'copper', icon: 'ph-duotone ph-beer-bottle' },
+    
+    // 小麦系は穀物アイコンやグラスで表現
+    'ヴァイツェン': { color: 'white', icon: 'ph-duotone ph-grains' },
+    'ベルジャンホワイト': { color: 'white', icon: 'ph-duotone ph-grains' },
+    'セゾン': { color: 'white', icon: 'ph-duotone ph-beer-stein' },
+    
+    'セッションIPA': { color: 'copper', icon: 'ph-duotone ph-beer-bottle' },
+    'IPA (West Coast)': { color: 'copper', icon: 'ph-duotone ph-beer-bottle' },
+    
+    // Hazyは濁り＝雫で表現 (Juicyさ)
+    'Hazy IPA': { color: 'hazy', icon: 'ph-duotone ph-drop' },
+    'Hazyペールエール': { color: 'hazy', icon: 'ph-duotone ph-drop' },
+    'ダブルIPA (DIPA)': { color: 'copper', icon: 'ph-duotone ph-beer-bottle' },
+    
+    // 黒系
+    'ポーター': { color: 'black', icon: 'ph-duotone ph-coffee' }, // ロースト感
+    'スタウト': { color: 'black', icon: 'ph-duotone ph-coffee' },
+    'インペリアルスタウト': { color: 'black', icon: 'ph-duotone ph-coffee' },
+    
+    // 高アルコール・その他
+    'ベルジャン・トリペル': { color: 'gold', icon: 'ph-duotone ph-wine' },
+    'バーレイワイン': { color: 'amber', icon: 'ph-duotone ph-wine' },
+    'サワーエール': { color: 'red', icon: 'ph-duotone ph-wine' },
+    'フルーツビール': { color: 'red', icon: 'ph-duotone ph-cherry' },
+    'ノンアル': { color: 'green', icon: 'ph-duotone ph-plant' },
 };
 
 export const STYLE_COLOR_MAP = {};
@@ -208,32 +219,30 @@ Object.keys(CALORIES.STYLES).forEach(style => {
 
 export const EXERCISE = {
     // 1. ビアギークの基本（最強の動機づけ）
-    'beer_walk': { label: 'ビア散歩 (飲みに行く)', mets: 3.5, icon: '🍺' },
+    'beer_walk': { label: 'ビア散歩 (飲みに行く)', mets: 3.5, icon: 'ph-duotone ph-beer-bottle' },
     
     // 2. 自宅マシン（制作者様推奨：動画見ながらOK）
-    'stepper': { label: 'ステッパー (自宅)', mets: 6.0, icon: '👣' },
-    'cycling': { label: 'エアロバイク・自転車', mets: 4.0, icon: '🚲' }, // 軽い負荷を想定
+    'stepper': { label: 'ステッパー (自宅)', mets: 6.0, icon: 'ph-duotone ph-footprints' },
+    'cycling': { label: 'エアロバイク・自転車', mets: 4.0, icon: 'ph-duotone ph-bicycle' }, // 軽い負荷を想定
 
     // 3. 生活・ながら運動
-    'walking': { label: '通勤・徒歩移動', mets: 3.5, icon: '🚶' },
-    'gaming': { label: 'フィットネスゲーム', mets: 4.0, icon: '🎮' },
-    'housework': { label: '家事・掃除・育児', mets: 3.3, icon: '🧹' }, 
+    'walking': { label: '通勤・徒歩移動', mets: 3.5, icon: 'ph-duotone ph-person-simple-walk' },
+    'gaming': { label: 'フィットネスゲーム', mets: 4.0, icon: 'ph-duotone ph-game-controller' },
+    'housework': { label: '家事・掃除・育児', mets: 3.3, icon: 'ph-duotone ph-broom' }, 
     
     // 4. メンテナンス
-    'stretch': { label: 'ストレッチ・ヨガ', mets: 2.5, icon: '🧘' },
+    'stretch': { label: 'ストレッチ・ヨガ', mets: 2.5, icon: 'ph-duotone ph-person-simple-tai-chi' },
     
     // 5. 少し頑張る時
-    'brisk_walking': { label: '早歩き・急ぎ移動', mets: 4.5, icon: '👟' },
-    'training': { label: '筋トレ (自重・ジム)', mets: 5.0, icon: '💪' },
+    'brisk_walking': { label: '早歩き・急ぎ移動', mets: 4.5, icon: 'ph-duotone ph-sneaker-move' },
+    'training': { label: '筋トレ (自重・ジム)', mets: 5.0, icon: 'ph-duotone ph-barbell' },
     
     // 6. ガチ勢向け（優先度低）
-    'running': { label: 'ランニング', mets: 7.0, icon: '🏃' },
-    'hiit': { label: 'HIIT (高強度)', mets: 8.0, icon: '🔥' }
+    'running': { label: 'ランニング', mets: 7.0, icon: 'ph-duotone ph-person-simple-run' },
+    'hiit': { label: 'HIIT (高強度)', mets: 8.0, icon: 'ph-duotone ph-fire' }
 };
 
 export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': { label: '500ml (ロング缶)', ratio: 1.43 }, '473': { label: '473ml (USパイント)', ratio: 1.35 }, '568': { label: '568ml (UKパイント)', ratio: 1.62 }, '250': { label: '250ml (小グラス)', ratio: 0.71 }, '1000': { label: '1L (マース)', ratio: 2.86 } };
-
-/* constants.js の末尾付近に追加してください */
 
 // ==========================================================================
 // 3. Check Item Master Definitions (Safe Lookup)
@@ -242,7 +251,7 @@ export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': {
 // ★ 1. 廃止された項目（ライブラリからは消したが、過去ログ表示用に定義を残す場所）
 // 将来 CHECK_LIBRARY から何かを削除する場合、その定義をここに移動させてください。
 const DEPRECATED_CHECKS = [
-    // 例: { id: 'oldMetric', label: '旧指標', icon: '📦', desc: '廃止された項目' }
+    // 例: { id: 'oldMetric', label: '旧指標', icon: 'ph-duotone ph-question', desc: '廃止された項目' }
 ];
 
 /**
@@ -267,6 +276,5 @@ export const getCheckItemSpec = (id) => {
     if (deprecated) return deprecated;
 
     // D. どうしても見つからない場合のフォールバック
-    return { id, label: id, icon: '❓', desc: 'Unknown Item' };
+    return { id, label: id, icon: 'ph-duotone ph-question', desc: 'Unknown Item' };
 };
-

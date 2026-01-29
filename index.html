@@ -81,7 +81,7 @@
     </div>
 </div>
 
-    <header class="fixed top-0 w-full z-40 bg-white/80 dark:bg-base-900/80 backdrop-blur-md border-b border-base-200 dark:border-base-800 transition-colors hidden">
+    <header class="fixed top-0 w-full z-40 bg-white/70 dark:bg-base-900/70 backdrop-blur-xl border-b border-white/40 dark:border-white/5 transition-colors hidden">
         <div class="container mx-auto max-w-md h-14 flex items-center justify-between px-4">
             
             <div class="flex items-center gap-3 flex-shrink-0">
@@ -207,38 +207,42 @@
     <section class="px-1">
         <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider ml-1">記録メニュー</h3>
         <div class="grid grid-cols-3 gap-3">
-            <button onclick="UI.openBeerModal()" class="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 hover:bg-amber-100 transition active:scale-95">
-                <span class="text-2xl">🍺</span>
-                <span class="text-[10px] font-bold text-amber-900 dark:text-amber-100">ビール</span>
+            <button onclick="UI.openBeerModal()" class="group flex flex-col items-center justify-center gap-3 p-5 rounded-3xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-all duration-300 active:scale-95 shadow-sm hover:shadow-md hover:shadow-amber-500/10">
+                <i class="ph-duotone ph-beer-bottle text-3xl text-amber-600 dark:text-amber-500 group-hover:scale-110 transition-transform duration-300"></i>
+                <span class="text-[10px] font-bold text-amber-900 dark:text-amber-100 tracking-wide">ビール</span>
             </button>
 
-            <button onclick="UI.openCheckModal()" class="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-100 transition active:scale-95">
-                <span class="text-2xl">✅</span>
-                <span class="text-[10px] font-bold text-emerald-900 dark:text-emerald-100">体調</span>
+            <button onclick="UI.openCheckModal()" class="group flex flex-col items-center justify-center gap-3 p-5 rounded-3xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all duration-300 active:scale-95 shadow-sm hover:shadow-md hover:shadow-emerald-500/10">
+                <i class="ph-duotone ph-heartbeat text-3xl text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform duration-300"></i>
+                <span class="text-[10px] font-bold text-emerald-900 dark:text-emerald-100 tracking-wide">体調</span>
             </button>
 
-            <button onclick="UI.openManualInput()" class="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 transition active:scale-95">
-                <span class="text-2xl">📝</span>
-                <span class="text-[10px] font-bold text-gray-600 dark:text-gray-300">運動<br>（手動入力）</span>
+            <button onclick="UI.openManualInput()" class="group flex flex-col items-center justify-center gap-3 p-5 rounded-3xl bg-white dark:bg-base-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 active:scale-95 shadow-sm hover:shadow-md">
+                <i class="ph-duotone ph-pencil-simple text-3xl text-gray-400 dark:text-gray-300 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-300"></i>
+                <span class="text-[10px] font-bold text-gray-500 dark:text-gray-300 tracking-wide">運動 (手動)</span>
             </button>
         </div>
     </section>
 
     <section class="px-1">
         <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider ml-1">ストップウォッチ</h3>
-        <button onclick="UI.openTimer(true)" class="w-full group relative overflow-hidden rounded-3xl p-6 bg-base-900 dark:bg-white text-left shadow-xl transition-transform active:scale-95">
-            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/30 rounded-full blur-3xl"></div>
+        <button onclick="UI.openTimer(true)" class="w-full group relative overflow-hidden rounded-[2rem] p-6 bg-base-900 dark:bg-white text-left shadow-2xl shadow-indigo-900/20 transition-all duration-300 active:scale-95 hover:shadow-indigo-500/30">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-indigo-500/30 rounded-full blur-[60px] -mr-10 -mt-10 transition-opacity group-hover:opacity-70"></div>
+            
             <div class="relative z-10 flex items-center justify-between">
                 <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Immersive Mode</span>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="flex h-2 w-2 relative">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-indigo-300 dark:group-hover:text-indigo-600 transition-colors">Immersive Mode</span>
                     </div>
-                    <h3 class="text-xl font-black text-white dark:text-base-900">運動計測スタート</h3>
-                    <p class="text-[10px] font-bold text-gray-500">リアルタイムでカロリーを計算＆ビールに換算</p>
+                    <h3 class="text-2xl font-black text-white dark:text-base-900 leading-tight mb-1">運動計測スタート</h3>
+                    <p class="text-[10px] font-bold text-gray-400 group-hover:text-gray-200 dark:group-hover:text-gray-600 transition-colors">リアルタイムでカロリーを計算＆ビールに換算</p>
                 </div>
-                <div class="w-12 h-12 rounded-full bg-white/10 dark:bg-base-900/10 flex items-center justify-center border border-white/20 dark:border-base-900/20">
-                    <i class="ph-fill ph-play text-2xl text-white dark:text-base-900 ml-0.5"></i>
+                <div class="w-14 h-14 rounded-full bg-white/10 dark:bg-base-900/10 flex items-center justify-center border border-white/20 dark:border-base-900/20 group-hover:scale-110 group-hover:bg-white/20 transition-all duration-300 backdrop-blur-sm">
+                    <i class="ph-fill ph-play text-2xl text-white dark:text-base-900 ml-1"></i>
                 </div>
             </div>
         </button>
@@ -516,7 +520,7 @@
     </main>
 
 <nav class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
-    <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center border border-transparent dark:border-base-800 bg-white dark:bg-base-900 shadow-xl shadow-indigo-900/10 dark:shadow-none">
+    <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center bg-white/80 dark:bg-base-900/80 backdrop-blur-xl shadow-float transition-all duration-300">
         
         <button id="nav-tab-home" class="nav-item nav-pill-active">
             <i class="ph-fill ph-house"></i>
@@ -704,7 +708,7 @@
                     </div>
                     <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 transition">
                         <div class="flex items-center gap-2">
-                            <span class="text-xl">🍻</span>
+                            <i class="ph-duotone ph-beer-bottle text-2xl text-amber-500"></i>
                             <span class="text-xs font-bold text-gray-600 dark:text-gray-300">Open Untappd after Save</span>
                         </div>
                         <div class="relative inline-flex items-center cursor-pointer">

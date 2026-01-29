@@ -229,7 +229,9 @@ export const openCheckModal = async (dateStr) => {
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
             
-            // ★修正: DOM.renderIcon を使用
+            // ★修正: マスタデータ(constants.js)から最新定義を取得してアイコンを上書き表示
+            const spec = getCheckItemSpec(item.id);
+            const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
             const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-indigo-500 dark:text-indigo-400');
 
             div.innerHTML = `
@@ -768,11 +770,47 @@ window.deleteCheckItem = (index) => {
     renderCheckEditor();
 };
 
+const ICON_KEYWORDS = {
+    'gym': 'ph-duotone ph-barbell',
+    'run': 'ph-duotone ph-sneaker-move',
+    'walk': 'ph-duotone ph-footprints',
+    'sleep': 'ph-duotone ph-moon-stars',
+    'food': 'ph-duotone ph-bowl-food',
+    'drink': 'ph-duotone ph-beer-bottle',
+    'water': 'ph-duotone ph-drop',
+    'heart': 'ph-duotone ph-heart',
+    'star': 'ph-duotone ph-star',
+    'fire': 'ph-duotone ph-fire',
+    'bath': 'ph-duotone ph-drop-half-bottom', // サウナ/風呂代用
+    'book': 'ph-duotone ph-book-open',
+    'work': 'ph-duotone ph-briefcase'
+};
+
 window.addNewCheckItem = () => {
     const label = prompt('項目名を入力してください (例: 筋トレ)');
     if(!label) return;
-    // 絵文字入力指示は削除、デフォルトも削除
-    const icon = prompt('アイコン絵文字を入力してください (例: 💪)', '');
+
+    // プロンプトの文言を親切に変更
+    const iconInput = prompt(
+        'アイコン用の「絵文字」または「キーワード」を入力してください\n\n' + 
+        '📝 絵文字: 🧖, 💪, 💊 ...\n' +
+        '🔑 キーワード: gym, run, sleep, water, fire ...', 
+        ''
+    );
+
+    // 入力があれば変換を試みる、なければデフォルト
+    let iconClass = 'ph-duotone ph-check-circle';
+    
+    if (iconInput) {
+        const lowerKey = iconInput.toLowerCase().trim();
+        // マップにあればPhosphor Iconに、なければ入力値をそのまま(絵文字として)使う
+        if (ICON_KEYWORDS[lowerKey]) {
+            iconClass = ICON_KEYWORDS[lowerKey];
+        } else {
+            iconClass = iconInput; // 絵文字などをそのまま適用
+        }
+    }
+
     const desc = prompt('説明を入力してください (例: 30分以上やった)', '');
     const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
 

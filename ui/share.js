@@ -53,7 +53,7 @@ const startBeerPhotoFlow = (logData) => {
                     isDragging: false, 
                     startX: 0, 
                     startY: 0, 
-                    aspectRatio: '1 / 1',
+                    aspectRatio: '1 / 1', 
                     fontClass: 'font-sans' 
                 };
                 openPhotoComposer(readerEvent.target.result, logData);
@@ -84,18 +84,20 @@ const openPhotoComposer = (imgSrc, log) => {
     const logoSrc = "./logo-header.png";
 
     // アスペクト比
+    // ★修正: 3:4を縦(rotate-90)、4:3を横(rotate-0)に設定
+    // inline-blockを追加して回転を確実に
     const ratios = [
         { label: '1:1', value: '1 / 1', icon: 'ph-square' },
-        { label: '3:4', value: '3 / 4', icon: 'ph-rectangle', class: 'rotate-0' },
+        { label: '3:4', value: '3 / 4', icon: 'ph-rectangle', class: 'rotate-90' }, 
         { label: '9:16', value: '9 / 16', icon: 'ph-device-mobile' },
-        { label: '4:3', value: '4 / 3', icon: 'ph-rectangle', class: 'rotate-90' },
+        { label: '4:3', value: '4 / 3', icon: 'ph-rectangle', class: 'rotate-0' },  
         { label: '16:9', value: '16 / 9', icon: 'ph-monitor' }
     ];
 
     const ratioButtonsHtml = ratios.map(r => `
         <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
-            <i class="ph-bold ${r.icon} text-lg ${r.class || ''}"></i>
+            <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}"></i>
             <span class="text-[9px] font-bold">${r.label}</span>
         </button>
     `).join('');
@@ -149,7 +151,7 @@ const openPhotoComposer = (imgSrc, log) => {
                     </p>
                 </div>
 
-                <div class="absolute top-4 right-5 z-20 drop-shadow-md text-right">
+                <div id="composer-stats" class="absolute top-4 right-5 z-20 drop-shadow-md text-right transition-opacity duration-300">
                     <div class="flex flex-col items-end">
                         <span class="text-3xl font-black text-white leading-none tracking-tighter">-${kcal}</span>
                         <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider mt-0.5">DEBT CREATED (kcal)</span>
@@ -213,14 +215,16 @@ const openPhotoComposer = (imgSrc, log) => {
     document.body.appendChild(modal);
 
     // --- Logic ---
-    // ★修正: modal.querySelector を使って要素を取得する (document.getElementById ではない)
     const canvas = modal.querySelector('#composer-canvas');
     const grid = modal.querySelector('#grid-overlay');
     const imgEl = modal.querySelector('#composer-img');
     const zoomSlider = modal.querySelector('#zoom-slider');
     const touchArea = modal.querySelector('#composer-touch-area');
     const toggleKcal = modal.querySelector('#toggle-kcal');
-    const statsEl = modal.querySelector('#composer-stats');
+    
+    // HTMLにIDを追加したので、ここで正常に取得できるようになります
+    const statsEl = modal.querySelector('#composer-stats'); 
+    
     const btnCancel = modal.querySelector('#btn-cancel-composer');
     const btnGenerate = modal.querySelector('#btn-generate-share');
 
@@ -315,7 +319,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
     if(toggleKcal) {
         toggleKcal.onchange = (e) => {
-            statsEl.classList.toggle('opacity-0', !e.target.checked);
+            if(statsEl) statsEl.classList.toggle('opacity-0', !e.target.checked);
             Feedback.tap();
         };
     }
@@ -420,7 +424,6 @@ const showPreviewModal = (dataUrl, file) => {
     `;
     document.body.appendChild(modal);
 
-    // ★修正: modal.querySelector を使用
     const btnClose = modal.querySelector('#btn-close-preview');
     if(btnClose) btnClose.onclick = () => modal.remove();
     

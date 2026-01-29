@@ -195,7 +195,7 @@ export const updateLogListView = async (isLoadMore = false) => {
                 ${icon}
             </div>
 
-            <div class="flex-1 min-w-0 cursor-pointer" onclick="UI.editLog(${log.id})">
+            <div class="flex-1 min-w-0 cursor-pointer" onclick="UI.openLogDetail(${log.id})">
                 <div class="flex justify-between items-start">
                     <div class="text-base font-black text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>

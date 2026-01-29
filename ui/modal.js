@@ -5,6 +5,7 @@ import { StateManager } from './state.js';
 import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback, showToastAnimation, showConfetti } from './dom.js';
 import { Service } from '../service.js';
 import { Timer } from './timer.js'; 
+import { Share } from './share.js';
 import { 
     getBeerFormData, updateBeerKcalPreview, resetBeerForm, searchUntappd, 
     updateBeerSelectOptions, updateInputSuggestions, switchBeerInputTab
@@ -881,7 +882,191 @@ export const openHelp = (targetId = null) => {
     }
 };
 
-export const openLogDetail = (id) => { /* TODO: 実装が必要であれば */ };
+export const openLogDetail = (log) => {
+    const modalId = 'log-detail-modal';
+    const existing = document.getElementById(modalId);
+    if (existing) existing.remove();
+
+    const date = dayjs(log.timestamp).format('YYYY.MM.DD HH:mm');
+    const isBeer = log.type === 'beer';
+    
+    // アイコンと色設定
+    let iconClass = 'ph-beer-bottle';
+    let iconColor = 'text-amber-500';
+    let bgGradient = 'from-amber-500/20 to-orange-500/20';
+
+    if (!isBeer) {
+        iconClass = 'ph-sneaker-move';
+        iconColor = 'text-blue-500';
+        bgGradient = 'from-blue-500/20 to-cyan-500/20';
+    }
+
+    // ビール詳細情報
+    let detailsHtml = '';
+    if (isBeer) {
+        const amount = (log.size || 350) * (log.count || 1);
+        detailsHtml = `
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Style</span>
+                    <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.style || '-')}</p>
+                </div>
+                <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Brewery</span>
+                    <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.brewery || '-')}</p>
+                </div>
+                <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Amount</span>
+                    <p class="font-bold text-base-900 dark:text-base-100">${amount}ml <span class="text-xs opacity-50">(${log.count} cans)</span></p>
+                </div>
+                <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Rating</span>
+                    <div class="flex text-amber-400 text-sm">
+                        ${'★'.repeat(log.rating || 0)}${'<span class="opacity-30">★</span>'.repeat(5 - (log.rating || 0))}
+                    </div>
+                </div>
+            </div>
+            ${log.note ? `
+            <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
+                <span class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Note</span>
+                <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(log.note)}</p>
+            </div>` : ''}
+        `;
+    } else {
+        // 運動記録の場合
+        detailsHtml = `
+            <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6 flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Duration</span>
+                    <p class="text-2xl font-black text-base-900 dark:text-base-100">${log.minutes} <span class="text-sm font-bold text-gray-500">min</span></p>
+                </div>
+                <div class="text-right">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">Burned</span>
+                    <p class="text-2xl font-black text-emerald-500">-${Math.abs(log.kcal)} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
+                </div>
+            </div>
+        `;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = "fixed inset-0 z-[1100] flex items-end sm:items-center justify-center pointer-events-none"; // z-index高め
+    
+    modal.innerHTML = `
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-300 opacity-0" id="${modalId}-bg"></div>
+        
+        <div class="relative w-full max-w-lg bg-white dark:bg-base-900 rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-transform duration-300 translate-y-full sm:translate-y-10 opacity-0 pointer-events-auto max-h-[90vh] flex flex-col" id="${modalId}-content">
+            
+            <div class="relative h-32 bg-gradient-to-br ${bgGradient} shrink-0 overflow-hidden rounded-t-3xl flex items-center justify-center">
+                <i class="ph-fill ${iconClass} text-6xl ${iconColor} drop-shadow-md opacity-80"></i>
+                
+                <button id="btn-close-detail" class="absolute top-4 right-4 w-8 h-8 bg-black/20 hover:bg-black/30 backdrop-blur-md rounded-full text-white flex items-center justify-center transition">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-bold text-gray-400">${date}</span>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
+                        ${isBeer ? 'Beer Log' : 'Exercise'}
+                    </span>
+                </div>
+
+                <h2 class="text-2xl font-black text-base-900 dark:text-white leading-tight mb-1 line-clamp-2">
+                    ${escapeHtml(log.name || (isBeer ? 'Unknown Beer' : 'Exercise'))}
+                </h2>
+                
+                ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.abs(log.kcal)}<span class="text-sm font-bold text-gray-400">kcal</span></div>` : ''}
+
+                ${detailsHtml}
+            </div>
+
+            <div class="p-4 border-t border-base-100 dark:border-base-800 bg-base-50 dark:bg-base-900/50 rounded-b-3xl flex gap-3 shrink-0">
+                
+                ${isBeer ? `
+                <button id="btn-detail-share" class="flex-1 py-3 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition">
+                    <i class="ph-bold ph-share-network text-lg"></i> Share
+                </button>
+                ` : ''}
+
+                <button id="btn-detail-edit" class="flex-1 py-3 bg-base-200 dark:bg-base-700 text-base-600 dark:text-base-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-base-300 dark:hover:bg-base-600 transition">
+                    <i class="ph-bold ph-pencil-simple text-lg"></i> Edit
+                </button>
+                
+                <button id="btn-detail-delete" class="w-12 py-3 bg-red-100 dark:bg-red-900/20 text-red-500 font-bold rounded-xl flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-900/40 transition">
+                    <i class="ph-bold ph-trash text-lg"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Animation In
+    requestAnimationFrame(() => {
+        const bg = document.getElementById(`${modalId}-bg`);
+        const content = document.getElementById(`${modalId}-content`);
+        if(bg) bg.classList.remove('opacity-0');
+        if(content) {
+            content.classList.remove('translate-y-full', 'sm:translate-y-10', 'opacity-0');
+        }
+    });
+
+    const closeModalFunc = () => {
+        const bg = document.getElementById(`${modalId}-bg`);
+        const content = document.getElementById(`${modalId}-content`);
+        if(bg) bg.classList.add('opacity-0');
+        if(content) content.classList.add('translate-y-full', 'sm:translate-y-10', 'opacity-0');
+        
+        setTimeout(() => modal.remove(), 300);
+    };
+
+    // Event Listeners
+    document.getElementById('btn-close-detail').onclick = closeModalFunc;
+    document.getElementById(`${modalId}-bg`).onclick = closeModalFunc;
+
+    // ★追加: シェアボタンのイベントリスナー
+    const btnShare = document.getElementById('btn-detail-share');
+    if (btnShare) {
+        btnShare.onclick = () => {
+            // 詳細モーダルを閉じてからシェアフローを開始
+            closeModalFunc();
+            // 少し待ってから開始（アニメーション考慮）
+            setTimeout(() => {
+                Share.generateAndShare('beer', log);
+            }, 300);
+        };
+    }
+
+    // 編集ボタン
+    document.getElementById('btn-detail-edit').onclick = () => {
+        closeModalFunc();
+        // UIオブジェクト経由で編集モード呼び出し
+        // ※ UI.editLog は index.js で定義されているため、イベント経由またはグローバルアクセスが必要
+        // ここではグローバルのUIオブジェクトがあると仮定、または CustomEvent を発行
+        const UI = window.nomutoreUI; // index.js で window.nomutoreUI = UI としておくと便利ですが、
+        // 既存設計に合わせて、detail-modal を閉じた後に editLog を呼ぶ簡易実装にします
+        
+        // 依存関係を避けるため、カスタムイベントを発行して index.js で拾うのが一番きれいです
+        // index.js の init で 'request-edit-log' を購読する必要がありますが、
+        // 現状の簡易実装として、Store/Serviceを直接使うか、UIモジュールへの参照を持ちます。
+        
+        // ここでは既存の仕組み(UI.editLog)を呼び出したいですが、modal.js から UI.js を呼ぶと循環参照になる可能性があります。
+        // そのため、「編集ボタンが押された」というイベントを発行し、index.js側で処理させるのが安全です。
+        const event = new CustomEvent('request-edit-log', { detail: { id: log.id } });
+        document.dispatchEvent(event);
+    };
+
+    // 削除ボタン
+    document.getElementById('btn-detail-delete').onclick = () => {
+        if(confirm('Delete this log?')) {
+            const event = new CustomEvent('request-delete-log', { detail: { id: log.id } });
+            document.dispatchEvent(event);
+            closeModalFunc();
+        }
+    };
+};
 
 export const updateModeSelector = () => {
     // 1. 最新の設定値をローカルストレージ（またはStore）から取得
@@ -930,8 +1115,6 @@ export const validateInput = (dateStr, minutes = null) => {
     }
     return true;
 };
-
-/* modal.js に追加 */
 
 /**
  * 指定した日付の詳細モーダルを開く

@@ -442,6 +442,16 @@ if (checkModal) {
             }, 50);
         });
 
+        // ★追加: modal.js からの編集リクエストを受け取る
+        document.addEventListener('request-edit-log', (e) => {
+            UI.editLog(e.detail.id);
+        });
+
+        // ★追加: modal.js からの削除リクエストを受け取る
+        document.addEventListener('request-delete-log', (e) => {
+            UI.deleteLog(e.detail.id);
+        });
+
         initTheme();
 
         // ★修正: FABの初期化 (hiddenを削除し、アニメーション用のクラスを付与)
@@ -591,6 +601,14 @@ if (checkModal) {
             // ★修正: 第2引数に log を渡して、編集モードで開く
             openManualInput(null, log);
         }
+    },
+
+    // ★追加: HTMLのonclick属性から呼べるように公開する
+    openLogDetail: (id) => {
+        // idからログデータを取得して詳細モーダルを開く
+        db.logs.get(id).then(log => {
+            if (log) openLogDetail(log);
+        });
     },
 
     updateBulkCount: updateBulkCount,

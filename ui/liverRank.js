@@ -73,7 +73,7 @@ export function renderLiverRank(checks, logs) {
 
     // 【修正ポイント】構造を checkStatus.js と完全に一致させる
     // min-h-[140px] に固定し、flex-col justify-between で配置
-    card.className = `glass-panel p-4 rounded-2xl relative overflow-hidden group cursor-pointer transition hover:border-opacity-50 flex flex-col justify-between h-full min-h-[140px] shadow-glow-indigo ${theme.bg} ${theme.darkBg}`;
+    card.className = `glass-panel p-4 rounded-2xl relative overflow-hidden group cursor-pointer transition hover:border-opacity-50 flex flex-col justify-between h-full min-h-[140px] ${theme.bg} ${theme.darkBg}`;
     
     card.innerHTML = `
         <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 duration-500">

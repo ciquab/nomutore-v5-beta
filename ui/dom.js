@@ -487,7 +487,7 @@ export const toggleDryDay = (isDry) => {
         if (label) label.classList.add('text-emerald-800');
         if (hint) {
             hint.classList.add('text-emerald-600/70');
-            hint.textContent = "素晴らしい！肝臓が回復しています <i class="ph-fill ph-sparkle text-yellow-400 inline-block align-middle mb-1"></i>";
+            hint.innerHTML = '素晴らしい！肝臓が回復しています <i class="ph-fill ph-sparkle text-yellow-400 inline-block align-middle mb-1"></i>';
         }
     } else {
         section.classList.add('bg-orange-50', 'border-orange-100');

@@ -20,10 +20,16 @@ export const getBeerFormData = () => {
     const untappdCheck = document.getElementById('untappd-check');
     const useUntappd = untappdCheck ? untappdCheck.checked : false;
 
-    // タイムスタンプの正規化（正午を基準にする）
-    const ts = dateVal 
-        ? dayjs(dateVal).startOf('day').add(12, 'hour').valueOf() 
-        : dayjs().startOf('day').add(12, 'hour').valueOf(); 
+    // ▼▼▼ 修正箇所: タイムスタンプの計算ロジック ▼▼▼
+    const now = dayjs();
+    const inputDate = dateVal ? dayjs(dateVal) : now;
+    
+    // 入力された日付が「今日」と同じなら、現在の時刻(Date.now())を使用する
+    // それ以外（過去分）なら、従来通り12:00（正午）とする
+    const ts = inputDate.isSame(now, 'day')
+        ? Date.now()
+        : inputDate.startOf('day').add(12, 'hour').valueOf();
+    // ▲▲▲ 修正ここまで ▲▲▲
     
     const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
     

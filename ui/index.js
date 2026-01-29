@@ -262,11 +262,21 @@ export const UI = {
                 showMessage('📝 運動記録を更新しました', 'info');
             }
 
+            // ▼▼▼ 追加: タイムスタンプ計算ロジック ▼▼▼
+            const now = dayjs();
+            const inputDate = dayjs(date);
+            // 当日なら現在時刻、過去なら12:00
+            const timestamp = inputDate.isSame(now, 'day')
+                ? Date.now()
+                : inputDate.startOf('day').add(12, 'hour').valueOf();
+            // ▲▲▲ 追加ここまで ▲▲▲
+
             // 4. 保存イベント発火
             const detail = {
                 exerciseKey: key,
                 minutes: minutes,
                 date: date,
+                timestamp: timestamp,
                 applyBonus: applyBonus,
                 id: editId || null
             };

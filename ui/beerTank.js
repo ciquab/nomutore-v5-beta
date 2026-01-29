@@ -110,7 +110,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
             // テキスト表示
             cansText.textContent = `+${canCount.toFixed(1)}`;
-            cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm";
+            cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
             
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
             minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
@@ -178,7 +178,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
             // テキスト更新
             cansText.textContent = canCount.toFixed(1);
-            cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm";
+            cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
 
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
             minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';

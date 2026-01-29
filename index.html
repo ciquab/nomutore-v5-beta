@@ -134,7 +134,7 @@
         </div>
     </div>
     <div id="tank-wrapper" class="relative inline-block mt-2">
-    <div class="orb-container relative"> <div id="orb-liquid-back" class="liquid-layer liquid-back" style="top: 100%;"></div>
+    <div class="orb-container relative shadow-glow-indigo"> <div id="orb-liquid-back" class="liquid-layer liquid-back" style="top: 100%;"></div>
         <div id="orb-liquid-front" class="liquid-layer liquid-front" style="top: 100%;"></div>
         
         <div class="relative z-10 flex flex-col items-center justify-center">
@@ -144,7 +144,7 @@
                 <span class="text-sm font-bold text-base-800/60 dark:text-white/60 ml-1">cans</span>
             </div>
             <div id="tank-minutes" class="text-xs font-bold text-base-800/50 dark:text-white/50 mt-1">0 min</div>
-            <div id="tank-empty-icon" class="hidden absolute text-4xl opacity-50">✨</div>
+            <div id="tank-empty-icon" class="hidden absolute text-4xl opacity-50"><i class="ph-fill ph-sparkle"></i></div>
         </div>
     </div>
     </div>
@@ -1449,16 +1449,16 @@
 
         <div class="mb-4">
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="UI.quickLogBeer('mode1')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 hover:bg-amber-100 transition active:scale-95 group text-left">
-                    <span class="text-xl group-hover:scale-110 transition shrink-0">🍺</span>
+                <button onclick="UI.quickLogBeer('mode1')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 hover:bg-amber-100 transition active:scale-95 group text-left">
+                    <i class="ph-duotone ph-beer-bottle text-2xl text-amber-500 group-hover:scale-110 transition shrink-0"></i>
                     <div class="overflow-hidden min-w-0">
                         <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Preset 1</p>
                         <p id="quick-name-1" class="text-sm font-black text-base-900 dark:text-white truncate">Lager</p>
                     </div>
                 </button>
 
-                <button onclick="UI.quickLogBeer('mode2')" class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 hover:bg-indigo-100 transition active:scale-95 group text-left">
-                    <span class="text-xl group-hover:scale-110 transition shrink-0">🍹</span>
+                <button onclick="UI.quickLogBeer('mode2')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 hover:bg-indigo-100 transition active:scale-95 group text-left">
+                    <i class="ph-duotone ph-beer-stein text-2xl text-indigo-500 group-hover:scale-110 transition shrink-0"></i>
                     <div class="overflow-hidden min-w-0">
                         <p class="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-0.5">Preset 2</p>
                         <p id="quick-name-2" class="text-sm font-black text-base-900 dark:text-white truncate">Ale</p>
@@ -1468,36 +1468,36 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2">
-    <button onclick="UI.handleActionSelect('beer')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition active:scale-95 group">
-        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
-            <i class="ph-fill ph-beer-bottle text-2xl text-amber-600 dark:text-amber-500"></i>
-        </div>
-        <span class="text-xs font-bold text-amber-900 dark:text-amber-100 text-left leading-tight">ビール<br>記録</span>
-    </button>
-    
-    <button onclick="UI.handleActionSelect('check')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition active:scale-95 group">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
-            <i class="ph-fill ph-heartbeat text-2xl text-emerald-600 dark:text-emerald-500"></i>
-        </div>
-        <span class="text-xs font-bold text-emerald-800 dark:text-emerald-200 text-left leading-tight">体調<br>記録</span>
-    </button>
+            <button onclick="UI.handleActionSelect('beer')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/50 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition active:scale-95 group">
+                <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-beer-bottle text-2xl text-amber-600 dark:text-amber-500"></i>
+                </div>
+                <span class="text-xs font-bold text-amber-900 dark:text-amber-100 text-left leading-tight">ビール<br>記録</span>
+            </button>
+            
+            <button onclick="UI.handleActionSelect('check')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition active:scale-95 group">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-heartbeat text-2xl text-emerald-600 dark:text-emerald-500"></i>
+                </div>
+                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-200 text-left leading-tight">体調<br>記録</span>
+            </button>
 
-    <button onclick="UI.handleActionSelect('exercise')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition active:scale-95 group">
-        <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
-            <i class="ph-fill ph-sneaker-move text-2xl text-gray-600 dark:text-gray-300"></i>
+            <button onclick="UI.handleActionSelect('exercise')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition active:scale-95 group">
+                <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-sneaker-move text-2xl text-gray-600 dark:text-gray-300"></i>
+                </div>
+                <span class="text-xs font-bold text-gray-600 dark:text-gray-300 text-left leading-tight">運動<br>(手動)</span>
+            </button>
+            
+            <button onclick="UI.handleActionSelect('timer')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition active:scale-95 group">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-timer text-2xl text-indigo-600 dark:text-indigo-500"></i>
+                </div>
+                <span class="text-xs font-bold text-indigo-800 dark:text-indigo-200 text-left leading-tight">運動<br>(計測)</span>
+            </button>
         </div>
-        <span class="text-xs font-bold text-gray-600 dark:text-gray-300 text-left leading-tight">運動<br>(手動)</span>
-    </button>
-    
-    <button onclick="UI.handleActionSelect('timer')" class="flex items-center gap-3 px-3 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition active:scale-95 group">
-        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
-            <i class="ph-fill ph-timer text-2xl text-indigo-600 dark:text-indigo-500"></i>
-        </div>
-        <span class="text-xs font-bold text-indigo-800 dark:text-indigo-200 text-left leading-tight">運動<br>(計測)</span>
-    </button>
-</div>
         
-        </div>
+    </div>
 </div>
 
 <div id="concept-page" class="fixed inset-0 z-[550] hidden flex items-center justify-center bg-[#0f172a] text-white px-8 transition-all duration-700 opacity-0 hidden">

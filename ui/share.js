@@ -83,9 +83,7 @@ const openPhotoComposer = (imgSrc, log) => {
     const date = dayjs(log.timestamp).format('YYYY.MM.DD');
     const logoSrc = "./logo-header.png";
 
-    // アスペクト比
-    // ★修正: 3:4を縦(rotate-90)、4:3を横(rotate-0)に設定
-    // inline-blockを追加して回転を確実に
+    // アスペクト比定義
     const ratios = [
         { label: '1:1', value: '1 / 1', icon: 'ph-square' },
         { label: '3:4', value: '3 / 4', icon: 'ph-rectangle', class: 'rotate-90' }, 
@@ -94,25 +92,18 @@ const openPhotoComposer = (imgSrc, log) => {
         { label: '16:9', value: '16 / 9', icon: 'ph-monitor' }
     ];
 
+    // ボタン生成（コンパクト化: p-1.5, gap-0.5）
     const ratioButtonsHtml = ratios.map(r => `
-        <button class="ratio-btn flex flex-col items-center gap-1 p-2 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
             <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}"></i>
-            <span class="text-[9px] font-bold">${r.label}</span>
+            <span class="text-[9px] font-bold scale-90 origin-top">${r.label}</span>
         </button>
     `).join('');
 
-    // フォント
-    const fonts = [
-        { label: 'Basic', value: 'font-sans', family: 'Noto Sans JP' },
-        { label: 'Mincho', value: 'font-mincho', family: 'Shippori Mincho B1' },
-        { label: 'Heavy', value: 'font-heavy', family: 'Dela Gothic One' },
-        { label: 'Brush', value: 'font-brush', family: 'Yuji Syuku' },
-        { label: 'Retro', value: 'font-dot', family: 'DotGothic16' }
-    ];
-
+    // フォントボタン生成（コンパクト化: py-1, text-[10px]）
     const fontButtonsHtml = fonts.map(f => `
-        <button class="font-btn px-3 py-1.5 rounded-lg border border-gray-700 transition shrink-0 text-xs ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[10px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${f.value}" style="font-family: '${f.family}';">
             ${f.label}
         </button>
@@ -121,7 +112,6 @@ const openPhotoComposer = (imgSrc, log) => {
     modal.innerHTML = `
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DotGothic16&family=Noto+Sans+JP:wght@500;700;900&family=Shippori+Mincho+B1:wght@700&family=Yuji+Syuku&display=swap');
-            
             .font-sans { font-family: 'Noto Sans JP', sans-serif; }
             .font-mincho { font-family: 'Shippori Mincho B1', serif; }
             .font-heavy { font-family: 'Dela Gothic One', sans-serif; letter-spacing: 0.05em; }
@@ -129,13 +119,13 @@ const openPhotoComposer = (imgSrc, log) => {
             .font-dot { font-family: 'DotGothic16', sans-serif; }
         </style>
 
-        <div class="px-4 py-3 flex justify-between items-center bg-base-900 text-white z-20 border-b border-white/10 shrink-0">
+        <div class="px-4 py-2 flex justify-between items-center bg-base-900 text-white z-20 border-b border-white/10 shrink-0">
             <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
             <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
             <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
         </div>
 
-        <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-4">
+        <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-1">
             
             <div id="composer-canvas" class="relative bg-gray-900 shadow-2xl overflow-hidden pointer-events-none transition-all duration-300 ease-out w-full h-auto max-w-md max-h-full ${editState.fontClass}" 
                  style="aspect-ratio: ${editState.aspectRatio};">
@@ -159,11 +149,9 @@ const openPhotoComposer = (imgSrc, log) => {
                 </div>
 
                 <div class="absolute bottom-5 left-5 right-5 z-20 flex items-end gap-3">
-                    
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1 shrink-0">
                          <img src="${logoSrc}" class="w-full h-full object-contain opacity-90 drop-shadow-sm" crossorigin="anonymous">
                     </div>
-
                     <div class="flex flex-col justify-center pb-0.5 drop-shadow-md flex-1 min-w-0">
                         <span class="text-xl font-bold text-white leading-tight line-clamp-2 break-words">${escapeHtml(brand)}</span>
                         ${brewery ? `<span class="text-xs font-bold text-gray-300 mt-0.5 truncate">${escapeHtml(brewery)}</span>` : ""}
@@ -176,31 +164,31 @@ const openPhotoComposer = (imgSrc, log) => {
             </div>
         </div>
 
-        <div class="bg-base-900 border-t border-gray-800 z-20 flex flex-col pb-safe">
+        <div class="bg-base-900 border-t border-gray-800 z-20 flex flex-col pb-safe shrink-0">
             
-            <div class="flex gap-2 px-4 py-2 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-center">
+            <div class="flex gap-2 px-4 py-1 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-center">
                 ${ratioButtonsHtml}
             </div>
 
-            <div class="flex gap-2 px-4 py-2 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-start bg-base-950/50">
-                <span class="text-[10px] font-bold text-gray-500 self-center mr-1">FONT</span>
+            <div class="flex gap-2 px-4 py-1 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-start bg-base-950/50">
+                <span class="text-[9px] font-bold text-gray-500 self-center mr-1">FONT</span>
                 ${fontButtonsHtml}
             </div>
 
-            <div class="px-4 py-3 flex flex-col gap-3">
+            <div class="px-4 py-2 flex flex-col gap-2">
                 <div class="flex items-center gap-3">
                     <i class="ph-bold ph-minus text-gray-500 text-xs"></i>
-                    <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="flex-1 accent-indigo-500 h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                    <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="flex-1 accent-indigo-500 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
                     <i class="ph-bold ph-plus text-gray-500 text-xs"></i>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <label class="flex items-center gap-2 cursor-pointer bg-gray-800/50 px-3 py-1.5 rounded-lg active:bg-gray-800 transition">
+                    <label class="flex items-center gap-2 cursor-pointer bg-gray-800/50 px-2 py-1 rounded-lg active:bg-gray-800 transition">
                         <div class="relative inline-flex items-center">
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
-                            <div class="w-7 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-500"></div>
+                            <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[10px] font-bold text-gray-400">Calories</span>
+                        <span class="text-[9px] font-bold text-gray-400">Calories</span>
                     </label>
                     
                     <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
@@ -208,8 +196,7 @@ const openPhotoComposer = (imgSrc, log) => {
                     </span>
                 </div>
             </div>
-            <div class="h-4 bg-base-900"></div>
-        </div>
+            </div>
     `;
 
     document.body.appendChild(modal);
@@ -221,8 +208,6 @@ const openPhotoComposer = (imgSrc, log) => {
     const zoomSlider = modal.querySelector('#zoom-slider');
     const touchArea = modal.querySelector('#composer-touch-area');
     const toggleKcal = modal.querySelector('#toggle-kcal');
-    
-    // HTMLにIDを追加したので、ここで正常に取得できるようになります
     const statsEl = modal.querySelector('#composer-stats'); 
     
     const btnCancel = modal.querySelector('#btn-cancel-composer');
@@ -270,7 +255,7 @@ const openPhotoComposer = (imgSrc, log) => {
         });
     });
 
-    // Pan & Zoom
+    // Pan & Zoom logic
     const updateTransform = () => {
         imgEl.style.transform = `translate(${editState.x}px, ${editState.y}px) scale(${editState.scale})`;
         zoomSlider.value = editState.scale;
@@ -298,7 +283,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
     const handleEnd = () => { editState.isDragging = false; };
 
-    // ★追加: マルチタッチ(Pinch)対応のための変数と関数
+    // Multi-touch (Pinch) variables
     let initialPinchDist = 0;
     let startScale = 1.0;
 
@@ -307,18 +292,14 @@ const openPhotoComposer = (imgSrc, log) => {
     };
 
     if(touchArea) {
-        // マウス操作系は変更なし
         touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
         window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', handleEnd);
 
-        // ▼▼▼ ここからタッチイベントを大幅修正 ▼▼▼
         touchArea.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
-                // 1本指: ドラッグ開始（既存）
                 handleStart(e.touches[0].clientX, e.touches[0].clientY);
             } else if (e.touches.length === 2) {
-                // ★追加: 2本指: ピンチ開始 (ドラッグはキャンセル)
                 editState.isDragging = false;
                 initialPinchDist = getDistance(e.touches[0], e.touches[1]);
                 startScale = editState.scale;
@@ -326,17 +307,13 @@ const openPhotoComposer = (imgSrc, log) => {
         }, { passive: false });
 
         touchArea.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // ブラウザのスクロール等を防止
-
+            e.preventDefault();
             if (e.touches.length === 1) {
-                // 1本指: ドラッグ移動（既存）
                 handleMove(e.touches[0].clientX, e.touches[0].clientY);
             } else if (e.touches.length === 2) {
-                // ★追加: 2本指: ピンチズーム計算
                 const dist = getDistance(e.touches[0], e.touches[1]);
                 if (initialPinchDist > 0) {
                     const ratio = dist / initialPinchDist;
-                    // 0.5倍〜3.0倍の範囲に制限
                     const newScale = Math.min(Math.max(startScale * ratio, 0.5), 3.0);
                     editState.scale = newScale;
                     updateTransform();
@@ -346,12 +323,10 @@ const openPhotoComposer = (imgSrc, log) => {
 
         touchArea.addEventListener('touchend', (e) => {
             handleEnd();
-            // 指が離れたらピンチ距離をリセット
             if (e.touches.length < 2) {
                 initialPinchDist = 0;
             }
         });
-        // ▲▲▲ 修正ここまで ▲▲▲
     }
 
     if(toggleKcal) {
@@ -387,7 +362,6 @@ const openPhotoComposer = (imgSrc, log) => {
         };
     }
 };
-
 
 /* --- 2. Graphic Flow (Fallback) --- */
 

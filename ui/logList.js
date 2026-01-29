@@ -145,7 +145,7 @@ export const updateLogListView = async (isLoadMore = false) => {
         }
 
         const li = document.createElement('li');
-        li.className = "log-item flex flex-col p-4 bg-white dark:bg-base-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm mb-2 relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 active:scale-[0.98] cursor-pointer group";
+        li.className = "log-item relative group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
         
         // アニメーション用遅延
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;

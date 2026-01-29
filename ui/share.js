@@ -298,23 +298,60 @@ const openPhotoComposer = (imgSrc, log) => {
 
     const handleEnd = () => { editState.isDragging = false; };
 
+    // ★追加: マルチタッチ(Pinch)対応のための変数と関数
+    let initialPinchDist = 0;
+    let startScale = 1.0;
+
+    const getDistance = (touch1, touch2) => {
+        return Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+    };
+
     if(touchArea) {
+        // マウス操作系は変更なし
         touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
         window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
         window.addEventListener('mouseup', handleEnd);
 
+        // ▼▼▼ ここからタッチイベントを大幅修正 ▼▼▼
         touchArea.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 1) handleStart(e.touches[0].clientX, e.touches[0].clientY);
-        }, { passive: false });
-
-        touchArea.addEventListener('touchmove', (e) => {
             if (e.touches.length === 1) {
-                e.preventDefault();
-                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+                // 1本指: ドラッグ開始（既存）
+                handleStart(e.touches[0].clientX, e.touches[0].clientY);
+            } else if (e.touches.length === 2) {
+                // ★追加: 2本指: ピンチ開始 (ドラッグはキャンセル)
+                editState.isDragging = false;
+                initialPinchDist = getDistance(e.touches[0], e.touches[1]);
+                startScale = editState.scale;
             }
         }, { passive: false });
 
-        touchArea.addEventListener('touchend', handleEnd);
+        touchArea.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // ブラウザのスクロール等を防止
+
+            if (e.touches.length === 1) {
+                // 1本指: ドラッグ移動（既存）
+                handleMove(e.touches[0].clientX, e.touches[0].clientY);
+            } else if (e.touches.length === 2) {
+                // ★追加: 2本指: ピンチズーム計算
+                const dist = getDistance(e.touches[0], e.touches[1]);
+                if (initialPinchDist > 0) {
+                    const ratio = dist / initialPinchDist;
+                    // 0.5倍〜3.0倍の範囲に制限
+                    const newScale = Math.min(Math.max(startScale * ratio, 0.5), 3.0);
+                    editState.scale = newScale;
+                    updateTransform();
+                }
+            }
+        }, { passive: false });
+
+        touchArea.addEventListener('touchend', (e) => {
+            handleEnd();
+            // 指が離れたらピンチ距離をリセット
+            if (e.touches.length < 2) {
+                initialPinchDist = 0;
+            }
+        });
+        // ▲▲▲ 修正ここまで ▲▲▲
     }
 
     if(toggleKcal) {

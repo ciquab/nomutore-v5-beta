@@ -129,7 +129,7 @@ const openPhotoComposer = (imgSrc, log) => {
             .font-dot { font-family: 'DotGothic16', sans-serif; }
         </style>
 
-        <div class="px-4 py-3 flex justify-between items-center bg-black/60 backdrop-blur-md text-white z-20 absolute top-0 w-full border-b border-white/10">
+        <div class="px-4 py-3 flex justify-between items-center bg-base-900 text-white z-20 border-b border-white/10 shrink-0">
             <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
             <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
             <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
@@ -142,8 +142,8 @@ const openPhotoComposer = (imgSrc, log) => {
                 
                 <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
 
-                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10"></div>
-                <div class="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
+                <div class="absolute top-0 left-0 w-full h-[25%] bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10"></div>
+                <div class="absolute bottom-0 left-0 w-full h-[35%] bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
 
                 <div class="absolute top-5 left-5 z-20 drop-shadow-md">
                     <p class="text-[10px] font-bold text-gray-200 tracking-widest opacity-90 leading-none" style="font-family: 'Noto Sans JP', sans-serif;">

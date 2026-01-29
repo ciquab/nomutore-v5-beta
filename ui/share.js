@@ -101,6 +101,15 @@ const openPhotoComposer = (imgSrc, log) => {
         </button>
     `).join('');
 
+       // ▼ 追加: フォント定義リスト
+    const fonts = [
+        { label: 'Sans', value: 'font-sans', family: 'Noto Sans JP' },
+        { label: 'Mincho', value: 'font-mincho', family: 'Shippori Mincho B1' },
+        { label: 'Gothic', value: 'font-heavy', family: 'Dela Gothic One' },
+        { label: 'Brush', value: 'font-brush', family: 'Yuji Syuku' },
+        { label: 'Pixel', value: 'font-dot', family: 'DotGothic16' }
+    ];
+ 
     // フォントボタン生成（コンパクト化: py-1, text-[10px]）
     const fontButtonsHtml = fonts.map(f => `
         <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[10px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
@@ -528,4 +537,5 @@ const showLoadingOverlay = (text) => {
 const hideLoadingOverlay = (id) => {
     const el = document.getElementById(id);
     if (el) { el.classList.add('opacity-0'); setTimeout(() => el.remove(), 300); }
+
 };

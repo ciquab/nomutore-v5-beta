@@ -787,10 +787,13 @@ const ICON_KEYWORDS = {
 };
 
 window.addNewCheckItem = () => {
+    // 1. ラベル入力（必須）
+    // ※ここでキャンセルを押した場合は、処理を中断（終了）します
     const label = prompt('項目名を入力してください (例: 筋トレ)');
-    if(!label) return;
+    if (!label) return;
 
-    // プロンプトの文言を親切に変更
+    // 2. アイコン入力（任意）
+    // ※キャンセルを押した場合は、nullになるため if文をスキップし、デフォルト(iconClassの初期値)が採用されます
     const iconInput = prompt(
         'アイコン用の「絵文字」または「キーワード」を入力してください\n\n' + 
         '📝 絵文字: 🧖, 💪, 💊 ...\n' +
@@ -798,31 +801,43 @@ window.addNewCheckItem = () => {
         ''
     );
 
-    // 入力があれば変換を試みる、なければデフォルト
+    // デフォルト値を設定
     let iconClass = 'ph-duotone ph-check-circle';
     
     if (iconInput) {
         const lowerKey = iconInput.toLowerCase().trim();
-        // マップにあればPhosphor Iconに、なければ入力値をそのまま(絵文字として)使う
         if (ICON_KEYWORDS[lowerKey]) {
             iconClass = ICON_KEYWORDS[lowerKey];
         } else {
-            iconClass = iconInput; // 絵文字などをそのまま適用
+            iconClass = iconInput; // 入力された絵文字などをそのまま使う
         }
     }
 
-    const desc = prompt('説明を入力してください (例: 30分以上やった)', '');
+    // 3. 説明入力（任意）
+    // ※キャンセル(null)の場合は、空文字 '' に変換して保存します
+    const descInput = prompt('説明を入力してください (例: 30分以上やった)', '');
+    const desc = descInput || ''; 
+
+    // 4. 表示設定
     const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
 
     const id = `custom_${Date.now()}`;
+    
+    // ★修正箇所: iconプロパティに、上で決定した iconClass 変数をセットします
     const newItem = {
-        id, label, icon: icon || 'ph-duotone ph-check-circle', type: 'boolean', desc, drinking_only: drinkingOnly
+        id, 
+        label, 
+        icon: iconClass, // 以前はここが `icon` になっておりエラーでした
+        type: 'boolean', 
+        desc, 
+        drinking_only: drinkingOnly
     };
 
     let schema = [];
     try { schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]'); } catch(e) {}
     schema.push(newItem);
     localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema));
+    
     renderCheckEditor();
 };
 

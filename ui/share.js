@@ -140,30 +140,31 @@ const openPhotoComposer = (imgSrc, log) => {
                 
                 <img id="composer-img" src="${imgSrc}" class="absolute inset-0 w-full h-full object-cover origin-center transition-transform duration-75 ease-linear will-change-transform">
 
-                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10 pt-24">
-                    <div class="flex items-end justify-between">
-                        
-                        <div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
-                            <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1 shrink-0">
-                                <img src="${logoSrc}" class="w-full h-full object-contain opacity-90 drop-shadow-sm" crossorigin="anonymous">
-                            </div>
-                            
-                            <div class="flex flex-col text-white drop-shadow-md overflow-hidden">
-                                <p class="text-[10px] font-bold text-gray-300 tracking-widest leading-none mb-1.5 opacity-80" style="font-family: 'Noto Sans JP', sans-serif;">
-                                    ${date} | NOMUTORE
-                                </p>
-                                <span class="text-xl font-bold leading-tight line-clamp-2 filter drop-shadow-lg break-words">${escapeHtml(brand)}</span>
-                                ${brewery ? `<span class="text-xs font-bold text-gray-300 line-clamp-1 mt-0.5 truncate">${escapeHtml(brewery)}</span>` : ''}
-                            </div>
-                        </div>
+                <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10"></div>
+                <div class="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
 
-                        <div id="composer-stats" class="text-right text-white drop-shadow-md transition-opacity duration-300 shrink-0">
-                            <div class="flex flex-col items-end">
-                                <span class="text-4xl font-bold leading-none filter drop-shadow-lg">-${kcal}</span>
-                                <span class="text-[9px] font-bold uppercase text-red-400 tracking-wider mt-0.5" style="font-family: 'Noto Sans JP', sans-serif;">Debt Created (kcal)</span>
-                            </div>
-                        </div>
+                <div class="absolute top-5 left-5 z-20 drop-shadow-md">
+                    <p class="text-[10px] font-bold text-gray-200 tracking-widest opacity-90 leading-none" style="font-family: 'Noto Sans JP', sans-serif;">
+                        ${date} | NOMUTORE
+                    </p>
+                </div>
 
+                <div class="absolute top-4 right-5 z-20 drop-shadow-md text-right">
+                    <div class="flex flex-col items-end">
+                        <span class="text-3xl font-black text-white leading-none tracking-tighter">-${kcal}</span>
+                        <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider mt-0.5">DEBT CREATED (kcal)</span>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-5 left-5 right-5 z-20 flex items-end gap-3">
+                    
+                    <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 flex items-center justify-center shadow-lg overflow-hidden p-1 shrink-0">
+                         <img src="${logoSrc}" class="w-full h-full object-contain opacity-90 drop-shadow-sm" crossorigin="anonymous">
+                    </div>
+
+                    <div class="flex flex-col justify-center pb-0.5 drop-shadow-md flex-1 min-w-0">
+                        <span class="text-xl font-bold text-white leading-tight line-clamp-2 break-words">${escapeHtml(brand)}</span>
+                        ${brewery ? `<span class="text-xs font-bold text-gray-300 mt-0.5 truncate">${escapeHtml(brewery)}</span>` : ""}
                     </div>
                 </div>
             </div>

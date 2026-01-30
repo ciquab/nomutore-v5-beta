@@ -263,7 +263,11 @@ export const showToastAnimation = () => {
         <div class="absolute animate-clink-right translate-x-[100vw] scale-x-[-1] flex items-center justify-center">
             ${iconHtml}
         </div>
-        <div class="absolute text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-toast-text opacity-0 font-['Outfit'] italic tracking-widest" style="animation-delay: 0.5s">
+        <div class="absolute text-5xl font-black text-amber-400 
+                    drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] 
+                    [text-shadow:_2px_2px_0_rgb(0_0_0_/_40%)]
+                    animate-toast-text opacity-0 font-['Outfit'] italic tracking-widest" 
+             style="animation-delay: 0.5s">
             Cheers!
         </div>
     `;

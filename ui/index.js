@@ -132,7 +132,86 @@ export const UI = {
         bind('nav-tab-cellar', 'click', () => UI.switchTab('cellar'));
         bind('nav-tab-settings', 'click', () => UI.switchTab('settings'));
 
-        // ▼▼▼ 修正ここから (IDは header-mode-select のまま) ▼▼▼
+        // 🍺 ビール保存
+        document.addEventListener('save-beer', async (e) => {
+            const data = e.detail;
+            const idField = document.getElementById('editing-log-id');
+            const existingId = idField && idField.value ? parseInt(idField.value) : null;
+
+            // 保存実行
+            await Service.saveBeerLog(data, existingId);
+            
+            // 演出：新規登録時のみ豪華に（更新時は控えめに）
+            if (!existingId) {
+                Feedback.beer();
+                showConfetti();
+                showToastAnimation();
+            } else {
+                Feedback.tap();
+            }
+
+            // Untappd連携 (UI側の責任としてここで行う)
+            if (data.useUntappd) {
+                const query = encodeURIComponent(`${data.brewery || ''} ${data.brand || ''}`.trim());
+                if(query) setTimeout(() => window.open(`https://untappd.com/search?q=${query}`, '_blank'), 100);
+            }
+
+            await refreshUI();
+        });
+
+        // 🏃 運動保存
+        document.addEventListener('save-exercise', async (e) => {
+            const { exerciseKey, minutes, date, applyBonus, id } = e.detail;
+            
+            try {
+                await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
+                
+                // 演出
+                if (!id) {
+                    Feedback.success();
+                    showConfetti();
+                } else {
+                    Feedback.tap();
+                }
+
+                // UIの後処理
+                toggleModal('exercise-modal', false);
+                const editIdField = document.getElementById('editing-exercise-id');
+                if(editIdField) editIdField.value = '';
+
+                await refreshUI();
+            } catch(err) {
+                console.error(err);
+                showMessage('運動の記録に失敗しました', 'error');
+            }
+        });
+
+        // ✅ デイリーチェック保存
+        document.addEventListener('save-check', async (e) => {
+            await Service.saveDailyCheck(e.detail);
+            Feedback.success();
+            await refreshUI();
+        });
+
+        // 🗑️ 一括削除
+        document.addEventListener('bulk-delete', async () => {
+            const checkboxes = document.querySelectorAll('.log-checkbox:checked');
+            const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+            if (ids.length > 0) {
+                await Service.bulkDeleteLogs(ids);
+                Feedback.delete();
+                await refreshUI();
+            } else {
+                UI.toggleEditMode();
+            }
+        });
+
+        // 🔄 期間リセット同期
+        document.addEventListener('confirm-rollover', async () => {
+            toggleModal('rollover-modal', false);
+            await refreshUI();
+            showConfetti();
+        });
         
         // 1. 変更イベント（ロジック更新 ＋ 見た目の文字更新）
         bind('header-mode-select', 'change', (e) => {
@@ -480,6 +559,8 @@ if (checkModal) {
             fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
         }
 
+        window.handleRepeat = UI.handleRepeat;
+
         UI.isInitialized = true;
     },
 
@@ -625,6 +706,32 @@ if (checkModal) {
         db.logs.get(id).then(log => {
             if (log) openLogDetail(log);
         });
+    },
+
+    handleRepeat: async (log) => {
+        try {
+            // 1. 保存実行 (Serviceに委譲)
+            await Service.repeatLog(log);
+            
+            // 2. 演出 (save-beerリスナーと同様の豪華な演出を再現)
+            if (log.type === 'beer') {
+                Feedback.beer();
+                showConfetti();
+                showToastAnimation();
+                // ※ save-beer イベントリスナー側で showMessage が出る設計に
+                //    なっている場合は、ここでの重複に注意してください。
+            } else {
+                Feedback.success();
+                showConfetti();
+            }
+            
+            // 3. UIリフレッシュ
+            await refreshUI();
+            
+        } catch (e) {
+            console.error('Repeat Error:', e);
+            showMessage('登録に失敗しました', 'error');
+        }
     },
 
     updateBulkCount: updateBulkCount,

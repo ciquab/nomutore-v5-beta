@@ -101,7 +101,7 @@ const renderActionMenuBeerPresets = async () => {
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
             html += `
-                <button onclick="Service.repeatLog(${jsonParam}); UI.closeModal('action-menu-modal');" 
+                <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
                         class="flex items-center gap-3 p-4 rounded-2xl border active:scale-95 transition shadow-sm ${bgClass}">
                     <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-black/20 flex items-center justify-center shrink-0">
                         <i class="ph-duotone ph-beer-bottle ${iconColor} text-xl"></i>
@@ -166,7 +166,7 @@ const renderActionMenuExerciseShortcuts = async () => {
         container.innerHTML = `
             <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
                 <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Repeat Last Workout</p>
-                <button onclick="Service.repeatLog(${jsonParam}); UI.closeModal('action-menu-modal');" 
+                <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
                         class="w-full flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl active:scale-95 transition group hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800">
                     
                     <div class="flex items-center gap-3">
@@ -1446,7 +1446,7 @@ export const renderRecordTabShortcuts = async () => {
                 const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
                 html += `
-                    <button onclick="Service.repeatLog(${jsonParam})" 
+                    <button onclick="handleRepeat(${jsonParam})" 
                             class="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border active:scale-95 transition shadow-sm ${bgClass} min-w-[130px]">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
                              <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
@@ -1483,7 +1483,7 @@ export const renderRecordTabShortcuts = async () => {
                 const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
                 html += `
-                    <button onclick="Service.repeatLog(${jsonParam})" 
+                    <button onclick="handleRepeat(${jsonParam})" 
                             class="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500 min-w-[130px]">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">
                             <i class="ph-duotone ph-arrow-counter-clockwise"></i>

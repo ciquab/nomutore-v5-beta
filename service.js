@@ -424,82 +424,29 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * ★追加: ログを複製して今日の日付で登録（リピート機能）
-     * ストリークボーナス再計算付き
+     * ログを複製して今日の日付で登録（リピート機能）
+     * 既存の保存ロジック（saveBeerLog / saveExerciseLog）へ統合
      */
     repeatLog: async (log) => {
-        const now = dayjs();
-        const profile = Store.getProfile(); 
-
-        let newKcal = log.kcal;
-
-        // 運動ならストリークボーナス再計算
-        if (log.type === 'exercise' && log.exerciseKey && EXERCISE[log.exerciseKey]) {
-            try {
-                const allLogs = await db.logs.toArray();
-                const allChecks = await db.checks.toArray();
-                const currentStreak = Calc.getCurrentStreak(allLogs, allChecks, profile);
-                const mets = EXERCISE[log.exerciseKey].mets;
-                const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
-                const credit = Calc.calculateExerciseCredit(baseBurn, currentStreak);
-                newKcal = credit.kcal;
-            } catch (e) {
-                console.error('[Repeat] Recalculation failed', e);
-            }
-        }
-
-        // ビールの場合、統計データには単体kcalが含まれていない場合があるので補完
-        if (log.type === 'beer' && (!newKcal || newKcal === 0)) {
-             const styleSpec = STYLE_SPECS[log.style] || STYLE_SPECS['Custom'];
-             // 簡易計算: 平均的な度数とサイズから算出（本来は厳密な再計算が望ましいがUX優先）
-             // ここでは既存ログの値があればそれを使い、なければデフォルト140kcalとする
-             newKcal = -140; 
-        }
-
-        const newLog = {
-            timestamp: now.valueOf(),
-            type: log.type,
-            name: log.name,
-            brand: log.brand || log.name,
-            brewery: log.brewery,
-            kcal: newKcal,
-            minutes: log.minutes,
-            rawMinutes: log.rawMinutes,
-            exerciseKey: log.exerciseKey,
-            style: log.style,
-            count: log.count || 1,
-            size: log.size,
-            memo: log.memo ? `(Repeat) ${log.memo}` : undefined,
-            abv: log.abv,
-            rawAmount: log.rawAmount
-        };
-
-        await db.logs.add(newLog);
-        
-        // 音を鳴らす (Feedbackオブジェクトを利用)
-        if (typeof Feedback !== 'undefined') {
-            if (newLog.type === 'beer') {
-                // ビール: 専用の乾杯音があればそれを、なければ追加音を鳴らす
-                if (Feedback.beer) Feedback.beer();
-                else if (Feedback.success) Feedback.success();
-            } else {
-                // 運動: 追加音を鳴らす
-                if (Feedback.success) Feedback.success();
-            }
-        }
-
-        // 演出とメッセージ
-        if (newLog.type === 'beer') {
-            showConfetti();
-            showToastAnimation();
-            showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました: ${newLog.name}`, 'success');
+        if (log.type === 'beer') {
+            // saveBeerLog を呼び出す。リピート時はUntappdを自動で開かないよう設定
+            await Service.saveBeerLog({
+                ...log,
+                timestamp: Date.now(),
+                isCustom: log.isCustom || false,
+                useUntappd: false 
+            }, null); // 第2引数 id=null で新規登録として処理
         } else {
-            const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';
-            showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> 記録しました: ${newLog.name} ${minStr}`, 'success');
+            // saveExerciseLog を呼び出す。リピート時は常にボーナス適用
+            await Service.saveExerciseLog(
+                log.exerciseKey,
+                log.minutes,
+                dayjs().format('YYYY-MM-DD'),
+                true, // applyBonus
+                null  // 第2引数 id=null で新規登録として処理
+            );
         }
-        
-        // UI更新イベント発火
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
+        // 各save関数内で再計算とUI更新イベントが発火するため、ここでの記述は不要になります
     },
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---
@@ -548,61 +495,45 @@ getAllDataForUI: async () => {
         let shareAction = null;
 
         if (id) {
+            // 更新処理
             await db.logs.update(parseInt(id), logData);
-            // 更新時はシェアボタン出さない（煩わしいため）
-            showMessage('<i class="ph-bold ph-pencil-simple"></i> 運動記録を更新しました', 'success');
+            showMessage('<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました', 'success');
         } else {
+            // 新規登録（リピート経由もここを通る）
             await db.logs.add(logData);
 
-            // ★修正: 休肝日チェック解除のロジックに安全弁を追加
+            // 休肝日自動解除などの副作用をここに集約
             const ts = dayjs(data.timestamp);
-            const start = ts.startOf('day').valueOf();
-            const end = ts.endOf('day').valueOf();
-            
-            // 「記録した日」のチェックレコードを取得
-            const existingCheck = await db.checks.where('timestamp').between(start, end, true, true).first();
-            
+            const existingCheck = await db.checks.where('timestamp').between(ts.startOf('day').valueOf(), ts.endOf('day').valueOf(), true, true).first();
             if (existingCheck && existingCheck.isDryDay) {
-                // ここで念のため日付一致確認 (timestampがstart-endの範囲内か)
-                // betweenでクエリしているので確実だが、論理的バグ防止のため
-                if (existingCheck.timestamp >= start && existingCheck.timestamp <= end) {
-                    await db.checks.update(existingCheck.id, { isDryDay: false });
-                    showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 飲酒記録のため、休肝日を解除しました', 'info');
-                } else {
-                    console.warn('[Safety] Skipping dry day removal due to timestamp mismatch.');
-                }
+                await db.checks.update(existingCheck.id, { isDryDay: false });
+                showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 飲酒記録のため、休肝日を解除しました', 'info');
             }
 
-            // ★修正: シェアアクションの生成 (画像シェア対応)
-            const { logs } = await Service.getAllDataForUI(); // 最新バランス取得用
-            const balance = Calc.calculateBalance(logs); // 現在のバランス
+            // 演出の実行
+            if (typeof Feedback !== 'undefined') {
+                if (Feedback.beer) Feedback.beer();
+                else if (Feedback.add) Feedback.add();
+            }
+            showConfetti();
+            showToastAnimation();
+
+            // シェア文言の生成（最新バランスを計算に含める）
+            const { logs: currentLogs } = await Service.getAllDataForUI();
+            const balance = Calc.calculateBalance(currentLogs);
             const shareText = Calc.generateShareText(logData, balance);
-            
-            const shareAction = { 
-                type: 'share', 
-                text: shareText, // テキストシェア用（フォールバック）
-                shareMode: 'image', // 画像モード指定
-                imageType: 'beer',  // ビールカード指定
-                imageData: logData  // カード生成用データ
-            };
+            const shareAction = { type: 'share', text: shareText, shareMode: 'image', imageType: 'beer', imageData: logData };
 
-            if (Math.abs(kcal) > 500) {
-                showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です`, 'error', shareAction); 
-            } else {
-                showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました！', 'success', shareAction);   
-            }
-            
-            // Untappd連携
+            const kcalMsg = Math.abs(kcal) > 500 ? `${Math.round(Math.abs(kcal))}kcalの借金です` : '記録しました！';
+            showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> ${kcalMsg}`, 'success', shareAction);
+
+            // Untappd連携（手動登録時のみ）
             if (data.useUntappd && data.brewery && data.brand) {
                 const query = encodeURIComponent(`${data.brewery} ${data.brand}`);
                 window.open(`https://untappd.com/search?q=${query}`, '_blank');
             }
         }
-
-        // 2. データ更新通知
-        Store.setCachedData(await db.logs.toArray(), await db.checks.toArray()); // キャッシュ更新
         
-        // 履歴影響再計算
         await Service.recalcImpactedHistory(data.timestamp);
         document.dispatchEvent(new CustomEvent('refresh-ui'));
     },
@@ -648,14 +579,18 @@ getAllDataForUI: async () => {
         
         if (id) {
             await db.logs.update(parseInt(id), logData);
-            showMessage('<i class="ph-bold ph-pencil-simple"></i> 運動記録を更新しました', 'success');
+            showMessage('<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました', 'success');
         } else {
             await db.logs.add(logData);
-            // ★シェア文言生成
-            const shareText = Calc.generateShareText(logData, 100); 
+            if (typeof Feedback !== 'undefined' && Feedback.add) Feedback.add();
+
+            // 運動でも「現在の正確な収支」を計算してシェア文言を出す
+            const { logs: allLogs } = await Service.getAllDataForUI();
+            const currentBalance = allLogs.reduce((sum, l) => sum + (l.kcal || 0), 0);
+            const shareText = Calc.generateShareText(logData, currentBalance);
             const shareAction = { type: 'share', text: shareText };
             
-            showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(minutes)}分の運動を記録しました！`, 'success', shareAction);        
+            showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> 記録しました！`, 'success', shareAction);
         }
 
         await Service.recalcImpactedHistory(ts);

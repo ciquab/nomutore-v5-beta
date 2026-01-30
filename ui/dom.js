@@ -228,7 +228,7 @@ export const Feedback = {
     },
 
     beer: () => { AudioEngine.playBeer(); HapticEngine.medium(); },
-    delete: () => { AudioEngine.playDelete(); HapticEngine.heavy(); },
+    delete: () => { AudioEngine.resume(); AudioEngine.playDelete(); HapticEngine.heavy(); },
     success: () => { AudioEngine.playSuccess(); HapticEngine.success(); },
     error: () => { AudioEngine.playTone(150, 'sawtooth', 0.3); HapticEngine.heavy(); },
     timerTick: () => { AudioEngine.playSoftTick(); },

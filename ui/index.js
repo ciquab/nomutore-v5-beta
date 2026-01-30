@@ -127,10 +127,24 @@ export const UI = {
             if(el) el.addEventListener(event, fn);
         };
 
-        bind('nav-tab-home', 'click', () => UI.switchTab('home'));
-        bind('nav-tab-record', 'click', () => UI.switchTab('record'));
-        bind('nav-tab-cellar', 'click', () => UI.switchTab('cellar'));
-        bind('nav-tab-settings', 'click', () => UI.switchTab('settings'));
+        bind('nav-tab-home', 'click', () => {
+            AudioEngine.init();
+            UI.switchTab('home');
+        });
+        bind('nav-tab-record', 'click', () => {
+            AudioEngine.init();
+            UI.switchTab('record');
+        });
+
+        bind('nav-tab-cellar', 'click', () => {
+            AudioEngine.init();
+            UI.switchTab('cellar');
+        });
+
+        bind('nav-tab-settings', 'click', () => {
+            AudioEngine.init();
+            UI.switchTab('settings');
+        });
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {
@@ -199,16 +213,22 @@ export const UI = {
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
 
     if (ids.length > 0) {
-        // ★修正: 削除「前」に音を鳴らす指示を出す (反応速度を最速にする)
-        if (typeof Feedback !== 'undefined' && Feedback.delete) {
-            Feedback.delete();
+        // ★重要: ブラウザのオーディオ制限をここで解除
+        if (typeof DOM !== 'undefined' && DOM.initAudio) {
+            AudioEngine.resume();
         }
 
-        // その後、重い処理（DB削除と再計算）を実行
-        await Service.bulkDeleteLogs(ids);
+        // 1. 削除「前」に音を鳴らす (最速のレスポンス)
+        if (typeof Feedback !== 'undefined' && Feedback.delete) {
+            Feedback.delete(); 
+        }
 
-        // ※ Service側で refresh-ui イベントが飛ぶため、
-        //    ここでの refreshUI() 呼び出しは重複を避けるため削除してもOKです。
+        // 2. その後、重い削除処理を実行
+        await Service.bulkDeleteLogs(ids);
+        
+        // 3. 編集モードを終了して画面更新
+        if (typeof toggleEditMode === 'function') toggleEditMode();
+        // await refreshUI(); // Service側で飛ぶなら不要、飛ばないなら必要
     } else {
         UI.toggleEditMode();
     }

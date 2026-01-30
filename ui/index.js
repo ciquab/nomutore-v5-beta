@@ -780,6 +780,7 @@ if (checkModal) {
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
+    toggleModal: (id, show) => toggleModal(id, show),
 
 };
 

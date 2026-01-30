@@ -197,14 +197,17 @@ export const UI = {
         document.addEventListener('bulk-delete', async () => {
             const checkboxes = document.querySelectorAll('.log-checkbox:checked');
             const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+
             if (ids.length > 0) {
-                // 1. 削除実行
+                // 1. Serviceで削除実行（Service側は無音のままでOK）
                 await Service.bulkDeleteLogs(ids);
         
-                // 2. 音を鳴らす（オプショナルチェイニング ?. で安全に呼び出し）
-                Feedback.delete?.(); 
-        
-                // 3. 画面更新
+                // 2. 削除が終わった直後に、UI層で音を鳴らす！
+                if (typeof Feedback !== 'undefined' && Feedback.delete) {
+                    Feedback.delete();
+                }
+
+                // 3. UIを更新する
                 await refreshUI();
             } else {
                 UI.toggleEditMode();

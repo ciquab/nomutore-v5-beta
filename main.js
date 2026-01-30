@@ -111,9 +111,6 @@ const initApp = async () => {
 
         UI.init();
         
-        // 2. Setup Event Listeners
-        setupLifecycleListeners();
-        setupGlobalListeners();
 
         // 3. Migration & Initial Data Logic
         let isFirstRun = false;
@@ -152,6 +149,8 @@ const initApp = async () => {
         // ホームタブを確実にアクティブにする
         UI.switchTab('home');
 
+        document.body.style.pointerEvents = 'auto';
+        console.log('🚀 UI initialized and interactions enabled');
 
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する
@@ -168,19 +167,61 @@ const initApp = async () => {
    Global Event Listeners (Swipe, etc)
    ========================================================================== */
 
-const setupGlobalListeners = () => {
-    // Swipe Start
-    document.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY; // ★追加: Y座標も取得
-    }, {passive: true});
+let touchStartX = null;
+let touchStartY = null;
+let touchEndX = 0;
+let touchEndY = 0;
 
-    // Swipe End
+const setupGlobalListeners = () => {
+    // タッチ開始
+    document.addEventListener('touchstart', (e) => {
+        // 横スクロールエリア（.overflow-x-auto）内の操作ならスワイプ判定しない
+        if (e.target.closest('.overflow-x-auto')) {
+            touchStartX = null;
+            touchStartY = null;
+            return;
+        }
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: false });
+
+    // タッチ終了
     document.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+
         touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY; // ★追加: Y座標も取得
+        touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
-    }, {passive: true});
+    }, { passive: false });
+};
+
+// スワイプ判定ロジック
+const handleSwipe = () => {
+    if (touchStartX === null) return;
+
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+    const swipeThreshold = 80; 
+    
+    const tabs = ['home', 'record', 'cellar', 'settings'];
+    
+    const activeTab = document.querySelector('.nav-pill-active');
+    if (!activeTab) return;
+    
+    const currentTab = activeTab.id.replace('nav-tab-', '');
+    const currentIndex = tabs.indexOf(currentTab);
+
+    // 縦スクロールの意図が強い場合は無視
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    // 横移動量がしきい値を超えた場合
+    if (Math.abs(diffX) > swipeThreshold) {
+        if (diffX > 0 && currentIndex < tabs.length - 1) {
+            UI.switchTab(tabs[currentIndex + 1]); // 次のタブ
+        } else if (diffX < 0 && currentIndex > 0) {
+            UI.switchTab(tabs[currentIndex - 1]); // 前のタブ
+        }
+    }
 };
 
 /* ==========================================================================
@@ -316,6 +357,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    setupLifecycleListeners();
+    setupGlobalListeners();
+
     initApp();
 });
 
@@ -376,69 +420,4 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
-
-
-/* ==========================================================================
-   Swipe Navigation (Fixed for Horizontal Scroll)
-   ========================================================================== */
-let touchStartX = null; // nullで初期化（判定除外用）
-let touchStartY = null;
-let touchEndX = 0;
-let touchEndY = 0;
-
-// タッチ開始時の処理
-document.addEventListener('touchstart', (e) => {
-    // ★重要: 横スクロールエリア（.overflow-x-auto）内でのタッチなら、スワイプ判定をしない
-    if (e.target.closest('.overflow-x-auto')) {
-        touchStartX = null;
-        touchStartY = null;
-        return;
-    }
-
-    touchStartX = e.changedTouches[0].screenX;
-    touchStartY = e.changedTouches[0].screenY;
-}, { passive: false });
-
-// タッチ終了時の処理
-document.addEventListener('touchend', (e) => {
-    // 開始地点が無効（スクロールエリア内だった）なら何もしない
-    if (touchStartX === null || touchStartY === null) return;
-
-    touchEndX = e.changedTouches[0].screenX;
-    touchEndY = e.changedTouches[0].screenY;
-    handleSwipe();
-}, { passive: false });
-
-const handleSwipe = () => {
-    // 安全策: 開始地点がない場合は終了
-    if (touchStartX === null) return;
-
-    const diffX = touchStartX - touchEndX;
-    const diffY = touchStartY - touchEndY;
-    const swipeThreshold = 80; // 感度調整（少し敏感にしました）
-    
-    const tabs = ['home', 'record', 'cellar', 'settings'];
-    
-    // 現在のアクティブタブIDを取得（なければ終了）
-    const activeTab = document.querySelector('.nav-pill-active');
-    if (!activeTab) return;
-    
-    const currentTab = activeTab.id.replace('nav-tab-', '');
-    const currentIndex = tabs.indexOf(currentTab);
-
-    // 縦スクロールの意図が強い場合はタブ切り替えしない
-    if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-    // 横移動量がしきい値を超えた場合のみ切り替え
-    if (Math.abs(diffX) > swipeThreshold) {
-        if (diffX > 0 && currentIndex < tabs.length - 1) {
-            // 左スワイプ -> 次のタブへ
-            UI.switchTab(tabs[currentIndex + 1]);
-        } else if (diffX < 0 && currentIndex > 0) {
-            // 右スワイプ -> 前のタブへ
-            UI.switchTab(tabs[currentIndex - 1]);
-        }
-    }
-};
-
 

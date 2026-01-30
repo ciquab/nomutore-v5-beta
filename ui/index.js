@@ -10,7 +10,7 @@ import { renderLiverRank } from './liverRank.js';
 import { renderCheckStatus } from './checkStatus.js';
 import { renderWeeklyAndHeatUp, renderHeatmap } from './weekly.js';
 import { renderChart } from './chart.js';
-import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler } from './logList.js';
+import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs } from './logList.js';
 import { renderBeerStats } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
@@ -797,6 +797,7 @@ if (checkModal) {
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
     toggleModal: (id, show) => toggleModal(id, show),
+    deleteSelectedLogs: deleteSelectedLogs,
 
 };
 

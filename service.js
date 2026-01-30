@@ -744,7 +744,44 @@ getAllDataForUI: async () => {
     // 4. 履歴の再計算とUI更新（ご提示いただいた必須の2行）
     await Service.recalcImpactedHistory(ts);
     document.dispatchEvent(new CustomEvent('refresh-ui'));
-}
+},
+
+saveManualExercise: async () => {
+        // 1. 新しい隠しフィールドから選択値を取得
+        const hiddenSelect = document.getElementById('exercise-select-value');
+        const exerciseKey = hiddenSelect ? hiddenSelect.value : null;
+        
+        // 2. その他の入力値を取得
+        const minutesInput = document.getElementById('manual-minutes');
+        const minutes = minutesInput ? parseInt(minutesInput.value) : 0;
+        
+        const dateInput = document.getElementById('manual-date');
+        const dateVal = dateInput ? dateInput.value : dayjs().format('YYYY-MM-DD');
+        
+        const bonusCheck = document.getElementById('manual-apply-bonus');
+        const applyBonus = bonusCheck ? bonusCheck.checked : true;
+        
+        const idField = document.getElementById('editing-exercise-id');
+        const existingId = (idField && idField.value) ? parseInt(idField.value) : null;
+
+        // 3. バリデーション
+        if (!exerciseKey) {
+            showMessage('運動を選択してください', 'error');
+            return;
+        }
+        if (!minutes || minutes <= 0) {
+            showMessage('時間を正しく入力してください', 'error');
+            return;
+        }
+
+        // 4. 既存の保存ロジックへ委譲
+        await Service.saveExerciseLog(exerciseKey, minutes, dateVal, applyBonus, existingId);
+        
+        // 5. モーダルを閉じる
+        if (window.UI && window.UI.closeModal) {
+            window.UI.closeModal('exercise-modal');
+        }
+    }
 
 };
 

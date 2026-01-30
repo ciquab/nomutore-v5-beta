@@ -13,6 +13,7 @@ const getStartOfWeek = (date = undefined) => {
 };
 
 export const Service = {
+
     /**
      * UI表示用にデータを取得する
      * Permanentモードなら全期間、それ以外なら期間開始日以降のデータを返す
@@ -381,6 +382,106 @@ getAllDataForUI: async () => {
             // 期間開始日を更新
             localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, nextStart);
         });
+    },
+
+    /**
+     * ★追加: よく飲むビールを取得（ランキング集計）
+     * RecordタブとAction Menuで使用
+     */
+    getFrequentBeers: async (limit = 3) => {
+        // 1. 全ログを取得
+        const logs = await db.logs.where('type').equals('beer').toArray();
+        
+        // 2. 既存の集計ロジックを利用してランキング化
+        const stats = Calc.getBeerStats(logs);
+        const rankedBeers = stats.beerStats || [];
+
+        // 3. 上位N件を返す
+        return rankedBeers.slice(0, limit);
+    },
+
+    /**
+     * ★追加: 直近の運動ログを取得（重複除外）
+     */
+    getRecentExercises: async (limit = 5) => {
+        const logs = await db.logs.where('type').equals('exercise').reverse().toArray();
+        const uniqueMap = new Map();
+        const recents = [];
+        
+        for (const log of logs) {
+            // exerciseKeyがあるものを優先
+            if (!log.exerciseKey) continue;
+            
+            // 種目と時間の組み合わせでユニーク化
+            const key = `${log.exerciseKey}-${log.minutes}`;
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, true);
+                recents.push(log);
+            }
+            if (recents.length >= limit) break;
+        }
+        return recents;
+    },
+
+    /**
+     * ★追加: ログを複製して今日の日付で登録（リピート機能）
+     * ストリークボーナス再計算付き
+     */
+    repeatLog: async (log) => {
+        const now = dayjs();
+        const profile = Store.getProfile(); 
+
+        let newKcal = log.kcal;
+
+        // 運動ならストリークボーナス再計算
+        if (log.type === 'exercise' && log.exerciseKey && EXERCISE[log.exerciseKey]) {
+            try {
+                const allLogs = await db.logs.toArray();
+                const allChecks = await db.checks.toArray();
+                const currentStreak = Calc.getCurrentStreak(allLogs, allChecks, profile);
+                const mets = EXERCISE[log.exerciseKey].mets;
+                const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
+                const credit = Calc.calculateExerciseCredit(baseBurn, currentStreak);
+                newKcal = credit.kcal;
+            } catch (e) {
+                console.error('[Repeat] Recalculation failed', e);
+            }
+        }
+
+        // ビールの場合、統計データには単体kcalが含まれていない場合があるので補完
+        if (log.type === 'beer' && (!newKcal || newKcal === 0)) {
+             const styleSpec = STYLE_SPECS[log.style] || STYLE_SPECS['Custom'];
+             // 簡易計算: 平均的な度数とサイズから算出（本来は厳密な再計算が望ましいがUX優先）
+             // ここでは既存ログの値があればそれを使い、なければデフォルト140kcalとする
+             newKcal = -140; 
+        }
+
+        const newLog = {
+            timestamp: now.valueOf(),
+            type: log.type,
+            name: log.name,
+            brand: log.brand || log.name,
+            brewery: log.brewery,
+            kcal: newKcal,
+            minutes: log.minutes,
+            rawMinutes: log.rawMinutes,
+            exerciseKey: log.exerciseKey,
+            style: log.style,
+            count: log.count || 1,
+            size: log.size,
+            memo: log.memo ? `(Repeat) ${log.memo}` : undefined,
+            abv: log.abv,
+            rawAmount: log.rawAmount
+        };
+
+        await db.logs.add(newLog);
+        
+        const typeIcon = log.type === 'beer' ? '🍺' : '🏃‍♀️';
+        showToastAnimation(`${typeIcon} Added: ${newLog.name || newLog.brand}`);
+        showConfetti();
+        
+        // UI更新イベント発火
+        document.dispatchEvent(new CustomEvent('refresh-ui'));
     },
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---

@@ -207,59 +207,75 @@
     </div>
 
     <section class="px-1">
-        <h3 class="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider ml-1">Quick Shortcuts</h3>
-        <div class="flex gap-2 overflow-x-auto pb-4 scrollbar-hide" id="record-shortcuts-list">
-            <div class="animate-pulse flex gap-2">
-                <div class="w-32 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
-                <div class="w-32 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl"></div>
+        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">
+            <i class="ph-bold ph-clock-counter-clockwise"></i> よく飲むお酒
+        </h3>
+        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="record-shortcuts-beer">
             </div>
+    </section>
+
+    <section class="px-1">
+        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">
+            <i class="ph-bold ph-sneaker-move"></i> いつもの運動
+        </h3>
+        <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="record-shortcuts-exercise">
+            </div>
+    </section>
+
+    <hr class="border-gray-100 dark:border-gray-800 mx-2">
+
+    <section class="px-1">
+        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">手入力 (Manual)</h3>
+        <div class="grid grid-cols-2 gap-3">
+            
+            <button onclick="UI.openBeerModal()" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-amber-900/40 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-beer-bottle text-2xl"></i>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">お酒を記録</span>
+                    <span class="block text-[9px] text-gray-500">銘柄・詳細入力</span>
+                </div>
+            </button>
+
+            <button onclick="UI.openManualInput()" class="group relative overflow-hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-pencil-simple-slash text-2xl"></i>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">運動を記録</span>
+                    <span class="block text-[9px] text-gray-500">家事・通勤・ジム</span>
+                </div>
+            </button>
+
         </div>
     </section>
 
     <section class="px-1">
-         <button onclick="UI.openManualInput()" class="w-full relative overflow-hidden p-6 rounded-[2rem] bg-gradient-to-br from-indigo-600 to-indigo-800 text-white shadow-xl shadow-indigo-500/30 active:scale-95 transition-all group text-left">
-            <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
-            <div class="relative z-10 flex justify-between items-center">
-                <div>
-                    <div class="flex items-center gap-2 mb-1 opacity-80">
-                        <i class="ph-bold ph-pencil-simple-slash"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-widest">Manual Log</span>
-                    </div>
-                    <h3 class="text-2xl font-black mb-1">Log Activity</h3>
-                    <p class="text-xs font-medium text-indigo-100">通勤・家事・ウォーキング</p>
+        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">コンディション & ツール</h3>
+        <div class="grid grid-cols-2 gap-3">
+            
+            <button onclick="UI.openCheckModal()" class="p-4 rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 shrink-0">
+                    <i class="ph-duotone ph-heartbeat text-xl"></i>
                 </div>
-                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center border border-white/20 group-hover:bg-white/30 transition">
-                    <i class="ph-fill ph-plus text-2xl"></i>
+                <div class="text-left">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">体調チェック</span>
+                    <span class="block text-[9px] text-gray-400">休肝日・体重</span>
                 </div>
-            </div>
-        </button>
-    </section>
+            </button>
 
-    <section class="px-1 grid grid-cols-2 gap-3">
-        <button onclick="UI.openBeerModal()" class="p-4 rounded-2xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-amber-200 shadow-sm">
-            <div class="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-500">
-                <i class="ph-duotone ph-beer-bottle text-xl"></i>
-            </div>
-            <div class="text-left">
-                <span class="block text-xs font-bold text-base-900 dark:text-white">Beer Log</span>
-                <span class="block text-[9px] text-gray-400">Manual Entry</span>
-            </div>
-        </button>
+            <button onclick="UI.openTimer(true)" class="p-4 rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-gray-300 shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-base-900 dark:text-white shrink-0">
+                    <i class="ph-duotone ph-timer text-xl"></i>
+                </div>
+                <div class="text-left">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">タイマー</span>
+                    <span class="block text-[9px] text-gray-400">没入モード</span>
+                </div>
+            </button>
 
-        <button onclick="UI.openCheckModal()" class="p-4 rounded-2xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
-            <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500">
-                <i class="ph-duotone ph-heartbeat text-xl"></i>
-            </div>
-            <div class="text-left">
-                <span class="block text-xs font-bold text-base-900 dark:text-white">Condition</span>
-                <span class="block text-[9px] text-gray-400">Daily Check</span>
-            </div>
-        </button>
-        
-        <button onclick="UI.openTimer(true)" class="col-span-2 p-3 rounded-xl bg-gray-50 dark:bg-base-800/50 border border-gray-100 dark:border-gray-800 flex items-center justify-center gap-2 active:scale-95 transition text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-            <i class="ph-bold ph-timer"></i>
-            <span class="text-xs font-bold">Start Immersive Timer Mode</span>
-        </button>
+        </div>
     </section>
 </div>
 

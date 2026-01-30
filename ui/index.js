@@ -38,6 +38,8 @@ import {
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+window.Service = Service;
+
 export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();

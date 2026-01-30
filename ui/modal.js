@@ -62,13 +62,28 @@ const renderActionMenuBeerPresets = async () => {
     let html = '';
 
     if (frequentBeers.length > 0) {
+        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">Repeat Recent Brews</p>`;
+    }
+
+    if (frequentBeers.length > 0) {
         frequentBeers.forEach((beer, index) => {
-            // スタイル装飾
-            const isIPA = beer.style && beer.style.includes('IPA');
-            const bgClass = isIPA 
-                ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800' 
-                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
-            const iconColor = isIPA ? 'text-orange-500' : 'text-amber-500';
+            // ★修正: スタイル判定ロジックを強化
+    const isIPA = beer.style && beer.style.includes('IPA');
+    const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
+    
+    // デフォルト（ラガーなど）
+    let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+    let iconColor = 'text-amber-500';
+
+    if (isIPA) {
+        // IPA (オレンジ)
+        bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
+        iconColor = 'text-orange-500';
+    } else if (isStout) {
+        // Stout/Porter (黒/グレー)
+        bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+        iconColor = 'text-gray-600 dark:text-gray-400';
+    }
 
             // リピート用ペイロード
             const repeatPayload = {
@@ -1403,100 +1418,88 @@ export const openDayDetail = async (dateStr) => {
  * (Action Menuと同じロジックで、Recordタブにもボタンを並べる)
  */
 export const renderRecordTabShortcuts = async () => {
-    const container = document.getElementById('record-shortcuts-list');
-    if (!container) return;
+    // 1. お酒エリア
+    const beerContainer = document.getElementById('record-shortcuts-beer');
+    if (beerContainer) {
+        const frequentBeers = await Service.getFrequentBeers(5); // 少し多めに取得
+        let html = '';
+        
+        if (frequentBeers.length > 0) {
+            frequentBeers.forEach((beer, index) => {
+                // スタイル装飾
+                const isIPA = beer.style && beer.style.includes('IPA');
+                const bgClass = isIPA 
+                    ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800' 
+                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+                const iconColor = isIPA ? 'text-orange-500' : 'text-amber-500';
+                const safeName = escapeHtml(beer.name);
 
-    let html = '';
+                const repeatPayload = {
+                    type: 'beer',
+                    name: beer.name,
+                    brand: beer.brand || beer.name,
+                    brewery: beer.brewery,
+                    style: beer.style,
+                    size: '350',
+                    count: 1
+                };
+                const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
-    // --- A. ビール頻出ランキング (Frequent Beers) ---
-    const frequentBeers = await Service.getFrequentBeers(3); // Recordタブは広さに余裕があるので3件
-
-    if (frequentBeers.length > 0) {
-        frequentBeers.forEach((beer, index) => {
-            // スタイル装飾
-            const isIPA = beer.style && beer.style.includes('IPA');
-            const isStout = beer.style && beer.style.includes('Stout');
-            
-            let iconColor = 'text-amber-500';
-            let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
-            
-            if (isIPA) {
-                iconColor = 'text-orange-500';
-                bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
-            } else if (isStout) {
-                iconColor = 'text-gray-700 dark:text-gray-300';
-                bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
-            }
-
-            const safeName = escapeHtml(beer.name);
-            const rankBadge = index === 0 ? '<i class="ph-fill ph-crown text-yellow-400 text-xs mr-1"></i>' : '';
-
-            // リピート用ペイロード
-            const repeatPayload = {
-                type: 'beer',
-                name: beer.name,
-                brand: beer.brand || beer.name,
-                brewery: beer.brewery,
-                style: beer.style,
-                size: '350',
-                count: 1,
-                // ※必要に応じて他のパラメータ
-            };
-            
-            const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
-
-            html += `
-                <button onclick="Service.repeatLog(${jsonParam})" 
-                        class="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border active:scale-95 transition shadow-sm ${bgClass} min-w-[140px]">
-                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
-                         <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
-                    </div>
-                    <div class="text-left min-w-0">
-                        <div class="flex items-center">
-                            ${rankBadge}
-                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                html += `
+                    <button onclick="Service.repeatLog(${jsonParam})" 
+                            class="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border active:scale-95 transition shadow-sm ${bgClass} min-w-[130px]">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
+                             <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
                         </div>
-                        <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate w-full max-w-[100px]">${safeName}</div>
-                        <div class="text-[9px] opacity-60 font-mono mt-0.5 truncate">${beer.style || 'Beer'}</div>
-                    </div>
-                </button>
-            `;
-        });
-    } else {
-        // 履歴がない場合: 初期設定ボタンを表示
-        html += `
-            <button onclick="UI.openBeerModal()" class="flex-shrink-0 flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl active:scale-95 transition">
-                <i class="ph-duotone ph-beer-bottle text-gray-400 text-lg"></i>
-                <span class="text-xs font-bold text-gray-500">Log First Beer</span>
-            </button>
-        `;
+                        <div class="text-left min-w-0 flex-1">
+                            <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate">${safeName}</div>
+                        </div>
+                    </button>
+                `;
+            });
+        } else {
+            // 履歴なし
+            html = `<div class="text-xs text-gray-400 py-2 px-2">まだ履歴がありません</div>`;
+        }
+        beerContainer.innerHTML = html;
     }
 
-    // --- B. 運動履歴 (Recent Exercises) ---
-    const recentExercises = await Service.getRecentExercises(5);
-    recentExercises.forEach(log => {
-        const repeatPayload = {
-            type: 'exercise',
-            name: log.name,
-            minutes: log.minutes,
-            kcal: log.kcal, // Service側で再計算
-            exerciseKey: log.exerciseKey
-        };
-        const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+    // 2. 運動エリア
+    const exContainer = document.getElementById('record-shortcuts-exercise');
+    if (exContainer) {
+        const recentExercises = await Service.getRecentExercises(5);
+        let html = '';
 
-        html += `
-            <button onclick="Service.repeatLog(${jsonParam})" 
-                    class="flex-shrink-0 flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500">
-                <i class="ph-duotone ph-person-simple-run text-gray-400 dark:text-gray-500"></i>
-                <div class="text-left">
-                    <div class="text-[10px] font-bold text-gray-900 dark:text-white leading-none">${escapeHtml(log.name)}</div>
-                    <div class="text-[9px] text-gray-400 font-mono mt-0.5">${log.minutes}m</div>
-                </div>
-            </button>
-        `;
-    });
+        if (recentExercises.length > 0) {
+            recentExercises.forEach(log => {
+                const repeatPayload = {
+                    type: 'exercise',
+                    name: log.name,
+                    minutes: log.minutes,
+                    kcal: log.kcal, 
+                    exerciseKey: log.exerciseKey
+                };
+                const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
-    container.innerHTML = html;
+                html += `
+                    <button onclick="Service.repeatLog(${jsonParam})" 
+                            class="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500 min-w-[130px]">
+                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">
+                            <i class="ph-duotone ph-arrow-counter-clockwise"></i>
+                        </div>
+                        <div class="text-left min-w-0 flex-1">
+                            <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${escapeHtml(log.name)}</div>
+                            <div class="text-[9px] text-gray-400 font-mono mt-0.5">${log.minutes} min</div>
+                        </div>
+                    </button>
+                `;
+            });
+        } else {
+             html = `<div class="text-xs text-gray-400 py-2 px-2">まだ履歴がありません</div>`;
+        }
+        exContainer.innerHTML = html;
+    }
 };
 
 export const handleRolloverAction = async (action) => {

@@ -23,13 +23,29 @@ export const openActionMenu = async (dateStr = null) => {
     const label = document.getElementById('action-menu-date-label');
     if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
 
-    // 1. ビールショートカットの描画 (★修正: Service経由で動的生成)
+    // 1. ショートカットの描画
     await renderActionMenuBeerPresets();
-
-    // 2. 運動ショートカットの描画 (★既存のまま)
     await renderActionMenuExerciseShortcuts();
 
+    // 2. モーダル表示 (親要素の hidden を外す)
     toggleModal('action-menu-modal', true);
+
+    // 3. ★追加: アニメーション強制発火ロジック
+    // これがないと、メニューが画面の下に埋まったままになることがあります
+    const modal = document.getElementById('action-menu-modal');
+    if (modal) {
+        const content = modal.querySelector('.modal-enter');
+        if (content) {
+            // 一瞬待ってからクラスを外すことで、CSSアニメーションを確実に起動させる
+            requestAnimationFrame(() => {
+                content.classList.remove('modal-enter');
+            });
+        } else {
+            // 万が一クラスが見つからない場合の保険
+            const drawer = modal.querySelector('.absolute.bottom-0');
+            if (drawer) drawer.classList.remove('modal-enter');
+        }
+    }
 };
 
 /**

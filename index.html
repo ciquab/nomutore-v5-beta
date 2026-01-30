@@ -1081,15 +1081,15 @@
 </div>
 
 <div id="day-add-selector" class="hidden fixed inset-0 z-[1200] flex items-end justify-center px-4 pb-10">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleModal('day-add-selector', false)"></div>
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="UI.toggleModal('day-add-selector', false)"></div>
     <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl space-y-3">
         <h3 id="day-add-selector-label" class="text-center text-sm font-bold opacity-50 pb-2">00/00 に記録を追加</h3>
         
-        <button onclick="UI.openBeerModal(null, UI.selectedDate); toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+        <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
             <i class="ph-bold ph-beer-bottle text-xl"></i> ビールを記録
         </button>
         
-        <button onclick="UI.openManualInput(UI.selectedDate); toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+        <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
             <i class="ph-bold ph-sneaker-move text-xl"></i> 運動を記録
         </button>
 

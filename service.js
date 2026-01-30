@@ -476,18 +476,26 @@ getAllDataForUI: async () => {
 
         await db.logs.add(newLog);
         
-        // ▼▼▼ 修正箇所: タイプ別に演出とメッセージを分ける ▼▼▼
-        if (newLog.type === 'beer') {
-            // ビールの場合: 乾杯アニメーション + メッセージ
-            showConfetti(); 
-            showMessage(`🍺 記録しました: ${newLog.name}`, 'success');
-        } else {
-            // 運動の場合: アニメなし + 運動用メッセージ
-            // (乾杯アニメは出さない)
-            const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';
-            showMessage(`🏃‍♀️ 記録しました: ${newLog.name} ${minStr}`, 'success');
+        // 音を鳴らす (Feedbackオブジェクトを利用)
+        if (typeof Feedback !== 'undefined') {
+            if (newLog.type === 'beer') {
+                // ビール: 専用の乾杯音があればそれを、なければ追加音を鳴らす
+                if (Feedback.beer) Feedback.beer();
+                else if (Feedback.success) Feedback.success();
+            } else {
+                // 運動: 追加音を鳴らす
+                if (Feedback.success) Feedback.success();
+            }
         }
-        // ▲▲▲ 修正ここまで ▲▲▲
+
+        // 演出とメッセージ
+        if (newLog.type === 'beer') {
+            showConfetti();
+            showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました: ${newLog.name}`, 'success');
+        } else {
+            const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';
+            showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> 記録しました: ${newLog.name} ${minStr}`, 'success');
+        }
         
         // UI更新イベント発火
         document.dispatchEvent(new CustomEvent('refresh-ui'));
@@ -541,7 +549,8 @@ getAllDataForUI: async () => {
         if (id) {
             await db.logs.update(parseInt(id), logData);
             // 更新時はシェアボタン出さない（煩わしいため）
-            showMessage('📝 記録を更新しました', 'success');
+            showMessage('<i class="ph-bold ph-pencil-simple"></i> 運動記録を更新しました', 'success');
+        } else {
         } else {
             await db.logs.add(logData);
 
@@ -558,7 +567,7 @@ getAllDataForUI: async () => {
                 // betweenでクエリしているので確実だが、論理的バグ防止のため
                 if (existingCheck.timestamp >= start && existingCheck.timestamp <= end) {
                     await db.checks.update(existingCheck.id, { isDryDay: false });
-                    showMessage('🍺 飲酒記録のため、休肝日を解除しました', 'info');
+                    showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 飲酒記録のため、休肝日を解除しました', 'info');
                 } else {
                     console.warn('[Safety] Skipping dry day removal due to timestamp mismatch.');
                 }
@@ -578,9 +587,9 @@ getAllDataForUI: async () => {
             };
 
             if (Math.abs(kcal) > 500) {
-                showMessage(`🍺 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です😱`, 'error', shareAction); 
+                showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録完了！ ${Math.round(Math.abs(kcal))}kcalの借金です`, 'error', shareAction); 
             } else {
-                showMessage('🍺 記録しました！', 'success', shareAction);   
+                showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました！', 'success', shareAction);   
             }
             
             // Untappd連携
@@ -639,14 +648,14 @@ getAllDataForUI: async () => {
         
         if (id) {
             await db.logs.update(parseInt(id), logData);
-            showMessage('📝 運動記録を更新しました', 'success');
+            showMessage('<i class="ph-bold ph-pencil-simple"></i> 運動記録を更新しました', 'success');
         } else {
             await db.logs.add(logData);
             // ★シェア文言生成
             const shareText = Calc.generateShareText(logData, 100); 
             const shareAction = { type: 'share', text: shareText };
             
-            showMessage(`🏃‍♀️ ${Math.round(minutes)}分の運動を記録しました！`, 'success', shareAction);        
+            showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(minutes)}分の運動を記録しました！`, 'success', shareAction);        
         }
 
         await Service.recalcImpactedHistory(ts);

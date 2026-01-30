@@ -1210,10 +1210,6 @@ export const openLogDetail = (log) => {
     document.getElementById('btn-detail-delete').onclick = () => {
     // 1. 日本語で確認を出す
     if(confirm('このログを削除しますか？')) {
-        // 2. 演出：削除音をここで鳴らす（または index.js のリスナーに任せる）
-        if (typeof Feedback !== 'undefined' && Feedback.delete) {
-            Feedback.delete();
-        }
 
         // 3. index.js に削除を依頼する
         const event = new CustomEvent('request-delete-log', { detail: { id: log.id } });

@@ -431,91 +431,27 @@ getAllDataForUI: async () => {
      * ログを複製して今日の日付で登録（リピート機能）
      * 既存の保存ロジック（saveBeerLog / saveExerciseLog）へ統合
      */
-   repeatLog: async (log) => {
-        const now = dayjs();
-        const profile = Store.getProfile(); 
-
-        let newKcal = log.kcal;
-
-        // 1. 運動ならストリークボーナス再計算
-        if (log.type === 'exercise' && log.exerciseKey && EXERCISE[log.exerciseKey]) {
-            try {
-                const allLogs = await db.logs.toArray();
-                const allChecks = await db.checks.toArray();
-                const currentStreak = Calc.getCurrentStreak(allLogs, allChecks, profile);
-                const mets = EXERCISE[log.exerciseKey].mets;
-                const baseBurn = Calc.calculateExerciseBurn(mets, log.minutes, profile);
-                const credit = Calc.calculateExerciseCredit(baseBurn, currentStreak);
-                newKcal = credit.kcal;
-            } catch (e) {
-                console.error('[Repeat] Recalculation failed', e);
-            }
-        }
-
-        // 2. ビールのカロリー再計算 (固定値 -140 を廃止)
+   /**
+     * ログを複製して今日の日付で登録（リピート機能）
+     */
+    repeatLog: async (log) => {
         if (log.type === 'beer') {
-            if (!newKcal || newKcal === 0) {
-                // 保存されているメタデータから計算
-                const ml = parseInt(log.size) || 350;
-                const abv = parseFloat(log.abv) || 5.0;
-                const count = parseInt(log.count) || 1;
-                
-                // スタイルごとの標準糖質（もし不明なら3.0%）
-                const spec = STYLE_SPECS[log.style] || { carb: 3.0 };
-                const carb = spec.carb;
-
-                // Calc.calculateBeerDebit を使って精密に算出
-                newKcal = Calc.calculateBeerDebit(ml, abv, carb, count);
-            }
+            await Service.saveBeerLog({
+                ...log,
+                timestamp: Date.now(),
+                isCustom: log.isCustom || false,
+                useUntappd: false // クイック登録時は自動で開かない
+            }, null);
+        } else {
+            await Service.saveExerciseLog(
+                log.exerciseKey,
+                log.minutes,
+                dayjs().format('YYYY-MM-DD'),
+                true, // リピート時は常にボーナス適用
+                null
+            );
         }
-
-        const newLog = {
-            timestamp: now.valueOf(),
-            type: log.type,
-            name: log.name,
-            brand: log.brand || log.name,
-            brewery: log.brewery,
-            kcal: newKcal,
-            minutes: log.minutes,
-            rawMinutes: log.rawMinutes,
-            exerciseKey: log.exerciseKey,
-            style: log.style,
-            count: log.count || 1,
-            size: log.size,
-            memo: log.memo ? `(Repeat) ${log.memo}` : undefined,
-            abv: log.abv,
-            rawAmount: log.rawAmount
-        };
-
-        // 3. DB登録
-        await db.logs.add(newLog);
-        
-        // 4. 演出ロジック (ここが重要)
-        try {
-            if (newLog.type === 'beer') {
-                // 音: 乾杯 (dom.jsのFeedback.beerを使用)
-                if (typeof Feedback !== 'undefined' && Feedback.beer) Feedback.beer();
-                
-                // アニメ: 紙吹雪
-                showConfetti();
-                
-                // メッセージ (ベクターアイコン)
-                showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました: ${newLog.name}`, 'success');
-            } else {
-                // 音: 成功 (dom.jsのFeedback.successを使用)
-                if (typeof Feedback !== 'undefined' && Feedback.success) Feedback.success();
-                
-                // メッセージ (ベクターアイコン)
-                const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';
-                showMessage(`<i class="ph-fill ph-sneaker-move text-lg"></i> 記録しました: ${newLog.name} ${minStr}`, 'success');
-            }
-        } catch (err) {
-            console.error('演出エラー:', err);
-            // 万が一演出でコケてもUI更新だけは通す
-        }
-        
-        // 5. UI更新イベント発火
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
+        // 各save関数内で再計算とUI更新イベントが発火するため、ここでの記述は不要
     },
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---

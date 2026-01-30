@@ -680,18 +680,42 @@ if (checkModal) {
     },
 
     handleRepeat: async (log) => {
-        try {
-            // 1. 保存実行 (Serviceに委譲)
-            await Service.repeatLog(log);
-            
-            // 3. UIリフレッシュ
-            await refreshUI();
-            
-        } catch (e) {
-            console.error('Repeat Error:', e);
-            showMessage('登録に失敗しました', 'error');
+    try {
+        // 直接 Service を呼ぶのではなく、イベントを発生させる
+        if (log.type === 'beer') {
+            // Service.repeatLog を介さず、直接 save-beer イベントを飛ばして
+            // index.js 側のリスナーに演出と保存を任せる
+            const event = new CustomEvent('save-beer', { 
+                detail: {
+                    ...log,
+                    timestamp: Date.now(),
+                    isCustom: false,
+                    useUntappd: false // リピート時は自動起動しない
+                } 
+            });
+            document.dispatchEvent(event);
+
+        } else if (log.type === 'exercise') {
+            // 運動の場合も同様に save-exercise イベントを飛ばす
+            const event = new CustomEvent('save-exercise', { 
+                detail: {
+                    exerciseKey: log.exerciseKey,
+                    minutes: log.minutes,
+                    date: dayjs().format('YYYY-MM-DD'),
+                    applyBonus: true,
+                    id: null
+                } 
+            });
+            document.dispatchEvent(event);
         }
-    },
+
+        // ※イベントリスナー側で refreshUI() が呼ばれるため、ここでの実行は不要です。
+        
+    } catch (e) {
+        console.error('Repeat Error:', e);
+        showMessage('登録に失敗しました', 'error');
+    }
+},
 
     updateBulkCount: updateBulkCount,
     

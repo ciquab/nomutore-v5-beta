@@ -138,9 +138,6 @@ const initApp = async () => {
         // 5. Initial Render
         await refreshUI();
 
-        if (UI.refreshQuickLogButtons) {
-            await UI.refreshQuickLogButtons();
-        }
 
         // 7. Restore Timer State
         // ★修正: Timer.init() を呼ぶだけでOKです。
@@ -248,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ids.length > 0) {
             await Service.bulkDeleteLogs(ids);
             await refreshUI();
-            await UI.refreshQuickLogButtons();
         } else {
             UI.toggleEditMode();
         }
@@ -262,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.addEventListener('refresh-ui', async () => {
          await refreshUI();
-         await UI.refreshQuickLogButtons();
     });
 
     const btnSaveSettings = document.getElementById('btn-save-settings');

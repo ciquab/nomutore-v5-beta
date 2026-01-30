@@ -1,5 +1,5 @@
 import { db } from '../store.js';
-import { DOM, escapeHtml } from './dom.js';
+import { DOM, escapeHtml, Feedback, AudioEngine } from './dom.js';
 import { EXERCISE, CALORIES, STYLE_METADATA } from '../constants.js';
 import { StateManager } from './state.js';
 import { Service } from '../service.js'; 
@@ -73,24 +73,23 @@ export const deleteSelectedLogs = async () => {
 
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
     
-    try {
-    // Service側のメソッドを呼ぶ（ここでDB削除、再計算、UI更新イベント発行まで行われる）
-    await Service.bulkDeleteLogs(ids);　
+   try {
+        // --- ★ここを追加！ブラウザの権限があるこの瞬間に鳴らす ---
+        if (typeof AudioEngine !== 'undefined') AudioEngine.resume();
+        if (typeof Feedback !== 'undefined' && Feedback.delete) {
+            Feedback.delete(); // 「シュッ」という音
+        }
+        // -----------------------------------------------------
+
+        await Service.bulkDeleteLogs(ids);
         
-    // 編集モード解除とUI更新のみこちらで行う
-    StateManager.setIsEditMode(false);
-    updateBulkActionUI();
-    
-    // updateLogListViewは Service が発火する 'refresh-ui' イベント、
-    // あるいはService完了後に呼ぶ形でも良いが、Service.bulkDeleteLogs内で
-    // UI更新イベントが呼ばれる設計なら重複を避ける。
-    // 現状のService.bulkDeleteLogsの実装を見ると refresh-ui を投げているので、
-    // ここでの updateLogListView 呼び出しは不要、または念のため呼ぶ程度。
-    await updateLogListView(false); 
-} catch (e) {
-    console.error(e);
-    alert('記録の削除に失敗しました。');
-}
+        StateManager.setIsEditMode(false);
+        updateBulkActionUI();
+        await updateLogListView(false); 
+    } catch (e) {
+        console.error(e);
+        alert('記録の削除に失敗しました。');
+    }
 };
 
 

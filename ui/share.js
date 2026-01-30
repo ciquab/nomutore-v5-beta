@@ -529,7 +529,9 @@ const showLoadingOverlay = (text) => {
     const el = document.createElement('div');
     el.id = id;
     el.className = "fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-300";
-    el.innerHTML = `<div class="text-4xl animate-bounce mb-4">📸</div><p class="text-white font-bold text-lg animate-pulse">${text}</p><div role="status" aria-live="polite" class="sr-only">${text}</div>`;
+    el.innerHTML = `<div class="mb-4 animate-bounce">
+        <i class="ph-duotone ph-camera text-5xl text-white"></i>
+    </div><p class="text-white font-bold text-lg animate-pulse">${text}</p><div role="status" aria-live="polite" class="sr-only">${text}</div>`;
     document.body.appendChild(el);
     return id;
 };

@@ -339,12 +339,12 @@ body {
 /* Glass Panel - Refined (High Quality) */
 .glass-panel {
     /* 透明度を上げ、背景のボケ足を強くする */
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.45); /* 透明度アップ */
+    backdrop-filter: blur(24px) saturate(180%); /* 彩度を上げて鮮やかに */
     -webkit-backdrop-filter: blur(20px);
     
     /* 境界線: 上と左を明るくして「光」を表現 */
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3); /* ボーダーを細く繊細に */
     border-top: 1px solid rgba(255, 255, 255, 0.7);
     border-left: 1px solid rgba(255, 255, 255, 0.7);
     
@@ -357,8 +357,8 @@ body {
 }
 
 .dark .glass-panel {
-    background: rgba(30, 41, 59, 0.4); /* base-900系 */
-    backdrop-filter: blur(20px);
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(24px) saturate(150%);
     -webkit-backdrop-filter: blur(20px);
     
     border: 1px solid rgba(255, 255, 255, 0.08);

@@ -12,6 +12,22 @@ let activeFilters = {
     rating: 0
 };
 
+const renderRatingStars = (score) => {
+    if (!score) return '';
+    let starsHtml = '<div class="flex gap-0.5">';
+    for (let i = 1; i <= 5; i++) {
+        if (i <= score) {
+            // 塗りつぶしの星
+            starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[10px]"></i>';
+        } else {
+            // 空の星（オプション: 表示しないなら省略可）
+            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[10px]"></i>';
+        }
+    }
+    starsHtml += '</div>';
+    return starsHtml;
+};
+
 /**
  * ビール統計画面の描画
  * @param {Array} periodLogs - 現在の期間（今週/今月）のログ
@@ -54,7 +70,7 @@ export function renderBeerStats(periodLogs, allLogs) {
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-3xl font-black text-base-900 dark:text-white opacity-20">🍺</span>
+                        <i class="ph-duotone ph-beer-bottle text-5xl text-gray-900 dark:text-white opacity-10"></i>
                     </div>
                 </div>
             </div>
@@ -262,7 +278,7 @@ function renderBeerList(beers) {
                     
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
-                        ${rating}
+                        ${renderRatingStars(beer.rating)}
                         <span class="ml-auto text-[10px] font-mono text-gray-400">Total: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>

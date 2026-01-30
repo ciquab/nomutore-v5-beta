@@ -204,10 +204,10 @@ export const updateLogListView = async (isLoadMore = false) => {
 
             <div class="flex-1 min-w-0 cursor-pointer" onclick="UI.openLogDetail(${log.id})">
                 <div class="flex justify-between items-start">
-                    <div class="text-base font-black text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
+                    <div class="text-base font-bold text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>
                 </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-bold opacity-90">${subText}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-medium opacity-90">${subText}</div>
                 
                 ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70"></i>${escapeHtml(log.memo)}</div>` : ''}
             </div>

@@ -239,7 +239,7 @@ export const Feedback = {
     }
 };
 
-// --- Toast Animation Helper (New) ---
+// --- Toast Animation Helper (Cheers Effect) ---
 export const showToastAnimation = () => {
     // 既存のアニメーションがあれば削除
     const existing = document.getElementById('toast-animation-layer');
@@ -250,19 +250,35 @@ export const showToastAnimation = () => {
     overlay.id = 'toast-animation-layer';
     overlay.className = "fixed inset-0 pointer-events-none flex items-center justify-center z-[10001] overflow-hidden";
     
+    // アイコン定義 (OS絵文字 🍺 ではなく、発光するSVGアイコンを使用)
+    // text-9xl (約128px) で大きく表示し、ドロップシャドウでネオン感を出す
+    const iconHtml = '<i class="ph-duotone ph-beer-stein text-amber-400 text-9xl drop-shadow-[0_0_25px_rgba(251,191,36,0.6)]"></i>';
+
     // 左右のグラスとテキスト
+    // animate-clink-left / right はCSSで定義済みのものをそのまま利用
     overlay.innerHTML = `
-        <div class="text-[8rem] animate-clink-left absolute translate-x-[-100vw]">🍺</div>
-        <div class="text-[8rem] animate-clink-right absolute translate-x-[100vw] scale-x-[-1]">🍺</div>
-        <div class="absolute text-4xl font-black text-white drop-shadow-lg animate-toast-text opacity-0" style="animation-delay: 0.5s">Cheers!</div>
+        <div class="absolute animate-clink-left translate-x-[-100vw] flex items-center justify-center">
+            ${iconHtml}
+        </div>
+        <div class="absolute animate-clink-right translate-x-[100vw] scale-x-[-1] flex items-center justify-center">
+            ${iconHtml}
+        </div>
+        <div class="absolute text-5xl font-black text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-toast-text opacity-0 font-['Outfit'] italic tracking-widest" style="animation-delay: 0.5s">
+            Cheers!
+        </div>
     `;
 
     document.body.appendChild(overlay);
 
-    // アニメーション終了後に削除 (1.5s後)
+    // Audio Effect (もし実装されていれば)
+    if (window.AudioEngine && window.AudioEngine.ctx) {
+        // ここに音再生ロジックがあれば残す
+    }
+
+    // アニメーション終了後に削除 (少し余裕を持って2.5秒後)
     setTimeout(() => {
         if (overlay) overlay.remove();
-    }, 1500);
+    }, 2500);
 };
 
 // --- DOM Logic ---
@@ -410,55 +426,112 @@ export const showConfetti = () => {
     });
 };
 
+/* ui/dom.js */
+
+// ... (importsやAudioEngineなどはそのまま) ...
+
+// ★ shareContent はこのファイル内に定義されている前提
+// const shareContent = async (text) => { ... }
+
 export const showMessage = (text, type = 'info', action = null) => {
     const box = DOM.elements['message-box'] || document.getElementById('message-box');
     if (!box) return;
 
-    const baseClass = "fixed top-6 left-1/2 transform -translate-x-1/2 pl-6 pr-2 py-2 rounded-full shadow-lg z-[9999] transition-all duration-300 text-sm font-bold flex items-center gap-3";
-    let colorClass = 'bg-indigo-600 text-white';
-    if (type === 'error') colorClass = 'bg-red-500 text-white';
-    if (type === 'success') colorClass = 'bg-emerald-500 text-white';
+    // 1. 表示用テキストの整形: 先頭のOS絵文字（✅, 🚨, ✨）を除去
+    const cleanText = text.replace(/^[✅🚨✨]\s*/, '');
 
-    box.className = `${baseClass} ${colorClass}`;
-    
-    let content = `<span>${text}</span>`;
-    
+    // 2. デザイン設定 (Glassmorphism + Phosphor Icons)
+    const config = {
+        success: {
+            icon: '<i class="ph-fill ph-check-circle text-emerald-500 text-xl"></i>',
+            bg: 'bg-white/95 dark:bg-base-900/95',
+            border: 'border-emerald-500/30',
+            text: 'text-emerald-800 dark:text-emerald-100'
+        },
+        error: {
+            icon: '<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i>',
+            bg: 'bg-white/95 dark:bg-base-900/95',
+            border: 'border-red-500/30',
+            text: 'text-red-800 dark:text-red-100'
+        },
+        info: {
+            icon: '<i class="ph-fill ph-info text-indigo-500 text-xl"></i>',
+            bg: 'bg-white/95 dark:bg-base-900/95',
+            border: 'border-indigo-500/30',
+            text: 'text-gray-800 dark:text-gray-100'
+        }
+    };
+
+    const style = config[type] || config.info;
+
+    // 3. コンテナのクラス設定 (角丸、影、アニメーション)
+    box.className = `fixed top-6 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300
+                     pl-4 pr-4 py-3 rounded-2xl shadow-xl shadow-black/5 backdrop-blur-md border
+                     flex items-center gap-3 min-w-[280px] max-w-[90vw]
+                     ${style.bg} ${style.border}`;
+
+    // 4. HTMLコンテンツ生成
+    let content = `
+        <div class="shrink-0 flex items-center justify-center">${style.icon}</div>
+        <span class="text-sm font-bold ${style.text} truncate flex-1">${cleanText}</span>
+    `;
+
+    // 5. シェアボタンの追加 (Action Logic)
+    let btnId = null;
     if (action && action.type === 'share') {
-        const btnId = `msg-btn-share-${Date.now()}`;
-        // アイコンをカメラに変更しても良いが、汎用的にShareアイコンのままにする
+        btnId = `msg-btn-share-${Date.now()}`;
+        // ボタンデザインもGlassmorphismに統一
         content += `
-            <button id="${btnId}" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-full text-xs transition flex items-center gap-1">
+            <button id="${btnId}" class="shrink-0 ml-2 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-95 flex items-center gap-1 border border-indigo-100 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/30">
                 <i class="ph-bold ph-share-network"></i> Share
             </button>
         `;
+    }
+
+    box.innerHTML = content;
+
+    // 6. イベントハンドラの登録 (DOM生成後)
+    if (btnId) {
         setTimeout(() => {
             const btn = document.getElementById(btnId);
-            if(btn) {
+            if (btn) {
                 btn.onclick = () => {
-                    // ★追加: 画像シェアモードのハンドリング
+                    // Haptic Feedback
+                    if (window.Feedback && window.Feedback.haptic) window.Feedback.haptic.light();
+                    
+                    // ★ 画像シェアモードの分岐 (UI.shareを使用)
                     if (action.shareMode === 'image' && window.UI && window.UI.share) {
-                        if (Feedback.haptic) Feedback.haptic.light();
-                        // Shareエンジンを起動 ('beer', logData)
                         window.UI.share(action.imageType, action.imageData);
                     } else {
-                        // 既存のテキストシェア
-                        if (Feedback.haptic) Feedback.haptic.light();
-                        const shareText = action.text || text;
+                        // ★ テキストシェア (既存のshareContentを使用)
+                        // ここでは cleanText ではなく、絵文字付きの元の text (または action.text) を送る
+                        const shareText = action.text || text; 
                         shareContent(shareText);
                     }
                 };
             }
         }, 0);
-    } else {
-        box.className = box.className.replace('pr-2', 'pr-6');
     }
 
-    box.innerHTML = content;
-    
-    box.classList.remove('translate-y-[-150%]', 'opacity-0');
-    setTimeout(() => {
-        box.classList.add('translate-y-[-150%]', 'opacity-0');
-    }, action ? 5000 : 3000);
+    // 7. アニメーション表示と自動非表示
+    if (DOM.messageTimeout) clearTimeout(DOM.messageTimeout);
+
+    // Slide In
+    requestAnimationFrame(() => {
+        box.style.transform = 'translate(-50%, 0)';
+        box.style.opacity = '1';
+    });
+
+    // Auto Hide (シェアボタンがある場合は長めに表示)
+    const duration = action ? 6000 : 3000;
+    DOM.messageTimeout = setTimeout(() => {
+        box.style.transform = 'translate(-50%, -150%)';
+        box.style.opacity = '0';
+    }, duration);
+
+    // 成功・エラー時のHaptic
+    if (type === 'success' && window.Feedback) window.Feedback.success();
+    if (type === 'error' && window.Feedback) window.Feedback.error();
 };
 
 export const toggleDryDay = (isDry) => {

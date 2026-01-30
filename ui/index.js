@@ -213,22 +213,20 @@ export const UI = {
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
 
     if (ids.length > 0) {
-        // ★重要: ブラウザのオーディオ制限をここで解除
-        if (typeof DOM !== 'undefined' && DOM.initAudio) {
+        // ★ 修正：条件判定をシンプルにし、確実に resume を実行
+        if (typeof AudioEngine !== 'undefined') {
             AudioEngine.resume();
         }
 
-        // 1. 削除「前」に音を鳴らす (最速のレスポンス)
+        // 1. 削除「前」に音を鳴らす指示を出す
         if (typeof Feedback !== 'undefined' && Feedback.delete) {
             Feedback.delete(); 
         }
 
-        // 2. その後、重い削除処理を実行
+        // 2. 削除実行
         await Service.bulkDeleteLogs(ids);
         
-        // 3. 編集モードを終了して画面更新
         if (typeof toggleEditMode === 'function') toggleEditMode();
-        // await refreshUI(); // Service側で飛ぶなら不要、飛ばないなら必要
     } else {
         UI.toggleEditMode();
     }

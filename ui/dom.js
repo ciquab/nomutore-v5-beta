@@ -3,7 +3,7 @@ import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm';
 
 // --- Sound & Haptics Engine ---
 
-const AudioEngine = {
+export const AudioEngine = {
     ctx: null,
     noiseBuffer: null,
 

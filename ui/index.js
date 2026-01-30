@@ -213,22 +213,20 @@ export const UI = {
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
 
     if (ids.length > 0) {
-        // ★ 修正：条件判定をシンプルにし、確実に resume を実行
-        if (typeof AudioEngine !== 'undefined') {
-            AudioEngine.resume();
-        }
+        // --- ★ここからが重要 ---
+        // 個別削除で鳴っている「Feedback.delete()」を、
+        // 重い処理(Service)の前に、ブラウザの権限がある状態で直叩きする
+        
+        AudioEngine.resume(); // エンジンを起こす
+        Feedback.delete();    // 個別削除と同じ音を即座に鳴らす
 
-        // 1. 削除「前」に音を鳴らす指示を出す
-        if (typeof Feedback !== 'undefined' && Feedback.delete) {
-            Feedback.delete(); 
-        }
-
-        // 2. 削除実行
+        // その後にDB削除を実行
         await Service.bulkDeleteLogs(ids);
         
-        if (typeof toggleEditMode === 'function') toggleEditMode();
-    } else {
-        UI.toggleEditMode();
+        // 編集モードを閉じる演出
+        if (typeof UI.toggleEditMode === 'function') {
+            UI.toggleEditMode();
+        }
     }
 });
 

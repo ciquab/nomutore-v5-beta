@@ -551,7 +551,6 @@ getAllDataForUI: async () => {
             // 更新時はシェアボタン出さない（煩わしいため）
             showMessage('<i class="ph-bold ph-pencil-simple"></i> 運動記録を更新しました', 'success');
         } else {
-        } else {
             await db.logs.add(logData);
 
             // ★修正: 休肝日チェック解除のロジックに安全弁を追加

@@ -14,93 +14,151 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 const getTodayString = () => dayjs().format('YYYY-MM-DD');
 
-/* --- Action Menu (Phase 3: Share Integration & Design Fix) --- */
+/* --- Action Menu Logic --- */
 
-export const openActionMenu = (dateStr = null) => {
-    const targetDate = dateStr || getTodayString();
+export const openActionMenu = async (dateStr = null) => {
+    const targetDate = dateStr || dayjs().format('YYYY-MM-DD');
     StateManager.setSelectedDate(targetDate);
     
-    // 日付ラベル更新
     const label = document.getElementById('action-menu-date-label');
     if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
-    
-    const hiddenDate = document.getElementById('action-menu-target-date');
-    if(hiddenDate) hiddenDate.value = targetDate;
 
-    // ★追加: シェアボタンの動的注入 (デザイン完全整合版)
-    injectShareButton();
+    // 1. ビールショートカットの描画 (★修正: Service経由で動的生成)
+    await renderActionMenuBeerPresets();
+
+    // 2. 運動ショートカットの描画 (★既存のまま)
+    await renderActionMenuExerciseShortcuts();
 
     toggleModal('action-menu-modal', true);
 };
 
-// シェアボタンを注入する内部関数
-const injectShareButton = () => {
-    const modal = document.getElementById('action-menu-modal');
-    if (!modal) return;
+/**
+ * ★新規作成: Action Menu用のビールボタン描画
+ * refreshQuickLogButtons の代わりとなる関数
+ */
+const renderActionMenuBeerPresets = async () => {
+    const container = document.getElementById('action-menu-beer-presets');
+    if (!container) return;
 
-    // ボタンが入っているグリッドコンテナを探す
-    // index.htmlの構造上、2つ目の .grid がアクションボタン用
-    const grids = modal.querySelectorAll('.grid');
-    if (grids.length < 2) return;
-    
-    const actionGrid = grids[1]; // 2つ目のグリッド
+    // Serviceからランキング上位を取得 (Recordタブと同じロジック！)
+    const frequentBeers = await Service.getFrequentBeers(2); // Action Menuはスペースが狭いので上位2件
 
-    // 既にボタンがあるかチェック
-    if (document.getElementById('btn-action-share')) return;
+    let html = '';
 
-    // ボタン生成 (index.htmlの既存ボタンと同じクラス構成を使用)
-    const shareBtn = document.createElement('button');
-    shareBtn.id = 'btn-action-share';
-    shareBtn.onclick = () => window.UI.handleActionSelect('share');
-    
-    // クラス設定: 横長レイアウト, col-span-2で幅一杯に
-    shareBtn.className = "col-span-2 flex items-center gap-3 px-3 py-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition active:scale-95 group";
-    
-    shareBtn.innerHTML = `
-        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0 group-hover:scale-110 transition">
-            <i class="ph-duotone ph-share-network text-2xl text-indigo-600 dark:text-indigo-500"></i>
-        </div>
-        <div class="flex flex-col items-start">
-            <span class="text-xs font-bold text-indigo-800 dark:text-indigo-200 leading-tight">ステータスをシェア</span>
-            <span class="text-[9px] font-bold text-indigo-400 dark:text-indigo-400 leading-none">SNS Card Generation</span>
-        </div>
-    `;
+    if (frequentBeers.length > 0) {
+        frequentBeers.forEach((beer, index) => {
+            // スタイル装飾
+            const isIPA = beer.style && beer.style.includes('IPA');
+            const bgClass = isIPA 
+                ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800' 
+                : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+            const iconColor = isIPA ? 'text-orange-500' : 'text-amber-500';
 
-    actionGrid.appendChild(shareBtn);
-};
+            // リピート用ペイロード
+            const repeatPayload = {
+                type: 'beer',
+                name: beer.name, // brand含む
+                brand: beer.brand || beer.name,
+                brewery: beer.brewery,
+                style: beer.style,
+                size: '350',
+                count: 1,
+                // ※必要に応じて他のパラメータも
+            };
+            
+            // JSON化してService.repeatLogを呼ぶ (quickLogBeerは廃止)
+            const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
-export const handleActionSelect = (type) => {
-    // Audio Context Resume (User Fix)
-    if (typeof Feedback !== 'undefined') {
-        Feedback.initAudio();
-        if (Feedback.audio && Feedback.audio.resume) {
-            Feedback.audio.resume();
-        }
+            html += `
+                <button onclick="Service.repeatLog(${jsonParam}); UI.closeModal('action-menu-modal');" 
+                        class="flex items-center gap-3 p-4 rounded-2xl border active:scale-95 transition shadow-sm ${bgClass}">
+                    <div class="w-10 h-10 rounded-full bg-white/60 dark:bg-black/20 flex items-center justify-center shrink-0">
+                        <i class="ph-duotone ph-beer-bottle ${iconColor} text-xl"></i>
+                    </div>
+                    <div class="text-left overflow-hidden">
+                        <div class="flex items-center gap-1 mb-0.5">
+                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                        </div>
+                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${escapeHtml(beer.name)}</div>
+                        <div class="text-[9px] text-gray-500 truncate">${beer.style || 'Beer'}</div>
+                    </div>
+                </button>
+            `;
+        });
+    } else {
+        // 履歴がない場合のフォールバック (従来のPresetボタン)
+        // ここでも quickLogBeer('mode1') ではなく Service.quickLogBeerPreset('mode1') などを作るか、
+        // 簡易的に直接 Service.saveBeerLog を呼ぶ形にします。
+        // 今回はシンプルに「履歴がないと表示されない」または「初期設定ボタンを表示」とします。
+        html += `
+            <button onclick="UI.openBeerModal()" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
+                <i class="ph-bold ph-plus"></i> Log First Beer
+            </button>
+        `;
     }
 
-    const hiddenDate = document.getElementById('action-menu-target-date');
-    const dateStr = hiddenDate ? hiddenDate.value : (StateManager.selectedDate || getTodayString());
-    
-    toggleModal('action-menu-modal', false);
-
-    // ★修正ポイント: Shareだけは setTimeout を使わずに即時実行する
-    if (type === 'share') {
-        if (window.UI && window.UI.share) {
-            window.UI.share('status');
-        } else {
-            console.error('Share module not loaded');
-        }
-        return; // 遅延処理ブロックには進まずここで終了
-    }
-
-    // 他のモーダル切り替えは、アニメーションの干渉を防ぐために遅延させる
-    setTimeout(() => {
-        if (type === 'beer') openBeerModal(null, dateStr);
-        else if (type === 'exercise') openManualInput(null, { date: dateStr }); 
-        else if (type === 'check') openCheckModal(dateStr);
-        else if (type === 'timer') openTimer(true);
-    }, 100);
+    container.innerHTML = html;
 };
+
+/**
+ * Action Menu用の運動リピートボタン描画 (前回作成したものの再掲)
+ */
+const renderActionMenuExerciseShortcuts = async () => {
+    const container = document.getElementById('action-menu-repeat-area');
+    if (!container) return;
+
+    // 1. 直近の運動を1件だけ取得
+    const recents = await Service.getRecentExercises(1);
+    
+    container.innerHTML = ''; // クリア
+
+    if (recents.length > 0) {
+        const lastEx = recents[0];
+        
+        // リピート登録用のデータを作成
+        const repeatPayload = {
+            type: 'exercise',
+            name: lastEx.name,
+            minutes: lastEx.minutes,
+            kcal: lastEx.kcal, // Service側で再計算されますが、念のため渡す
+            exerciseKey: lastEx.exerciseKey
+        };
+
+        // onclick属性に埋め込むためにJSON文字列化＆エスケープ
+        const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+
+        // 安全な表示名
+        const safeName = escapeHtml(lastEx.name);
+
+        // HTML生成
+        // デザイン意図: "Repeat Last Workout" というラベルの下に、大きく押しやすいカード型ボタンを配置
+        container.innerHTML = `
+            <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Repeat Last Workout</p>
+                <button onclick="Service.repeatLog(${jsonParam}); UI.closeModal('action-menu-modal');" 
+                        class="w-full flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl active:scale-95 transition group hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800">
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shadow-sm text-xl group-hover:scale-110 transition">
+                            <i class="ph-duotone ph-arrow-counter-clockwise text-indigo-500 dark:text-indigo-300"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-xs font-bold text-gray-900 dark:text-white">${safeName}</span>
+                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 font-mono">
+                                ${lastEx.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(lastEx.kcal)} kcal
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                        Quick Log <i class="ph-bold ph-caret-right"></i>
+                    </div>
+                </button>
+            </div>
+        `;
+    }
+};
+
 
 /* --- Beer Modal Logic --- */
 
@@ -1325,92 +1383,104 @@ export const openDayDetail = async (dateStr) => {
 
 
 /**
- * クイックログボタンを履歴に基づいて動的に更新する
+ * ★追加: Recordタブのショートカット描画関数
+ * (Action Menuと同じロジックで、Recordタブにもボタンを並べる)
  */
-export const refreshQuickLogButtons = async () => {
-    // 1. 全履歴データを取得
-    const { allLogs } = await Service.getAllDataForUI();
-    const modes = Store.getModes(); // デフォルト設定も取得しておく
-    
-    // 2. 統計ロジックを呼び出し、飲酒回数順のリストを取得
-    const stats = Calc.getBeerStats(allLogs);
-    const rankedBeers = stats.beerStats || [];
+export const renderRecordTabShortcuts = async () => {
+    const container = document.getElementById('record-shortcuts-list');
+    if (!container) return;
 
-    // --- Slot 1 (ランキング1位) の処理 ---
-    const topBeer = rankedBeers.length > 0 ? rankedBeers[0] : null;
-    const btn1 = document.getElementById('quick-name-1');
-    const slot1 = document.querySelector('[onclick*="quickLogBeer(\'mode1\')"]');
+    let html = '';
 
-    if (topBeer && btn1 && slot1) {
-        // 履歴あり: ランキング1位を表示
-        btn1.textContent = topBeer.name; 
-        slot1.dataset.style = topBeer.style;
-        slot1.dataset.brand = topBeer.name;
-        slot1.dataset.brewery = topBeer.brewery;
-        
-        // ラベル更新
-        const label = slot1.querySelector('p:first-child');
-        if (label) label.textContent = "No.1 Frequent"; // 1位であることを明示
-        slot1.classList.add('border-amber-400'); // 色の強調（任意）
-    } else if (btn1) {
-        // 履歴なし: 設定値 (Favorite 1)
-        btn1.textContent = modes.mode1;
-        const label = slot1?.querySelector('p:first-child');
-        if (label) label.textContent = "Quick Log 1";
+    // --- A. ビール頻出ランキング (Frequent Beers) ---
+    const frequentBeers = await Service.getFrequentBeers(3); // Recordタブは広さに余裕があるので3件
+
+    if (frequentBeers.length > 0) {
+        frequentBeers.forEach((beer, index) => {
+            // スタイル装飾
+            const isIPA = beer.style && beer.style.includes('IPA');
+            const isStout = beer.style && beer.style.includes('Stout');
+            
+            let iconColor = 'text-amber-500';
+            let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+            
+            if (isIPA) {
+                iconColor = 'text-orange-500';
+                bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
+            } else if (isStout) {
+                iconColor = 'text-gray-700 dark:text-gray-300';
+                bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+            }
+
+            const safeName = escapeHtml(beer.name);
+            const rankBadge = index === 0 ? '<i class="ph-fill ph-crown text-yellow-400 text-xs mr-1"></i>' : '';
+
+            // リピート用ペイロード
+            const repeatPayload = {
+                type: 'beer',
+                name: beer.name,
+                brand: beer.brand || beer.name,
+                brewery: beer.brewery,
+                style: beer.style,
+                size: '350',
+                count: 1,
+                // ※必要に応じて他のパラメータ
+            };
+            
+            const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+
+            html += `
+                <button onclick="Service.repeatLog(${jsonParam})" 
+                        class="flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border active:scale-95 transition shadow-sm ${bgClass} min-w-[140px]">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
+                         <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
+                    </div>
+                    <div class="text-left min-w-0">
+                        <div class="flex items-center">
+                            ${rankBadge}
+                            <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                        </div>
+                        <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate w-full max-w-[100px]">${safeName}</div>
+                        <div class="text-[9px] opacity-60 font-mono mt-0.5 truncate">${beer.style || 'Beer'}</div>
+                    </div>
+                </button>
+            `;
+        });
+    } else {
+        // 履歴がない場合: 初期設定ボタンを表示
+        html += `
+            <button onclick="UI.openBeerModal()" class="flex-shrink-0 flex items-center gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded-xl active:scale-95 transition">
+                <i class="ph-duotone ph-beer-bottle text-gray-400 text-lg"></i>
+                <span class="text-xs font-bold text-gray-500">Log First Beer</span>
+            </button>
+        `;
     }
 
-    // --- Slot 2 (ランキング2位) の処理 --- ★ここを追加
-    const secondBeer = rankedBeers.length > 1 ? rankedBeers[1] : null;
-    const btn2 = document.getElementById('quick-name-2');
-    const slot2 = document.querySelector('[onclick*="quickLogBeer(\'mode2\')"]');
+    // --- B. 運動履歴 (Recent Exercises) ---
+    const recentExercises = await Service.getRecentExercises(5);
+    recentExercises.forEach(log => {
+        const repeatPayload = {
+            type: 'exercise',
+            name: log.name,
+            minutes: log.minutes,
+            kcal: log.kcal, // Service側で再計算
+            exerciseKey: log.exerciseKey
+        };
+        const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
-    if (secondBeer && btn2 && slot2) {
-        // 履歴あり(2種類以上): ランキング2位を表示
-        btn2.textContent = secondBeer.name;
-        slot2.dataset.style = secondBeer.style;
-        slot2.dataset.brand = secondBeer.name;
-        slot2.dataset.brewery = secondBeer.brewery;
+        html += `
+            <button onclick="Service.repeatLog(${jsonParam})" 
+                    class="flex-shrink-0 flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500">
+                <i class="ph-duotone ph-person-simple-run text-gray-400 dark:text-gray-500"></i>
+                <div class="text-left">
+                    <div class="text-[10px] font-bold text-gray-900 dark:text-white leading-none">${escapeHtml(log.name)}</div>
+                    <div class="text-[9px] text-gray-400 font-mono mt-0.5">${log.minutes}m</div>
+                </div>
+            </button>
+        `;
+    });
 
-        // ラベル更新
-        const label = slot2.querySelector('p:first-child');
-        if (label) label.textContent = "No.2 Frequent"; // 2位であることを明示
-    } else if (btn2) {
-        // 履歴不足: 設定値 (Favorite 2)
-        btn2.textContent = modes.mode2;
-        const label = slot2?.querySelector('p:first-child');
-        if (label) label.textContent = "Quick Log 2";
-    }
-};
-
-export const quickLogBeer = async (slotKey) => {
-    const slot = document.querySelector(`[onclick*="quickLogBeer('${slotKey}')"]`);
-    const modes = Store.getModes();
-
-    // 1. ボタンに保持されたカスタム銘柄情報があれば優先、なければ設定値
-    const style = slot.dataset.style || modes[slotKey];
-    const brand = slot.dataset.brand || "";
-    const brewery = slot.dataset.brewery || "";
-
-    Feedback.beer();
-    showToastAnimation('beer');
-    showConfetti();
-
-    const data = {
-        timestamp: Date.now(),
-        style: style,
-        brand: brand,
-        brewery: brewery,
-        size: "350",
-        count: 1,
-        isCustom: false,
-        useUntappd: false,
-        memo: "Quick Log (History-based)"
-    };
-
-    await Service.saveBeerLog(data);
-    
-    // 記録後、統計が変わる可能性があるためボタンを再更新
-    await refreshQuickLogButtons();
+    container.innerHTML = html;
 };
 
 export const handleRolloverAction = async (action) => {

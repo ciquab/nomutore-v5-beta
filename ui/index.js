@@ -21,7 +21,9 @@ import {
     updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
     openActionMenu, handleActionSelect,handleSaveSettings, 
-    validateInput, openDayDetail as _originalOpenDayDetail, refreshQuickLogButtons, quickLogBeer, handleRolloverAction
+    validateInput, openDayDetail as _originalOpenDayDetail, handleRolloverAction,
+    renderRecordTabShortcuts, // ★新規追加
+    openShareModal // ★新規追加
 } from './modal.js';
 import {
     getBeerFormData,
@@ -72,6 +74,8 @@ export const refreshUI = async () => {
         await renderWeeklyAndHeatUp(logs, checks);
         
         renderChart(allLogs, checks);
+
+        await renderRecordTabShortcuts();
         
         // タブごとの個別更新処理
         const cellarMode = StateManager.cellarViewMode;
@@ -629,6 +633,8 @@ if (checkModal) {
     openBeerModal: (e, d) => openBeerModal(e, d),
     openCheckModal: openCheckModal,
     openManualInput: openManualInput,
+    renderRecordTabShortcuts: renderRecordTabShortcuts,
+    openShareModal: openShareModal,
     renderSettings: renderSettings, 
     openHelp: openHelp,
     closeModal: closeModal,
@@ -645,13 +651,10 @@ if (checkModal) {
     showMessage: showMessage,
     showToastAnimation: showToastAnimation, 
     openActionMenu: openActionMenu,
-    handleActionSelect: handleActionSelect,
-    
-    // ★追加: これがないとDataManagerからの呼び出しでエラーになる
     updateModeSelector: updateModeSelector,
     applyTheme: applyTheme,
     toggleDryDay: toggleDryDay,
-    // ★カレンダー/ヒートマップクリック時の詳細表示を「全期間対応」にする
+
     openDayDetail: async (date) => {
         // 1. Serviceから全データを取得
         const { allLogs } = await Service.getAllDataForUI();
@@ -665,9 +668,7 @@ if (checkModal) {
         // 3. modal.jsから読み込んだ元の関数に、抽出したデータを渡す
         _originalOpenDayDetail(date, dayLogs);
     },
-
-    refreshQuickLogButtons, 
-    quickLogBeer,           
+          
     handleRolloverAction: handleRolloverAction, 
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,

@@ -1527,3 +1527,9 @@ export const handleRolloverAction = async (action) => {
         document.dispatchEvent(new CustomEvent('refresh-ui'));
     }
 };
+
+export const openShareModal = (mode = 'status') => {
+    // Shareモジュールが持つ generateAndShare を呼ぶ
+    // ※ import { Share } from './share.js'; が必要
+    Share.generateAndShare(mode);
+};

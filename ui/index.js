@@ -195,24 +195,24 @@ export const UI = {
 
         // 🗑️ 一括削除 修正版
         document.addEventListener('bulk-delete', async () => {
-            const checkboxes = document.querySelectorAll('.log-checkbox:checked');
-            const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+    const checkboxes = document.querySelectorAll('.log-checkbox:checked');
+    const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
 
-            if (ids.length > 0) {
-                // 1. Serviceで削除実行（Service側は無音のままでOK）
-                await Service.bulkDeleteLogs(ids);
-        
-                // 2. 削除が終わった直後に、UI層で音を鳴らす！
-                if (typeof Feedback !== 'undefined' && Feedback.delete) {
-                    Feedback.delete();
-                }
+    if (ids.length > 0) {
+        // ★修正: 削除「前」に音を鳴らす指示を出す (反応速度を最速にする)
+        if (typeof Feedback !== 'undefined' && Feedback.delete) {
+            Feedback.delete();
+        }
 
-                // 3. UIを更新する
-                await refreshUI();
-            } else {
-                UI.toggleEditMode();
-            }
-        });
+        // その後、重い処理（DB削除と再計算）を実行
+        await Service.bulkDeleteLogs(ids);
+
+        // ※ Service側で refresh-ui イベントが飛ぶため、
+        //    ここでの refreshUI() 呼び出しは重複を避けるため削除してもOKです。
+    } else {
+        UI.toggleEditMode();
+    }
+});
 
         // 🔄 期間リセット同期
         document.addEventListener('confirm-rollover', async () => {
@@ -274,7 +274,6 @@ export const UI = {
 
         // 保存して次へ
         bind('btn-save-beer-next', 'click', () => {
-            Feedback.tap();
             const data = getBeerFormData();
             const event = new CustomEvent('save-beer', { detail: data });
             document.dispatchEvent(event);

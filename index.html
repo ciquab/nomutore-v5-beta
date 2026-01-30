@@ -1079,6 +1079,25 @@
         </div>
     </div>
 </div>
+
+<div id="day-add-selector" class="hidden fixed inset-0 z-[1200] flex items-end justify-center px-4 pb-10">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleModal('day-add-selector', false)"></div>
+    <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl space-y-3">
+        <h3 id="day-add-selector-label" class="text-center text-sm font-bold opacity-50 pb-2">00/00 に記録を追加</h3>
+        
+        <button onclick="UI.openBeerModal(null, StateManager.selectedDate); toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-beer-bottle text-xl"></i> ビールを記録
+        </button>
+        
+        <button onclick="UI.openManualInput(StateManager.selectedDate); toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-sneaker-move text-xl"></i> 運動を記録
+        </button>
+
+        <button onclick="UI.openCheckModal(StateManager.selectedDate); toggleModal('day-add-selector', false)" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-check-fat text-xl"></i> 体調を記録
+        </button>
+    </div>
+</div>
     
 <div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-white dark:bg-base-900 w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">

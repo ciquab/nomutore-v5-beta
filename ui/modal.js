@@ -195,14 +195,28 @@ const renderActionMenuExerciseShortcuts = async () => {
 
 export const openBeerModal = (e, dateStr = null, log = null) => {
     resetBeerForm();
-    if (dateStr) document.getElementById('beer-date').value = dateStr;
-    else if (log) document.getElementById('beer-date').value = dayjs(log.timestamp).format('YYYY-MM-DD');
+
+    // --- 日付セットロジックを整理 ---
+    let targetDate;
+    if (log) {
+        // 編集時：ログのタイムスタンプを使用
+        targetDate = dayjs(log.timestamp).format('YYYY-MM-DD');
+    } else if (dateStr) {
+        // カレンダーからの追加時：渡された日付を使用
+        targetDate = dateStr;
+    } else {
+        // 通常の追加時：今日
+        targetDate = dayjs().format('YYYY-MM-DD');
+    }
+
+    const dateInput = document.getElementById('beer-date');
+    if(dateInput) dateInput.value = targetDate;
+    // ----------------------------
+
     updateBeerSelectOptions();
 
     const abvInput = document.getElementById('preset-abv');
-
-    // ★追加: 予測変換リストを更新（非同期で実行）
-    updateInputSuggestions();
+    updateInputSuggestions(); // 予測変換リスト更新
 
     if (log) {
         const idField = document.getElementById('editing-log-id');
@@ -289,7 +303,8 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
 /* --- Check Modal Logic --- */
 
 export const openCheckModal = async (dateStr) => {
-    const d = dateStr ? dayjs(dateStr) : dayjs();
+    const targetDate = dateStr || dayjs().format('YYYY-MM-DD');
+    const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
     const dateInput = document.getElementById('check-date');
     if(dateInput) dateInput.value = dateVal;
@@ -483,9 +498,15 @@ export const openManualInput = (dateStr = null, log = null) => {
     const saveBtn = document.getElementById('btn-save-exercise'); 
     const deleteBtn = document.getElementById('btn-delete-exercise');
 
-    if(idField) idField.value = '';
-    if(minField) minField.value = '';
-    const targetDate = dateStr || (log ? dayjs(log.timestamp).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'));
+    let targetDate;
+    if (log) {
+        targetDate = dayjs(log.timestamp).format('YYYY-MM-DD');
+    } else if (dateStr) {
+        targetDate = dateStr;
+    } else {
+        targetDate = dayjs().format('YYYY-MM-DD');
+    }
+    
     if(dateField) dateField.value = targetDate;
 
     // ★修正: 運動リストの生成（空の場合のみ）
@@ -1403,13 +1424,20 @@ export const openDayDetail = async (dateStr) => {
     // 5. ボタンのアクション設定
     // 「ログ追加」ボタン
     document.getElementById('btn-day-add-log').onclick = () => {
-        // アクションメニューを開く（日付を指定して）
-        if (typeof openActionMenu === 'function') {
-            toggleModal('day-detail-modal', false);
-            setTimeout(() => openActionMenu(dateStr), 200);
-        }
-    };
-    
+    // 1. 日別詳細モーダルを閉じる
+    toggleModal('day-detail-modal', false);
+
+    // 2. 選択された日付を StateManager に保存
+    StateManager.setSelectedDate(dateStr);
+
+    // 3. ラベルの日付を更新
+    const label = document.getElementById('day-add-selector-label');
+    if(label) label.textContent = dayjs(dateStr).format('MM/DD (ddd) に追加');
+
+    // 4. 新しい選択メニューを開く
+    setTimeout(() => toggleModal('day-add-selector', true), 200);
+};
+
     // 「Daily Check」ボタン（元の機能）
     document.getElementById('btn-day-check').onclick = () => {
         toggleModal('day-detail-modal', false);

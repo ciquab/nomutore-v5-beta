@@ -758,3 +758,17 @@ select:disabled {
 .text-label {
     letter-spacing: 0.08em;        /* 少し広げる */
 }
+
+/* 横スクロールエリアのスクロールバーを隠すユーティリティ */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* 運動カード等の「光る」演出の強化（もし未定義なら） */
+.shadow-glow-indigo {
+    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4);
+}

@@ -476,9 +476,18 @@ getAllDataForUI: async () => {
 
         await db.logs.add(newLog);
         
-        const typeIcon = log.type === 'beer' ? '🍺' : '🏃‍♀️';
-        showToastAnimation(`${typeIcon} Added: ${newLog.name || newLog.brand}`);
-        showConfetti();
+        // ▼▼▼ 修正箇所: タイプ別に演出とメッセージを分ける ▼▼▼
+        if (newLog.type === 'beer') {
+            // ビールの場合: 乾杯アニメーション + メッセージ
+            showConfetti(); 
+            showMessage(`🍺 記録しました: ${newLog.name}`, 'success');
+        } else {
+            // 運動の場合: アニメなし + 運動用メッセージ
+            // (乾杯アニメは出さない)
+            const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';
+            showMessage(`🏃‍♀️ 記録しました: ${newLog.name} ${minStr}`, 'success');
+        }
+        // ▲▲▲ 修正ここまで ▲▲▲
         
         // UI更新イベント発火
         document.dispatchEvent(new CustomEvent('refresh-ui'));

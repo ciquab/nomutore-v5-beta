@@ -20,7 +20,7 @@ import {
     openBeerModal, openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
     updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
-    openActionMenu, handleActionSelect,handleSaveSettings, 
+    openActionMenu, handleSaveSettings, 
     validateInput, openDayDetail as _originalOpenDayDetail, handleRolloverAction,
     renderRecordTabShortcuts, // ★新規追加
     openShareModal // ★新規追加

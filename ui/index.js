@@ -779,6 +779,7 @@ if (checkModal) {
     handleRolloverAction: handleRolloverAction, 
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,
+    get selectedDate() { return StateManager.selectedDate; },
 
 };
 

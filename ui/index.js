@@ -261,13 +261,6 @@ export const UI = {
     const event = new CustomEvent('save-beer', { detail: data });
     document.dispatchEvent(event);
 
-    // ★追加: 新規登録の時だけお祝い演出を実行
-    if (!isEdit) {
-        UI.showConfetti();
-        UI.showToastAnimation('beer');
-        Feedback.beer();
-    }
-
     toggleModal('beer-modal', false);
 });
 
@@ -300,9 +293,6 @@ export const UI = {
             try {
                 // 削除実行
                 await Service.deleteLog(parseInt(idVal));
-                
-                // 音を鳴らす
-                Feedback.delete();
                 
                 // 画面を更新して閉じる
                 toggleModal('beer-modal', false);
@@ -338,15 +328,6 @@ export const UI = {
                 return; 
             }
 
-            if (!isEdit) {
-                // 新規登録成功時のみ演出
-                UI.showConfetti();
-                Feedback.success(); // ★完了音だけが鳴る
-            } else {
-                Feedback.tap(); // 更新時は軽い音のみ
-                showMessage('📝 運動記録を更新しました', 'info');
-            }
-
             // ▼▼▼ 追加: タイムスタンプ計算ロジック ▼▼▼
             const now = dayjs();
             const inputDate = dayjs(date);
@@ -379,7 +360,6 @@ export const UI = {
             if (!confirm('この運動記録を削除しますか？')) return;
 
             await Service.deleteLog(parseInt(idVal));
-            Feedback.delete();
                 
             closeModal('exercise-modal');
         });
@@ -406,16 +386,6 @@ export const UI = {
                 const el = document.getElementById(`check-${item.id}`);
                 detail[item.id] = el ? el.checked : false;
             });
-
-            // ★追加: 音と演出の実行
-            if (!isUpdate) {
-            // 新規登録時：運動と同じく盛大に
-            Feedback.success(); 
-            showConfetti();
-            } else {
-            // 更新時：控えめなタップ音
-            Feedback.tap();
-            }
 
             document.dispatchEvent(new CustomEvent('save-check', { detail }));
             toggleModal('check-modal', false);
@@ -545,6 +515,7 @@ if (checkModal) {
         // ★追加: modal.js からの削除リクエストを受け取る
         document.addEventListener('request-delete-log', (e) => {
             UI.deleteLog(e.detail.id);
+            if (typeof Feedback !== 'undefined' && Feedback.delete) Feedback.delete();
         });
 
         initTheme();
@@ -712,18 +683,6 @@ if (checkModal) {
         try {
             // 1. 保存実行 (Serviceに委譲)
             await Service.repeatLog(log);
-            
-            // 2. 演出 (save-beerリスナーと同様の豪華な演出を再現)
-            if (log.type === 'beer') {
-                Feedback.beer();
-                showConfetti();
-                showToastAnimation();
-                // ※ save-beer イベントリスナー側で showMessage が出る設計に
-                //    なっている場合は、ここでの重複に注意してください。
-            } else {
-                Feedback.success();
-                showConfetti();
-            }
             
             // 3. UIリフレッシュ
             await refreshUI();

@@ -510,14 +510,6 @@ getAllDataForUI: async () => {
                 showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 飲酒記録のため、休肝日を解除しました', 'info');
             }
 
-            // 演出の実行
-            if (typeof Feedback !== 'undefined') {
-                if (Feedback.beer) Feedback.beer();
-                else if (Feedback.add) Feedback.add();
-            }
-            showConfetti();
-            showToastAnimation();
-
             // シェア文言の生成（最新バランスを計算に含める）
             const { logs: currentLogs } = await Service.getAllDataForUI();
             const balance = Calc.calculateBalance(currentLogs);
@@ -582,7 +574,6 @@ getAllDataForUI: async () => {
             showMessage('<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました', 'success');
         } else {
             await db.logs.add(logData);
-            if (typeof Feedback !== 'undefined' && Feedback.add) Feedback.add();
 
             // 運動でも「現在の正確な収支」を計算してシェア文言を出す
             const { logs: allLogs } = await Service.getAllDataForUI();
@@ -624,7 +615,6 @@ getAllDataForUI: async () => {
 
             await db.logs.bulkDelete(ids);
             showMessage(`${ids.length}件削除しました`, 'success');
-             Feedback.delete();
             await Service.recalcImpactedHistory(oldestTs);
             document.dispatchEvent(new CustomEvent('refresh-ui'));
         } catch (e) {

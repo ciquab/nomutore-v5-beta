@@ -491,6 +491,7 @@ getAllDataForUI: async () => {
         // 演出とメッセージ
         if (newLog.type === 'beer') {
             showConfetti();
+            showToastAnimation();
             showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> 記録しました: ${newLog.name}`, 'success');
         } else {
             const minStr = newLog.minutes ? `(${newLog.minutes}分)` : '';

@@ -607,14 +607,19 @@ if (checkModal) {
             });
 
             const target = document.getElementById(`tab-${tabId}`);
-            if(target) {
+            if (target) {
                 target.style.display = 'block';
                 target.style.viewTransitionName = 'tab-content'; 
-                
-                setTimeout(() => {
-                    window.scrollTo(0, 0); 
-                    target.classList.add('active');
-                }, 10);
+    
+                // ★ 修正: わずかな遅延を入れ、かつ window だけでなく 
+                // 文書全体に対してスクロールを強制する
+                requestAnimationFrame(() => {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+        
+                target.classList.add('active');
+                });
             }
 
             document.querySelectorAll('.nav-item').forEach(el => {

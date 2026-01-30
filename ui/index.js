@@ -193,13 +193,18 @@ export const UI = {
             await refreshUI();
         });
 
-        // 🗑️ 一括削除
+        // 🗑️ 一括削除 修正版
         document.addEventListener('bulk-delete', async () => {
             const checkboxes = document.querySelectorAll('.log-checkbox:checked');
             const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
             if (ids.length > 0) {
+                // 1. 削除実行
                 await Service.bulkDeleteLogs(ids);
-                Feedback.delete();
+        
+                // 2. 音を鳴らす（オプショナルチェイニング ?. で安全に呼び出し）
+                Feedback.delete?.(); 
+        
+                // 3. 画面更新
                 await refreshUI();
             } else {
                 UI.toggleEditMode();
@@ -513,9 +518,17 @@ if (checkModal) {
         });
 
         // ★追加: modal.js からの削除リクエストを受け取る
-        document.addEventListener('request-delete-log', (e) => {
-            UI.deleteLog(e.detail.id);
-            if (typeof Feedback !== 'undefined' && Feedback.delete) Feedback.delete();
+        document.addEventListener('request-delete-log', async (e) => {
+        // 1. 削除実務を待機
+            await Service.deleteLog(e.detail.id); 
+    
+        // 2. 削除が終わってから音を鳴らす
+            if (typeof Feedback !== 'undefined' && Feedback.delete) {
+                Feedback.delete();
+            }
+    
+        // 3. 画面更新
+        await refreshUI();
         });
 
         initTheme();

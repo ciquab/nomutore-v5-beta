@@ -39,11 +39,27 @@ export function renderBeerTank(currentBalanceKcal) {
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
-    // --- ★変更点: カード全体(tankWrapper)を回転させる ---
+    // --- ★変更点: ラッパーを「カード」としてデザインする ---
+    if (tankWrapper && !tankWrapper.classList.contains('card-styled')) {
+        // カード風のスタイルを強制適用 (Glassmorphism)
+        // 透明な枠に「背景・枠線・影・余白」を与えて物理的なカードにします
+        tankWrapper.className = `
+            relative inline-block mt-4 p-6
+            bg-white/10 dark:bg-black/20 
+            backdrop-blur-md 
+            border border-white/20 dark:border-white/10
+            rounded-[3rem] 
+            shadow-xl shadow-indigo-500/10 dark:shadow-black/40
+            cursor-pointer
+            card-styled
+        `;
+        // オーブ自体の余白等はリセット
+        if(orbContainer) orbContainer.style.margin = '0 auto';
+    }
+
+    // --- インタラクション: カード全体(tankWrapper)を回転させる ---
     if (!isTankListenerAttached && tankWrapper) {
         
-        tankWrapper.style.cursor = 'pointer';
-
         tankWrapper.addEventListener('click', (e) => {
             // アニメーション中なら無視
             if (tankWrapper.dataset.isAnimating === 'true') return;
@@ -51,7 +67,6 @@ export function renderBeerTank(currentBalanceKcal) {
 
             // 音再生
             if (window.AudioEngine) {
-                // カードをめくるような少し軽い音に変更
                 window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
 
@@ -60,7 +75,7 @@ export function renderBeerTank(currentBalanceKcal) {
                 { transform: 'perspective(1000px) rotateY(0deg)' },
                 { transform: 'perspective(1000px) rotateY(90deg)' }
             ], {
-                duration: 200, // 少しキビキビさせる
+                duration: 200, 
                 easing: 'ease-in',
                 fill: 'forwards'
             });
@@ -78,8 +93,8 @@ export function renderBeerTank(currentBalanceKcal) {
                     { transform: 'perspective(1000px) rotateY(90deg)' },
                     { transform: 'perspective(1000px) rotateY(0deg)' }
                 ], {
-                    duration: 300, // 戻りは余韻を持たせる
-                    easing: 'ease-out', // バウンス感のあるイージングだとなお良いが標準のease-outで十分
+                    duration: 300, 
+                    easing: 'ease-out',
                     fill: 'forwards'
                 });
 
@@ -154,10 +169,9 @@ export function renderBeerTank(currentBalanceKcal) {
         const currentViewMode = StateManager.orbViewMode || 'cans';
         const unitEl = cansText.parentElement.querySelector('span:last-child');
 
-        // --- 4. モード別表示ロジック (符号のUX改善) ---
+        // --- 4. モード別表示ロジック ---
         if (currentBalanceKcal >= 0) {
             // === Zen Mode (貯金) ===
-            // ここは「資産」なのでプラス表記のままでOK
             liquidFront.style.opacity = '0';
             liquidBack.style.opacity = '0';
 
@@ -193,7 +207,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
         } else {
             // === Debt Mode (借金) ===
-            // ★変更: ここでは「タスク量」として見せるため、マイナス記号は付けない (Math.absを使用)
+            // 符号なし（絶対値）で表示
             liquidFront.style.opacity = '1';
             liquidBack.style.opacity = '0.5';
 
@@ -227,12 +241,10 @@ export function renderBeerTank(currentBalanceKcal) {
             }
 
             if (currentViewMode === 'kcal') {
-                // ★ Math.abs で絶対値のみ表示 (借金額)
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 if(unitEl) unitEl.textContent = 'kcal';
                 cansText.style.fontSize = Math.round(Math.abs(currentBalanceKcal)) > 9999 ? '2.0rem' : '2.5rem';
             } else {
-                // ★ Math.abs で絶対値のみ表示 (借金缶数)
                 cansText.textContent = Math.abs(canCount).toFixed(1);
                 if(unitEl) unitEl.textContent = 'cans';
                 cansText.style.fontSize = '';

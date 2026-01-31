@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nomutore-v5-cache';
+const CACHE_NAME = 'nomutore-v5.0.1';
 const APP_SHELL = [
     './',
     './index.html',
@@ -99,4 +99,5 @@ self.addEventListener('fetch', (event) => {
             });
         })
     );
+
 });

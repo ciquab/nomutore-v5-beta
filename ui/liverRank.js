@@ -12,7 +12,7 @@ export function renderLiverRank(checks, logs) {
     if(!card) return;
 
     let theme = {
-        bg: "bg-gray-50", darkBg: "dark:bg-gray-800/50",
+        bg: "", darkBg: "",
         text: "text-gray-800", darkText: "dark:text-white",
         icon: "text-gray-400",
         bar: "bg-gray-500"
@@ -108,4 +108,5 @@ export function renderLiverRank(checks, logs) {
             </div>
         </div>
     `;
+
 }

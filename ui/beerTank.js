@@ -5,6 +5,33 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+// ★追加: アニメーション用のスタイルを強制的にヘッダーに注入（CSSキャッシュ対策）
+const styleId = 'nomutore-tank-anim-style';
+if (!document.getElementById(styleId)) {
+    const styleFix = document.createElement('style');
+    styleFix.id = styleId;
+    styleFix.innerHTML = `
+        /* 3D Wrapper */
+        #tank-wrapper {
+            perspective: 1000px !important;
+        }
+        /* アニメーション本体 */
+        .orb-container {
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) !important;
+            transform-style: preserve-3d !important;
+        }
+        /* 裏返った状態 */
+        .orb-container.is-flipped-90 {
+            transform: rotateY(90deg) !important;
+        }
+        /* マウスカーソル */
+        .orb-container {
+            cursor: pointer !important;
+        }
+    `;
+    document.head.appendChild(styleFix);
+}
+
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
 let latestBalance = 0;    // クリックイベント用に最新バランスを保持
@@ -22,9 +49,6 @@ export function renderBeerTank(currentBalanceKcal) {
     const { 
         canCount, 
         displayMinutes, 
-        baseExData, 
-        unitKcal, 
-        targetStyle,
         liquidColor,
         isHazy 
     } = Calc.getTankDisplayData(currentBalanceKcal, StateManager.beerMode, settings, profile);
@@ -43,27 +67,26 @@ export function renderBeerTank(currentBalanceKcal) {
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
     // --- ★追加: タップでフリップアニメーション (Click to Flip) ---
-    if (!isTankListenerAttached && orbContainer && tankWrapper) {
+    if (!isTankListenerAttached && orbContainer) {
         
-        // CSSクラスの適用（style.cssの定義を利用）
-        tankWrapper.classList.add('perspective-1000');
-        orbContainer.classList.add('flip-card-inner');
-        orbContainer.style.cursor = 'pointer';
+        console.log("🍺 Tank Click Listener Attached!"); // デバッグ用ログ
 
+        // タップイベント
         orbContainer.addEventListener('click', (e) => {
+            console.log("🍺 Tank Clicked!"); // デバッグ用ログ
+
             // 連打防止: すでに回転中なら無視
             if (orbContainer.classList.contains('is-flipped-90')) return;
 
             // 1. 回転開始（90度まで回して見えなくする）
             orbContainer.classList.add('is-flipped-90');
 
-            // 2. 音でフィードバック ("シュッ"という風切り音)
+            // 2. 音でフィードバック ("シュッ"という音)
             if (window.AudioEngine) {
                 window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
             
             // 3. 回転しきったタイミング(0.3s後)で中身を書き換える
-            // transitionが0.6sなので、半分の0.3sで90度になる
             setTimeout(() => {
                 // モードをトグル (State経由)
                 const currentMode = StateManager.orbViewMode || 'cans';
@@ -80,7 +103,7 @@ export function renderBeerTank(currentBalanceKcal) {
                    setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 100);
                 }
 
-            }, 300); 
+            }, 300); // transition(0.6s)の半分
         });
         
         isTankListenerAttached = true;
@@ -113,7 +136,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
         let fillRatio = 0;
 
-        // --- Customモード時の残り日数カウントダウン ---
+        // --- Customモード時の残り日数カウントダウン (省略なしで維持) ---
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
@@ -121,24 +144,21 @@ export function renderBeerTank(currentBalanceKcal) {
         const existingCount = document.getElementById('tank-custom-countdown');
         if (existingCount) existingCount.remove();
 
-        if (mode === 'custom' && endDateTs) {
+        if (mode === 'custom' && endDateTs && tankWrapper) {
             const end = dayjs(parseInt(endDateTs));
             const now = dayjs();
             const daysLeft = end.diff(now, 'day');
 
-            if (tankWrapper) {
-                const badge = document.createElement('div');
-                badge.id = 'tank-custom-countdown';
-                badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
-                
-                badge.innerHTML = `
-                    <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
-                    <div class="text-xs font-black leading-none font-mono">
-                        ${daysLeft >= 0 ? `${daysLeft}<span class="text-[9px] font-normal ml-0.5">days</span>` : 'END'}
-                    </div>
-                `;
-                tankWrapper.appendChild(badge);
-            }
+            const badge = document.createElement('div');
+            badge.id = 'tank-custom-countdown';
+            badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
+            badge.innerHTML = `
+                <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
+                <div class="text-xs font-black leading-none font-mono">
+                    ${daysLeft >= 0 ? `${daysLeft}<span class="text-[9px] font-normal ml-0.5">days</span>` : 'END'}
+                </div>
+            `;
+            tankWrapper.appendChild(badge);
         }
 
         // 現在の表示モードを取得 (State優先、未定義ならデフォルト)

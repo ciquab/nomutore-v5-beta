@@ -24,6 +24,7 @@ const APP_SHELL = [
     './logic.js',
     './constants.js',
     './cloudManager.js',
+    './onboarding.js',
     './manifest.json',
     './icon-192_2.png',
     './icon-512_2.png',
@@ -101,6 +102,7 @@ self.addEventListener('fetch', (event) => {
     );
 
 });
+
 
 
 

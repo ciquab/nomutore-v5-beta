@@ -5,28 +5,6 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-// --- キャッシュ対策: 3D回転に必要な設定のみを強制注入 ---
-const styleId = 'nomutore-tank-anim-style';
-if (!document.getElementById(styleId)) {
-    const styleFix = document.createElement('style');
-    styleFix.id = styleId;
-    styleFix.innerHTML = `
-        /* ラッパーに遠近感を設定 */
-        #tank-wrapper {
-            perspective: 1000px !important;
-            -webkit-perspective: 1000px !important;
-            transform-style: preserve-3d !important;
-        }
-        /* 中身（オーブ）が立体的になるように */
-        .orb-container {
-            transform-style: preserve-3d !important;
-            -webkit-transform-style: preserve-3d !important;
-            will-change: transform; 
-        }
-    `;
-    document.head.appendChild(styleFix);
-}
-
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
 let latestBalance = 0;
@@ -55,24 +33,29 @@ export function renderBeerTank(currentBalanceKcal) {
     const minText = DOM.elements['tank-minutes'] || document.getElementById('tank-minutes');
     const msgContainer = DOM.elements['tank-message'] || document.getElementById('tank-message');
     
-    // コンテナ
     const tankWrapper = document.getElementById('tank-wrapper');
     const orbContainer = document.querySelector('.orb-container'); 
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
 
-    // ★修正: 余計な「カードスタイル（枠線・背景）」の追加処理を削除しました。
-    // これにより、見た目は元のまま維持されます。
+    // --- ★変更点: 外側のパネル（Hero Card）を取得 ---
+    // tankWrapperの親要素にある .glass-panel を探します
+    const heroCard = tankWrapper.closest('.glass-panel');
 
-    // --- インタラクション: ラッパーごと回転させる ---
-    if (!isTankListenerAttached && tankWrapper) {
+    // --- インタラクション: パネル全体を回転させる ---
+    if (!isTankListenerAttached && heroCard) {
         
-        tankWrapper.style.cursor = 'pointer';
+        heroCard.style.cursor = 'pointer';
 
-        tankWrapper.addEventListener('click', (e) => {
+        heroCard.addEventListener('click', (e) => {
+            // ▼安全策: プルダウン（セレクトボックス）の操作時は回転させない
+            if (e.target.closest('select') || e.target.closest('.ph-caret-down')) {
+                return;
+            }
+
             // アニメーション中なら無視
-            if (tankWrapper.dataset.isAnimating === 'true') return;
-            tankWrapper.dataset.isAnimating = 'true';
+            if (heroCard.dataset.isAnimating === 'true') return;
+            heroCard.dataset.isAnimating = 'true';
 
             // 音再生
             if (window.AudioEngine) {
@@ -80,7 +63,7 @@ export function renderBeerTank(currentBalanceKcal) {
             }
 
             // 1. 回転して消える (0deg -> 90deg)
-            const flipOut = tankWrapper.animate([
+            const flipOut = heroCard.animate([
                 { transform: 'perspective(1000px) rotateY(0deg)' },
                 { transform: 'perspective(1000px) rotateY(90deg)' }
             ], {
@@ -98,7 +81,7 @@ export function renderBeerTank(currentBalanceKcal) {
                 renderBeerTank(latestBalance);
 
                 // 3. 回転して戻る (90deg -> 0deg)
-                const flipIn = tankWrapper.animate([
+                const flipIn = heroCard.animate([
                     { transform: 'perspective(1000px) rotateY(90deg)' },
                     { transform: 'perspective(1000px) rotateY(0deg)' }
                 ], {
@@ -113,7 +96,7 @@ export function renderBeerTank(currentBalanceKcal) {
                 }
 
                 flipIn.onfinish = () => {
-                    tankWrapper.dataset.isAnimating = 'false';
+                    heroCard.dataset.isAnimating = 'false';
                     flipOut.cancel(); 
                     flipIn.cancel();
                 };
@@ -151,6 +134,10 @@ export function renderBeerTank(currentBalanceKcal) {
         let fillRatio = 0;
 
         // --- 3. Customモードバッジ ---
+        // ※ 以前は tankWrapper に追加していましたが、heroCard が回転するなら
+        //    バッジも heroCard の中（相対配置）にあるべきです。
+        //    tankWrapper は heroCard の中にあるので、そのままで一緒に回ります。
+        
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
@@ -165,6 +152,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
             const badge = document.createElement('div');
             badge.id = 'tank-custom-countdown';
+            // 位置調整: 親要素(tankWrapper)基準での配置
             badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
             badge.innerHTML = `
                 <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>

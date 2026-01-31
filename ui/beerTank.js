@@ -5,6 +5,14 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js'; // AudioEngineを追加
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+const styleFix = document.createElement('style');
+styleFix.innerHTML = `
+    .perspective-1000 { perspective: 1000px; }
+    .flip-card-inner { transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) !important; transform-style: preserve-3d; }
+    .is-flipped-90 { transform: rotateY(90deg) !important; }
+`;
+document.head.appendChild(styleFix);
+
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
 let orbViewMode = 'cans'; // 'cans' | 'kcal'
@@ -250,3 +258,4 @@ export function renderBeerTank(currentBalanceKcal) {
         liquidBack.style.top = `${topVal + 2}%`; 
     });
 }
+

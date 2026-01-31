@@ -39,34 +39,34 @@ export function renderBeerTank(currentBalanceKcal) {
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
-    // --- ★変更点: WAAPIによる強制アニメーション ---
-    if (!isTankListenerAttached && orbContainer) {
+    // --- ★変更点: カード全体(tankWrapper)を回転させる ---
+    if (!isTankListenerAttached && tankWrapper) {
         
-        orbContainer.style.cursor = 'pointer';
+        tankWrapper.style.cursor = 'pointer';
 
-        orbContainer.addEventListener('click', (e) => {
-            // アニメーション中なら無視 (data属性で管理)
-            if (orbContainer.dataset.isAnimating === 'true') return;
-            orbContainer.dataset.isAnimating = 'true';
+        tankWrapper.addEventListener('click', (e) => {
+            // アニメーション中なら無視
+            if (tankWrapper.dataset.isAnimating === 'true') return;
+            tankWrapper.dataset.isAnimating = 'true';
 
             // 音再生
             if (window.AudioEngine) {
+                // カードをめくるような少し軽い音に変更
                 window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
 
             // 1. 回転して消える (0deg -> 90deg)
-            // CSSクラスを使わず、アニメーションエンジンを直接叩きます
-            const flipOut = orbContainer.animate([
+            const flipOut = tankWrapper.animate([
                 { transform: 'perspective(1000px) rotateY(0deg)' },
                 { transform: 'perspective(1000px) rotateY(90deg)' }
             ], {
-                duration: 250,
+                duration: 200, // 少しキビキビさせる
                 easing: 'ease-in',
-                fill: 'forwards' // 終わった状態で止める
+                fill: 'forwards'
             });
 
             flipOut.onfinish = () => {
-                // 2. データを切り替える（見えない一瞬の間に）
+                // 2. データを切り替える
                 const currentMode = StateManager.orbViewMode || 'cans';
                 StateManager.setOrbViewMode(currentMode === 'cans' ? 'kcal' : 'cans');
                 
@@ -74,12 +74,12 @@ export function renderBeerTank(currentBalanceKcal) {
                 renderBeerTank(latestBalance);
 
                 // 3. 回転して戻る (90deg -> 0deg)
-                const flipIn = orbContainer.animate([
+                const flipIn = tankWrapper.animate([
                     { transform: 'perspective(1000px) rotateY(90deg)' },
                     { transform: 'perspective(1000px) rotateY(0deg)' }
                 ], {
-                    duration: 300,
-                    easing: 'ease-out',
+                    duration: 300, // 戻りは余韻を持たせる
+                    easing: 'ease-out', // バウンス感のあるイージングだとなお良いが標準のease-outで十分
                     fill: 'forwards'
                 });
 
@@ -89,9 +89,8 @@ export function renderBeerTank(currentBalanceKcal) {
                 }
 
                 flipIn.onfinish = () => {
-                    // クリーンアップ
-                    orbContainer.dataset.isAnimating = 'false';
-                    flipOut.cancel(); // メモリ解放＆スタイル解除
+                    tankWrapper.dataset.isAnimating = 'false';
+                    flipOut.cancel(); 
                     flipIn.cancel();
                 };
             };
@@ -107,7 +106,7 @@ export function renderBeerTank(currentBalanceKcal) {
     }
 
     requestAnimationFrame(() => {
-        // --- 1. 色と濁り [維持] ---
+        // --- 1. 色と濁り ---
         liquidFront.style.background = liquidColor;
         liquidBack.style.background = liquidColor;
         
@@ -119,7 +118,7 @@ export function renderBeerTank(currentBalanceKcal) {
             liquidBack.style.filter = 'opacity(0.6)';
         }
 
-        // --- 2. 状態のリセット [維持] ---
+        // --- 2. 状態リセット ---
         if (orbContainer) {
             orbContainer.classList.remove('zen-mode', 'tipsy-mode');
         }
@@ -127,7 +126,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
         let fillRatio = 0;
 
-        // --- 3. Customモードバッジ [維持] ---
+        // --- 3. Customモードバッジ ---
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
@@ -153,10 +152,12 @@ export function renderBeerTank(currentBalanceKcal) {
         }
 
         const currentViewMode = StateManager.orbViewMode || 'cans';
+        const unitEl = cansText.parentElement.querySelector('span:last-child');
 
-        // --- 4. モード別表示 [維持] ---
+        // --- 4. モード別表示ロジック (符号のUX改善) ---
         if (currentBalanceKcal >= 0) {
-            // === Zen Mode ===
+            // === Zen Mode (貯金) ===
+            // ここは「資産」なのでプラス表記のままでOK
             liquidFront.style.opacity = '0';
             liquidBack.style.opacity = '0';
 
@@ -167,18 +168,15 @@ export function renderBeerTank(currentBalanceKcal) {
 
             if (currentViewMode === 'kcal') {
                 cansText.textContent = `+${Math.round(currentBalanceKcal).toLocaleString()}`;
-                const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'kcal';
                 cansText.style.fontSize = Math.round(currentBalanceKcal) > 9999 ? '2.0rem' : '2.5rem';
             } else {
                 cansText.textContent = `+${canCount.toFixed(1)}`;
-                const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'cans';
                 cansText.style.fontSize = '';
             }
             
             cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
-            
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
             minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
 
@@ -194,7 +192,8 @@ export function renderBeerTank(currentBalanceKcal) {
             }
 
         } else {
-            // === Debt Mode ===
+            // === Debt Mode (借金) ===
+            // ★変更: ここでは「タスク量」として見せるため、マイナス記号は付けない (Math.absを使用)
             liquidFront.style.opacity = '1';
             liquidBack.style.opacity = '0.5';
 
@@ -228,13 +227,13 @@ export function renderBeerTank(currentBalanceKcal) {
             }
 
             if (currentViewMode === 'kcal') {
+                // ★ Math.abs で絶対値のみ表示 (借金額)
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
-                const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'kcal';
                 cansText.style.fontSize = Math.round(Math.abs(currentBalanceKcal)) > 9999 ? '2.0rem' : '2.5rem';
             } else {
-                cansText.textContent = canCount.toFixed(1);
-                const unitEl = cansText.parentElement.querySelector('span:last-child');
+                // ★ Math.abs で絶対値のみ表示 (借金缶数)
+                cansText.textContent = Math.abs(canCount).toFixed(1);
                 if(unitEl) unitEl.textContent = 'cans';
                 cansText.style.fontSize = '';
             }

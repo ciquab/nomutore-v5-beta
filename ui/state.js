@@ -22,6 +22,7 @@ export const StateManager = {
     get chart() { return _state.chart; },
     get timerId() { return _state.timerId; },
     get chartRange() { return _state.chartRange; },
+    get orbViewMode() { return _state.orbViewMode; },
     get isEditMode() { return _state.isEditMode; },
     get heatmapOffset() { return _state.heatmapOffset; },
     get logLimit() { return _state.logLimit; },
@@ -36,6 +37,7 @@ export const StateManager = {
     setChart: (v) => { if(_state.chart) _state.chart.destroy(); _state.chart = v; },
     setTimerId: (v) => { _state.timerId = v; },
     setChartRange: (v) => { _state.chartRange = v; },
+    setOrbViewMode: (v) => { _state.orbViewMode = v; },
     setIsEditMode: (v) => { _state.isEditMode = v; }, 
     setHeatmapOffset: (v) => { _state.heatmapOffset = v; },
     
@@ -47,3 +49,4 @@ export const StateManager = {
     setSelectedDate: (v) => { _state.selectedDate = v; } // ★追加 setter
 
 };
+

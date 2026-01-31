@@ -2,10 +2,18 @@ import { APP, EXERCISE } from '../constants.js';
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { StateManager } from './state.js';
-import { DOM, escapeHtml } from './dom.js';
+import { DOM, escapeHtml, AudioEngine } from './dom.js'; // AudioEngineを追加
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+// モジュールレベルの状態管理
+let isTankListenerAttached = false;
+let orbViewMode = 'cans'; // 'cans' | 'kcal'
+let latestBalance = 0;    // クリックイベント用に最新バランスを保持
+
 export function renderBeerTank(currentBalanceKcal) {
+    // 1. 最新のバランスをキャッシュ（クリック時の再描画用）
+    latestBalance = currentBalanceKcal;
+
     const profile = Store.getProfile();
     const settings = {
         modes: Store.getModes(),
@@ -36,6 +44,29 @@ export function renderBeerTank(currentBalanceKcal) {
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
+    // --- ★追加: タップで表示モード切り替え (Click to Toggle) ---
+    if (!isTankListenerAttached && orbContainer) {
+        orbContainer.style.cursor = 'pointer';
+        
+        // タップ時の縮小エフェクト用クラス
+        orbContainer.classList.add('transition-transform', 'active:scale-95');
+
+        orbContainer.addEventListener('click', (e) => {
+            // 1. モードをトグル
+            orbViewMode = (orbViewMode === 'cans') ? 'kcal' : 'cans';
+            
+            // 2. 音でフィードバック (ポンッという軽い音)
+            if (window.AudioEngine) {
+                window.AudioEngine.playTone(600, 'sine', 0.05);
+            }
+            
+            // 3. 即座に再描画 (キャッシュした最新バランスを使用)
+            renderBeerTank(latestBalance);
+        });
+        
+        isTankListenerAttached = true;
+    }
+
     let msgText = msgContainer.querySelector('p');
     if (!msgText) {
         msgText = document.createElement('p');
@@ -108,8 +139,18 @@ export function renderBeerTank(currentBalanceKcal) {
             // 禅モード(黄金の光)ON
             if (orbContainer) orbContainer.classList.add('zen-mode');
 
-            // テキスト表示
-            cansText.textContent = `+${canCount.toFixed(1)}`;
+            // --- テキスト表示 (切り替え対応) ---
+            if (orbViewMode === 'kcal') {
+                // kcalモード
+                cansText.textContent = `+${Math.round(currentBalanceKcal).toLocaleString()}`;
+                cansText.nextElementSibling.textContent = 'kcal'; // 単位更新(HTML構造に依存、なければ無視)
+            } else {
+                // cansモード
+                cansText.textContent = `+${canCount.toFixed(1)}`;
+                const unitEl = cansText.parentElement.querySelector('span:last-child');
+                if(unitEl) unitEl.textContent = 'cans';
+            }
+            
             cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
             
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
@@ -141,7 +182,6 @@ export function renderBeerTank(currentBalanceKcal) {
 
             // --- 演出ロジック ---
             // ★修正: 生成場所を liquidFront ではなく orbContainer に変更！
-            // これにより液体の回転の影響を全く受けなくなります
             let bubbleContainer = orbContainer.querySelector('.bubble-container');
             if (!bubbleContainer) {
                 bubbleContainer = document.createElement('div');
@@ -168,27 +208,35 @@ export function renderBeerTank(currentBalanceKcal) {
                 }
             }
 
-            // Level 2: 借金1.5本超え -> 泡を隠さず表示 (不透明度で制御などが必要ならここに記述)
-            // 今回は常時表示でOKなら特になし
-
             // Level 3: 借金2.5本超え -> ほろ酔いモード
             if (debtCans > 2.5) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }
 
-            // テキスト更新
-            cansText.textContent = canCount.toFixed(1);
+            // --- テキスト表示 (切り替え対応) ---
+            if (orbViewMode === 'kcal') {
+                // kcalモード (借金はマイナス表示せずに絶対値にするか、そのままか。ここでは見やすく整数で)
+                cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
+                const unitEl = cansText.parentElement.querySelector('span:last-child');
+                if(unitEl) unitEl.textContent = 'kcal';
+            } else {
+                // cansモード
+                cansText.textContent = canCount.toFixed(1);
+                const unitEl = cansText.parentElement.querySelector('span:last-child');
+                if(unitEl) unitEl.textContent = 'cans';
+            }
+
             cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
 
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
             minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';
             
-            // メッセージ (マイルドな表現に変更)
+            // メッセージ
             if (debtCans > 2.5) {
-                msgText.textContent = 'Too much fun?'; // 楽しみすぎた？
+                msgText.textContent = 'Too much fun?';
                 msgText.className = 'text-sm font-bold text-orange-500 dark:text-orange-400';
             } else if (debtCans > 1.0) {
-                msgText.textContent = `Let's walk it off.`; // 歩いて返そう
+                msgText.textContent = `Let's walk it off.`;
                 msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
             } else {
                 msgText.textContent = 'Enjoying beer!';

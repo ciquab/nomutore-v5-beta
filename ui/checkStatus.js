@@ -24,7 +24,7 @@ export function renderCheckStatus(checks, logs) {
     }
 
     let theme = {
-        bg: "bg-gray-50", darkBg: "dark:bg-gray-800/50",
+        bg: "", darkBg: "",
         text: "text-gray-800", darkText: "dark:text-white",
         icon: "text-gray-300", iconName: "ph-clipboard-text",
         accent: "bg-gray-200"
@@ -131,4 +131,5 @@ function analyzeCondition(check, logs) {
     
     // スコア0の場合
     return { short: "Warning", desc: "不調気味", score: 0 }; // 😰削除
+
 }

@@ -5,31 +5,12 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-// --- キャッシュ対策: 親要素の遠近感設定 (CSS強制注入) ---
-const styleId = 'nomutore-tank-anim-style';
-if (!document.getElementById(styleId)) {
-    const styleFix = document.createElement('style');
-    styleFix.id = styleId;
-    styleFix.innerHTML = `
-        #tank-wrapper {
-            perspective: 1000px !important;
-            -webkit-perspective: 1000px !important;
-        }
-        .orb-container {
-            transform-style: preserve-3d !important;
-            -webkit-transform-style: preserve-3d !important;
-            will-change: transform; 
-        }
-    `;
-    document.head.appendChild(styleFix);
-}
-
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
-let latestBalance = 0;    // クリックイベント用に最新バランスを保持
+let latestBalance = 0;
 
 export function renderBeerTank(currentBalanceKcal) {
-    // 1. 最新のバランスをキャッシュ（クリック時の再描画用）
+    // 1. 最新のバランスをキャッシュ
     latestBalance = currentBalanceKcal;
 
     const profile = Store.getProfile();
@@ -41,9 +22,6 @@ export function renderBeerTank(currentBalanceKcal) {
     const { 
         canCount, 
         displayMinutes, 
-        baseExData, 
-        unitKcal, 
-        targetStyle,
         liquidColor,
         isHazy 
     } = Calc.getTankDisplayData(currentBalanceKcal, StateManager.beerMode, settings, profile);
@@ -55,57 +33,68 @@ export function renderBeerTank(currentBalanceKcal) {
     const minText = DOM.elements['tank-minutes'] || document.getElementById('tank-minutes');
     const msgContainer = DOM.elements['tank-message'] || document.getElementById('tank-message');
     
-    // アニメーション用ラッパーとコンテナ
+    // コンテナ
     const tankWrapper = document.getElementById('tank-wrapper');
     const orbContainer = document.querySelector('.orb-container'); 
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
-    // --- ★インタラクション: タップでフリップアニメーション (JS直接制御版) ---
+    // --- ★変更点: WAAPIによる強制アニメーション ---
     if (!isTankListenerAttached && orbContainer) {
         
-        // タップ可能であることを示す
         orbContainer.style.cursor = 'pointer';
 
         orbContainer.addEventListener('click', (e) => {
-            // 連打防止: すでに回転中(styleにtransformが入っている)なら無視
-            if (orbContainer.style.transform && orbContainer.style.transform !== '') return;
+            // アニメーション中なら無視 (data属性で管理)
+            if (orbContainer.dataset.isAnimating === 'true') return;
+            orbContainer.dataset.isAnimating = 'true';
 
-            // --- Phase 1: 90度まで回転 (隠す) ---
-            orbContainer.style.transition = 'transform 0.3s ease-in';
-            orbContainer.style.transform = 'rotateY(90deg)';
-
-            // 音でフィードバック
+            // 音再生
             if (window.AudioEngine) {
                 window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
-            
-            // --- Phase 2: データ更新して戻す (0.3s後) ---
-            setTimeout(() => {
-                // モードをトグル
+
+            // 1. 回転して消える (0deg -> 90deg)
+            // CSSクラスを使わず、アニメーションエンジンを直接叩きます
+            const flipOut = orbContainer.animate([
+                { transform: 'perspective(1000px) rotateY(0deg)' },
+                { transform: 'perspective(1000px) rotateY(90deg)' }
+            ], {
+                duration: 250,
+                easing: 'ease-in',
+                fill: 'forwards' // 終わった状態で止める
+            });
+
+            flipOut.onfinish = () => {
+                // 2. データを切り替える（見えない一瞬の間に）
                 const currentMode = StateManager.orbViewMode || 'cans';
                 StateManager.setOrbViewMode(currentMode === 'cans' ? 'kcal' : 'cans');
                 
-                // 再描画 (データ更新)
+                // 再描画
                 renderBeerTank(latestBalance);
-                
-                // 回転を戻す (0度に戻す)
-                orbContainer.style.transition = 'transform 0.3s ease-out';
-                orbContainer.style.transform = 'rotateY(0deg)'; 
-                
+
+                // 3. 回転して戻る (90deg -> 0deg)
+                const flipIn = orbContainer.animate([
+                    { transform: 'perspective(1000px) rotateY(90deg)' },
+                    { transform: 'perspective(1000px) rotateY(0deg)' }
+                ], {
+                    duration: 300,
+                    easing: 'ease-out',
+                    fill: 'forwards'
+                });
+
                 // 完了音
                 if (window.AudioEngine) {
-                   setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 100);
+                   setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 50);
                 }
 
-                // --- Phase 3: クリーンアップ (さらに0.3s後) ---
-                setTimeout(() => {
-                    // 次のクリックのためにスタイルをクリア
-                    orbContainer.style.transition = '';
-                    orbContainer.style.transform = '';
-                }, 300);
-
-            }, 300); 
+                flipIn.onfinish = () => {
+                    // クリーンアップ
+                    orbContainer.dataset.isAnimating = 'false';
+                    flipOut.cancel(); // メモリ解放＆スタイル解除
+                    flipIn.cancel();
+                };
+            };
         });
         
         isTankListenerAttached = true;
@@ -118,7 +107,7 @@ export function renderBeerTank(currentBalanceKcal) {
     }
 
     requestAnimationFrame(() => {
-        // --- 1. 色と濁り (Hazy) の適用 [維持] ---
+        // --- 1. 色と濁り [維持] ---
         liquidFront.style.background = liquidColor;
         liquidBack.style.background = liquidColor;
         
@@ -138,7 +127,7 @@ export function renderBeerTank(currentBalanceKcal) {
 
         let fillRatio = 0;
 
-        // --- 3. Customモード時の残り日数バッジ [維持] ---
+        // --- 3. Customモードバッジ [維持] ---
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
@@ -163,22 +152,19 @@ export function renderBeerTank(currentBalanceKcal) {
             tankWrapper.appendChild(badge);
         }
 
-        // 現在の表示モードを取得
         const currentViewMode = StateManager.orbViewMode || 'cans';
 
-        // --- 4. モード別表示ロジック ---
+        // --- 4. モード別表示 [維持] ---
         if (currentBalanceKcal >= 0) {
-            // === Zen Mode (貯金) ===
+            // === Zen Mode ===
             liquidFront.style.opacity = '0';
             liquidBack.style.opacity = '0';
 
-            // 貯金モード時は泡を削除 [維持・最適化]
             const existingBubbles = orbContainer.querySelector('.bubble-container');
             if (existingBubbles) existingBubbles.remove();
             
             if (orbContainer) orbContainer.classList.add('zen-mode');
 
-            // --- テキスト表示 (切り替え対応) ---
             if (currentViewMode === 'kcal') {
                 cansText.textContent = `+${Math.round(currentBalanceKcal).toLocaleString()}`;
                 const unitEl = cansText.parentElement.querySelector('span:last-child');
@@ -208,7 +194,7 @@ export function renderBeerTank(currentBalanceKcal) {
             }
 
         } else {
-            // === Debt Mode (借金) ===
+            // === Debt Mode ===
             liquidFront.style.opacity = '1';
             liquidBack.style.opacity = '0.5';
 
@@ -216,13 +202,11 @@ export function renderBeerTank(currentBalanceKcal) {
             const rawRatio = (debtCans / APP.TANK_MAX_CANS) * 100;
             fillRatio = Math.max(10, Math.min(94, rawRatio)); 
 
-            // 泡エフェクト [維持]
             let bubbleContainer = orbContainer.querySelector('.bubble-container');
             if (!bubbleContainer) {
                 bubbleContainer = document.createElement('div');
                 bubbleContainer.className = 'bubble-container';
                 orbContainer.appendChild(bubbleContainer);
-                
                 for (let i = 0; i < 10; i++) {
                     const bubble = document.createElement('div');
                     bubble.className = 'bubble-particle';
@@ -230,23 +214,19 @@ export function renderBeerTank(currentBalanceKcal) {
                     const left = Math.random() * 80 + 10; 
                     const duration = Math.random() * 3 + 4; 
                     const delay = Math.random() * 7; 
-                    
                     bubble.style.width = `${size}px`;
                     bubble.style.height = `${size}px`;
                     bubble.style.left = `${left}%`;
                     bubble.style.animationDuration = `${duration}s`;
                     bubble.style.animationDelay = `-${delay}s`;
-                    
                     bubbleContainer.appendChild(bubble);
                 }
             }
 
-            // Tipsy Mode (ほろ酔い) [維持]
             if (debtCans > 2.5) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }
 
-            // --- テキスト表示 (切り替え対応) ---
             if (currentViewMode === 'kcal') {
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 const unitEl = cansText.parentElement.querySelector('span:last-child');
@@ -264,7 +244,6 @@ export function renderBeerTank(currentBalanceKcal) {
             minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
             minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';
             
-            // メッセージ [維持]
             if (debtCans > 2.5) {
                 msgText.textContent = 'Too much fun?';
                 msgText.className = 'text-sm font-bold text-orange-500 dark:text-orange-400';

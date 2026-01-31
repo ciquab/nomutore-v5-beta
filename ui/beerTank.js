@@ -5,8 +5,34 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+// --- キャッシュ対策: 3D回転に必要な設定のみを強制注入 ---
+const styleId = 'nomutore-tank-anim-style';
+if (!document.getElementById(styleId)) {
+    const styleFix = document.createElement('style');
+    styleFix.id = styleId;
+    styleFix.innerHTML = `
+        #tank-wrapper {
+            perspective: 1000px !important;
+            -webkit-perspective: 1000px !important;
+            transform-style: preserve-3d !important;
+        }
+        .orb-container {
+            transform-style: preserve-3d !important;
+            -webkit-transform-style: preserve-3d !important;
+            will-change: transform; 
+        }
+        /* ヒントアイコンの点滅アニメーション */
+        @keyframes hint-pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+    `;
+    document.head.appendChild(styleFix);
+}
+
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
+let hasTeased = false; // ★追加: 初回のアニメーション実行済みフラグ
 let latestBalance = 0;
 
 export function renderBeerTank(currentBalanceKcal) {
@@ -38,31 +64,68 @@ export function renderBeerTank(currentBalanceKcal) {
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
 
-    // --- ★変更点: 外側のパネル（Hero Card）を取得 ---
-    // tankWrapperの親要素にある .glass-panel を探します
+    // --- カード本体（Hero Card）を取得 ---
     const heroCard = tankWrapper.closest('.glass-panel');
 
-    // --- インタラクション: パネル全体を回転させる ---
+    // --- ★追加: 視覚的なヒント（回転アイコン）の注入 ---
+    if (heroCard && !document.getElementById('tank-flip-hint')) {
+        const hintIcon = document.createElement('div');
+        hintIcon.id = 'tank-flip-hint';
+        // 右下に薄く配置
+        hintIcon.className = 'absolute bottom-3 right-3 text-gray-400 dark:text-gray-500 pointer-events-none transition-opacity duration-500';
+        hintIcon.style.animation = 'hint-pulse 3s infinite ease-in-out';
+        hintIcon.innerHTML = `<i class="ph-bold ph-arrows-clockwise text-lg"></i>`;
+        
+        // 既存の相対配置コンテナであることを確認して追加
+        if (getComputedStyle(heroCard).position === 'static') {
+            heroCard.style.position = 'relative';
+        }
+        heroCard.appendChild(hintIcon);
+    }
+
+    // --- ★追加: "The Tease" (初回のみプルンと揺らす) ---
+    if (heroCard && !hasTeased) {
+        hasTeased = true;
+        // 画面描画から少し遅らせて「気づかせる」
+        setTimeout(() => {
+            // ユーザーがまだ触っていなければ揺らす
+            if (heroCard.dataset.isAnimating !== 'true') {
+                heroCard.animate([
+                    { transform: 'perspective(1000px) rotateY(0deg)' },
+                    { transform: 'perspective(1000px) rotateY(15deg)' }, // 15度だけチラ見せ
+                    { transform: 'perspective(1000px) rotateY(0deg)' }
+                ], {
+                    duration: 800,
+                    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' // バネのような動き
+                });
+            }
+        }, 1500); // 1.5秒後に実行
+    }
+
+    // --- インタラクション: パネル全体を回転 ---
     if (!isTankListenerAttached && heroCard) {
         
         heroCard.style.cursor = 'pointer';
 
         heroCard.addEventListener('click', (e) => {
-            // ▼安全策: プルダウン（セレクトボックス）の操作時は回転させない
+            // プルダウン等の操作時は無視
             if (e.target.closest('select') || e.target.closest('.ph-caret-down')) {
                 return;
             }
 
-            // アニメーション中なら無視
             if (heroCard.dataset.isAnimating === 'true') return;
             heroCard.dataset.isAnimating = 'true';
+
+            // ヒントアイコンがあれば、一度回したらもう消す（学習済みとみなす）
+            const hint = document.getElementById('tank-flip-hint');
+            if (hint) hint.style.opacity = '0';
 
             // 音再生
             if (window.AudioEngine) {
                 window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
 
-            // 1. 回転して消える (0deg -> 90deg)
+            // 1. 回転して消える
             const flipOut = heroCard.animate([
                 { transform: 'perspective(1000px) rotateY(0deg)' },
                 { transform: 'perspective(1000px) rotateY(90deg)' }
@@ -73,14 +136,13 @@ export function renderBeerTank(currentBalanceKcal) {
             });
 
             flipOut.onfinish = () => {
-                // 2. データを切り替える
+                // 2. データ切り替え
                 const currentMode = StateManager.orbViewMode || 'cans';
                 StateManager.setOrbViewMode(currentMode === 'cans' ? 'kcal' : 'cans');
                 
-                // 再描画
                 renderBeerTank(latestBalance);
 
-                // 3. 回転して戻る (90deg -> 0deg)
+                // 3. 回転して戻る
                 const flipIn = heroCard.animate([
                     { transform: 'perspective(1000px) rotateY(90deg)' },
                     { transform: 'perspective(1000px) rotateY(0deg)' }
@@ -90,7 +152,6 @@ export function renderBeerTank(currentBalanceKcal) {
                     fill: 'forwards'
                 });
 
-                // 完了音
                 if (window.AudioEngine) {
                    setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 50);
                 }
@@ -134,10 +195,7 @@ export function renderBeerTank(currentBalanceKcal) {
         let fillRatio = 0;
 
         // --- 3. Customモードバッジ ---
-        // ※ 以前は tankWrapper に追加していましたが、heroCard が回転するなら
-        //    バッジも heroCard の中（相対配置）にあるべきです。
-        //    tankWrapper は heroCard の中にあるので、そのままで一緒に回ります。
-        
+        // heroCard内ではなくtankWrapperに追加（配置位置の都合上）
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE);
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
@@ -152,7 +210,6 @@ export function renderBeerTank(currentBalanceKcal) {
 
             const badge = document.createElement('div');
             badge.id = 'tank-custom-countdown';
-            // 位置調整: 親要素(tankWrapper)基準での配置
             badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
             badge.innerHTML = `
                 <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
@@ -166,7 +223,7 @@ export function renderBeerTank(currentBalanceKcal) {
         const currentViewMode = StateManager.orbViewMode || 'cans';
         const unitEl = cansText.parentElement.querySelector('span:last-child');
 
-        // --- 4. モード別表示ロジック (符号なし絶対値表示) ---
+        // --- 4. モード別表示ロジック ---
         if (currentBalanceKcal >= 0) {
             // === Zen Mode (貯金) ===
             liquidFront.style.opacity = '0';
@@ -236,7 +293,6 @@ export function renderBeerTank(currentBalanceKcal) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }
 
-            // 符号なし（絶対値）表示
             if (currentViewMode === 'kcal') {
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 if(unitEl) unitEl.textContent = 'kcal';

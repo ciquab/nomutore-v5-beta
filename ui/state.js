@@ -6,6 +6,8 @@ const _state = {
     chart: null, 
     timerId: null,
     chartRange: '1w',
+    // ★追加: オーブの表示モード ('cans' | 'kcal')
+    orbViewMode: 'cans', 
     isEditMode: false,
     heatmapOffset: 0,
     logLimit: 50,
@@ -43,4 +45,5 @@ export const StateManager = {
     
     setCellarViewMode: (v) => { _state.cellarViewMode = v; },
     setSelectedDate: (v) => { _state.selectedDate = v; } // ★追加 setter
+
 };

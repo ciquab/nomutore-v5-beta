@@ -5,6 +5,28 @@ import { StateManager } from './state.js';
 import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+// --- キャッシュ対策: 3D回転に必要な設定のみを強制注入 ---
+const styleId = 'nomutore-tank-anim-style';
+if (!document.getElementById(styleId)) {
+    const styleFix = document.createElement('style');
+    styleFix.id = styleId;
+    styleFix.innerHTML = `
+        /* ラッパーに遠近感を設定 */
+        #tank-wrapper {
+            perspective: 1000px !important;
+            -webkit-perspective: 1000px !important;
+            transform-style: preserve-3d !important;
+        }
+        /* 中身（オーブ）が立体的になるように */
+        .orb-container {
+            transform-style: preserve-3d !important;
+            -webkit-transform-style: preserve-3d !important;
+            will-change: transform; 
+        }
+    `;
+    document.head.appendChild(styleFix);
+}
+
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
 let latestBalance = 0;
@@ -38,28 +60,15 @@ export function renderBeerTank(currentBalanceKcal) {
     const orbContainer = document.querySelector('.orb-container'); 
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
-    
-    // --- ★変更点: ラッパーを「カード」としてデザインする ---
-    if (tankWrapper && !tankWrapper.classList.contains('card-styled')) {
-        // カード風のスタイルを強制適用 (Glassmorphism)
-        // 透明な枠に「背景・枠線・影・余白」を与えて物理的なカードにします
-        tankWrapper.className = `
-            relative inline-block mt-4 p-6
-            bg-white/10 dark:bg-black/20 
-            backdrop-blur-md 
-            border border-white/20 dark:border-white/10
-            rounded-[3rem] 
-            shadow-xl shadow-indigo-500/10 dark:shadow-black/40
-            cursor-pointer
-            card-styled
-        `;
-        // オーブ自体の余白等はリセット
-        if(orbContainer) orbContainer.style.margin = '0 auto';
-    }
 
-    // --- インタラクション: カード全体(tankWrapper)を回転させる ---
+    // ★修正: 余計な「カードスタイル（枠線・背景）」の追加処理を削除しました。
+    // これにより、見た目は元のまま維持されます。
+
+    // --- インタラクション: ラッパーごと回転させる ---
     if (!isTankListenerAttached && tankWrapper) {
         
+        tankWrapper.style.cursor = 'pointer';
+
         tankWrapper.addEventListener('click', (e) => {
             // アニメーション中なら無視
             if (tankWrapper.dataset.isAnimating === 'true') return;
@@ -169,7 +178,7 @@ export function renderBeerTank(currentBalanceKcal) {
         const currentViewMode = StateManager.orbViewMode || 'cans';
         const unitEl = cansText.parentElement.querySelector('span:last-child');
 
-        // --- 4. モード別表示ロジック ---
+        // --- 4. モード別表示ロジック (符号なし絶対値表示) ---
         if (currentBalanceKcal >= 0) {
             // === Zen Mode (貯金) ===
             liquidFront.style.opacity = '0';
@@ -207,7 +216,6 @@ export function renderBeerTank(currentBalanceKcal) {
 
         } else {
             // === Debt Mode (借金) ===
-            // 符号なし（絶対値）で表示
             liquidFront.style.opacity = '1';
             liquidBack.style.opacity = '0.5';
 
@@ -240,6 +248,7 @@ export function renderBeerTank(currentBalanceKcal) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }
 
+            // 符号なし（絶対値）表示
             if (currentViewMode === 'kcal') {
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 if(unitEl) unitEl.textContent = 'kcal';

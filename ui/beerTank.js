@@ -2,20 +2,11 @@ import { APP, EXERCISE } from '../constants.js';
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { StateManager } from './state.js';
-import { DOM, escapeHtml, AudioEngine } from './dom.js'; // AudioEngineを追加
+import { DOM, escapeHtml, AudioEngine } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
-
-const styleFix = document.createElement('style');
-styleFix.innerHTML = `
-    .perspective-1000 { perspective: 1000px; }
-    .flip-card-inner { transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1) !important; transform-style: preserve-3d; }
-    .is-flipped-90 { transform: rotateY(90deg) !important; }
-`;
-document.head.appendChild(styleFix);
 
 // モジュールレベルの状態管理
 let isTankListenerAttached = false;
-let orbViewMode = 'cans'; // 'cans' | 'kcal'
 let latestBalance = 0;    // クリックイベント用に最新バランスを保持
 
 export function renderBeerTank(currentBalanceKcal) {
@@ -38,38 +29,58 @@ export function renderBeerTank(currentBalanceKcal) {
         isHazy 
     } = Calc.getTankDisplayData(currentBalanceKcal, StateManager.beerMode, settings, profile);
 
-    // IDで要素を取得
+    // 要素を取得
     const liquidFront = DOM.elements['tank-liquid'] || document.getElementById('orb-liquid-front');
     const liquidBack = DOM.elements['tank-liquid-back'] || document.getElementById('orb-liquid-back');
     const cansText = DOM.elements['tank-cans'] || document.getElementById('tank-cans');
     const minText = DOM.elements['tank-minutes'] || document.getElementById('tank-minutes');
     const msgContainer = DOM.elements['tank-message'] || document.getElementById('tank-message');
     
-    // オーブの親要素（揺れ用）と枠線（禅モード用）を取得
-    const orbContainer = document.querySelector('.orb-container'); 
-    // ★追加: 新しいラッパーを取得
+    // アニメーション用ラッパーとコンテナ
     const tankWrapper = document.getElementById('tank-wrapper');
+    const orbContainer = document.querySelector('.orb-container'); 
     
     if (!liquidFront || !liquidBack || !cansText || !minText || !msgContainer) return;
     
-    // --- ★追加: タップで表示モード切り替え (Click to Toggle) ---
-    if (!isTankListenerAttached && orbContainer) {
-        orbContainer.style.cursor = 'pointer';
+    // --- ★追加: タップでフリップアニメーション (Click to Flip) ---
+    if (!isTankListenerAttached && orbContainer && tankWrapper) {
         
-        // タップ時の縮小エフェクト用クラス
-        orbContainer.classList.add('transition-transform', 'active:scale-95');
+        // CSSクラスの適用（style.cssの定義を利用）
+        tankWrapper.classList.add('perspective-1000');
+        orbContainer.classList.add('flip-card-inner');
+        orbContainer.style.cursor = 'pointer';
 
         orbContainer.addEventListener('click', (e) => {
-            // 1. モードをトグル
-            orbViewMode = (orbViewMode === 'cans') ? 'kcal' : 'cans';
-            
-            // 2. 音でフィードバック (ポンッという軽い音)
+            // 連打防止: すでに回転中なら無視
+            if (orbContainer.classList.contains('is-flipped-90')) return;
+
+            // 1. 回転開始（90度まで回して見えなくする）
+            orbContainer.classList.add('is-flipped-90');
+
+            // 2. 音でフィードバック ("シュッ"という風切り音)
             if (window.AudioEngine) {
-                window.AudioEngine.playTone(600, 'sine', 0.05);
+                window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
             
-            // 3. 即座に再描画 (キャッシュした最新バランスを使用)
-            renderBeerTank(latestBalance);
+            // 3. 回転しきったタイミング(0.3s後)で中身を書き換える
+            // transitionが0.6sなので、半分の0.3sで90度になる
+            setTimeout(() => {
+                // モードをトグル (State経由)
+                const currentMode = StateManager.orbViewMode || 'cans';
+                StateManager.setOrbViewMode(currentMode === 'cans' ? 'kcal' : 'cans');
+                
+                // 再描画 (この時点では裏返っているので見えない)
+                renderBeerTank(latestBalance);
+                
+                // 4. 元に戻して出現させる
+                orbContainer.classList.remove('is-flipped-90');
+                
+                // (オプション) 出現時の完了音
+                if (window.AudioEngine) {
+                   setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 100);
+                }
+
+            }, 300); 
         });
         
         isTankListenerAttached = true;
@@ -107,20 +118,17 @@ export function renderBeerTank(currentBalanceKcal) {
         const endDateTs = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE);
         const customLabel = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL);
 
-        // 既存のCountdown要素があれば削除（重複防止）
         const existingCount = document.getElementById('tank-custom-countdown');
         if (existingCount) existingCount.remove();
 
         if (mode === 'custom' && endDateTs) {
             const end = dayjs(parseInt(endDateTs));
             const now = dayjs();
-            const daysLeft = end.diff(now, 'day'); // 残り日数
+            const daysLeft = end.diff(now, 'day');
 
             if (tankWrapper) {
                 const badge = document.createElement('div');
                 badge.id = 'tank-custom-countdown';
-                
-                // ★修正: 原色ベタ塗りをやめ、Glassmorphism調の控えめなデザインに変更
                 badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
                 
                 badge.innerHTML = `
@@ -133,30 +141,31 @@ export function renderBeerTank(currentBalanceKcal) {
             }
         }
 
+        // 現在の表示モードを取得 (State優先、未定義ならデフォルト)
+        const currentViewMode = StateManager.orbViewMode || 'cans';
+
         // --- 3. モード別表示ロジック ---
         if (currentBalanceKcal >= 0) {
             // === Zen Mode (貯金) ===
-            // 液体を隠す
             liquidFront.style.opacity = '0';
             liquidBack.style.opacity = '0';
 
-            // ★ここに追加: 貯金モードになったら泡を削除してリセットする
             const existingBubbles = orbContainer.querySelector('.bubble-container');
             if (existingBubbles) existingBubbles.remove();
             
-            // 禅モード(黄金の光)ON
             if (orbContainer) orbContainer.classList.add('zen-mode');
 
             // --- テキスト表示 (切り替え対応) ---
-            if (orbViewMode === 'kcal') {
-                // kcalモード
+            if (currentViewMode === 'kcal') {
                 cansText.textContent = `+${Math.round(currentBalanceKcal).toLocaleString()}`;
-                cansText.nextElementSibling.textContent = 'kcal'; // 単位更新(HTML構造に依存、なければ無視)
+                const unitEl = cansText.parentElement.querySelector('span:last-child');
+                if(unitEl) unitEl.textContent = 'kcal';
+                cansText.style.fontSize = Math.round(currentBalanceKcal) > 9999 ? '2.0rem' : '2.5rem';
             } else {
-                // cansモード
                 cansText.textContent = `+${canCount.toFixed(1)}`;
                 const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'cans';
+                cansText.style.fontSize = '';
             }
             
             cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
@@ -178,29 +187,23 @@ export function renderBeerTank(currentBalanceKcal) {
 
         } else {
             // === Debt Mode (借金) ===
-            // 液体を表示
             liquidFront.style.opacity = '1';
             liquidBack.style.opacity = '0.5';
 
             const debtCans = Math.abs(canCount);
             const rawRatio = (debtCans / APP.TANK_MAX_CANS) * 100;
-            
-            // ★重要: 94%で止めて、満タン時でも波が見えるようにする
             fillRatio = Math.max(10, Math.min(94, rawRatio)); 
 
-            // --- 演出ロジック ---
-            // ★修正: 生成場所を liquidFront ではなく orbContainer に変更！
+            // 泡エフェクト
             let bubbleContainer = orbContainer.querySelector('.bubble-container');
             if (!bubbleContainer) {
                 bubbleContainer = document.createElement('div');
                 bubbleContainer.className = 'bubble-container';
-                // orbContainer(枠)に追加
                 orbContainer.appendChild(bubbleContainer);
                 
                 for (let i = 0; i < 10; i++) {
                     const bubble = document.createElement('div');
                     bubble.className = 'bubble-particle';
-                    
                     const size = Math.random() * 5 + 2; 
                     const left = Math.random() * 80 + 10; 
                     const duration = Math.random() * 3 + 4; 
@@ -216,22 +219,21 @@ export function renderBeerTank(currentBalanceKcal) {
                 }
             }
 
-            // Level 3: 借金2.5本超え -> ほろ酔いモード
             if (debtCans > 2.5) {
                 if (orbContainer) orbContainer.classList.add('tipsy-mode');
             }
 
             // --- テキスト表示 (切り替え対応) ---
-            if (orbViewMode === 'kcal') {
-                // kcalモード (借金はマイナス表示せずに絶対値にするか、そのままか。ここでは見やすく整数で)
+            if (currentViewMode === 'kcal') {
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'kcal';
+                cansText.style.fontSize = Math.round(Math.abs(currentBalanceKcal)) > 9999 ? '2.0rem' : '2.5rem';
             } else {
-                // cansモード
                 cansText.textContent = canCount.toFixed(1);
                 const unitEl = cansText.parentElement.querySelector('span:last-child');
                 if(unitEl) unitEl.textContent = 'cans';
+                cansText.style.fontSize = '';
             }
 
             cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
@@ -252,10 +254,8 @@ export function renderBeerTank(currentBalanceKcal) {
             }
         }
 
-        // 液体の高さを適用 (波打つため top を操作)
         const topVal = 100 - fillRatio;
         liquidFront.style.top = `${topVal}%`;
         liquidBack.style.top = `${topVal + 2}%`; 
     });
 }
-

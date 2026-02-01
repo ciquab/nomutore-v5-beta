@@ -1275,7 +1275,7 @@
                         </h5>
                         <div class="text-xs text-gray-600 dark:text-gray-300 space-y-2">
             <p>
-                体調チェックや飲酒・運動の記録に応じてアイコンと色が変化します。日付を<strong>タップ</strong>すると詳細画面が開き、過去ログの確認・修正・追加登録が可能です。
+                デイリーチェックや飲酒・運動の記録に応じてアイコンと色が変化します。日付を<strong>タップ</strong>すると詳細画面が開き、過去ログの確認・修正・追加登録が可能です。
             </p>
             <div class="flex items-center gap-2 text-[10px]">
                 <span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded font-bold">Weekly</span>
@@ -1361,7 +1361,7 @@
                         </div>
                         <div class="text-xs">
                             <h5 class="font-bold text-sm text-base-900 dark:text-white">ストップウォッチ</h5>
-                            <p class="text-gray-500 mt-1">運動開始時にスタート。リアルタイムで「ビール何本分返済したか」が表示され、没入感を高めます。</p>
+                            <p class="text-gray-500 mt-1">運動開始時にスタートし、終了時にストップすると自動で記録。1分以上から記録が保存可能で、ブラウザを閉じても最大3時間までバックグラウンドで計測されます。リアルタイムで消費カロリーと「『よく飲むスタイル』のビール何本分返済したか」が表示され、没入感を高めます。</p>
                         </div>
                     </div>
                 </div>
@@ -1378,9 +1378,9 @@
                 <i class="ph-duotone ph-lightning text-yellow-500 text-xl"></i>
             </div>
             <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Smart Shortcuts</h5>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">クイック登録</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    あなたの履歴を解析し、<strong>「よく飲むビール」</strong>と<strong>「いつもの運動」</strong>を自動表示。Recordタブ上部やFABメニューからワンタップで記録できます。
+                    あなたの履歴を解析し、<strong>「よく飲むビール」</strong>と<strong>「いつもの運動」</strong>を自動表示。Recordタブ上部や「＋」ボタンからワンタップで記録できます。
                 </p>
             </div>
         </div>
@@ -1389,14 +1389,6 @@
             <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
                 <i class="ph-duotone ph-timer text-indigo-500 text-xl"></i>
             </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Immersive Timer</h5>
-                <ul class="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-1 list-disc list-inside">
-                    <li>ブラウザを閉じても<strong>最大3時間</strong>までバックグラウンド計測</li>
-                    <li><strong>1分以上</strong>で記録保存可能</li>
-                    <li>リアルタイムで「よく飲むスタイルのビール換算で何ml分消費したか」を表示</li>
-                </ul>
-            </div>
         </div>
 
         <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
@@ -1404,7 +1396,7 @@
                 <i class="ph-duotone ph-share-network text-pink-500 text-xl"></i>
             </div>
             <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Share Images</h5>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">SNSシェア用画像生成</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     ホーム画面からは「現在のランクと借金」、ビール記録後は「写真に銘柄・カロリーを合成」した画像を生成してシェアできます。
                 </p>
@@ -1433,65 +1425,7 @@
         </div>
     </div>
 </section>
-
 <section>
-    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <i class="ph-duotone ph-books"></i> Cellar & Analytics
-    </h4>
-    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
-        
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-list-dashes text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Logs (履歴管理)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    記録の修正・削除が可能。「Edit」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
-                </p>
-            </div>
-        </div>
-
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-chart-pie-slice text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Stats (分析)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    期間内の総飲酒量や銘柄数を集計。飲んだ頻度順のランキング表示や、銘柄・ブルワリー・評価での<strong>絞り込み検索</strong>に対応。
-                </p>
-            </div>
-        </div>
-
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-archive text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">Archives (過去の記録)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    期間リセット（Weekly/Monthly/Custom）ごとの成績と収支ログがここに保存されます。
-                </p>
-            </div>
-        </div>
-
-        <div class="pt-2 border-t border-indigo-200 dark:border-indigo-800/30">
-            <div class="flex items-start gap-2">
-                <i class="ph-fill ph-flag text-orange-500 mt-0.5"></i>
-                <div>
-                    <span class="font-bold text-xs text-base-900 dark:text-white">Custom Period Mode</span>
-                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                        設定画面から「Custom」期間モードを選ぶと、旅行や短期集中ダイエット用に<strong>「プロジェクト名・開始日・終了日」</strong>を自由に設定して計測できます。
-                    </p>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</section>
-
-            <section>
                 <h4 id="game-mechanics" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-lightning"></i> Game Mechanics
                 </h4>
@@ -1628,6 +1562,64 @@
                     </div>
                 </div>
             </section>
+<section>
+    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="ph-duotone ph-books"></i> Cellar & Analytics
+    </h4>
+    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
+        
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-list-dashes text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">履歴管理 (Logs)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    記録の修正・削除が可能。「Edit」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-chart-pie-slice text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間内の総飲酒量や銘柄数を集計。飲んだ頻度順のランキング表示や、銘柄・ブルワリー・評価での<strong>絞り込み検索</strong>に対応。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-archive text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">過去の記録 (Archives)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間リセット（Weekly/Monthly/Custom）ごとの成績と収支ログがここに保存されます。
+                </p>
+            </div>
+        </div>
+
+        <div class="pt-2 border-t border-indigo-200 dark:border-indigo-800/30">
+            <div class="flex items-start gap-2">
+                <i class="ph-fill ph-flag text-orange-500 mt-0.5"></i>
+                <div>
+                    <span class="font-bold text-xs text-base-900 dark:text-white">カスタム期間モード (Custom Period Mode)</span>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        設定画面から「Custom」を選ぶと、旅行や短期集中ダイエット用に<strong>「プロジェクト名・開始日・終了日」</strong>を自由に設定して計測できます。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+            
 
             <section>
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">

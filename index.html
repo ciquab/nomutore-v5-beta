@@ -372,7 +372,7 @@
             <div class="glass-panel p-6 rounded-3xl mb-4">
                 <h2 class="text-lg font-black mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-user-circle text-indigo-500"></i>
-                    Profile & Goals
+                    Profile & Mode
                 </h2>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -1082,23 +1082,53 @@
 
 <div id="day-add-selector" class="hidden fixed inset-0 z-[1200] flex items-end justify-center px-4 pb-10">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="UI.toggleModal('day-add-selector', false)"></div>
-    <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl space-y-3">
-        <h3 id="day-add-selector-label" class="text-center text-sm font-bold opacity-50 pb-2">00/00 に記録を追加</h3>
+    <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl">
         
-        <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-beer-bottle text-xl"></i> ビールを記録
-        </button>
-        
-        <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-sneaker-move text-xl"></i> 運動を記録
-        </button>
+        <div class="flex justify-between items-center mb-4">
+            <h3 id="day-add-selector-label" class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                00/00 に記録を追加
+            </h3>
+            <button onclick="UI.toggleModal('day-add-selector', false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
 
-        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-check-fat text-xl"></i> 体調を記録
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            
+            <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-amber-900/40 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-beer-bottle text-2xl"></i>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">ビールを記録</span>
+                    <span class="block text-[9px] text-gray-500">銘柄・詳細入力</span>
+                </div>
+            </button>
+
+            <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group relative overflow-hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-pencil-simple-slash text-2xl"></i>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xs font-bold text-base-900 dark:text-white">運動を記録</span>
+                    <span class="block text-[9px] text-gray-500">家事・通勤・ジム</span>
+                </div>
+            </button>
+
+        </div>
+
+        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full p-4 rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
+            <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 shrink-0">
+                <i class="ph-duotone ph-heartbeat text-xl"></i>
+            </div>
+            <div class="text-left">
+                <span class="block text-xs font-bold text-base-900 dark:text-white">デイリーチェック</span>
+                <span class="block text-[9px] text-gray-400">休肝日・体重</span>
+            </div>
         </button>
+        
     </div>
-</div>
-    
+</div>    
 <div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-white dark:bg-base-900 w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
         
@@ -1174,6 +1204,20 @@
                         <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
                             <i class="ph-fill ph-sphere text-indigo-500 text-lg"></i> センターオーブ (Beer Tank)
                         </h5>
+                        <p class="text-xs text-gray-600 dark:text-gray-300 mb-2">
+            オーブを<strong>タップ</strong>すると、表示モードが切り替わります。
+        </p>
+        <div class="grid grid-cols-2 gap-2 text-[10px] text-gray-500 dark:text-gray-400">
+            <div class="bg-white dark:bg-base-900 p-2 rounded border border-gray-100 dark:border-gray-700">
+                <span class="font-bold block text-base-900 dark:text-white mb-0.5">Beer Cans</span>
+                設定した「よく飲むスタイル (Favorite Beer)」350mlを基準に換算した本数と、解消に必要な運動時間。
+
+            </div>
+            <div class="bg-white dark:bg-base-900 p-2 rounded border border-gray-100 dark:border-gray-700">
+                <span class="font-bold block text-base-900 dark:text-white mb-0.5">kcal / min</span>
+                借金・貯金のカロリー数と、解消に必要な運動時間。
+            </div>
+        </div>
                         <ul class="text-xs space-y-3 text-gray-600 dark:text-gray-300">
                             <li class="flex gap-3">
                                 <span class="text-red-500 font-black text-lg">●</span>
@@ -1229,16 +1273,19 @@
                             <i class="ph-duotone ph-calendar-blank text-indigo-500 text-lg"></i> カレンダー & ヒートマップ<br class="sm:hidden">
                             <span class="hidden sm:inline"> </span>(Weekly & Heatmap)
                         </h5>
-                        <div class="space-y-3 text-xs text-gray-600 dark:text-gray-300">
-                            <div>
-                                <strong class="block text-base-900 dark:text-white mb-0.5">Weekly (上段)</strong>
-                                直近1週間の詳細ログ。タップで履歴を修正できます。
-                            </div>
-                            <div>
-                                <strong class="block text-base-900 dark:text-white mb-0.5">Heatmap (下段)</strong>
-                                過去の習慣を可視化。良い行動の日ほどリッチなアイコンになります。
-                            </div>
-                        </div>
+                        <div class="text-xs text-gray-600 dark:text-gray-300 space-y-2">
+            <p>
+                体調チェックや飲酒・運動の記録に応じてアイコンと色が変化します。日付を<strong>タップ</strong>すると詳細画面が開き、過去ログの確認・修正・追加登録が可能です。
+            </p>
+            <div class="flex items-center gap-2 text-[10px]">
+                <span class="px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded font-bold">Weekly</span>
+                <span>直近1週間の詳細ログ</span>
+            </div>
+            <div class="flex items-center gap-2 text-[10px]">
+                <span class="px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded font-bold">Heatmap</span>
+                <span>長期的な習慣の可視化</span>
+            </div>
+        </div>
                     </div>
 
                     <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
@@ -1319,6 +1366,130 @@
                     </div>
                 </div>
             </section>
+
+<section>
+    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="ph-duotone ph-sparkle"></i> Useful Features
+    </h4>
+    
+    <div class="space-y-3">
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
+                <i class="ph-duotone ph-lightning text-yellow-500 text-xl"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Smart Shortcuts</h5>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    あなたの履歴を解析し、<strong>「よく飲むビール」</strong>トップ3と<strong>「直近の運動」</strong>を自動表示。Recordタブ上部やFABメニューからワンタップで記録できます。
+                </p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
+                <i class="ph-duotone ph-timer text-indigo-500 text-xl"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Immersive Timer</h5>
+                <ul class="text-xs text-gray-500 dark:text-gray-400 mt-1 space-y-1 list-disc list-inside">
+                    <li>ブラウザを閉じても<strong>最大3時間</strong>までバックグラウンド計測</li>
+                    <li><strong>1分以上</strong>で記録保存可能</li>
+                    <li>リアルタイムで「ビール何ml分消費したか」を表示</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
+                <i class="ph-duotone ph-share-network text-pink-500 text-xl"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Share Images</h5>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    ホーム画面からは「現在のランクと借金」、ビール記録後は「写真に銘柄・カロリーを合成」した画像を生成してシェアできます。
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-1.5 mb-1">
+                    <i class="ph-bold ph-calculator text-gray-400"></i>
+                    <span class="font-bold text-xs text-base-900 dark:text-white">NetMETS計算</span>
+                </div>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                    運動強度(METs)から安静時(1.0)を引き、<strong>「運動で増えた消費分」</strong>のみを厳密に計算しています。
+                </p>
+            </div>
+            <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center gap-1.5 mb-1">
+                    <i class="ph-bold ph-magnifying-glass text-yellow-500"></i>
+                    <span class="font-bold text-xs text-base-900 dark:text-white">Untappd連携</span>
+                </div>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                    ビール入力時、虫眼鏡ボタンを押すと入力した銘柄名でUntappdを検索できます。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="ph-duotone ph-books"></i> Cellar & Analytics
+    </h4>
+    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
+        
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-list-dashes text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Logs (履歴管理)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    記録の修正・削除が可能。「Edit」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-chart-pie-slice text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Stats (分析)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間内の総飲酒量や銘柄数を集計。飲んだ頻度順のランキング表示や、銘柄・ブルワリー・評価での<strong>絞り込み検索</strong>に対応。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-archive text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">Archives (過去の記録)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間リセット（Weekly/Monthly/Custom）ごとの成績と収支ログがここに保存されます。
+                </p>
+            </div>
+        </div>
+
+        <div class="pt-2 border-t border-indigo-200 dark:border-indigo-800/30">
+            <div class="flex items-start gap-2">
+                <i class="ph-fill ph-flag text-orange-500 mt-0.5"></i>
+                <div>
+                    <span class="font-bold text-xs text-base-900 dark:text-white">Custom Period Mode</span>
+                    <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                        設定画面から「Custom」期間モードを選ぶと、旅行や短期集中ダイエット用に<strong>「プロジェクト名・開始日・終了日」</strong>を自由に設定して計測できます。
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
 
             <section>
                 <h4 id="game-mechanics" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -1482,26 +1653,6 @@
 
             <section>
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-books"></i> Data Management
-                </h4>
-                <div class="grid grid-cols-3 gap-2">
-                    <div class="text-center p-2 rounded-xl bg-gray-50 dark:bg-gray-800">
-                        <span class="font-bold text-[10px] block text-base-900 dark:text-white">Logs</span>
-                        <span class="text-[9px] text-gray-400">履歴の編集・削除</span>
-                    </div>
-                    <div class="text-center p-2 rounded-xl bg-gray-50 dark:bg-gray-800">
-                        <span class="font-bold text-[10px] block text-base-900 dark:text-white">Stats</span>
-                        <span class="text-[9px] text-gray-400">飲酒傾向の分析</span>
-                    </div>
-                    <div class="text-center p-2 rounded-xl bg-gray-50 dark:bg-gray-800">
-                        <span class="font-bold text-[10px] block text-base-900 dark:text-white">Archives</span>
-                        <span class="text-[9px] text-gray-400">過去期間の成績</span>
-                    </div>
-                </div>
-            </section>
-
-            <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-scales"></i> Substitution Tips
                 </h4>
                 <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
@@ -1517,7 +1668,7 @@
             </section>
 
             <div class="text-center pt-4">
-                <p class="text-[10px] text-gray-300 dark:text-gray-600 tracking-widest">NOMUTORE v4.0 - NO BEER NO LIFE</p>
+                <p class="text-[10px] text-gray-300 dark:text-gray-600 tracking-widest">NOMUTORE - NO BEER NO LIFE</p>
             </div>
 
         </div>

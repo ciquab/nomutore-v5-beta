@@ -290,30 +290,6 @@
         </div>
     </section>
 </div>
-
-
-<div id="action-menu-modal" class="fixed inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="UI.closeModal('action-menu-modal')"></div>
-    
-    <div class="absolute bottom-0 left-0 w-full bg-white dark:bg-base-900 rounded-t-[2rem] p-6 pb-10 modal-enter transition-all duration-300">
-        
-        <div class="flex justify-between items-center mb-6">
-            <div>
-                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Quick Action</span>
-                <h3 id="action-menu-date-label" class="text-xl font-black text-base-900 dark:text-white leading-none mt-0.5">Today</h3>
-            </div>
-            <button onclick="UI.closeModal('action-menu-modal')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
-                <i class="ph-bold ph-x text-lg"></i>
-            </button>
-        </div>
-        
-        <input type="hidden" id="action-menu-target-date">
-
-        <div class="grid grid-cols-2 gap-3 mb-2" id="action-menu-beer-presets"></div>
-        <div id="action-menu-repeat-area"></div>
-        
-    </div>
-</div>
         <div id="tab-cellar" class="tab-content space-y-4 hidden">
              <div class="flex items-center justify-between px-2 mb-1">
                 <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Cellar</h2>
@@ -372,7 +348,7 @@
             <div class="glass-panel p-6 rounded-3xl mb-4">
                 <h2 class="text-lg font-black mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-user-circle text-indigo-500"></i>
-                    Profile & Mode
+                    Profile & Goals
                 </h2>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -668,6 +644,30 @@
             </div>
         </div>
     </div>
+
+<div id="action-menu-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="UI.closeModal('action-menu-modal')"></div>
+    
+    <div class="absolute bottom-0 left-0 w-full bg-white dark:bg-base-900 rounded-t-[2rem] p-6 pb-10 modal-enter transition-all duration-300">
+        
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Quick Action</span>
+                <h3 id="action-menu-date-label" class="text-xl font-black text-base-900 dark:text-white leading-none mt-0.5">Today</h3>
+            </div>
+            <button onclick="UI.closeModal('action-menu-modal')" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+        
+        <input type="hidden" id="action-menu-target-date">
+
+        <div class="grid grid-cols-2 gap-3 mb-2" id="action-menu-beer-presets"></div>
+        <div id="action-menu-repeat-area"></div>
+        
+    </div>
+</div>
+
 
     <!-- Beer Modal -->
     <div id="beer-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
@@ -1082,51 +1082,20 @@
 
 <div id="day-add-selector" class="hidden fixed inset-0 z-[1200] flex items-end justify-center px-4 pb-10">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="UI.toggleModal('day-add-selector', false)"></div>
-    <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl">
+    <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl space-y-3">
+        <h3 id="day-add-selector-label" class="text-center text-sm font-bold opacity-50 pb-2">00/00 に記録を追加</h3>
         
-        <div class="flex justify-between items-center mb-4">
-            <h3 id="day-add-selector-label" class="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                00/00 に記録を追加
-            </h3>
-            <button onclick="UI.toggleModal('day-add-selector', false)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
-                <i class="ph-bold ph-x text-lg"></i>
-            </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            
-            <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-amber-900/40 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition">
-                    <i class="ph-duotone ph-beer-bottle text-2xl"></i>
-                </div>
-                <div class="text-center">
-                    <span class="block text-xs font-bold text-base-900 dark:text-white">ビールを記録</span>
-                    <span class="block text-[9px] text-gray-500">銘柄・詳細入力</span>
-                </div>
-            </button>
-
-            <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group relative overflow-hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
-                <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition">
-                    <i class="ph-duotone ph-pencil-simple-slash text-2xl"></i>
-                </div>
-                <div class="text-center">
-                    <span class="block text-xs font-bold text-base-900 dark:text-white">運動を記録</span>
-                    <span class="block text-[9px] text-gray-500">家事・通勤・ジム</span>
-                </div>
-            </button>
-
-        </div>
-
-        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full p-4 rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
-            <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 shrink-0">
-                <i class="ph-duotone ph-heartbeat text-xl"></i>
-            </div>
-            <div class="text-left">
-                <span class="block text-xs font-bold text-base-900 dark:text-white">デイリーチェック</span>
-                <span class="block text-[9px] text-gray-400">休肝日・体重</span>
-            </div>
+        <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-beer-bottle text-xl"></i> ビールを記録
         </button>
         
+        <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-sneaker-move text-xl"></i> 運動を記録
+        </button>
+
+        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
+            <i class="ph-bold ph-check-fat text-xl"></i> 体調を記録
+        </button>
     </div>
 </div>
     
@@ -1684,167 +1653,6 @@
                             <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-orange-slice text-yellow-500"></i> レモンサワー</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">ペールエール</td></tr>
                             <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-skull text-blue-500"></i> ストロング系 (9%)</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">IPA (West Coast)</td></tr>
                             <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-wine text-red-500"></i> ワイン / 日本酒</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">トリペル (250ml)</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <div class="text-center pt-4">
-                <p class="text-[10px] text-gray-300 dark:text-gray-600 tracking-widest">NOMUTORE - NO BEER NO LIFE</p>
-            </div>
-
-        </div>
-        
-        <div class="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800">
-            <button onclick="UI.closeModal('help-modal')" class="w-full bg-base-900 dark:bg-white dark:text-base-900 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform active:scale-95 text-sm">
-                OK, Let's Drink!
-            </button>
-        </div>
-    </div>
-</div>
-
-<section>
-                <h4 id="game-mechanics" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-lightning"></i> Game Mechanics
-                </h4>
-                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-6">
-                    
-                    <div class="space-y-3">
-                        <h5 class="font-black text-indigo-600 dark:text-indigo-400 text-sm flex items-center gap-1">
-                            <i class="ph-duotone ph-trophy text-purple-500"></i> ユーザーランク (LIVER RANK)
-                        </h5>
-                        <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mb-2">
-                            ホーム画面左下に表示される称号です。開始からの日数でモードが切り替わります。
-                        </p>
-                        
-                        <div class="bg-white/60 dark:bg-black/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
-                            <span class="text-xs font-bold text-orange-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                                <i class="ph-duotone ph-egg"></i> Rookie Mode (Day 1-14)
-                            </span>
-                            <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed mb-2">
-                                最初の2週間は「成功率」で判定されます。<br>
-                                成功率 = (休肝日 + 完済日) ÷ 経過日数
-                            </p>
-                            <ul class="text-[10px] space-y-1 text-gray-600 dark:text-gray-400 pl-3 border-l-2 border-orange-200 dark:border-orange-800">
-                                <li class="flex items-center gap-1"><i class="ph-fill ph-star text-orange-500"></i> <strong>新星 (Rookie S):</strong> 成功率 70%以上</li>
-                                <li class="flex items-center gap-1"><i class="ph-fill ph-fire text-orange-500"></i> <strong>期待の星 (Rookie A):</strong> 成功率 40%以上</li>
-                                <li class="flex items-center gap-1"><i class="ph-fill ph-bird text-orange-500"></i> <strong>駆け出し (Rookie B):</strong> 成功率 25%以上</li>
-                                <li class="flex items-center gap-1"><i class="ph-fill ph-egg text-gray-400"></i> <strong>たまご (Beginner):</strong> まだこれから！</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-white/60 dark:bg-black/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-800/30">
-                            <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-1 mb-1">
-                                <i class="ph-duotone ph-shield-check"></i> Normal Mode (Day 15+)
-                            </span>
-                            <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed mb-2">
-                                15日目からは「継続日数（ストリーク）」の実力勝負。<br>
-                                1日でもサボるとランクが下がります。維持しましょう！
-                            </p>
-                            <div class="grid grid-cols-2 gap-2 text-[10px] text-gray-600 dark:text-gray-400">
-                                <div class="p-2 bg-white/50 dark:bg-black/20 rounded border border-purple-100 dark:border-purple-900/30">
-                                    <span class="block font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1"><i class="ph-fill ph-crown"></i> 神の肝臓 (S)</span>
-                                    継続 20日以上
-                                </div>
-                                <div class="p-2 bg-white/50 dark:bg-black/20 rounded border border-indigo-100 dark:border-indigo-900/30">
-                                    <span class="block font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1"><i class="ph-fill ph-shield"></i> 鉄の肝臓 (A)</span>
-                                    継続 12日以上
-                                </div>
-                                <div class="p-2 bg-white/50 dark:bg-black/20 rounded border border-emerald-100 dark:border-emerald-900/30">
-                                    <span class="block font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><i class="ph-fill ph-leaf"></i> 健康志向 (B)</span>
-                                    継続 8日以上
-                                </div>
-                                <div class="p-2 bg-white/50 dark:bg-black/20 rounded border border-red-100 dark:border-red-900/30">
-                                    <span class="block font-bold text-red-500 flex items-center gap-1"><i class="ph-fill ph-warning"></i> 要注意 (C)</span>
-                                    継続 7日以下
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr class="border-indigo-200 dark:border-indigo-800/50">
-
-                    <div class="space-y-2">
-                        <h5 class="font-black text-indigo-600 dark:text-indigo-400 text-sm flex items-center gap-1">
-                            <i class="ph-duotone ph-fire text-orange-500"></i> 継続ボーナス (Streak Bonus)
-                        </h5>
-                        <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed">
-                            「休肝」か「完済」を継続すると、運動時の消費カロリーにボーナスがつきます。
-                            <br><span class="font-bold mt-1 block opacity-80">・3日: 1.1x / 7日: 1.2x / 14日: 1.3x</span>
-                        </p>
-                    </div>
-
-                    <hr class="border-indigo-200 dark:border-indigo-800/50">
-
-                    <div class="space-y-2">
-                        <h5 class="font-black text-indigo-600 dark:text-indigo-400 text-sm flex items-center gap-1">
-                            <i class="ph-duotone ph-calendar-star text-yellow-500"></i> 日次評価 (Daily Evaluation)
-                        </h5>
-                        <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mb-2">
-                            その日の行動によって、カレンダーに刻まれるアイコンが変わります。S評価（金メダル）を目指しましょう！
-                        </p>
-                        
-                        <div class="grid grid-cols-2 gap-2 text-[10px]">
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-fill ph-medal text-xl text-yellow-500"></i>
-                                <div>
-                                    <span class="font-bold text-yellow-600 dark:text-yellow-400">評価 S</span>
-                                    <div class="text-[9px] opacity-70">休肝日 + 運動</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-duotone ph-medal text-xl text-cyan-500"></i>
-                                <div>
-                                    <span class="font-bold text-cyan-600 dark:text-cyan-400">評価 A</span>
-                                    <div class="text-[9px] opacity-70">運動のみ</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-fill ph-coffee text-xl text-emerald-500"></i>
-                                <div>
-                                    <span class="font-bold text-emerald-600 dark:text-emerald-400">評価 B</span>
-                                    <div class="text-[9px] opacity-70">休肝日のみ</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-fill ph-fire text-xl text-blue-500"></i>
-                                <div>
-                                    <span class="font-bold text-blue-600 dark:text-blue-400">評価 C</span>
-                                    <div class="text-[9px] opacity-70">飲酒 + 完済</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-fill ph-person-simple-run text-xl text-sky-500"></i>
-                                <div>
-                                    <span class="font-bold text-sky-600 dark:text-sky-400">評価 D</span>
-                                    <div class="text-[9px] opacity-70">借金残り</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 p-2 rounded bg-white/60 dark:bg-black/20">
-                                <i class="ph-fill ph-beer-stein text-xl text-red-500"></i>
-                                <div>
-                                    <span class="font-bold text-red-500">評価 E</span>
-                                    <div class="text-[9px] opacity-70">飲酒のみ</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </section>
-
-
-            <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-scales"></i> Substitution Tips
-                </h4>
-                <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
-                    <table class="w-full text-left border-collapse text-[11px]">
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200">
-                            <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-brandy text-amber-600"></i> ハイボール (7%)</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">アンバーエール</td></tr>
-            <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-orange-slice text-yellow-500"></i> レモンサワー</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">ペールエール</td></tr>
-            <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-skull text-blue-500"></i> ストロング系 (9%)</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">IPA (West Coast)</td></tr>
-            <tr><td class="p-3 flex items-center gap-2"><i class="ph-fill ph-wine text-red-500"></i> ワイン / 日本酒</td><td class="p-3 font-bold text-indigo-600 dark:text-indigo-400">トリペル (250ml)</td></tr>
                         </tbody>
                     </table>
                 </div>

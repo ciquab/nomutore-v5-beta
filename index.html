@@ -1345,62 +1345,9 @@
 
                 </div>
             </section>
-
-            <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-sparkle"></i> Useful Features
-                </h4>
-                
-                <div class="space-y-3">
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
-                            <i class="ph-duotone ph-lightning text-yellow-500 text-xl"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">クイック登録</h5>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                あなたの履歴を解析し、<strong>「よく飲むビール」</strong>と<strong>「いつもの運動」</strong>を自動表示。Recordタブ上部や「＋」ボタンからワンタップで記録できます。
-                            </p>
-                        </div>
-                    </div>
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
-                            <i class="ph-duotone ph-share-network text-pink-500 text-xl"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">SNSシェア用画像生成</h5>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                ホーム画面からは「現在のランクと借金」、ビール記録後は「写真に銘柄・カロリーを合成」した画像を生成してシェアできます。
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <i class="ph-bold ph-calculator text-gray-400"></i>
-                                <span class="font-bold text-xs text-base-900 dark:text-white">NetMETS計算</span>
-                            </div>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                                運動強度(METs)から安静時(1.0)を引き、<strong>「運動で増えた消費分」</strong>のみを厳密に計算しています。
-                            </p>
-                        </div>
-                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <i class="ph-bold ph-magnifying-glass text-yellow-500"></i>
-                                <span class="font-bold text-xs text-base-900 dark:text-white">Untappd連携</span>
-                            </div>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                                ビール入力時、虫眼鏡ボタンを押すと入力した銘柄名でUntappdを検索できます。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <section>
     <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <i class="ph-duotone ph-books"></i> Cellar & Analytics
+        <i class="ph-duotone ph-books"></i> Cellar
     </h4>
     
     <div class="space-y-3">
@@ -1485,13 +1432,8 @@
                             <p class="text-xs text-blue-900/70 dark:text-blue-200/70 mt-1 leading-relaxed">
                                 NOMUTOREのデータは、あなたの端末内にのみ保存されています。<br>
                                 機種変更や故障に備えて、<strong>Settingsタブ</strong>からGoogleドライブへのバックアップを定期的に行うことを強く推奨します。<br>
-                                JSONファイルのダウンロードと読み込み、CSVファイル出力にも対応しています。
+                                ログのCSV形式でのエクスポート、JSONファイルのダウンロードによるバックアップと復元にも対応しています。
                             </p>
-                            <ul class="mt-1.5 space-y-1 text-[10px] text-blue-800 dark:text-blue-300 font-medium list-disc list-inside opacity-80">
-                                <li>Google Drive 同期 (推奨)</li>
-                                <li>ログのCSVエクスポート</li>
-                                <li>JSONファイルによるバックアップ/復元</li>
-                            </ul>
                             <div class="mt-2">
                                 <button onclick="UI.switchTab('settings'); UI.closeModal('help-modal')" class="text-[10px] font-bold bg-white dark:bg-blue-800 text-blue-600 dark:text-blue-200 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-50 transition shadow-sm">
                                     設定画面へ移動してバックアップ
@@ -1500,6 +1442,58 @@
                         </div>
                     </div>
 
+                </div>
+            </section>
+
+<section>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="ph-duotone ph-sparkle"></i> Useful Features
+                </h4>
+                
+                <div class="space-y-3">
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
+                            <i class="ph-duotone ph-lightning text-yellow-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">クイック登録</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                あなたの履歴を解析し、<strong>「よく飲むビール」</strong>と<strong>「いつもの運動」</strong>を自動表示。Recordタブ上部や「＋」ボタンからワンタップで記録できます。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
+                            <i class="ph-duotone ph-share-network text-pink-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">SNSシェア用画像生成</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                ホーム画面からは「現在のランクと借金」、ビール記録後は「写真に銘柄・カロリーを合成」した画像を生成してシェアできます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <i class="ph-bold ph-calculator text-gray-400"></i>
+                                <span class="font-bold text-xs text-base-900 dark:text-white">NetMETS計算</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                                運動強度(METs)から安静時(1.0)を引き、<strong>「運動で増えた消費分」</strong>のみを厳密に計算しています。
+                            </p>
+                        </div>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <i class="ph-bold ph-magnifying-glass text-yellow-500"></i>
+                                <span class="font-bold text-xs text-base-900 dark:text-white">Untappd連携</span>
+                            </div>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                                ビール入力時、虫眼鏡ボタンを押すと入力した銘柄名でUntappdを検索できます。
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </section>
 

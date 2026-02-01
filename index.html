@@ -216,6 +216,9 @@
         <div id="tab-record" class="tab-content pb-24 hidden space-y-6">
     <div class="flex items-center justify-between px-2 mb-1">
         <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Record</h2>
+        <button onclick="UI.openHelp('help-record')" class="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                <i class="ph-bold ph-question text-lg"></i>
+        </button>
     </div>
 
     <section class="px-1">
@@ -293,6 +296,9 @@
         <div id="tab-cellar" class="tab-content space-y-4 hidden">
              <div class="flex items-center justify-between px-2 mb-1">
                 <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Cellar</h2>
+                <button onclick="UI.openHelp('help-cellar')" class="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                <i class="ph-bold ph-question text-lg"></i>
+            </button>
                 <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                     <button id="btn-cellar-logs" onclick="UI.switchCellarViewHTML('logs')" class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all">Logs</button>
                     <button id="btn-cellar-stats" onclick="UI.switchCellarViewHTML('stats')" class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Stats</button>
@@ -343,12 +349,15 @@
         <div id="tab-settings" class="tab-content pb-24 hidden">
             <div class="flex items-center justify-between px-2 mb-4">
                 <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Settings</h2>
+                <button onclick="UI.openHelp('help-settings')" class="w-6 h-6 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                <i class="ph-bold ph-question text-lg"></i>
+            </button>
             </div>
 
             <div class="glass-panel p-6 rounded-3xl mb-4">
                 <h2 class="text-lg font-black mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-user-circle text-indigo-500"></i>
-                    Profile & Goals
+                    Profile & Mode
                 </h2>
                 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -1166,7 +1175,7 @@
             </section>
 
             <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h4 id="help-dashboard" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-house"></i> Dashboard
                 </h4>
                 <div class="space-y-3">
@@ -1291,7 +1300,7 @@
             </section>
 
             <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h4 id="help-record" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-plus-circle"></i> Record
                 </h4>
                 <div class="space-y-3">
@@ -1346,7 +1355,7 @@
                 </div>
             </section>
             <section>
-    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+    <h4 id="help-cellar" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
         <i class="ph-duotone ph-books"></i> Cellar
     </h4>
     
@@ -1391,7 +1400,7 @@
 </section>
 
             <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h4 id="help-settings" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-gear"></i> Settings
                 </h4>
                 
@@ -1446,7 +1455,7 @@
             </section>
 
 <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h4 id="help-useful" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-sparkle"></i> Useful Features
                 </h4>
                 

@@ -1427,6 +1427,110 @@
     </div>
 </section>
 <section>
+    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="ph-duotone ph-books"></i> Cellar & Analytics
+    </h4>
+    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
+        
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-list-dashes text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">履歴管理 (Logs)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    記録の修正・削除が可能。「Edit」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-chart-pie-slice text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間内の総飲酒量や銘柄数を集計。飲んだ頻度順のランキング表示や、銘柄・ブルワリー・評価での<strong>絞り込み検索</strong>に対応。
+                </p>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <div class="shrink-0 pt-1">
+                <i class="ph-fill ph-archive text-indigo-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">過去の記録 (Archives)</h5>
+                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
+                    期間リセット（Weekly/Monthly/Custom）ごとの成績と収支ログがここに保存されます。
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <i class="ph-duotone ph-gear"></i> Settings & Data
+    </h4>
+    
+    <div class="space-y-3">
+        
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xl shrink-0">
+                <i class="ph-duotone ph-user-circle text-orange-600 dark:text-orange-500"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">基本設定と期間モード</h5>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    基礎代謝計算用のプロフィール設定や、借金をリセットする周期を変更できます。<br>
+　　　　　　　　　　 期間モードで「Custom」を選ぶと、旅行や短期集中ダイエット用に「プロジェクト名・開始日・終了日」を自由に設定して計測できます。<br>
+                    <span class="opacity-80">※リセットなしで続ける<strong>Permanentモード</strong>も選択可能です。</span>
+                </p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                <i class="ph-duotone ph-sliders text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">カスタマイズ</h5>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    テーマ（ダークモード）、よく飲むビールのスタイル、デフォルトの運動・換算基準の運動の設定に加え、<strong>デイリーチェック項目</strong>の編集（ライブラリからの追加やカスタム作成）もここで行います。
+                </p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900/50 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xl shrink-0">
+                <i class="ph-duotone ph-database text-blue-600 dark:text-blue-500"></i>
+            </div>
+            <div class="flex-1">
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">データ管理とバックアップ</h5>
+                <p class="text-xs text-blue-900/70 dark:text-blue-200/70 mt-1 leading-relaxed">
+                     NOMUTOREのデータは、あなたの端末内にのみ保存されています。<br>
+                     機種変更や故障に備えて、<strong>Settingsタブ</strong>からGoogleドライブへのバックアップを定期的に行うことを強く推奨します。<br>
+JSONファイルのダウンロードと読み込み、CSVファイル出力にも対応しています。
+                </p>
+                <ul class="mt-1.5 space-y-1 text-[10px] text-blue-800 dark:text-blue-300 font-medium list-disc list-inside opacity-80">
+                    <li>Google Drive 同期 (推奨)</li>
+                    <li>ログのCSVエクスポート</li>
+                    <li>JSONファイルによるバックアップ/復元</li>
+                </ul>
+                <div class="mt-2">
+                    <button onclick="UI.switchTab('settings'); UI.closeModal('help-modal')" class="text-[10px] font-bold bg-white dark:bg-blue-800 text-blue-600 dark:text-blue-200 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-50 transition shadow-sm">
+                        設定画面へ移動してバックアップ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<section>
                 <h4 id="game-mechanics" class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-lightning"></i> Game Mechanics
                 </h4>
@@ -1553,84 +1657,9 @@
                         </div>
                     </div>
 
-                    <div class="space-y-2 pt-2 border-t border-indigo-200 dark:border-indigo-800/50">
-                        <h5 class="font-black text-indigo-600 dark:text-indigo-400 text-sm flex items-center gap-1">
-                            <i class="ph-duotone ph-arrows-clockwise"></i> 期間リセット (Period Reset)
-                        </h5>
-                        <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed">
-                            指定した期間で借金がリセットされます。「Weekly」は<strong>「毎週月曜日」</strong>、「Monthly」は<strong>「毎月1日」</strong>に借金がリセットされてゼロになります。期間単位で帳尻を合わせればOKです。<br>
-                        「Custom」を選ぶと、旅行や短期集中ダイエット用に「プロジェクト名・開始日・終了日」を自由に設定して計測できます。
-                        </p>
-                    </div>
                 </div>
             </section>
-<section>
-    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <i class="ph-duotone ph-books"></i> Cellar & Analytics
-    </h4>
-    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 space-y-4">
-        
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-list-dashes text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">履歴管理 (Logs)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    記録の修正・削除が可能。「Edit」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
-                </p>
-            </div>
-        </div>
 
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-chart-pie-slice text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    期間内の総飲酒量や銘柄数を集計。飲んだ頻度順のランキング表示や、銘柄・ブルワリー・評価での<strong>絞り込み検索</strong>に対応。
-                </p>
-            </div>
-        </div>
-
-        <div class="flex gap-3">
-            <div class="shrink-0 pt-1">
-                <i class="ph-fill ph-archive text-indigo-500"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">過去の記録 (Archives)</h5>
-                <p class="text-xs text-indigo-800/80 dark:text-indigo-300/80 mt-0.5">
-                    期間リセット（Weekly/Monthly/Custom）ごとの成績と収支ログがここに保存されます。
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
-
-            
-
-            <section>
-                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="ph-duotone ph-cloud-logo"></i> Cloud Backup
-                </h4>
-                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-900/50 flex gap-4 items-start">
-                    <i class="ph-duotone ph-cloud-check text-3xl text-blue-500 mt-1"></i>
-                    <div>
-                        <h5 class="font-bold text-sm text-base-900 dark:text-white">データを守ろう</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                            NOMUTOREのデータは、あなたの端末内にのみ保存されています。
-                            <br>
-                            機種変更や故障に備えて、<strong>Settingsタブ</strong>からGoogleドライブへのバックアップを定期的に行うことを強く推奨します。
-                        </p>
-                        <div class="mt-3">
-                            <button onclick="UI.switchTab('settings'); UI.closeModal('help-modal')" class="text-[10px] font-bold bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition">
-                                設定へ移動してバックアップ
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <section>
                 <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">

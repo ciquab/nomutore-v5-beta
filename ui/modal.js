@@ -1,5 +1,5 @@
 import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP, CHECK_SCHEMA, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
-import { Calc } from '../logic.js';
+import { Calc, getVirtualDate } from '../logic.js';
 import { Store, db } from '../store.js';
 import { StateManager } from './state.js';
 import { DOM, toggleModal, escapeHtml, toggleDryDay, showMessage, Feedback, showToastAnimation, showConfetti } from './dom.js';
@@ -12,12 +12,12 @@ import {
 } from './beerForm.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-const getTodayString = () => dayjs().format('YYYY-MM-DD');
+const getTodayString = () => getVirtualDate();
 
 /* --- Action Menu Logic --- */
 
 export const openActionMenu = async (dateStr = null) => {
-    const targetDate = dateStr || dayjs().format('YYYY-MM-DD');
+    const targetDate = dateStr || getVirtualDate();
     StateManager.setSelectedDate(targetDate);
     
     const label = document.getElementById('action-menu-date-label');
@@ -206,7 +206,7 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
         targetDate = dateStr;
     } else {
         // 通常の追加時：今日
-        targetDate = dayjs().format('YYYY-MM-DD');
+        targetDate = getVirtualDate();
     }
 
     const dateInput = document.getElementById('beer-date');
@@ -303,7 +303,7 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
 /* --- Check Modal Logic --- */
 
 export const openCheckModal = async (dateStr) => {
-    const targetDate = dateStr || dayjs().format('YYYY-MM-DD');
+    const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
     const dateInput = document.getElementById('check-date');
@@ -504,7 +504,7 @@ export const openManualInput = (dateStr = null, log = null) => {
     } else if (dateStr) {
         targetDate = dateStr;
     } else {
-        targetDate = dayjs().format('YYYY-MM-DD');
+        targetDate = getVirtualDate();
     }
     
     if(dateField) dateField.value = targetDate;

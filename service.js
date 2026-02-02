@@ -66,9 +66,12 @@ getAllDataForUI: async () => {
     },
 
     ensureTodayCheckRecord: async () => {
-        const todayStr = dayjs().format('YYYY-MM-DD');
-        const startOfDay = dayjs().startOf('day').valueOf();
-        const endOfDay = dayjs().endOf('day').valueOf();
+        const todayStr = getVirtualDate(); 
+        
+        // startOfDay / endOfDay も仮想日付ベースで計算
+        const vDate = dayjs(todayStr);
+        const startOfDay = vDate.startOf('day').valueOf();
+        const endOfDay = vDate.endOf('day').valueOf();
 
         try {
             const existing = await db.checks.where('timestamp').between(startOfDay, endOfDay).first();
@@ -113,7 +116,7 @@ getAllDataForUI: async () => {
             allLogs.forEach(l => {
                 if (l.timestamp < minTs) minTs = l.timestamp;
                 found = true;
-                const d = dayjs(l.timestamp).format('YYYY-MM-DD');
+                const d = getVirtualDate(l.timestamp);
                 if (!logMap.has(d)) logMap.set(d, { hasBeer: false, hasExercise: false, balance: 0 });
                 
                 const entry = logMap.get(d);
@@ -138,17 +141,17 @@ getAllDataForUI: async () => {
             allChecks.forEach(c => {
                 if (c.timestamp < minTs) minTs = c.timestamp;
                 found = true;
-                const d = dayjs(c.timestamp).format('YYYY-MM-DD');
+                const d = getVirtualDate(l.timestamp);
                 checkMap.set(d, c.isDryDay);
             });
 
             const firstDate = found ? dayjs(minTs).startOf('day') : dayjs();
 
-            // ▼▼▼ 追加: 運動ログを日付で高速検索するためのMapを作成 (Performance Fix) ▼▼▼
+            // 運動ログを日付で高速検索するためのMapを作成
             const exerciseLogsByDate = new Map();
             allLogs.forEach(l => {
                 if (l.type === 'exercise') {
-                    const dStr = dayjs(l.timestamp).format('YYYY-MM-DD');
+                    const dStr = getVirtualDate(l.timestamp);
                     if (!exerciseLogsByDate.has(dStr)) {
                         exerciseLogsByDate.set(dStr, []);
                     }
@@ -435,7 +438,7 @@ getAllDataForUI: async () => {
             await Service.saveExerciseLog(
                 log.exerciseKey,
                 log.minutes,
-                dayjs().format('YYYY-MM-DD'),
+                getVirtualDate(),
                 true, // リピート時は常にボーナス適用
                 null
             );
@@ -693,7 +696,7 @@ saveManualExercise: async () => {
         const minutes = minutesInput ? parseInt(minutesInput.value) : 0;
         
         const dateInput = document.getElementById('manual-date');
-        const dateVal = dateInput ? dateInput.value : dayjs().format('YYYY-MM-DD');
+        const dateVal = dateInput ? dateInput.value : getVirtualDate();
         
         const bonusCheck = document.getElementById('manual-apply-bonus');
         const applyBonus = bonusCheck ? bonusCheck.checked : true;

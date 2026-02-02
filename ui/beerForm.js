@@ -1,10 +1,11 @@
 import { STYLE_SPECS, CALORIES, SIZE_DATA, STYLE_METADATA, APP } from '../constants.js';
-import { Calc } from '../logic.js';
+import { Calc, getVirtualDate } from '../logic.js';
 import { db } from '../store.js';
 import { showMessage, Feedback } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-export const getBeerFormData = () => {
+// ★ 引数に existingLog = null を追加します
+export const getBeerFormData = (existingLog = null) => {
     const dateVal = document.getElementById('beer-date').value;
 
     // 未来日付チェック
@@ -20,16 +21,44 @@ export const getBeerFormData = () => {
     const untappdCheck = document.getElementById('untappd-check');
     const useUntappd = untappdCheck ? untappdCheck.checked : false;
 
-    // ▼▼▼ 修正箇所: タイムスタンプの計算ロジック ▼▼▼
     const now = dayjs();
     const inputDate = dateVal ? dayjs(dateVal) : now;
-    
-    // 入力された日付が「今日」と同じなら、現在の時刻(Date.now())を使用する
-    // それ以外（過去分）なら、従来通り12:00（正午）とする
-    const ts = inputDate.isSame(now, 'day')
-        ? Date.now()
-        : inputDate.startOf('day').add(12, 'hour').valueOf();
-    // ▲▲▲ 修正ここまで ▲▲▲
+    let ts;
+
+    if (existingLog) {
+        // 【編集モード】
+        // 元のログの日時を取得
+        const originalDate = dayjs(existingLog.timestamp);
+
+        // ユーザーが日付(YYYY-MM-DD)を変更していないかチェック
+        const isSameDate = inputDate.format('YYYY-MM-DD') === originalDate.format('YYYY-MM-DD');
+
+        if (isSameDate) {
+            // 日付が変わっていないなら、元の時間（時:分:秒）を完全に維持する
+            ts = existingLog.timestamp;
+        } else {
+            // 日付を変更した場合、元の「時間」だけを新しい日付に移植する
+            // 例: 5/1 23:15 のログを 5/2 に変更 → 5/2 23:15 になる
+            ts = inputDate
+                .hour(originalDate.hour())
+                .minute(originalDate.minute())
+                .second(originalDate.second())
+                .valueOf();
+        }
+    } else {
+        // 【新規作成モード】
+        // 1. 現在の仮想日付（深夜なら前日）を取得
+        const vToday = getVirtualDate();
+
+        // 2. フォームの日付が「現在の仮想日付」と同じなら、今まさに記録しているとみなして「現在時刻」を使う
+        //    (例: 実時刻 AM2:00 で フォームが昨日日付の場合 → AM2:00 として記録)
+        if (dateVal === vToday) {
+            ts = Date.now();
+        } else {
+            // それ以外（過去の日付を意図的に選んだ場合など）は昼12:00とする
+            ts = inputDate.startOf('day').add(12, 'hour').valueOf();
+        }
+    }
     
     const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
     
@@ -39,33 +68,30 @@ export const getBeerFormData = () => {
     const sizeSel = document.getElementById('beer-size');
     const size = sizeSel.options[sizeSel.selectedIndex]?.value || '350';
     
-    // ★ let に変更（再代入を可能にするため）
     let count = parseInt(document.getElementById('beer-count').value) || 1;
     if (count <= 0) count = 1; 
     
-    // ★ プリセット選択時の ABV 補正値を取得
     const presetAbvInput = document.getElementById('preset-abv');
     const userAbv = presetAbvInput ? parseFloat(presetAbvInput.value) : NaN;
 
-    // ★ let に変更 & カスタム入力のバリデーション
     let customAbv = Math.abs(parseFloat(document.getElementById('custom-abv').value) || 5.0);
     if (customAbv > 100) customAbv = 100;
 
     let customMl = Math.abs(parseInt(document.getElementById('custom-amount').value) || 350);
     if (customMl <= 0) customMl = 350;
 
-    // --- 糖質タイプ/数値の特定（ここを整理しました） ---
+    // --- 糖質タイプ/数値の特定 ---
     let type = 'sweet';
     let carb = 3.0;
 
     if (isCustom) {
         const typeEl = document.querySelector('input[name="customType"]:checked');
         type = typeEl ? typeEl.value : 'sweet';
-        carb = (type === 'dry') ? 0.0 : 3.0; // カスタムのDryなら糖質0
+        carb = (type === 'dry') ? 0.0 : 3.0;
     } else {
         const spec = STYLE_SPECS[style] || { carb: 3.5 };
         carb = spec.carb;
-        type = (carb <= 0.5) ? 'dry' : 'sweet'; // carbが極端に少なければdry扱い
+        type = (carb <= 0.5) ? 'dry' : 'sweet';
     }
 
     return {
@@ -73,11 +99,11 @@ export const getBeerFormData = () => {
         brewery, brand, rating, memo,
         style, size, count,
         isCustom,
-        userAbv, // プリセット時の補正度数
-        abv: customAbv, // カスタム時の度数
+        userAbv,
+        abv: customAbv,
         ml: customMl,
         carb: carb,
-        type: type, // sweet または dry
+        type: type,
         useUntappd
     };
 };
@@ -177,7 +203,9 @@ export const switchBeerInputTab = (mode) => {
 };
 
 export const resetBeerForm = (keepDate = false) => {
-    if (!keepDate) document.getElementById('beer-date').value = dayjs().format('YYYY-MM-DD');
+    if (!keepDate) {
+        document.getElementById('beer-date').value = getVirtualDate();
+    }
     
     const idField = document.getElementById('editing-log-id');
     if(idField) idField.value = '';

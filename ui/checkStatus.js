@@ -1,4 +1,4 @@
-import { Calc } from '../logic.js';
+import { Calc, getVirtualDate } from '../logic.js';
 import { DOM, escapeHtml } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -6,7 +6,8 @@ export function renderCheckStatus(checks, logs) {
     const status = DOM.elements['check-status'] || document.getElementById('check-status');
     if(!status) return;
 
-    const today = dayjs();
+    const vTodayStr = getVirtualDate(); // 文字列 'YYYY-MM-DD'
+    const today = dayjs(vTodayStr);     // dayjsオブジェクト化
     const yest = today.subtract(1, 'day');
     
     const todayCheck = checks.find(c => dayjs(c.timestamp).isSame(today, 'day') && c.isSaved === true);

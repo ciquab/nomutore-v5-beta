@@ -134,7 +134,7 @@ export const Calc = {
             if (l.timestamp < minTs) minTs = l.timestamp;
             found = true;
 
-            const d = dayjs(l.timestamp).format('YYYY-MM-DD');
+            const d = getVirtualDate(l.timestamp);
             if (!logMap.has(d)) logMap.set(d, { hasBeer: false, hasExercise: false, balance: 0 });
             
             const entry = logMap.get(d);
@@ -156,7 +156,7 @@ export const Calc = {
         safeChecks.forEach(c => {
             if (c.timestamp < minTs) minTs = c.timestamp;
             found = true;
-            const d = dayjs(c.timestamp).format('YYYY-MM-DD');
+            const d = getVirtualDate(c.timestamp);
             checkMap.set(d, c.isDryDay);
         });
 
@@ -446,4 +446,18 @@ export const Calc = {
 
         return `${text} ${hashtags}`;
     }
+};
+
+// ユーザーの生活スタイルに合わせた「日付の境界線（Rollover Time）」を導入
+// デフォルトは午前4:00までを「前日」とみなす
+
+export const getVirtualDate = (timestamp = Date.now()) => {
+    const rolloverHour = 4; // 設定画面で可変にしても良い
+    const date = dayjs(timestamp);
+    
+    // 現在時刻が4時未満なら、前日の日付として扱う
+    if (date.hour() < rolloverHour) {
+        return date.subtract(1, 'day').format('YYYY-MM-DD');
+    }
+    return date.format('YYYY-MM-DD');
 };

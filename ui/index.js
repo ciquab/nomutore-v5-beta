@@ -149,30 +149,30 @@ export const UI = {
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {
-            const data = e.detail;
-            const idField = document.getElementById('editing-log-id');
-            const existingId = idField && idField.value ? parseInt(idField.value) : null;
+    // detailの構造を { data, existingId } に変更して受け取る
+    const { data, existingId } = e.detail;
 
-            // 保存実行
-            await Service.saveBeerLog(data, existingId);
-            
-            // 演出：新規登録時のみ豪華に（更新時は控えめに）
-            if (!existingId) {
-                Feedback.beer();
-                showConfetti();
-                showToastAnimation();
-            } else {
-                Feedback.tap();
-            }
+    // 保存実行 (既存の Service.saveBeerLog はそのまま使えます)
+    await Service.saveBeerLog(data, existingId);
+    
+    // 演出：新規登録時のみ豪華に（更新時は控えめに）
+    if (!existingId) {
+        Feedback.beer();
+        showConfetti();
+        showToastAnimation();
+    } else {
+        // 更新時はタップ音だけで十分（Feedback.tapはクリック時に鳴らしているので、ここでは不要でもOK）
+        // 必要なら Feedback.success() など控えめな音に。
+    }
 
-            // Untappd連携 (UI側の責任としてここで行う)
-            if (data.useUntappd) {
-                const query = encodeURIComponent(`${data.brewery || ''} ${data.brand || ''}`.trim());
-                if(query) setTimeout(() => window.open(`https://untappd.com/search?q=${query}`, '_blank'), 100);
-            }
+    // Untappd連携
+    if (data.useUntappd) {
+        const query = encodeURIComponent(`${data.brewery || ''} ${data.brand || ''}`.trim());
+        if(query) setTimeout(() => window.open(`https://untappd.com/search?q=${query}`, '_blank'), 100);
+    }
 
-            await refreshUI();
-        });
+    await refreshUI();
+});
 
         // 🏃 運動保存
         document.addEventListener('save-exercise', async (e) => {
@@ -269,9 +269,10 @@ export const UI = {
             }
         }
 
-        bind('btn-save-beer', 'click', () => {
-    // ★修正: 編集モード（IDがあるか）をチェック
-    const isEdit = !!document.getElementById('editing-log-id').value;
+        bind('btn-save-beer', 'click', async () => {
+    // 1. 編集モード（IDがあるか）をチェック
+    const editIdVal = document.getElementById('editing-log-id').value;
+    const editingId = editIdVal ? parseInt(editIdVal) : null;
 
     const dateEl = document.getElementById('beer-date');
     if (!dateEl || !dateEl.value) {
@@ -279,31 +280,51 @@ export const UI = {
         return;
     }
 
-    // ★追加: 常にタップ音を出す
+    // 常にタップ音を出す
     Feedback.tap();
 
-    const data = getBeerFormData();
-    const event = new CustomEvent('save-beer', { detail: data });
+    // 編集中の場合は、DBから元のログ情報を取得して getBeerFormData に渡す
+    let existingLog = null;
+    if (editingId) {
+        existingLog = await db.logs.get(editingId);
+    }
+
+    // 引数に既存ログを渡す（beerForm.js側の修正とセットで機能します）
+    const data = getBeerFormData(existingLog); 
+    
+    const event = new CustomEvent('save-beer', { 
+        detail: { data, existingId: editingId } 
+    });
     document.dispatchEvent(event);
 
     toggleModal('beer-modal', false);
 });
 
         // 保存して次へ
-        bind('btn-save-beer-next', 'click', () => {
-            const data = getBeerFormData();
-            const event = new CustomEvent('save-beer', { detail: data });
-            document.dispatchEvent(event);
-            // ★修正: 更新(IDあり)のときは静かなメッセージにする
-            const isEdit = !!document.getElementById('editing-log-id').value;
-            showMessage(
-                isEdit ? '更新しました！次にいきましょう。' : '! 記録しました！次にいきましょう。', 
-                isEdit ? 'info' : 'success'
-            );
-            resetBeerForm(true); // 日付維持
-            const container = document.querySelector('#beer-modal .overflow-y-auto');
-            if(container) container.scrollTop = 0;
-        });
+        bind('btn-save-beer-next', 'click', async () => {
+    const editIdVal = document.getElementById('editing-log-id').value;
+    const editingId = editIdVal ? parseInt(editIdVal) : null;
+
+    let existingLog = null;
+    if (editingId) {
+        existingLog = await db.logs.get(editingId);
+    }
+
+    const data = getBeerFormData(existingLog);
+    const event = new CustomEvent('save-beer', { 
+        detail: { data, existingId: editingId } 
+    });
+    document.dispatchEvent(event);
+
+    const isEdit = !!editingId;
+    showMessage(
+        isEdit ? '更新しました！次にいきましょう。' : '! 記録しました！次にいきましょう。', 
+        isEdit ? 'info' : 'success'
+    );
+    resetBeerForm(true); // 日付維持
+    const container = document.querySelector('#beer-modal .overflow-y-auto');
+    if(container) container.scrollTop = 0;
+});
         
         bind('btn-search-untappd', 'click', searchUntappd);
 

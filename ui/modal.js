@@ -1588,3 +1588,81 @@ export const openShareModal = (mode = 'status') => {
     // ※ import { Share } from './share.js'; が必要
     Share.generateAndShare(mode);
 };
+
+/**
+ * 期間終了（ロールオーバー）時のモーダルを表示
+ * モード（Weekly/Monthly/Custom）に応じて内容を出し分ける
+ */
+export const showRolloverModal = () => {
+    const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
+    
+    const titleEl = document.getElementById('rollover-title');
+    const descEl = document.getElementById('rollover-desc');
+    // アイコンの親要素を取得して、その中のiタグを探す
+    const iconContainer = document.querySelector('#rollover-modal .rounded-full');
+    const iconEl = iconContainer ? iconContainer.querySelector('i') : null;
+    
+    // ボタンエリアを取得
+    const actionsContainer = document.getElementById('rollover-actions');
+    
+    if (!actionsContainer) {
+        console.warn('#rollover-actions not found in HTML. Opening default modal.');
+        toggleModal('rollover-modal', true);
+        return;
+    }
+
+    // ボタンエリアをクリア
+    actionsContainer.innerHTML = '';
+
+    // --- A. Weekly / Monthly モード (事後報告) ---
+    if (mode === 'weekly' || mode === 'monthly') {
+        const label = mode === 'weekly' ? 'Weekly' : 'Monthly';
+        
+        if (titleEl) titleEl.textContent = `${label} Report Ready!`;
+        if (descEl) descEl.innerHTML = `期間が終了し、新しい${mode === 'weekly' ? '週' : '月'}が始まりました。<br>心機一転、頑張りましょう！`;
+        if (iconEl) iconEl.className = "ph-fill ph-calendar-check";
+
+        // 「次へ進む」ボタン
+        const btn = document.createElement('button');
+        btn.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2";
+        btn.innerHTML = `<span>Start New ${label}</span>`;
+        // 閉じるだけ
+        btn.onclick = () => toggleModal('rollover-modal', false);
+        
+        actionsContainer.appendChild(btn);
+    } 
+    // --- B. Custom モード (アクション選択) ---
+    else {
+        const label = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL) || 'Project';
+        
+        if (titleEl) titleEl.textContent = `${label} Finished!`;
+        if (descEl) descEl.innerHTML = "プロジェクト期間が終了しました。<br>アーカイブして通常モードに戻りますか？";
+        if (iconEl) iconEl.className = "ph-fill ph-flag-checkered";
+
+        // 1. Weeklyに戻る
+        const btnWeekly = document.createElement('button');
+        btnWeekly.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
+        btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise"></i><span>Switch to Weekly</span>`;
+        // UIがグローバルにある前提、またはimportが必要ですが、安全策としてonclick属性を使うか、window.UI経由で呼びます
+        btnWeekly.onclick = () => window.UI.handleRolloverAction('weekly');
+
+        // 2. 新規プロジェクト
+        const btnNew = document.createElement('button');
+        btnNew.className = "w-full py-3.5 px-4 bg-white dark:bg-base-800 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-indigo-900 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
+        btnNew.innerHTML = `<i class="ph-bold ph-plus"></i><span>New Project</span>`;
+        btnNew.onclick = () => window.UI.handleRolloverAction('new_custom');
+
+        // 3. 延長
+        const btnExtend = document.createElement('button');
+        btnExtend.className = "w-full py-2 px-4 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 active:scale-95 transition-all";
+        btnExtend.textContent = "Extend this period";
+        btnExtend.onclick = () => window.UI.handleRolloverAction('extend');
+
+        actionsContainer.appendChild(btnWeekly);
+        actionsContainer.appendChild(btnNew);
+        actionsContainer.appendChild(btnExtend);
+    }
+
+    // モーダルを表示
+    toggleModal('rollover-modal', true);
+};

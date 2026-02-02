@@ -306,7 +306,6 @@ getAllDataForUI: async () => {
         }
 
         const now = dayjs();
-        let shouldRollover = false;
         let nextStart = null;
 
         // --- A. Weekly / Monthly (自動更新) ---
@@ -317,7 +316,7 @@ getAllDataForUI: async () => {
                 // 週が変わっている -> 自動アーカイブ実行
                 nextStart = currentWeekStart.valueOf();
                 await Service.archiveAndReset(storedStart, nextStart, mode);
-                return true; // モーダル（完了報告）を表示
+                return true; // -> UI側で「Weekly Report」モーダルを表示
             }
         } else if (mode === 'monthly') {
             const currentMonthStart = now.startOf('month');
@@ -326,28 +325,18 @@ getAllDataForUI: async () => {
                 // 月が変わっている -> 自動アーカイブ実行
                 nextStart = currentMonthStart.valueOf();
                 await Service.archiveAndReset(storedStart, nextStart, mode);
-                return true;
+                return true; // -> UI側で「Monthly Report」モーダルを表示
             }
         } 
         // --- B. Custom (手動更新待機) ---
         else if (mode === 'custom') {
-            // Durationではなく「終了日(PERIOD_END_DATE)」を見るように変更
             const endDateTs = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE));
             
             // 終了日が設定されており、かつ今日がその日を過ぎている場合
             if (endDateTs && now.isAfter(dayjs(endDateTs).endOf('day'))) {
-                // ★ここではアーカイブを実行しない！
-                // 「期間終了」という事実だけをUIに伝え、ユーザーに選択させる
-                
-                // モーダルの文言書き換え用のDOM操作（Service層でやるべきではないが、簡易実装として許容）
-                const label = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL) || 'Project';
-                const titleEl = document.getElementById('rollover-title');
-                const descEl = document.getElementById('rollover-desc');
-                
-                if(titleEl) titleEl.textContent = `${label} Completed!`;
-                if(descEl) descEl.innerHTML = "期間が終了しました。<br>次のアクションを選択してください。";
-
-                return true; // checkStatus.js で toggleModal('rollover-modal', true) される
+                // ★アーカイブは実行しない
+                // UI側に「期間終了」だけを伝え、選択肢を表示させる
+                return true; 
             }
         }
 

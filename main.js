@@ -129,7 +129,8 @@ const initApp = async () => {
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();
         if (rolledOver) {
-            toggleModal('rollover-modal', true);
+        // ★修正: 単にtoggleModalするのではなく、UIの関数を呼ぶ
+        UI.showRolloverModal();
         }
 
         // 5. Initial Render

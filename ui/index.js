@@ -23,7 +23,8 @@ import {
     openActionMenu, handleSaveSettings, 
     validateInput, openDayDetail as _originalOpenDayDetail, handleRolloverAction,
     renderRecordTabShortcuts, // ★新規追加
-    openShareModal // ★新規追加
+    openShareModal, // ★新規追加
+    showRolloverModal
 } from './modal.js';
 import {
     getBeerFormData,
@@ -803,6 +804,7 @@ if (checkModal) {
     get selectedDate() { return StateManager.selectedDate; },
     toggleModal: (id, show) => toggleModal(id, show),
     deleteSelectedLogs: deleteSelectedLogs,
+    showRolloverModal: showRolloverModal,
 
 };
 

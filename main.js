@@ -28,10 +28,29 @@ initErrorHandler();
 // ▼▼▼ Service Worker 登録 & 更新監視ロジック ▼▼▼
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+
+        // ----------------------------------------------------
+        // 1. 新規追加: 更新直後のリロードかどうかをチェック
+        // ----------------------------------------------------
+        if (localStorage.getItem('nomutore_just_updated')) {
+            localStorage.removeItem('nomutore_just_updated'); // フラグ消去
+            
+            // UI描画の準備を待ってから表示 (1秒後)
+            setTimeout(() => {
+                // UIオブジェクトが利用可能か確認（念のため）
+                if (window.UI && window.UI.showMessage) {
+                    window.UI.showMessage('新しいバージョンに更新しました', 'success');
+                }
+            }, 1000);
+        }
+
+        // ----------------------------------------------------
+        // 2. 既存: Service Workerの登録と更新監視
+        // ----------------------------------------------------
         navigator.serviceWorker.register('./service-worker.js').then(reg => {
             console.log('[SW] Registered:', reg.scope);
 
-            // A. 既に待機中のSWがいる場合（リロードしても更新されずに残っている場合など）
+            // A. 既に待機中のSWがいる場合
             if (reg.waiting) {
                 UI.showUpdateNotification(reg.waiting);
                 return;
@@ -41,10 +60,8 @@ if ('serviceWorker' in navigator) {
             reg.onupdatefound = () => {
                 const installingWorker = reg.installing;
                 installingWorker.onstatechange = () => {
-                    // 新しいSWがインストール完了し、かつ既に制御されているページがある場合
                     if (installingWorker.state === 'installed') {
                         if (navigator.serviceWorker.controller) {
-                            // 更新準備完了！通知を出す
                             console.log('[SW] New content is available; please refresh.');
                             UI.showUpdateNotification(installingWorker);
                         } else {
@@ -55,7 +72,7 @@ if ('serviceWorker' in navigator) {
             };
         }).catch(err => console.error('[SW] Registration failed:', err));
 
-        // ▼ 更新ボタンが押されて skipWaiting が実行され、制御が切り替わった瞬間にリロードする
+        // 制御が切り替わった瞬間にリロード
         let refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (refreshing) return;

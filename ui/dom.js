@@ -601,6 +601,18 @@ export const applyTheme = (themeName) => {
         }
     }
 
+    // Androidのシステムバーの色制御 (チカチカ対策: 同じ色なら更新しない)
+    
+    // style.cssの色定義に合わせる (Dark: slate-950, Light: slate-50)
+    const targetColor = isDark ? '#0f172a' : '#f8fafc';
+    
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+        // 現在設定されている色と、これから設定したい色が「違う場合だけ」実行
+        if (metaThemeColor.getAttribute('content') !== targetColor) {
+            metaThemeColor.setAttribute('content', targetColor);
+        }
+    }
 };
 
 // ★追加: 監視と初期化を行う関数
@@ -666,3 +678,4 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     };
 };
+

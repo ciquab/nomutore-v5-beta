@@ -167,6 +167,9 @@ export const DataManager = {
             if (success) {
                 UI.showMessage('☁️ ドライブから復元しました', 'success');
                 if(statusEl) statusEl.textContent = 'Restore Complete';
+
+                // メッセージを読ませてからリロード
+                setTimeout(() => window.location.reload(), 2000);
             } else {
                 if(statusEl) statusEl.textContent = 'Restore Cancelled';
             }
@@ -250,6 +253,9 @@ export const DataManager = {
                     // 2. ★メッセージ表示を残す
                     if (success) {
                         UI.showMessage('✅ バックアップから復元しました', 'success');
+
+                        // メッセージを読ませてからリロード
+                        setTimeout(() => window.location.reload(), 2000);
                     }
 
                     // 3. 呼び出し元（onboarding.js等）に結果を返す

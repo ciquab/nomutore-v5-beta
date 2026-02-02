@@ -24,7 +24,7 @@ const APP_SHELL = [
     './logic.js',
     './constants.js',
     './cloudManager.js',
-    './onboarding.js',
+    './ui/onboarding.js',
     './manifest.json',
     './icon-192_2.png',
     './icon-512_2.png',
@@ -104,7 +104,12 @@ self.addEventListener('fetch', (event) => {
 });
 
 
-
+// 新しいSWが待機状態のとき、クライアントから "SKIP_WAITING" メッセージを受け取ったら即座にアクティブにする
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+});
 
 
 

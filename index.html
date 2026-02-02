@@ -531,7 +531,7 @@
                     <i class="ph-fill ph-info text-indigo-500"></i>
                     About
                 </h2>
-                <button onclick="UI.openHelp()" class="w-full flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-xl group transition hover:bg-gray-200 dark:hover:bg-gray-700">
+                <button onclick="UI.openHelp()" class="w-full flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-xl group transition hover:bg-gray-200 dark:hover:bg-gray-700 mb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm">
                             <i class="ph-fill ph-book-open text-indigo-500"></i>
@@ -543,8 +543,23 @@
                     </div>
                     <i class="ph-bold ph-caret-right text-gray-400 group-hover:text-indigo-500 transition"></i>
                 </button>
+
+                <!-- ★追加: Feedbackボタン (About内に統合) -->
+                <a href="https://forms.gle/NUiN5R2rfxPvEixj8" target="_blank" class="w-full flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-xl group transition hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm">
+                            <i class="ph-fill ph-chat-centered-text text-indigo-500"></i>
+                        </div>
+                        <div class="text-left">
+                            <span class="block text-[10px] font-bold text-gray-500 dark:text-gray-400">Beta Feedback</span>
+                            <span class="block text-sm font-black text-base-900 dark:text-white">Send Report</span>
+                        </div>
+                    </div>
+                    <i class="ph-bold ph-arrow-square-out text-gray-400 group-hover:text-indigo-500 transition"></i>
+                </a>
+                
                 <div class="mt-4 text-center">
-                    <p class="text-[10px] font-bold text-gray-300 dark:text-gray-600">Nomutore v4.0.0</p>
+                    <p class="text-[10px] font-bold text-gray-300 dark:text-gray-600">NOMUTORE beta</p>
                 </div>
             </div>
             <div class="glass-panel p-6 rounded-3xl mb-24 border border-red-100 dark:border-red-900/30">
@@ -1644,6 +1659,15 @@
                 </div>
             </section>
 
+            <div class="mt-8 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-center">
+                <p class="text-[10px] text-indigo-800 dark:text-indigo-300 mb-2 font-bold">
+                    Found a bug? Have an idea?
+                </p>
+                <a href="https://forms.gle/NUiN5R2rfxPvEixj8" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 border-b border-indigo-200 dark:border-indigo-700 pb-0.5 hover:opacity-70 transition">
+                    フィードバックを送る <i class="ph-bold ph-arrow-square-out"></i>
+                </a>
+            </div>
+
             <div class="text-center pt-4">
                 <p class="text-[10px] text-gray-300 dark:text-gray-600 tracking-widest">NOMUTORE - NO BEER NO LIFE</p>
             </div>
@@ -1734,5 +1758,6 @@
 </body>
 
 </html>
+
 
 

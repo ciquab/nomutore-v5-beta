@@ -791,3 +791,12 @@ select:disabled {
 .is-flipped-90 {
     transform: rotateY(90deg);
 }
+
+/* ページ読み込み中のアニメーション停止用クラス */
+.preload * {
+    -webkit-transition: none !important;
+    -moz-transition: none !important;
+    -ms-transition: none !important;
+    -o-transition: none !important;
+    transition: none !important;
+}

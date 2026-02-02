@@ -210,6 +210,10 @@ const initApp = async () => {
         document.body.style.pointerEvents = 'auto';
         console.log('🚀 UI initialized and interactions enabled');
 
+        setTimeout(() => {
+            document.body.classList.remove('preload');
+        }, 100);
+       
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する
         console.error('Critical Initialization Error:', e);
@@ -407,4 +411,5 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 

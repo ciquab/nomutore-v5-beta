@@ -641,7 +641,7 @@ export const showUpdateNotification = (waitingWorker) => {
                 </div>
                 <div>
                     <p class="text-sm font-bold">Update Available</p>
-                    <p class="text-[10px] text-gray-300">新しい機能が利用可能です</p>
+                    <p class="text-[10px] text-gray-300">新しいバージョンが利用可能です</p>
                 </div>
             </div>
             <button id="btn-sw-update" class="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">
@@ -655,6 +655,9 @@ export const showUpdateNotification = (waitingWorker) => {
     // 更新ボタンの動作
     const btn = document.getElementById('btn-sw-update');
     btn.onclick = () => {
+
+        localStorage.setItem('nomutore_just_updated', 'true');
+
         // 1. 待機中のSWに「スキップ」を命令
         waitingWorker.postMessage({ type: 'SKIP_WAITING' });
         

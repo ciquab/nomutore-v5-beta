@@ -25,6 +25,46 @@ window.Timer = Timer;
 
 initErrorHandler();
 
+// ▼▼▼ Service Worker 登録 & 更新監視ロジック ▼▼▼
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js').then(reg => {
+            console.log('[SW] Registered:', reg.scope);
+
+            // A. 既に待機中のSWがいる場合（リロードしても更新されずに残っている場合など）
+            if (reg.waiting) {
+                UI.showUpdateNotification(reg.waiting);
+                return;
+            }
+
+            // B. 更新が見つかった場合
+            reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                    // 新しいSWがインストール完了し、かつ既に制御されているページがある場合
+                    if (installingWorker.state === 'installed') {
+                        if (navigator.serviceWorker.controller) {
+                            // 更新準備完了！通知を出す
+                            console.log('[SW] New content is available; please refresh.');
+                            UI.showUpdateNotification(installingWorker);
+                        } else {
+                            console.log('[SW] Content is cached for the first time!');
+                        }
+                    }
+                };
+            };
+        }).catch(err => console.error('[SW] Registration failed:', err));
+
+        // ▼ 更新ボタンが押されて skipWaiting が実行され、制御が切り替わった瞬間にリロードする
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (refreshing) return;
+            refreshing = true;
+            window.location.reload();
+        });
+    });
+}
+
 let editingLogId = null;
 let editingCheckId = null;
 

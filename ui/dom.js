@@ -620,4 +620,46 @@ export const initTheme = () => {
     applyTheme(stored || 'system');
 };
 
+/**
+ * アプリ更新通知を表示する (新規追加)
+ * @param {ServiceWorker} waitingWorker - 待機中の新しいService Worker
+ */
+export const showUpdateNotification = (waitingWorker) => {
+    // 既に表示されていたら何もしない
+    if (document.getElementById('update-toast')) return;
 
+    // トーストのDOM生成
+    const toast = document.createElement('div');
+    toast.id = 'update-toast';
+    toast.className = "fixed bottom-24 left-4 right-4 z-50 animate-bounce-in"; 
+    
+    toast.innerHTML = `
+        <div class="bg-slate-800 dark:bg-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center justify-between border border-slate-600">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shrink-0 animate-pulse">
+                    <i class="ph-bold ph-download-simple text-white"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-bold">Update Available</p>
+                    <p class="text-[10px] text-gray-300">新しい機能が利用可能です</p>
+                </div>
+            </div>
+            <button id="btn-sw-update" class="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">
+                UPDATE
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // 更新ボタンの動作
+    const btn = document.getElementById('btn-sw-update');
+    btn.onclick = () => {
+        // 1. 待機中のSWに「スキップ」を命令
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        
+        // 2. ボタンをローディング状態に
+        btn.textContent = '...';
+        btn.disabled = true;
+    };
+};

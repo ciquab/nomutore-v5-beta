@@ -1,5 +1,5 @@
 import { db, Store } from './store.js';
-import { Calc } from './logic.js';
+import { Calc, getVirtualDate } from './logic.js';
 import { APP, EXERCISE, STYLE_SPECS } from './constants.js';
 // UIオブジェクトではなく、機能を直接インポート
 import { showMessage, showConfetti, Feedback, showToastAnimation } from './ui/dom.js';

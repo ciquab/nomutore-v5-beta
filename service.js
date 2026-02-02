@@ -141,7 +141,7 @@ getAllDataForUI: async () => {
             allChecks.forEach(c => {
                 if (c.timestamp < minTs) minTs = c.timestamp;
                 found = true;
-                const d = getVirtualDate(l.timestamp);
+                const d = getVirtualDate(c.timestamp);
                 checkMap.set(d, c.isDryDay);
             });
 
@@ -208,6 +208,13 @@ getAllDataForUI: async () => {
                             kcal: updatedCredit.kcal,
                             memo: newMemo
                         });
+
+                        const entry = logMap.get(dateStr);
+                        if (entry) {
+                            const diff = updatedCredit.kcal - (log.kcal || 0);
+                            entry.balance += diff; // 地図上の残高を更新！
+                            log.kcal = updatedCredit.kcal; // ログオブジェクトも更新
+                        }
                         updateCount++;
                     }
                 }

@@ -274,7 +274,8 @@ export const Calc = {
             safeChecks.forEach(c => { if (dayjs(c.timestamp).isBefore(firstDate)) firstDate = dayjs(c.timestamp); });
         }
         
-        const daysSinceStart = now.diff(firstDate, 'day') + 1;
+        // 【修正後】 時間を切り捨てて「日付」同士で比較する
+        const daysSinceStart = now.startOf('day').diff(firstDate.startOf('day'), 'day') + 1;
         const isRookie = daysSinceStart <= 14;
         
         const recentSuccessDays = Calc.getCurrentStreak(safeLogs, safeChecks, profile);
@@ -460,4 +461,5 @@ export const getVirtualDate = (timestamp = Date.now()) => {
         return date.subtract(1, 'day').format('YYYY-MM-DD');
     }
     return date.format('YYYY-MM-DD');
+
 };

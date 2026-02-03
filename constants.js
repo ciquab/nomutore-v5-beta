@@ -73,29 +73,29 @@ Object.keys(STYLE_SPECS).forEach(key => {
 
 export const APP = {
     STORAGE_KEYS: {
-        LOGS: 'hazy_payback_logs', 
-        CHECKS: 'hazy_payback_checks', 
-        WEIGHT: 'hazy_payback_weight', 
-        HEIGHT: 'hazy_payback_height', 
-        AGE: 'hazy_payback_age', 
-        GENDER: 'hazy_payback_gender', 
-        TIMER_START: 'hazy_payback_timer_start',
-        TIMER_ACCUMULATED: 'hazy_payback_timer_accumulated',
-        MODE1: 'hazy_payback_mode_1', 
-        MODE2: 'hazy_payback_mode_2',
-        BASE_EXERCISE: 'hazy_payback_base_exercise',
-        THEME: 'hazy_payback_theme',
-        DEFAULT_RECORD_EXERCISE: 'hazy_payback_default_record_exercise',
+        LOGS: 'nomutore_logs', 
+        CHECKS: 'nomutore_checks', 
+        WEIGHT: 'nomutore_weight', 
+        HEIGHT: 'nomutore_height', 
+        AGE: 'nomutore_age', 
+        GENDER: 'nomutore_gender', 
+        TIMER_START: 'nomutore_timer_start',
+        TIMER_ACCUMULATED: 'nomutore_timer_accumulated',
+        MODE1: 'nomutore_mode_1', 
+        MODE2: 'nomutore_mode_2',
+        BASE_EXERCISE: 'nomutore_base_exercise',
+        THEME: 'nomutore_theme',
+        DEFAULT_RECORD_EXERCISE: 'nomutore_default_record_exercise',
         
-        PERIOD_MODE: 'hazy_payback_balance_mode',
-        PERIOD_START: 'hazy_payback_period_start',
-        PERIOD_DURATION: 'hazy_payback_period_duration',
+        PERIOD_MODE: 'nomutore_period_mode',
+        PERIOD_START: 'nomutore_period_start',
+        PERIOD_DURATION: 'nomutore_period_duration',
         PERIOD_END_DATE: 'nomutore_period_end_date', // カスタム終了日
         CUSTOM_LABEL: 'nomutore_custom_period_label', // カスタム期間名 (例: 北海道旅行)
-        CHECK_SCHEMA: 'hazy_payback_check_schema',
-        ORB_STYLE: 'hazy_payback_orb_style',
-        UNIT_MODE: 'hazy_payback_unit_mode',
-        PROFILE: 'hazy_payback_profile'
+        CHECK_SCHEMA: 'nomutore_check_schema',
+        ORB_STYLE: 'nomutore_orb_style',
+        UNIT_MODE: 'nomutore_unit_mode',
+        PROFILE: 'nomutore_profile'
     },
     DEFAULTS: { 
         WEIGHT: 60, HEIGHT: 160, AGE: 30, GENDER: 'female', 

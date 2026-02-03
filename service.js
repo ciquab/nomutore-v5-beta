@@ -549,22 +549,31 @@ getAllDataForUI: async () => {
             // 新規登録（リピート経由もここを通る）
             await db.logs.add(logData);
 
+            // ★修正: メッセージを一時保存する変数を用意
+            let extraMessage = '';
+
             // 休肝日自動解除などの副作用をここに集約
             const ts = dayjs(data.timestamp);
             const existingCheck = await db.checks.where('timestamp').between(ts.startOf('day').valueOf(), ts.endOf('day').valueOf(), true, true).first();
+            
             if (existingCheck && existingCheck.isDryDay) {
                 await db.checks.update(existingCheck.id, { isDryDay: false });
-                showMessage('<i class="ph-fill ph-beer-bottle text-lg"></i> 飲酒記録のため、休肝日を解除しました', 'info');
+                
+                // ★修正: ここで showMessage せず、追記用メッセージを作成する
+                // （改行して少し小さく表示すると見やすいです）
+                extraMessage = '<br><span class="text-xs font-bold opacity-80">※休肝日設定を解除しました</span>';
             }
 
-            // シェア文言の生成（最新バランスを計算に含める）
+            // シェア文言の生成
             const { logs: currentLogs } = await Service.getAllDataForUI();
             const balance = Calc.calculateBalance(currentLogs);
             const shareText = Calc.generateShareText(logData, balance);
             const shareAction = { type: 'share', text: shareText, shareMode: 'image', imageType: 'beer', imageData: logData };
 
             const kcalMsg = Math.abs(kcal) > 500 ? `${Math.round(Math.abs(kcal))}kcalの借金です` : '記録しました！';
-            showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> ${kcalMsg}`, 'success', shareAction);
+            
+            // ★修正: ここで結合して表示
+            showMessage(`<i class="ph-fill ph-beer-bottle text-lg"></i> ${kcalMsg}${extraMessage}`, 'success', shareAction);
 
             // Untappd連携（手動登録時のみ）
             if (data.useUntappd && data.brewery && data.brand) {
@@ -586,7 +595,14 @@ getAllDataForUI: async () => {
         let finalKcal = baseBurnKcal;
         let memo = '';
 
-        const ts = dayjs(dateVal).startOf('day').add(12, 'hour').valueOf();
+        let ts;
+        if (typeof dateVal === 'number') {
+            // 数値で渡された場合（リピート機能など）は、その時刻をそのまま使う
+            ts = dateVal;
+        } else {
+            // 文字列などで渡された場合（手動入力のカレンダーなど）は、昼12時に固定する
+            ts = dayjs(dateVal).startOf('day').add(12, 'hour').valueOf();
+        }
         
         // 2. ストリークボーナスの適用有無
         if (applyBonus) {

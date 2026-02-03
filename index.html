@@ -1101,16 +1101,34 @@
     <div class="relative w-full max-w-sm bg-white dark:bg-base-900 rounded-3xl p-6 shadow-2xl space-y-3">
         <h3 id="day-add-selector-label" class="text-center text-sm font-bold opacity-50 pb-2">00/00 に記録を追加</h3>
         
-        <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-amber-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-beer-bottle text-xl"></i> ビールを記録
+        <button onclick="UI.openBeerModal(null, UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group w-full p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-amber-900/40 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition">
+                <i class="ph-duotone ph-beer-bottle text-2xl"></i>
+            </div>
+            <div class="text-center">
+                <span class="block text-xs font-bold text-base-900 dark:text-white">ビールを記録</span>
+                <span class="block text-[9px] text-gray-500">銘柄・詳細入力</span>
+            </div>
         </button>
         
-        <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-sneaker-move text-xl"></i> 運動を記録
+        <button onclick="UI.openManualInput(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group w-full p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition">
+                <i class="ph-duotone ph-pencil-simple-slash text-2xl"></i>
+            </div>
+            <div class="text-center">
+                <span class="block text-xs font-bold text-base-900 dark:text-white">運動を記録</span>
+                <span class="block text-[9px] text-gray-500">家事・通勤・ジム</span>
+            </div>
         </button>
 
-        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3">
-            <i class="ph-bold ph-check-fat text-xl"></i> 体調を記録
+        <button onclick="UI.openCheckModal(UI.selectedDate); UI.toggleModal('day-add-selector', false)" class="group w-full p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition">
+            <div class="w-10 h-10 rounded-full bg-white dark:bg-emerald-900/40 flex items-center justify-center text-emerald-500 shadow-sm group-hover:scale-110 transition">
+                <i class="ph-duotone ph-heartbeat text-2xl"></i>
+            </div>
+            <div class="text-center">
+                <span class="block text-xs font-bold text-base-900 dark:text-white">体調を記録</span>
+                <span class="block text-[9px] text-gray-500">休肝日・体重</span>
+            </div>
         </button>
     </div>
 </div>

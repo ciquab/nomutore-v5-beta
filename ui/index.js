@@ -750,21 +750,25 @@ if (checkModal) {
             // index.js 側のリスナーに演出と保存を任せる
             const event = new CustomEvent('save-beer', { 
                 detail: {
-                    ...log,
-                    timestamp: Date.now(),
-                    isCustom: false,
-                    useUntappd: false // リピート時は自動起動しない
+                    // ★修正: ここで { data: ... } の形に包む必要があります！
+                    data: {
+                        ...log,
+                        timestamp: Date.now(),
+                        isCustom: false,
+                        useUntappd: false // リピート時は自動起動しない
+                    },
+                    existingId: null // 新規作成であることを明示
                 } 
             });
             document.dispatchEvent(event);
 
         } else if (log.type === 'exercise') {
-            // 運動の場合も同様に save-exercise イベントを飛ばす
+            // 運動の方は変更なし（受け取り手がフラットな構造を期待しているため）
             const event = new CustomEvent('save-exercise', { 
                 detail: {
                     exerciseKey: log.exerciseKey,
                     minutes: log.minutes,
-                    date: dayjs().format('YYYY-MM-DD'),
+                    date: Date.now(),
                     applyBonus: true,
                     id: null
                 } 

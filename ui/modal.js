@@ -48,27 +48,23 @@ export const openActionMenu = async (dateStr = null) => {
 
 /**
  * Action Menu用: ビールボタン描画
- * ★修正: 「頻度順」から「直近順(Recency)」に変更
- * 役割: 「おかわり (Another One)」ボタンとして機能させる
+ * ★修正: 直近順(Recency)で2件表示
  */
 const renderActionMenuBeerPresets = async () => {
     const container = document.getElementById('action-menu-beer-presets');
     if (!container) return;
 
-    // ★変更: 頻度(Frequent) ではなく 直近(Recent) を取得
+    // ★変更: 直近2件を取得
     const recentBeers = await Service.getRecentBeers(2);
 
     let html = '';
 
-    // ヘッダー（文言変更: Recent Brews）
     if (recentBeers.length > 0) {
         html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">前回のビール</p>`;
     }
 
-    // ボタン生成
     if (recentBeers.length > 0) {
         recentBeers.forEach((beer, index) => {
-            // スタイル判定
             const isIPA = beer.style && beer.style.includes('IPA');
             const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
             
@@ -83,22 +79,19 @@ const renderActionMenuBeerPresets = async () => {
                 iconColor = 'text-gray-600 dark:text-gray-400';
             }
 
-            // リピート登録用データ
             const repeatPayload = {
                 type: 'beer',
                 name: beer.name,
                 brand: beer.brand || beer.name,
                 brewery: beer.brewery,
                 style: beer.style,
-                size: beer.size || '350', // 前回のサイズも引き継ぐ
+                size: beer.size || '350',
                 count: 1
             };
             
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
             const safeName = escapeHtml(beer.name);
             const safeBrand = escapeHtml(beer.brand || '');
-            
-            // 表示名: ブランド名があればそれをメインに、なければ名前
             const mainLabel = safeBrand || safeName;
             const subLabel = safeBrand ? safeName : (beer.style || 'Beer');
 
@@ -119,7 +112,6 @@ const renderActionMenuBeerPresets = async () => {
             `;
         });
     } else {
-        // 履歴がない場合
         html += `
             <button onclick="UI.openBeerModal(); UI.closeModal('action-menu-modal');" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
                 <i class="ph-bold ph-plus"></i> Log First Beer
@@ -132,7 +124,7 @@ const renderActionMenuBeerPresets = async () => {
 
 /**
  * Action Menu用: 運動ボタン描画
- * ★修正: 直近の運動を「2件」表示に変更 (ビールと同じスタイルに統一)
+ * ★修正: 直近順(Recency)で2件表示
  */
 const renderActionMenuExerciseShortcuts = async () => {
     const container = document.getElementById('action-menu-repeat-area');
@@ -141,14 +133,12 @@ const renderActionMenuExerciseShortcuts = async () => {
     // ★変更: 直近2件を取得
     const recents = await Service.getRecentExercises(2);
     
-    container.innerHTML = ''; // クリア
+    container.innerHTML = ''; 
 
     if (recents.length > 0) {
-        // ヘッダー (Recent Workouts)
-        // ビールエリアとの区切りのために border-t を入れています
         container.innerHTML += `
             <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4 mb-2">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Repeat Recent Workouts</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase">前回の運動</p>
             </div>
         `;
 
@@ -164,15 +154,12 @@ const renderActionMenuExerciseShortcuts = async () => {
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
             const safeName = escapeHtml(log.name);
 
-            // ビールと同じ「横長ボタンスタイル」で生成
-            const btn = document.createElement('button');
-            btn.onclick = () => {
-                handleRepeat(repeatPayload); // handleRepeatはwindowに登録済み想定
-                UI.closeModal('action-menu-modal');
-            };
-            btn.className = "w-full flex items-center gap-3 p-4 mb-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-indigo-50 dark:bg-indigo-900/20 active:scale-95 transition shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 group";
-
+            // ★修正: HTML属性 onclick="handleRepeat(...)" を使用
+            // これにより、window.handleRepeat が呼ばれ、スコープエラーを回避できます
+            const btn = document.createElement('div'); // innerHTMLでボタンを作るためラッパーdiv
             btn.innerHTML = `
+            <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');"
+                    class="w-full flex items-center gap-3 p-4 mb-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-indigo-50 dark:bg-indigo-900/20 active:scale-95 transition shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 group">
                 <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition">
                     <i class="ph-duotone ph-sneaker-move text-xl text-indigo-500 dark:text-indigo-300"></i>
                 </div>
@@ -188,9 +175,10 @@ const renderActionMenuExerciseShortcuts = async () => {
                 <div class="text-indigo-400 dark:text-indigo-500">
                     <i class="ph-bold ph-caret-right"></i>
                 </div>
+            </button>
             `;
             
-            container.appendChild(btn);
+            container.appendChild(btn.firstElementChild);
         });
     }
 };

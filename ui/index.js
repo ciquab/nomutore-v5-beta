@@ -737,43 +737,24 @@ if (checkModal) {
         });
     },
 
+    // ★修正: シンプルなリピートロジック (Service.repeatLogを利用)
     handleRepeat: async (log) => {
-    try {
-        // 直接 Service を呼ぶのではなく、イベントを発生させる
-        if (log.type === 'beer') {
-            // Service.repeatLog を介さず、直接 save-beer イベントを飛ばして
-            // index.js 側のリスナーに演出と保存を任せる
-            const event = new CustomEvent('save-beer', { 
-                detail: {
-                    ...log,
-                    timestamp: Date.now(),
-                    isCustom: false,
-                    useUntappd: false // リピート時は自動起動しない
-                } 
-            });
-            document.dispatchEvent(event);
+        try {
+            // Serviceのロジックに委譲
+            await Service.repeatLog(log);
 
-        } else if (log.type === 'exercise') {
-            // 運動の場合も同様に save-exercise イベントを飛ばす
-            const event = new CustomEvent('save-exercise', { 
-                detail: {
-                    exerciseKey: log.exerciseKey,
-                    minutes: log.minutes,
-                    date: dayjs().format('YYYY-MM-DD'),
-                    applyBonus: true,
-                    id: null
-                } 
-            });
-            document.dispatchEvent(event);
+            // 成功時の共通演出
+            showConfetti();
+            showMessage('Added to log!', 'success');
+            
+            // UI更新
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+            
+        } catch (e) {
+            console.error('Repeat Error:', e);
+            showMessage('登録に失敗しました', 'error');
         }
-
-        // ※イベントリスナー側で refreshUI() が呼ばれるため、ここでの実行は不要です。
-        
-    } catch (e) {
-        console.error('Repeat Error:', e);
-        showMessage('登録に失敗しました', 'error');
-    }
-},
+    },
 
     updateBulkCount: updateBulkCount,
     

@@ -388,37 +388,46 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * ★修正: よく飲むビールを取得（直近トレンド重視）
-     * 全件取得をやめ、直近100件から集計するように変更
+     * ★追加: よく飲むビールを取得（ランキング集計）
+     * Recordタブで使用 (Frequency)
      */
     getFrequentBeers: async (limit = 3) => {
-        // 変更: reverse().limit(100) を追加
-        const logs = await db.logs
-            .where('type').equals('beer')
-            .reverse()
-            .limit(100) // 直近100杯分のみを集計対象にする
-            .toArray();
-        
-        // 集計（Calcのロジックはそのまま利用可能）
+        const logs = await db.logs.where('type').equals('beer').toArray();
         const stats = Calc.getBeerStats(logs);
         const rankedBeers = stats.beerStats || [];
-
         return rankedBeers.slice(0, limit);
     },
 
     /**
-     * ★追加・修正: よくやる運動を取得（頻度順）
-     * 旧 getRecentExercises をリネームし、ロジックを頻度順に変更
+     * ★追加: 直近のビールログを取得（重複除外）
+     * Action Menuで使用 (Recency)
+     */
+    getRecentBeers: async (limit = 2) => {
+        const logs = await db.logs.where('type').equals('beer').reverse().limit(50).toArray();
+        const uniqueMap = new Map();
+        const recents = [];
+        
+        for (const log of logs) {
+            // 銘柄が違えば別物とみなす
+            const key = `${log.brand || ''}_${log.name}`;
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, true);
+                recents.push(log);
+            }
+            if (recents.length >= limit) break;
+        }
+        return recents;
+    },
+
+    /**
+     * ★追加: よくやる運動を取得（頻度順）
+     * Recordタブで使用 (Frequency)
      */
     getFrequentExercises: async (limit = 5) => {
         // 1. 直近100件取得
-        const logs = await db.logs
-            .where('type').equals('exercise')
-            .reverse()
-            .limit(100)
-            .toArray();
+        const logs = await db.logs.where('type').equals('exercise').reverse().limit(100).toArray();
 
-        // 2. 集計 (種目_時間)
+        // 2. 集計
         const stats = {};
         logs.forEach(log => {
             const key = `${log.name}_${log.minutes}`;
@@ -426,11 +435,9 @@ getAllDataForUI: async () => {
                 stats[key] = { count: 0, data: log, lastSeen: log.timestamp };
             }
             stats[key].count++;
-            
-            // 最新のデータを保持（カロリー設定などの変更に対応）
             if (log.timestamp > stats[key].lastSeen) {
                 stats[key].lastSeen = log.timestamp;
-                stats[key].data = log; 
+                stats[key].data = log;
             }
         });
 
@@ -444,54 +451,18 @@ getAllDataForUI: async () => {
             .slice(0, limit);
     },
 
-     /**
-     * ★追加: 直近のビールログを取得（Recency）
-     * Action Menuで「おかわり / 前回と同じ」を提案するために使用
+    /**
+     * ★追加: 直近の運動ログを取得（重複除外）
+     * Action Menuで使用 (Recency)
      */
-    getRecentBeers: async (limit = 2) => {
-        const logs = await db.logs
-            .where('type').equals('beer')
-            .reverse()
-            .limit(50) // 直近50件から探す
-            .toArray();
-            
+    getRecentExercises: async (limit = 2) => {
+        const logs = await db.logs.where('type').equals('exercise').reverse().limit(50).toArray();
         const uniqueMap = new Map();
         const recents = [];
         
         for (const log of logs) {
-            // 名前(または銘柄)でユニーク判定
-            // ※銘柄が違えば別物とみなす
-            const key = `${log.brand || ''}_${log.name}`;
-            
-            if (!uniqueMap.has(key)) {
-                uniqueMap.set(key, true);
-                recents.push(log);
-            }
-            if (recents.length >= limit) break;
-        }
-        return recents;
-    },
-
-     /**
-     * ★復活: 直近の運動ログを取得（Recency）
-     * Action Menuで「前回の続き」を提案するために使用
-     */
-    getRecentExercises: async (limit = 1) => {
-        const logs = await db.logs
-            .where('type').equals('exercise')
-            .reverse()
-            .limit(50) // 直近50件見て探す
-            .toArray();
-            
-        const uniqueMap = new Map();
-        const recents = [];
-        
-        for (const log of logs) {
-            // 運動キーがあるものを優先
             if (!log.exerciseKey) continue;
-            
-            // 「種目名_分数」でユニーク判定
-            const key = `${log.name}_${log.minutes}`;
+            const key = `${log.exerciseKey}-${log.minutes}`;
             if (!uniqueMap.has(key)) {
                 uniqueMap.set(key, true);
                 recents.push(log);
@@ -503,10 +474,7 @@ getAllDataForUI: async () => {
 
     /**
      * ログを複製して今日の日付で登録（リピート機能）
-     * 既存の保存ロジック（saveBeerLog / saveExerciseLog）へ統合
-     */
-   /**
-     * ログを複製して今日の日付で登録（リピート機能）
+     * UI/index.js から呼ばれる
      */
     repeatLog: async (log) => {
         if (log.type === 'beer') {
@@ -525,7 +493,7 @@ getAllDataForUI: async () => {
                 null
             );
         }
-        // 各save関数内で再計算とUI更新イベントが発火するため、ここでの記述は不要
+        // saveBeerLog/saveExerciseLog 内で再計算とUI更新イベントが発火するため、ここでの記述は不要
     },
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---

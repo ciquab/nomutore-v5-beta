@@ -370,7 +370,8 @@ export const DOM = {
             'beer-modal', 'check-modal', 'exercise-modal', 'settings-modal', 'help-modal',
             'global-error-overlay', 'error-details', 'swipe-coach-mark',
             'check-library-modal',
-            'action-menu-modal'
+            'action-menu-modal',
+            'day-detail-modal'
         ];
 
         ids.forEach(id => {
@@ -406,20 +407,42 @@ export const toggleModal = (modalId, show = true) => {
     
     if (show) Feedback.uiSwitch();
 
+    // モーダル内にある「アニメーション対象のコンテナ」を取得
+    const content = el.querySelector('div[class*="transform"]');
+
     if (show) {
+        // 1. まずコンテナを表示状態にする (flex)
         el.classList.remove('hidden');
         el.classList.add('flex');
+        
+        // 2. わずかに遅らせてアニメーションクラスを適用 (CSS transitionを発火させるため)
         setTimeout(() => {
-            el.querySelector('div[class*="transform"]')?.classList.remove('scale-95', 'opacity-0');
-            el.querySelector('div[class*="transform"]')?.classList.add('scale-100', 'opacity-100');
+            if (content) {
+                // 共通: 透明度とスケールを元に戻す
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+
+                // ★追加: ボトムシート用の位置ズレ(translate-y-full)を除去して画面内に入れる
+                content.classList.remove('translate-y-full', 'sm:translate-y-10');
+            }
         }, 10);
     } else {
-        el.querySelector('div[class*="transform"]')?.classList.remove('scale-100', 'opacity-100');
-        el.querySelector('div[class*="transform"]')?.classList.add('scale-95', 'opacity-0');
+        // 閉じる処理
+        if (content) {
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+
+            // ★追加: 特定のモーダルの場合、スライドダウンのアニメーションも適用
+            if (modalId === 'day-detail-modal') {
+                content.classList.add('translate-y-full', 'sm:translate-y-10');
+            }
+        }
+        
+        // アニメーション完了後に非表示 (hidden) にする
         setTimeout(() => {
             el.classList.add('hidden');
             el.classList.remove('flex');
-        }, 200);
+        }, 200); // duration-200 と合わせる
     }
 };
 

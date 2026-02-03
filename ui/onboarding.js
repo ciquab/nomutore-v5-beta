@@ -211,7 +211,43 @@ const WIZARD_STEPS = [
             </div>
         `
     },
+    {
+        id: 'step-data-safety',
+        title: 'Important',
+        desc: 'データの保護について（必ずお読みください）',
+        render: () => `
+            <div class="space-y-4">
+                <div class="bg-red-50 dark:bg-red-900/10 border-2 border-red-100 dark:border-red-900/30 rounded-2xl p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="ph-fill ph-warning-circle text-3xl text-red-500"></i>
+                        <h3 class="font-bold text-red-600 dark:text-red-400">データは端末に保存されます</h3>
+                    </div>
+                    
+                    <div class="space-y-3 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                        <p>
+                            NOMUTOREはプライバシー重視のため、<span class="font-bold text-gray-800 dark:text-white">サーバーにデータを送信しません。</span>
+                        </p>
+                        <p>
+                            そのため、<span class="font-bold text-red-500 underline decoration-2 decoration-red-200">ブラウザの履歴削除やキャッシュクリア</span>を行うと、全ての記録が消えてしまう可能性があります。
+                        </p>
+                    </div>
+                </div>
 
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl flex gap-3 items-start">
+                    <i class="ph-fill ph-cloud-arrow-up text-xl text-indigo-500 mt-0.5"></i>
+                    <div class="text-xs text-indigo-800 dark:text-indigo-200">
+                        <p class="font-bold mb-1">バックアップを推奨します</p>
+                        <p class="opacity-80">設定画面から「Googleドライブ」または「JSONファイル」でのバックアップが可能です。定期的な保存をお勧めします。</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center gap-2 mt-2 opacity-60">
+                    <i class="ph-bold ph-check-circle text-emerald-500"></i>
+                    <span class="text-[10px] font-bold">上記を理解して次へ進む</span>
+                </div>
+            </div>
+        `
+    },
     {
         id: 'step-start',
         title: 'Beer & Burn',
@@ -523,7 +559,10 @@ Onboarding.handleCloudRestore = async () => {
             // インポートしていれば window. は不要で、存在チェックも不要になります
             showMessage('Google Driveを確認中...', 'info');
             const success = await CloudManager.restore();
-            if (success) Onboarding.completeAfterRestore();
+            if (success) {
+                showMessage('☁️ ドライブから復元しました', 'success');
+                Onboarding.completeAfterRestore();
+            }
         } catch (e) { 
             console.error(e);
             showMessage('復元に失敗しました', 'error'); 
@@ -551,7 +590,7 @@ Onboarding.completeAfterRestore = () => {
     // リロードすることで、アプリが「設定済み状態」で一から立ち上がります
     setTimeout(() => {
         window.location.reload(); 
-    }, 1000);
+    }, 2500);
 };
 
 // ★追加: HTMLのonclickから呼ぶためのヘルパー関数

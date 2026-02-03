@@ -1190,9 +1190,10 @@ export const openLogDetail = (log) => {
                 </button>
                 ` : ''}
 
-                <button id="btn-detail-edit" class="flex-1 py-3 bg-base-200 dark:bg-base-700 text-base-600 dark:text-base-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-base-300 dark:hover:bg-base-600 transition">
-                    <i class="ph-bold ph-pencil-simple text-lg"></i> Edit
-                </button>
+// 【修正後】 base-xxx を gray-xxx に変更
+<button id="btn-detail-edit" class="flex-1 py-3 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+    <i class="ph-bold ph-pencil-simple text-lg"></i> Edit
+</button>
                 
                 <button id="btn-detail-delete" class="w-12 py-3 bg-red-100 dark:bg-red-900/20 text-red-500 font-bold rounded-xl flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-900/40 transition">
                     <i class="ph-bold ph-trash text-lg"></i>
@@ -1684,4 +1685,5 @@ export const showRolloverModal = () => {
 
     // モーダルを表示
     toggleModal('rollover-modal', true);
+
 };

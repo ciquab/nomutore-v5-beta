@@ -456,7 +456,7 @@ export const Onboarding = {
                     element: '#btn-fab-fixed', 
                     popover: { 
                         title: 'Action Menu',
-                        description: '「いつものビール」も「手動入力」も、すべてここから記録できます。',
+                        description: '前回登録したビールや運動は、ここからワンタップでもう一度記録できます。',
                         side: 'top',
                         align: 'center'
                     } 

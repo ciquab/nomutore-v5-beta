@@ -399,15 +399,21 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * ★追加: 直近のビールログを取得（重複除外）
-     * Action Menuで使用 (Recency)
+     * ★修正: 直近のビールログを取得
+     * 特定のインデックスに頼らず、全ログの「登録順(ID)」最新から探す方式に変更
      */
     getRecentBeers: async (limit = 2) => {
-        const logs = await db.logs.where('type').equals('beer').reverse().limit(50).toArray();
+        // 1. 最新のログ100件を取得 (ID降順 = 登録順)
+        // where('type')を使うと並び順が保証されない場合があるため、全体から取得してJSでフィルタする方が確実です
+        const logs = await db.logs.toCollection().reverse().limit(100).toArray();
+        
         const uniqueMap = new Map();
         const recents = [];
         
         for (const log of logs) {
+            // ビール以外はスキップ
+            if (log.type !== 'beer') continue;
+
             // 銘柄が違えば別物とみなす
             const key = `${log.brand || ''}_${log.name}`;
             if (!uniqueMap.has(key)) {
@@ -452,16 +458,23 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * ★追加: 直近の運動ログを取得（重複除外）
-     * Action Menuで使用 (Recency)
+     * ★修正: 直近の運動ログを取得
+     * 同様に、全ログの最新から探す方式に変更
      */
     getRecentExercises: async (limit = 2) => {
-        const logs = await db.logs.where('type').equals('exercise').reverse().limit(50).toArray();
+        // 1. 最新のログ100件を取得
+        const logs = await db.logs.toCollection().reverse().limit(100).toArray();
+        
         const uniqueMap = new Map();
         const recents = [];
         
         for (const log of logs) {
+            // 運動以外はスキップ
+            if (log.type !== 'exercise') continue;
+            
+            // exerciseKeyがない古いデータなどはスキップ
             if (!log.exerciseKey) continue;
+
             const key = `${log.exerciseKey}-${log.minutes}`;
             if (!uniqueMap.has(key)) {
                 uniqueMap.set(key, true);

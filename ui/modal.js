@@ -36,9 +36,7 @@ export const openActionMenu = async (dateStr = null) => {
     await renderActionMenuExerciseShortcuts();
 
     // 2. モーダル表示
-    if (window.toggleModal) {
-        toggleModal('action-menu-modal', true);
-    }
+    toggleModal('action-menu-modal', true);
 
     // 3. アニメーション強制発火ロジック (CSSアニメーションの不具合回避)
     const modal = document.getElementById('action-menu-modal');

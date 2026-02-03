@@ -1142,7 +1142,7 @@ export const openLogDetail = (log) => {
                 </div>
                 <div class="text-right">
                     <span class="text-[10px] font-bold text-gray-500 uppercase">Burned</span>
-                    <p class="text-2xl font-black text-emerald-500">-${Math.round(Math.abs(log.kcal))} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
+                    <p class="text-2xl font-black text-emerald-500">+${Math.round(Math.abs(log.kcal))} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
                 </div>
             </div>
         `;
@@ -1410,7 +1410,7 @@ export const openDayDetail = async (dateStr) => {
         </div>
         <div class="text-right shrink-0 ml-2">
             <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
-                ${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
+                ${log.kcal > 0 ? '+' : ''}${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
             </span>
         </div>
     `;

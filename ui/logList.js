@@ -162,7 +162,7 @@ export const updateLogListView = async (isLoadMore = false) => {
             colorClass = 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
             mainText = log.name; 
             subText = `<span class="font-bold text-gray-600 dark:text-gray-300">${log.minutes} min</span> · -${Math.round(log.kcal)} kcal`;
-            rightContent = `<span class="text-sm font-black text-indigo-500">-${Math.round(log.kcal)}</span>`;
+            rightContent = `<span class="text-sm font-black text-indigo-500">+${Math.round(log.kcal)}</span>`;
         } else if (log.type === 'beer') {
             const size = log.size || 350;
             const count = log.count || 1;

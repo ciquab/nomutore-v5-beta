@@ -731,6 +731,7 @@ if (checkModal) {
 
     // ★追加: HTMLのonclick属性から呼べるように公開する
     openLogDetail: (id) => {
+        Feedback.tap();
         // idからログデータを取得して詳細モーダルを開く
         db.logs.get(id).then(log => {
             if (log) openLogDetail(log);
@@ -851,5 +852,6 @@ export {
     StateManager,
     toggleModal
 };
+
 
 

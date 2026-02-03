@@ -624,17 +624,28 @@ export const applyTheme = (themeName) => {
         }
     }
 
-    // Androidのシステムバーの色制御 (チカチカ対策: 同じ色なら更新しない)
+// ▼▼▼ ★修正: Androidのチカチカ対策 (強力版) ▼▼▼
     
-    // style.cssの色定義に合わせる (Dark: slate-950, Light: slate-50)
+    // Tailwindの slate-50 (#f8fafc) と slate-900 (#0f172a)
+    // ※もし背景色が黒(#000000)に近い場合は #0f172a をその色に変えてください
     const targetColor = isDark ? '#0f172a' : '#f8fafc';
     
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-        // 現在設定されている色と、これから設定したい色が「違う場合だけ」実行
-        if (metaThemeColor.getAttribute('content') !== targetColor) {
-            metaThemeColor.setAttribute('content', targetColor);
-        }
+    // 1. 存在するすべての theme-color メタタグを取得
+    const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+
+    if (metaTags.length > 0) {
+        metaTags.forEach(tag => {
+            // contentを更新
+            tag.setAttribute('content', targetColor);
+            // 重要: media属性がついているとOS設定が優先されてしまうため、削除してJSの設定を強制する
+            tag.removeAttribute('media');
+        });
+    } else {
+        // 万が一タグがない場合は作成
+        const meta = document.createElement('meta');
+        meta.name = 'theme-color';
+        meta.content = targetColor;
+        document.head.appendChild(meta);
     }
 };
 
@@ -701,5 +712,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     };
 };
+
 
 

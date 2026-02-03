@@ -47,57 +47,71 @@ export const openActionMenu = async (dateStr = null) => {
 };
 
 /**
- * ★新規作成: Action Menu用のビールボタン描画
- * refreshQuickLogButtons の代わりとなる関数
+ * Action Menu用: ビールボタン描画
+ * ★修正: 直近2件のビールを表示 (ID降順で取得済み)
  */
 const renderActionMenuBeerPresets = async () => {
     const container = document.getElementById('action-menu-beer-presets');
     if (!container) return;
 
-    // ★変更: 直近2件を取得
+    // ★変更: 直近2件を取得 (service.jsでID降順に修正済み)
     const recentBeers = await Service.getRecentBeers(2);
 
     let html = '';
 
     if (recentBeers.length > 0) {
-        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">前回のビール</p>`;
+        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">Repeat Recent Brews</p>`;
     }
 
     if (recentBeers.length > 0) {
         recentBeers.forEach((beer, index) => {
-            // ★修正: スタイル判定ロジックを強化
-    const isIPA = beer.style && beer.style.includes('IPA');
-    const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
-    
-    // デフォルト（ラガーなど）
-    let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
-    let iconColor = 'text-amber-500';
+            // スタイル判定
+            const isIPA = beer.style && beer.style.includes('IPA');
+            const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
+            
+            let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+            let iconColor = 'text-amber-500';
 
-    if (isIPA) {
-        // IPA (オレンジ)
-        bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
-        iconColor = 'text-orange-500';
-    } else if (isStout) {
-        // Stout/Porter (黒/グレー)
-        bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
-        iconColor = 'text-gray-600 dark:text-gray-400';
-    }
+            if (isIPA) {
+                bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
+                iconColor = 'text-orange-500';
+            } else if (isStout) {
+                bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+                iconColor = 'text-gray-600 dark:text-gray-400';
+            }
 
-            // リピート用ペイロード
+            // リピート用データ
             const repeatPayload = {
                 type: 'beer',
-                name: beer.name, // brand含む
+                name: beer.name,
                 brand: beer.brand || beer.name,
                 brewery: beer.brewery,
                 style: beer.style,
                 size: '350',
-                count: 1,
-                // ※必要に応じて他のパラメータも
+                count: 1
             };
             
-            // JSON化してService.repeatLogを呼ぶ (quickLogBeerは廃止)
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+            
+            // エスケープ処理
+            const safeName = escapeHtml(beer.name);       
+            const safeBrand = escapeHtml(beer.brand || ''); 
+            const safeBrewery = escapeHtml(beer.brewery || ''); 
+            const safeStyle = escapeHtml(beer.style || ''); 
 
+            // ★修正: 表示ロジック
+            // Main: 銘柄 (なければ名前)
+            // Sub: ブルワリー (なければスタイル)
+            let mainLabel = safeBrand || safeName;
+            let subLabel = safeBrewery || safeStyle || 'Beer';
+
+            // 例外処理: 名前と銘柄が同じ(スタイル名だけの場合)で、かつブルワリーもない時
+            if (!safeBrand && !safeBrewery) {
+                 mainLabel = safeName;
+                 subLabel = safeStyle || 'Beer';
+            }
+
+            // ★修正: HTML生成時に mainLabel, subLabel を使用
             html += `
                 <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
                         class="flex items-center gap-3 p-4 rounded-2xl border active:scale-95 transition shadow-sm ${bgClass}">
@@ -108,19 +122,15 @@ const renderActionMenuBeerPresets = async () => {
                         <div class="flex items-center gap-1 mb-0.5">
                             <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
-                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${escapeHtml(beer.name)}</div>
-                        <div class="text-[9px] text-gray-500 truncate">${beer.style || 'Beer'}</div>
+                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${mainLabel}</div>
+                        <div class="text-[9px] text-gray-500 truncate">${subLabel}</div>
                     </div>
                 </button>
             `;
         });
     } else {
-        // 履歴がない場合のフォールバック (従来のPresetボタン)
-        // ここでも quickLogBeer('mode1') ではなく Service.quickLogBeerPreset('mode1') などを作るか、
-        // 簡易的に直接 Service.saveBeerLog を呼ぶ形にします。
-        // 今回はシンプルに「履歴がないと表示されない」または「初期設定ボタンを表示」とします。
         html += `
-            <button onclick="UI.openBeerModal()" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
+            <button onclick="UI.openBeerModal(); UI.closeModal('action-menu-modal');" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
                 <i class="ph-bold ph-plus"></i> Log First Beer
             </button>
         `;
@@ -128,7 +138,6 @@ const renderActionMenuBeerPresets = async () => {
 
     container.innerHTML = html;
 };
-
 
 /**
  * Action Menu用: 運動ボタン描画

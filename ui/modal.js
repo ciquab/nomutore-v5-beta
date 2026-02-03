@@ -60,7 +60,7 @@ const renderActionMenuBeerPresets = async () => {
     let html = '';
 
     if (recentBeers.length > 0) {
-        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">Repeat Recent Brews</p>`;
+        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">前回のビール</p>`;
     }
 
     if (recentBeers.length > 0) {

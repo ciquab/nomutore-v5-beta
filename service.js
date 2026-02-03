@@ -444,6 +444,63 @@ getAllDataForUI: async () => {
             .slice(0, limit);
     },
 
+     /**
+     * ★追加: 直近のビールログを取得（Recency）
+     * Action Menuで「おかわり / 前回と同じ」を提案するために使用
+     */
+    getRecentBeers: async (limit = 2) => {
+        const logs = await db.logs
+            .where('type').equals('beer')
+            .reverse()
+            .limit(50) // 直近50件から探す
+            .toArray();
+            
+        const uniqueMap = new Map();
+        const recents = [];
+        
+        for (const log of logs) {
+            // 名前(または銘柄)でユニーク判定
+            // ※銘柄が違えば別物とみなす
+            const key = `${log.brand || ''}_${log.name}`;
+            
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, true);
+                recents.push(log);
+            }
+            if (recents.length >= limit) break;
+        }
+        return recents;
+    },
+
+     /**
+     * ★復活: 直近の運動ログを取得（Recency）
+     * Action Menuで「前回の続き」を提案するために使用
+     */
+    getRecentExercises: async (limit = 1) => {
+        const logs = await db.logs
+            .where('type').equals('exercise')
+            .reverse()
+            .limit(50) // 直近50件見て探す
+            .toArray();
+            
+        const uniqueMap = new Map();
+        const recents = [];
+        
+        for (const log of logs) {
+            // 運動キーがあるものを優先
+            if (!log.exerciseKey) continue;
+            
+            // 「種目名_分数」でユニーク判定
+            const key = `${log.name}_${log.minutes}`;
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, true);
+                recents.push(log);
+            }
+            if (recents.length >= limit) break;
+        }
+        return recents;
+    },
+
     /**
      * ログを複製して今日の日付で登録（リピート機能）
      * 既存の保存ロジック（saveBeerLog / saveExerciseLog）へ統合

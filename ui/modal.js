@@ -18,18 +18,11 @@ const getTodayString = () => getVirtualDate();
  * Action Menuを開く
  */
 export const openActionMenu = async (dateStr = null) => {
-    // 日付設定（引数がなければ仮想日付を使用）
-    const targetDate = dateStr || (typeof getVirtualDate === 'function' ? getVirtualDate() : new Date());
+    const targetDate = dateStr || getVirtualDate();
+    StateManager.setSelectedDate(targetDate);
     
-    if (window.StateManager) {
-        StateManager.setSelectedDate(targetDate);
-    }
-    
-    // 日付ラベル更新
     const label = document.getElementById('action-menu-date-label');
-    if (label && window.dayjs) {
-        label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
-    }
+    if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
 
     // 1. ショートカットの描画 (非同期でデータを取得して表示)
     await renderActionMenuBeerPresets();
@@ -54,25 +47,27 @@ export const openActionMenu = async (dateStr = null) => {
 };
 
 /**
- * Action Menu用: ビールボタン描画 (頻度順 TOP 2)
+ * Action Menu用: ビールボタン描画
+ * ★修正: 「頻度順」から「直近順(Recency)」に変更
+ * 役割: 「おかわり (Another One)」ボタンとして機能させる
  */
 const renderActionMenuBeerPresets = async () => {
     const container = document.getElementById('action-menu-beer-presets');
     if (!container) return;
 
-    // Serviceから頻度順上位2件を取得
-    const frequentBeers = await Service.getFrequentBeers(2);
+    // ★変更: 頻度(Frequent) ではなく 直近(Recent) を取得
+    const recentBeers = await Service.getRecentBeers(2);
 
     let html = '';
 
-    // ヘッダー
-    if (frequentBeers.length > 0) {
-        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">Repeat Recent Brews</p>`;
+    // ヘッダー（文言変更: Recent Brews）
+    if (recentBeers.length > 0) {
+        html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">前回のビール</p>`;
     }
 
     // ボタン生成
-    if (frequentBeers.length > 0) {
-        frequentBeers.forEach((beer, index) => {
+    if (recentBeers.length > 0) {
+        recentBeers.forEach((beer, index) => {
             // スタイル判定
             const isIPA = beer.style && beer.style.includes('IPA');
             const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
@@ -95,12 +90,17 @@ const renderActionMenuBeerPresets = async () => {
                 brand: beer.brand || beer.name,
                 brewery: beer.brewery,
                 style: beer.style,
-                size: '350',
+                size: beer.size || '350', // 前回のサイズも引き継ぐ
                 count: 1
             };
             
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
             const safeName = escapeHtml(beer.name);
+            const safeBrand = escapeHtml(beer.brand || '');
+            
+            // 表示名: ブランド名があればそれをメインに、なければ名前
+            const mainLabel = safeBrand || safeName;
+            const subLabel = safeBrand ? safeName : (beer.style || 'Beer');
 
             html += `
                 <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
@@ -112,8 +112,8 @@ const renderActionMenuBeerPresets = async () => {
                         <div class="flex items-center gap-1 mb-0.5">
                             <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
-                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${safeName}</div>
-                        <div class="text-[9px] text-gray-500 truncate">${beer.style || 'Beer'}</div>
+                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${mainLabel}</div>
+                        <div class="text-[9px] text-gray-500 truncate">${subLabel}</div>
                     </div>
                 </button>
             `;
@@ -131,57 +131,67 @@ const renderActionMenuBeerPresets = async () => {
 };
 
 /**
- * Action Menu用: 運動ボタン描画 (頻度順 TOP 1)
- * ★修正: getRecentExercises(廃止) -> getFrequentExercises(採用)
+ * Action Menu用: 運動ボタン描画
+ * ★修正: 直近の運動を「2件」表示に変更 (ビールと同じスタイルに統一)
  */
 const renderActionMenuExerciseShortcuts = async () => {
     const container = document.getElementById('action-menu-repeat-area');
     if (!container) return;
 
-    // ★修正: ここで「頻度順 No.1」を取得します
-    const topExercises = await Service.getFrequentExercises(1);
+    // ★変更: 直近2件を取得
+    const recents = await Service.getRecentExercises(2);
     
     container.innerHTML = ''; // クリア
 
-    if (topExercises.length > 0) {
-        const targetEx = topExercises[0];
-        
-        const repeatPayload = {
-            type: 'exercise',
-            name: targetEx.name,
-            minutes: targetEx.minutes,
-            kcal: targetEx.kcal,
-            exerciseKey: targetEx.exerciseKey
-        };
-
-        const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
-        const safeName = escapeHtml(targetEx.name);
-
-        // ラベルを "Usual Workout" に変更
-        container.innerHTML = `
-            <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Usual Workout</p>
-                <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
-                        class="w-full flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl active:scale-95 transition group hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800">
-                    
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shadow-sm text-xl group-hover:scale-110 transition">
-                            <i class="ph-duotone ph-sneaker-move text-indigo-500 dark:text-indigo-300"></i>
-                        </div>
-                        <div class="text-left">
-                            <span class="block text-xs font-bold text-gray-900 dark:text-white">${safeName}</span>
-                            <span class="block text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                                ${targetEx.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(targetEx.kcal)} kcal
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-                        Quick Log <i class="ph-bold ph-caret-right"></i>
-                    </div>
-                </button>
+    if (recents.length > 0) {
+        // ヘッダー (Recent Workouts)
+        // ビールエリアとの区切りのために border-t を入れています
+        container.innerHTML += `
+            <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4 mb-2">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Repeat Recent Workouts</p>
             </div>
         `;
+
+        recents.forEach((log, index) => {
+            const repeatPayload = {
+                type: 'exercise',
+                name: log.name,
+                minutes: log.minutes,
+                kcal: log.kcal,
+                exerciseKey: log.exerciseKey
+            };
+
+            const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+            const safeName = escapeHtml(log.name);
+
+            // ビールと同じ「横長ボタンスタイル」で生成
+            const btn = document.createElement('button');
+            btn.onclick = () => {
+                handleRepeat(repeatPayload); // handleRepeatはwindowに登録済み想定
+                UI.closeModal('action-menu-modal');
+            };
+            btn.className = "w-full flex items-center gap-3 p-4 mb-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-indigo-50 dark:bg-indigo-900/20 active:scale-95 transition shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 group";
+
+            btn.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition">
+                    <i class="ph-duotone ph-sneaker-move text-xl text-indigo-500 dark:text-indigo-300"></i>
+                </div>
+                <div class="text-left overflow-hidden flex-1">
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                    </div>
+                    <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${safeName}</div>
+                    <div class="text-[9px] text-gray-500 font-mono">
+                        ${log.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(log.kcal)} kcal
+                    </div>
+                </div>
+                <div class="text-indigo-400 dark:text-indigo-500">
+                    <i class="ph-bold ph-caret-right"></i>
+                </div>
+            `;
+            
+            container.appendChild(btn);
+        });
     }
 };
 

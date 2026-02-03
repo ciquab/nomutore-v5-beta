@@ -780,7 +780,6 @@ if (checkModal) {
     }
 },
 
-
     updateBulkCount: updateBulkCount,
     
     // ★追加: プレビュー更新関数をUIオブジェクトに紐づけ

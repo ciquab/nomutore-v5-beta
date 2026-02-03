@@ -187,18 +187,6 @@ const renderActionMenuExerciseShortcuts = async () => {
     }
 };
 
-/**
- * HTMLエスケープ用ヘルパー (もしファイル内に無ければ追加)
- */
-function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
-}
-
 /* --- Beer Modal Logic --- */
 
 export const openBeerModal = (e, dateStr = null, log = null) => {

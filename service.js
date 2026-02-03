@@ -388,42 +388,60 @@ getAllDataForUI: async () => {
     },
 
     /**
-     * ★追加: よく飲むビールを取得（ランキング集計）
-     * RecordタブとAction Menuで使用
+     * ★修正: よく飲むビールを取得（直近トレンド重視）
+     * 全件取得をやめ、直近100件から集計するように変更
      */
     getFrequentBeers: async (limit = 3) => {
-        // 1. 全ログを取得
-        const logs = await db.logs.where('type').equals('beer').toArray();
+        // 変更: reverse().limit(100) を追加
+        const logs = await db.logs
+            .where('type').equals('beer')
+            .reverse()
+            .limit(100) // 直近100杯分のみを集計対象にする
+            .toArray();
         
-        // 2. 既存の集計ロジックを利用してランキング化
+        // 集計（Calcのロジックはそのまま利用可能）
         const stats = Calc.getBeerStats(logs);
         const rankedBeers = stats.beerStats || [];
 
-        // 3. 上位N件を返す
         return rankedBeers.slice(0, limit);
     },
 
     /**
-     * ★追加: 直近の運動ログを取得（重複除外）
+     * ★追加・修正: よくやる運動を取得（頻度順）
+     * 旧 getRecentExercises をリネームし、ロジックを頻度順に変更
      */
-    getRecentExercises: async (limit = 5) => {
-        const logs = await db.logs.where('type').equals('exercise').reverse().toArray();
-        const uniqueMap = new Map();
-        const recents = [];
-        
-        for (const log of logs) {
-            // exerciseKeyがあるものを優先
-            if (!log.exerciseKey) continue;
-            
-            // 種目と時間の組み合わせでユニーク化
-            const key = `${log.exerciseKey}-${log.minutes}`;
-            if (!uniqueMap.has(key)) {
-                uniqueMap.set(key, true);
-                recents.push(log);
+    getFrequentExercises: async (limit = 5) => {
+        // 1. 直近100件取得
+        const logs = await db.logs
+            .where('type').equals('exercise')
+            .reverse()
+            .limit(100)
+            .toArray();
+
+        // 2. 集計 (種目_時間)
+        const stats = {};
+        logs.forEach(log => {
+            const key = `${log.name}_${log.minutes}`;
+            if (!stats[key]) {
+                stats[key] = { count: 0, data: log, lastSeen: log.timestamp };
             }
-            if (recents.length >= limit) break;
-        }
-        return recents;
+            stats[key].count++;
+            
+            // 最新のデータを保持（カロリー設定などの変更に対応）
+            if (log.timestamp > stats[key].lastSeen) {
+                stats[key].lastSeen = log.timestamp;
+                stats[key].data = log; 
+            }
+        });
+
+        // 3. ソートして上位N件を返す
+        return Object.values(stats)
+            .sort((a, b) => {
+                if (b.count !== a.count) return b.count - a.count; // 回数優先
+                return b.lastSeen - a.lastSeen; // 新しさ優先
+            })
+            .map(item => item.data)
+            .slice(0, limit);
     },
 
     /**

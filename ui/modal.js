@@ -14,34 +14,41 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 const getTodayString = () => getVirtualDate();
 
-/* --- Action Menu Logic --- */
-
+/**
+ * Action Menuを開く
+ */
 export const openActionMenu = async (dateStr = null) => {
-    const targetDate = dateStr || getVirtualDate();
-    StateManager.setSelectedDate(targetDate);
+    // 日付設定（引数がなければ仮想日付を使用）
+    const targetDate = dateStr || (typeof getVirtualDate === 'function' ? getVirtualDate() : new Date());
     
+    if (window.StateManager) {
+        StateManager.setSelectedDate(targetDate);
+    }
+    
+    // 日付ラベル更新
     const label = document.getElementById('action-menu-date-label');
-    if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
+    if (label && window.dayjs) {
+        label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
+    }
 
-    // 1. ショートカットの描画
+    // 1. ショートカットの描画 (非同期でデータを取得して表示)
     await renderActionMenuBeerPresets();
     await renderActionMenuExerciseShortcuts();
 
-    // 2. モーダル表示 (親要素の hidden を外す)
-    toggleModal('action-menu-modal', true);
+    // 2. モーダル表示
+    if (window.toggleModal) {
+        toggleModal('action-menu-modal', true);
+    }
 
-    // 3. ★追加: アニメーション強制発火ロジック
-    // これがないと、メニューが画面の下に埋まったままになることがあります
+    // 3. アニメーション強制発火ロジック (CSSアニメーションの不具合回避)
     const modal = document.getElementById('action-menu-modal');
     if (modal) {
         const content = modal.querySelector('.modal-enter');
         if (content) {
-            // 一瞬待ってからクラスを外すことで、CSSアニメーションを確実に起動させる
             requestAnimationFrame(() => {
                 content.classList.remove('modal-enter');
             });
         } else {
-            // 万が一クラスが見つからない場合の保険
             const drawer = modal.querySelector('.absolute.bottom-0');
             if (drawer) drawer.classList.remove('modal-enter');
         }
@@ -49,56 +56,53 @@ export const openActionMenu = async (dateStr = null) => {
 };
 
 /**
- * ★新規作成: Action Menu用のビールボタン描画
- * refreshQuickLogButtons の代わりとなる関数
+ * Action Menu用: ビールボタン描画 (頻度順 TOP 2)
  */
 const renderActionMenuBeerPresets = async () => {
     const container = document.getElementById('action-menu-beer-presets');
     if (!container) return;
 
-    // Serviceからランキング上位を取得 (Recordタブと同じロジック！)
-    const frequentBeers = await Service.getFrequentBeers(2); // Action Menuはスペースが狭いので上位2件
+    // Serviceから頻度順上位2件を取得
+    const frequentBeers = await Service.getFrequentBeers(2);
 
     let html = '';
 
+    // ヘッダー
     if (frequentBeers.length > 0) {
         html += `<p class="col-span-2 text-[10px] font-bold text-gray-400 uppercase mb-1">Repeat Recent Brews</p>`;
     }
 
+    // ボタン生成
     if (frequentBeers.length > 0) {
         frequentBeers.forEach((beer, index) => {
-            // ★修正: スタイル判定ロジックを強化
-    const isIPA = beer.style && beer.style.includes('IPA');
-    const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
-    
-    // デフォルト（ラガーなど）
-    let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
-    let iconColor = 'text-amber-500';
+            // スタイル判定
+            const isIPA = beer.style && beer.style.includes('IPA');
+            const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
+            
+            let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+            let iconColor = 'text-amber-500';
 
-    if (isIPA) {
-        // IPA (オレンジ)
-        bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
-        iconColor = 'text-orange-500';
-    } else if (isStout) {
-        // Stout/Porter (黒/グレー)
-        bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
-        iconColor = 'text-gray-600 dark:text-gray-400';
-    }
+            if (isIPA) {
+                bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
+                iconColor = 'text-orange-500';
+            } else if (isStout) {
+                bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+                iconColor = 'text-gray-600 dark:text-gray-400';
+            }
 
-            // リピート用ペイロード
+            // リピート登録用データ
             const repeatPayload = {
                 type: 'beer',
-                name: beer.name, // brand含む
+                name: beer.name,
                 brand: beer.brand || beer.name,
                 brewery: beer.brewery,
                 style: beer.style,
                 size: '350',
-                count: 1,
-                // ※必要に応じて他のパラメータも
+                count: 1
             };
             
-            // JSON化してService.repeatLogを呼ぶ (quickLogBeerは廃止)
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+            const safeName = escapeHtml(beer.name);
 
             html += `
                 <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
@@ -110,19 +114,16 @@ const renderActionMenuBeerPresets = async () => {
                         <div class="flex items-center gap-1 mb-0.5">
                             <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
-                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${escapeHtml(beer.name)}</div>
+                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${safeName}</div>
                         <div class="text-[9px] text-gray-500 truncate">${beer.style || 'Beer'}</div>
                     </div>
                 </button>
             `;
         });
     } else {
-        // 履歴がない場合のフォールバック (従来のPresetボタン)
-        // ここでも quickLogBeer('mode1') ではなく Service.quickLogBeerPreset('mode1') などを作るか、
-        // 簡易的に直接 Service.saveBeerLog を呼ぶ形にします。
-        // 今回はシンプルに「履歴がないと表示されない」または「初期設定ボタンを表示」とします。
+        // 履歴がない場合
         html += `
-            <button onclick="UI.openBeerModal()" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
+            <button onclick="UI.openBeerModal(); UI.closeModal('action-menu-modal');" class="col-span-2 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
                 <i class="ph-bold ph-plus"></i> Log First Beer
             </button>
         `;
@@ -132,51 +133,47 @@ const renderActionMenuBeerPresets = async () => {
 };
 
 /**
- * Action Menu用の運動リピートボタン描画 (前回作成したものの再掲)
+ * Action Menu用: 運動ボタン描画 (頻度順 TOP 1)
+ * ★修正: getRecentExercises(廃止) -> getFrequentExercises(採用)
  */
 const renderActionMenuExerciseShortcuts = async () => {
     const container = document.getElementById('action-menu-repeat-area');
     if (!container) return;
 
-    // 1. 直近の運動を1件だけ取得
-    const recents = await Service.getRecentExercises(1);
+    // ★修正: ここで「頻度順 No.1」を取得します
+    const topExercises = await Service.getFrequentExercises(1);
     
     container.innerHTML = ''; // クリア
 
-    if (recents.length > 0) {
-        const lastEx = recents[0];
+    if (topExercises.length > 0) {
+        const targetEx = topExercises[0];
         
-        // リピート登録用のデータを作成
         const repeatPayload = {
             type: 'exercise',
-            name: lastEx.name,
-            minutes: lastEx.minutes,
-            kcal: lastEx.kcal, // Service側で再計算されますが、念のため渡す
-            exerciseKey: lastEx.exerciseKey
+            name: targetEx.name,
+            minutes: targetEx.minutes,
+            kcal: targetEx.kcal,
+            exerciseKey: targetEx.exerciseKey
         };
 
-        // onclick属性に埋め込むためにJSON文字列化＆エスケープ
         const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+        const safeName = escapeHtml(targetEx.name);
 
-        // 安全な表示名
-        const safeName = escapeHtml(lastEx.name);
-
-        // HTML生成
-        // デザイン意図: "Repeat Last Workout" というラベルの下に、大きく押しやすいカード型ボタンを配置
+        // ラベルを "Usual Workout" に変更
         container.innerHTML = `
             <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4">
-                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Repeat Last Workout</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Usual Workout</p>
                 <button onclick="handleRepeat(${jsonParam}); UI.closeModal('action-menu-modal');" 
                         class="w-full flex items-center justify-between p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl active:scale-95 transition group hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-800">
                     
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shadow-sm text-xl group-hover:scale-110 transition">
-                            <i class="ph-duotone ph-arrow-counter-clockwise text-indigo-500 dark:text-indigo-300"></i>
+                            <i class="ph-duotone ph-sneaker-move text-indigo-500 dark:text-indigo-300"></i>
                         </div>
                         <div class="text-left">
                             <span class="block text-xs font-bold text-gray-900 dark:text-white">${safeName}</span>
                             <span class="block text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                                ${lastEx.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(lastEx.kcal)} kcal
+                                ${targetEx.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(targetEx.kcal)} kcal
                             </span>
                         </div>
                     </div>
@@ -190,6 +187,17 @@ const renderActionMenuExerciseShortcuts = async () => {
     }
 };
 
+/**
+ * HTMLエスケープ用ヘルパー (もしファイル内に無ければ追加)
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+}
 
 /* --- Beer Modal Logic --- */
 
@@ -1454,22 +1462,30 @@ export const openDayDetail = async (dateStr) => {
  * (Action Menuと同じロジックで、Recordタブにもボタンを並べる)
  */
 export const renderRecordTabShortcuts = async () => {
-    // 1. お酒エリア
+    // 1. お酒エリア (変更なし)
     const beerContainer = document.getElementById('record-shortcuts-beer');
     if (beerContainer) {
-        const frequentBeers = await Service.getFrequentBeers(5); // 少し多めに取得
+        const frequentBeers = await Service.getFrequentBeers(5); // 頻度順
         let html = '';
         
         if (frequentBeers.length > 0) {
             frequentBeers.forEach((beer, index) => {
                 // スタイル装飾
                 const isIPA = beer.style && beer.style.includes('IPA');
-                const bgClass = isIPA 
-                    ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800' 
-                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
-                const iconColor = isIPA ? 'text-orange-500' : 'text-amber-500';
-                const safeName = escapeHtml(beer.name);
+                const isStout = beer.style && (beer.style.includes('Stout') || beer.style.includes('Porter'));
+                
+                let bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800';
+                let iconColor = 'text-amber-500';
 
+                if (isIPA) {
+                    bgClass = 'bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800';
+                    iconColor = 'text-orange-500';
+                } else if (isStout) {
+                    bgClass = 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
+                    iconColor = 'text-gray-600 dark:text-gray-400';
+                }
+
+                const safeName = escapeHtml(beer.name);
                 const repeatPayload = {
                     type: 'beer',
                     name: beer.name,
@@ -1495,20 +1511,20 @@ export const renderRecordTabShortcuts = async () => {
                 `;
             });
         } else {
-            // 履歴なし
             html = `<div class="text-xs text-gray-400 py-2 px-2">まだ履歴がありません</div>`;
         }
         beerContainer.innerHTML = html;
     }
 
-    // 2. 運動エリア
+    // 2. 運動エリア (★ここを修正！)
     const exContainer = document.getElementById('record-shortcuts-exercise');
     if (exContainer) {
-        const recentExercises = await Service.getRecentExercises(5);
+        // ★修正: getRecentExercises(直近順) -> getFrequentExercises(頻度順) に変更
+        const frequentExercises = await Service.getFrequentExercises(5);
         let html = '';
 
-        if (recentExercises.length > 0) {
-            recentExercises.forEach(log => {
+        if (frequentExercises.length > 0) {
+            frequentExercises.forEach((log, index) => {
                 const repeatPayload = {
                     type: 'exercise',
                     name: log.name,
@@ -1517,15 +1533,17 @@ export const renderRecordTabShortcuts = async () => {
                     exerciseKey: log.exerciseKey
                 };
                 const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
+                const safeName = escapeHtml(log.name);
 
                 html += `
                     <button onclick="handleRepeat(${jsonParam})" 
                             class="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500 min-w-[130px]">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">
-                            <i class="ph-duotone ph-arrow-counter-clockwise"></i>
+                            <i class="ph-duotone ph-sneaker-move"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
-                            <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${escapeHtml(log.name)}</div>
+                            <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${safeName}</div>
                             <div class="text-[9px] text-gray-400 font-mono mt-0.5">${log.minutes} min</div>
                         </div>
                     </button>

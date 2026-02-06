@@ -73,6 +73,7 @@ Object.keys(STYLE_SPECS).forEach(key => {
 
 export const APP = {
     STORAGE_KEYS: {
+        ONBOARDED: 'nomutore_onboarding_complete',
         LOGS: 'nomutore_logs', 
         CHECKS: 'nomutore_checks', 
         WEIGHT: 'nomutore_weight', 

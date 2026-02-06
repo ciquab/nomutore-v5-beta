@@ -538,7 +538,7 @@ export const showMessage = (text, type = 'info', action = null) => {
                         const shareText = action.text || text; 
                         shareContent(shareText);
                     }
-                };
+                });
             }
         }, 0);
     }

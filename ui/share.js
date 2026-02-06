@@ -40,14 +40,14 @@ const startBeerPhotoFlow = (logData) => {
     input.style.display = 'none';
     document.body.appendChild(input);
 
-    input.onchange = (e) => {
+    input.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (readerEvent) => {
                 // 状態リセット
                 editState = { 
-                    scale: 1.0, 
+                    scale: 1.0,  
                     x: 0, 
                     y: 0, 
                     isDragging: false, 
@@ -339,16 +339,16 @@ const openPhotoComposer = (imgSrc, log) => {
     }
 
     if(toggleKcal) {
-        toggleKcal.onchange = (e) => {
+        toggleKcal.addEventListener('change', (e) => {
             if(statsEl) statsEl.classList.toggle('opacity-0', !e.target.checked);
             Feedback.tap();
-        };
+        });
     }
 
-    if(btnCancel) btnCancel.onclick = () => modal.remove();
+    if(btnCancel) btnCancel.addEventListener('click', () => modal.remove());
 
     if(btnGenerate) {
-        btnGenerate.onclick = async () => {
+        btnGenerate.addEventListener('click', async () => {
             const loadingId = showLoadingOverlay('画像を生成中...');
             btnGenerate.disabled = true;
             try {
@@ -358,7 +358,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 });
                 const blob = await (await fetch(dataUrl)).blob();
                 const file = new File([blob], `nomutore_beer_${dayjs().format('YYYYMMDD')}.png`, { type: 'image/png' });
-                
+            
                 hideLoadingOverlay(loadingId);
                 modal.remove();
                 showPreviewModal(dataUrl, file);
@@ -368,7 +368,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 showMessage('画像生成に失敗しました', 'error');
                 btnGenerate.disabled = false;
             }
-        };
+        });
     }
 };
 
@@ -445,22 +445,22 @@ const showPreviewModal = (dataUrl, file) => {
     document.body.appendChild(modal);
 
     const btnClose = modal.querySelector('#btn-close-preview');
-    if(btnClose) btnClose.onclick = () => modal.remove();
+    if(btnClose) btnClose.addEventListener('click', () => modal.remove());
     
     const btnDownload = modal.querySelector('#btn-download-img');
     if(btnDownload) {
-        btnDownload.onclick = () => {
+        btnDownload.addEventListener('click', () => {
             const a = document.createElement('a'); a.href = dataUrl; a.download = file.name; a.click();
             Feedback.success(); 
             showMessage('画像を保存しました', 'success'); 
             modal.remove();
             toggleModal('action-menu-modal', false);
-        };
+        });
     }
 
     const shareBtn = modal.querySelector('#btn-share-native');
     if (shareBtn) {
-        shareBtn.onclick = async () => {
+        shareBtn.addEventListener('click', async () => {
             try { 
                 await navigator.share({ files: [file], title: 'NOMUTORE Log', text: APP.HASHTAGS }); 
                 Feedback.success(); 
@@ -469,7 +469,7 @@ const showPreviewModal = (dataUrl, file) => {
             } catch (err) {
                 console.log('Share canceled');
             }
-        };
+        });
     }
 };
 

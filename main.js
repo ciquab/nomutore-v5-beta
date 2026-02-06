@@ -1,7 +1,8 @@
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
 import { Calc } from './logic.js';
-import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal } from './ui/index.js';
+import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
+import { showConfetti, showMessage } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
@@ -9,15 +10,243 @@ import { initErrorHandler } from './errorHandler.js';
 import { handleSaveSettings } from './ui/modal.js'; 
 import { CloudManager } from './cloudManager.js';
 import { Onboarding } from './ui/onboarding.js';
+import { actionRouter, initActionRouter } from './ui/actionRouter.js';
+
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-// HTMLからonclickで呼ぶためにwindowオブジェクトに登録
-window.UI = UI;
-window.DataManager = DataManager;
-window.Onboarding = Onboarding;
+/**
+ * FileInput の change イベント登録
+ * （data-action では扱えないため個別に登録）
+ */
+export const setupFileInputHandlers = () => {
+    const importFileInput = document.getElementById('import-file');
+    if (importFileInput) {
+        importFileInput.addEventListener('change', function(e) {
+            DataManager.importJSON(this);
+        });
+    }
+};
 
-// ★追加: Timerも登録（timer.js内でも登録していますが、念の為main.js側でも明示）
-window.Timer = Timer;
+// ========================================
+// ActionRouter への登録（新規追加）
+// ========================================
+
+/**
+ * 【重要】DOMContentLoaded の中で actionRouter.init() を呼ぶ前に
+ * すべてのアクションを登録しておく必要があります
+ */
+const registerActions = () => {
+    actionRouter.registerBulk({
+        // ========== UI系 ==========
+        'ui:switchTab': (tabName) => UI.switchTab(tabName),
+        'ui:switchCellarView': (viewName) => UI.switchCellarViewHTML(viewName),
+        'ui:applyTheme': () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            UI.applyTheme(isDark ? 'light' : 'dark');
+        },
+        
+        // ========== Modal系 ==========
+        'modal:open': (modalId) => toggleModal(modalId, true),
+        'modal:close': (modalId) => toggleModal(modalId, false),
+        'modal:toggle': (modalId) => {
+            const modal = document.getElementById(modalId);
+            const isVisible = modal && !modal.classList.contains('hidden');
+            toggleModal(modalId, !isVisible);
+        },
+        'modal:openBeer': () => UI.openBeerModal(),
+        'modal:openExercise': () => UI.openManualInput(),
+        'modal:openCheck': () => UI.openCheckModal(),
+        'modal:openSettings': () => toggleModal('settings-modal', true),
+        'modal:openTimer': () => UI.openTimer(),
+        'modal:closeTimer': () => UI.closeTimer(),
+        'modal:openHelp': (section) => UI.openHelp(section),
+        'modal:openActionMenu': () => UI.openActionMenu(),
+        'modal:openCheckLibrary': () =>  UI.openCheckLibrary(),
+        
+        // ========== Data系 ==========
+        'data:exportCSV': (type) => DataManager.exportCSV(type),
+        'data:exportJSON': () => DataManager.exportJSON(),
+        'data:importJSON': () => DataManager.importJSON(),
+        'data:backupToCloud': () => DataManager.backupToCloud(),
+        'data:restoreFromCloud': () => DataManager.restoreFromCloud(),
+        'data:triggerImportFile': () => {
+            const fileInput = document.getElementById('import-file');
+            if (fileInput) fileInput.click();
+        },
+        
+        // ========== Log系 ==========
+        'log:deleteSelected': () => {
+            import('./ui/logList.js').then(m => m.deleteSelectedLogs());
+        },
+        'log:toggleEditMode': () => UI.toggleEditMode(),
+        'log:toggleSelectAll': () => UI.toggleSelectAll(),
+        
+        // ========== Check系 ==========
+        'check:applyPreset': (presetName) => {
+            if (typeof UI.applyPreset === 'function') {
+                UI.applyPreset(presetName);
+            }
+        },
+        'check:applyLibraryChanges': () => {
+            if (typeof UI.applyLibraryChanges === 'function') {
+                UI.applyLibraryChanges();
+            }
+        },
+        'check:addNewItem': () => {
+            if (typeof UI.addNewCheckItem === 'function') {
+                UI.addNewCheckItem();
+            }
+        },
+        
+        'check:renderLibrary': () => {
+            if (typeof UI.renderCheckLibrary === 'function') {
+                UI.renderCheckLibrary();
+            }
+        },
+        'check:deleteItem': (index) => {
+            if (typeof UI.deleteCheckItem === 'function') {
+                UI.deleteCheckItem(index);
+            }
+        },
+        
+        // ========== Onboarding系 ==========
+        'onboarding:close': () => Onboarding.closeLandingPage(),
+        'onboarding:nextStep': () => Onboarding.nextStep(),
+        'onboarding:prevStep': () => Onboarding.prevStep(),
+        'onboarding:finish': () => Onboarding.finishWizard(),
+        'onboarding:goToWizard': () => Onboarding.goToWizard(),
+        'onboarding:start-new': () => {
+        document.getElementById('restore-options').classList.add('hidden');
+        Onboarding.nextStep();
+        },
+        'onboarding:setPeriod': (args) => {
+            // data-mode="weekly" などの値が args.mode に入る
+            Onboarding.setPeriodMode(args.mode);
+        },
+        'onboarding:handleCloudRestore': () => Onboarding.handleCloudRestore(),
+        'onboarding:triggerJson': () => document.getElementById('wizard-import-file').click(),
+        
+        // ========== Timer系 ==========
+        'timer:toggle': () => Timer.toggle(),
+        'timer:finish': () => Timer.finish(),
+        'timer:reset': () => Timer.reset(),
+        
+        // ========== Settings系 ==========
+        'settings:save': () => handleSaveSettings(),
+        
+        // ========== Day Add Selector系 ==========
+        'dayAdd:openBeer': () => {
+            toggleModal('day-add-selector', false);
+            setTimeout(() => UI.openBeerModal(UI.selectedDate), 200);
+        },
+        'dayAdd:openExercise': () => {
+            toggleModal('day-add-selector', false);
+            setTimeout(() => UI.openManualInput(UI.selectedDate), 200);
+        },
+        'dayAdd:openCheck': () => {
+            toggleModal('day-add-selector', false);
+            setTimeout(() => UI.openCheckModal(UI.selectedDate), 200);
+        },
+
+       // ========== DayDetail系 (追加) ==========
+        'open-day-detail': (data) => {
+            if (UI && UI.openDayDetail) {
+                UI.openDayDetail(data.date);
+            }
+        },
+        
+        // もし logList.js の修正も反映させるなら、これも必要です
+        'open-log-detail': (data) => {
+            if (UI && UI.openLogDetail) {
+                UI.openLogDetail(data.id);
+            }
+        },
+        // ========== Beer系 ==========
+
+        'beer:openFirst': () => {
+            UI.openBeerModal();
+            toggleModal('action-menu-modal', false);
+        },
+
+
+        // ========== Repeat系 ==========
+        'repeat': (payload, event) => {
+            UI.handleRepeat(payload);
+    
+            // イベント元の要素から data-on-success 属性を取得
+            const target = event.target.closest('[data-action="repeat"]');
+            if (target) {
+                const onSuccess = target.dataset.onSuccess;
+                const param = target.dataset.onSuccessParam;
+        
+                if (onSuccess === 'modal:close' && param) {
+                    setTimeout(() => toggleModal(param, false), 100);
+                }
+            }
+        },
+
+        // ========== Help系 ==========
+        'help:goToSettings': () => {
+            UI.switchTab('settings');
+            toggleModal('help-modal', false);
+        },
+        
+        // ========== System系 ==========
+        'system:reload': () => location.reload(),
+        
+        // ========== 後方互換性エイリアス（段階的削除対象） ==========
+        'share:open': () => UI.openShareModal(),
+        'open-help': (section) => openHelp(section),
+        'toggle-edit-mode': () => UI.toggleEditMode(),
+        'toggle-select-all': () => UI.toggleSelectAll(),
+        'delete-selected': () => {
+            import('./ui/logList.js').then(m => m.deleteSelectedLogs());
+        },
+        'switch-tab': (tabName) => UI.switchTab(tabName),
+        'close-modal': (modalId) => toggleModal(modalId, false),
+        'toggle-modal': (modalId) => {
+            const modal = document.getElementById(modalId);
+            const isVisible = modal && !modal.classList.contains('hidden');
+            toggleModal(modalId, !isVisible);
+        },
+
+        // ========== Rollover系 (追加) ==========
+        'rollover:weekly': async () => {
+            toggleModal('rollover-modal', false);
+            await Service.updatePeriodSettings('weekly');
+            showConfetti();
+            showMessage('Weeklyモードに戻りました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
+        
+        'rollover:new_custom': () => {
+            toggleModal('rollover-modal', false);
+            UI.switchTab('settings');
+            setTimeout(() => {
+                showMessage('新しい期間を設定してください', 'info');
+                const pMode = document.getElementById('setting-period-mode');
+                if(pMode) {
+                    pMode.value = 'custom';
+                    pMode.dispatchEvent(new Event('change'));
+                }
+            }, 300);
+        },
+        
+        'rollover:extend': () => {
+            toggleModal('rollover-modal', false);
+            const currentEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE)) || Date.now();
+            const newEnd = dayjs(currentEnd).add(7, 'day').endOf('day').valueOf();
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, newEnd);
+            showMessage('期間を1週間延長しました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
+    });
+
+    document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});
+    
+    console.log('[main.js] ✅ All actions registered to ActionRouter');
+    console.log(`[main.js] 📊 Total registered: ${actionRouter.handlers.size} actions`);
+};
 
 /* ==========================================================================
    Initialization & Global State
@@ -38,8 +267,8 @@ if ('serviceWorker' in navigator) {
             // UI描画の準備を待ってから表示 (1秒後)
             setTimeout(() => {
                 // UIオブジェクトが利用可能か確認（念のため）
-                if (window.UI && window.UI.showMessage) {
-                    window.UI.showMessage('新しいバージョンに更新しました', 'success');
+                if (UI && UI.showMessage) {
+                    UI.showMessage('新しいバージョンに更新しました', 'success');
                 }
             }, 1000);
         }
@@ -82,9 +311,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-let editingLogId = null;
-let editingCheckId = null;
-
 const LAST_ACTIVE_KEY = 'nomutore_last_active_date';
 let lastActiveDate = localStorage.getItem(LAST_ACTIVE_KEY) || dayjs().format('YYYY-MM-DD');
 
@@ -120,6 +346,13 @@ const setupLifecycleListeners = () => {
 
 // ★修正: 初期化ロジックを分離し、エラーハンドリングを強化
 const initApp = async () => {
+    // 二重起動防止ガード（念のため）
+    if (window._isAppInitialized) {
+        console.warn('App already initialized. Skipping.');
+        return;
+    }
+    window._isAppInitialized = true;
+
     try {
         console.log('App Initializing...');
 
@@ -132,27 +365,27 @@ const initApp = async () => {
 
         if (!isOnboarded) {
             // A. 初回ユーザー -> 既存の判定ロジックにお任せ (Wizardへ)
-            if (window.Onboarding && window.Onboarding.checkLandingPage) {
-                window.Onboarding.checkLandingPage();
+            if (Onboarding && Onboarding.checkLandingPage) {
+                Onboarding.checkLandingPage();
             }
         } else {
             // B. 既存ユーザー -> 時間経過判定
             if (now - lastLaunch > THRESHOLD) {
                 // 久しぶり -> スプラッシュ再生 (playSplashがあれば実行)
                 console.log('✨ Showing Smart Splash (Time elapsed)');
-                if (window.Onboarding && window.Onboarding.playSplash) {
-                    window.Onboarding.playSplash();
+                if (Onboarding && Onboarding.playSplash) {
+                    Onboarding.playSplash();
                 } else {
                     // フォールバック（メソッド未実装時）
-                    if (window.Onboarding && window.Onboarding.checkLandingPage) {
-                        window.Onboarding.checkLandingPage();
+                    if (Onboarding && Onboarding.checkLandingPage) {
+                        Onboarding.checkLandingPage();
                     }
                 }
             } else {
                 // 直近の利用 -> 即ホーム画面へ (LPを即座に消す)
                 console.log('🚀 Skipping Splash (Quick Resume)');
-                if (window.Onboarding && window.Onboarding.checkLandingPage) {
-                    window.Onboarding.checkLandingPage();
+                if (Onboarding && Onboarding.checkLandingPage) {
+                    Onboarding.checkLandingPage();
                 }
             }
             // 最終起動時刻を更新
@@ -178,6 +411,7 @@ const initApp = async () => {
 
         // 4. Load & Verify Data
         updateBeerSelectOptions(); 
+        generateSettingsOptions();
         UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
 
         // 当日のチェックレコードを確保（なければ作成）
@@ -197,8 +431,8 @@ const initApp = async () => {
         // 7. Restore Timer State
         // ★修正: Timer.init() を呼ぶだけでOKです。
         // （timer.js内の checkResume() が、自動的に計算復帰とモーダル表示を行います）
-        if (window.Timer && window.Timer.init) {
-            window.Timer.init();
+        if (Timer && Timer.init) {
+            Timer.init();
         }
 
         // 画面のロックを強制解除して表示する
@@ -291,62 +525,24 @@ const handleSwipe = () => {
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // 1. アクション登録（最優先）
+    registerActions();
     
-    const btnSaveSettings = document.getElementById('btn-save-settings');
-    if (btnSaveSettings) {
-        btnSaveSettings.onclick = handleSaveSettings;
-    }
+    // 2. ActionRouter初期化
+    initActionRouter();
+    document.addEventListener('action-error', (e) => {
+        const { action, error } = e.detail;
+        console.error(`[Action Error] ${action}:`, error);
+        if (UI && UI.showMessage) {
+            UI.showMessage('操作中にエラーが発生しました', 'error');
+        }
+    });
 
-    // ★追加: クラウドバックアップボタン
-    const btnCloudBackup = document.getElementById('btn-cloud-backup');
-    if (btnCloudBackup) {
-        btnCloudBackup.addEventListener('click', () => {
-            // ダブルクリック防止等のUI制御を入れても良い
-            DataManager.backupToCloud();
-        });
-    }
+    initHandleRepeatDelegation(); 
 
-    const btnCloudRestore = document.getElementById('btn-cloud-restore');
-    if (btnCloudRestore) {
-        btnCloudRestore.addEventListener('click', () => {
-            DataManager.restoreFromCloud();
-        });
-    }
-
-    // 1. 再生/一時停止ボタン (btn-timer-toggle)
-    const btnTimerToggle = document.getElementById('btn-timer-toggle');
-    if (btnTimerToggle) {
-        console.log("✅ ボタンは見つかりました: btn-timer-toggle"); // 起動時に出るはず
-        
-        btnTimerToggle.addEventListener('click', () => {
-            console.log("👆 ボタンが押されました"); // クリック時に出るはず
-            
-            if (typeof Timer !== 'undefined') {
-                console.log("⏱ Timer.toggle() を実行します");
-                Timer.toggle();
-            } else {
-                console.error("❌ Timerオブジェクトが見つかりません！ importを確認してください");
-            }
-        });
-    } else {
-        console.error("❌ ボタンが見つかりません: btn-timer-toggle");
-    }
-
-    // 2. 完了ボタン (btn-timer-finish)
-    const btnTimerFinish = document.getElementById('btn-timer-finish');
-    if (btnTimerFinish) {
-        btnTimerFinish.addEventListener('click', () => {
-            Timer.finish(); // 記録して終了
-        });
-    }
-
-    // 3. リセットボタン (btn-timer-reset)
-    const btnTimerReset = document.getElementById('btn-timer-reset');
-    if (btnTimerReset) {
-        btnTimerReset.addEventListener('click', () => {
-            Timer.reset(); // 0に戻す
-        });
-    }
+    // 3. ファイル入力ハンドラー
+    setupFileInputHandlers();
 
     setupLifecycleListeners();
     setupGlobalListeners();

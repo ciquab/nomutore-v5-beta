@@ -1,4 +1,5 @@
 import { APP } from '../constants.js';
+
 import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm';
 
 // --- Sound & Haptics Engine ---
@@ -522,14 +523,16 @@ export const showMessage = (text, type = 'info', action = null) => {
         setTimeout(() => {
             const btn = document.getElementById(btnId);
             if (btn) {
-                btn.onclick = () => {
+                btn.addEventListener('click', () => {
                     // Haptic Feedback
                     if (window.Feedback && window.Feedback.haptic) window.Feedback.haptic.light();
                     
                     // ★ 画像シェアモードの分岐 (UI.shareを使用)
-                    if (action.shareMode === 'image' && window.UI && window.UI.share) {
-                        window.UI.share(action.imageType, action.imageData);
-                    } else {
+                    if (action.shareMode === 'image') {
+                        document.dispatchEvent(new CustomEvent('request-share-image', {
+                        detail: { type: action.imageType, data: action.imageData }
+                            }));
+                        } else {
                         // ★ テキストシェア (既存のshareContentを使用)
                         // ここでは cleanText ではなく、絵文字付きの元の text (または action.text) を送る
                         const shareText = action.text || text; 
@@ -700,7 +703,7 @@ export const showUpdateNotification = (waitingWorker) => {
 
     // 更新ボタンの動作
     const btn = document.getElementById('btn-sw-update');
-    btn.onclick = () => {
+    btn.addEventListener('click', () => {
 
         localStorage.setItem('nomutore_just_updated', 'true');
 

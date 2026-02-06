@@ -167,92 +167,65 @@ export const Calc = {
     },
 
     /**
-     * 【追加】高速版ストリーク計算
-     * 事前に作成されたMapを受け取るため、ループ内で呼んでも計算量が爆発しない
-     * @param {Map} logMap - 日付(YYYY-MM-DD) -> {hasBeer, hasExercise, balance}
-     * @param {Map} checkMap - 日付(YYYY-MM-DD) -> isDryDay(bool)
-     * @param {Dayjs} firstDate - 全ログの中で最も古い日付
-     * @param {Dayjs|number|string} referenceDate - 基準日
-     */
-    getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
-        const targetDate = referenceDate ? dayjs(referenceDate) : dayjs();
-        const targetStr = targetDate.format('YYYY-MM-DD');
-        
-        // 基準日に記録があるか確認
-        const logOnTarget = logMap.get(targetStr);
-        const checkOnTarget = checkMap.has(targetStr); // 値がfalseでもキーがあれば記録ありとみなす
+ * 【最終安定版】高速ストリーク計算（救済措置・歴史修正・無限ループガード完備）
+ */
+getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
+    // 1. 判定基準日の決定（実時刻を仮想日付文字列に変換）
+    const targetDate = referenceDate ? dayjs(referenceDate) : dayjs();
+    const targetDateStr = Calc.getVirtualDate(targetDate.valueOf()); 
+    
+    const hasLogOnTarget = logMap.has(targetDateStr);
+    const hasCheckOnTarget = checkMap.has(targetDateStr);
 
-        // 基準日に記録があれば基準日から、なければ前日から判定スタート
-        // （記録がない＝今日の分はまだやってないので、昨日までの継続日数を見る）
-        let checkDate = (logOnTarget || checkOnTarget) ? targetDate : targetDate.subtract(1, 'day');
-        
-        let streak = 0;
+    // 2. 判定開始地点の決定
+    // 基準日に何らかの記録があればその日から、なければ「まだ何もしてない今日」とみなし前日から遡る
+    let checkDate = (hasLogOnTarget || hasCheckOnTarget) 
+                    ? dayjs(targetDateStr) // 文字列から生成して時刻を00:00に正規化
+                    : dayjs(targetDateStr).subtract(1, 'day');
+    
+    let streak = 0;
+    let loopCount = 0; // 無限ループガード用
 
-        while (true) {
-            // 最古の日付より前に行ったら終了
-            if (checkDate.isBefore(firstDate, 'day')) {
-                break;
-            }
+    while (true) {
+        // 安全装置：10年分以上のループ、または最古の日付を超えたら終了
+        loopCount++;
+        if (loopCount > 3650 || checkDate.isBefore(firstDate, 'day')) break;
 
-            const dateStr = checkDate.format('YYYY-MM-DD');
-            const dayLogs = logMap.get(dateStr) || { hasBeer: false, hasExercise: false, balance: 0 };
-            const isDry = checkMap.get(dateStr); // true | false | undefined
+        const dateStr = checkDate.format('YYYY-MM-DD');
+        const dayLogs = logMap.get(dateStr) || { hasBeer: false, hasExercise: false, balance: 0 };
+        const isDry = checkMap.get(dateStr); // true | false | undefined
 
-            // --- 判定ロジック ---
-
-            // 1. 休肝日チェックがONなら継続 (最強)
-            if (isDry === true) {
-                streak++;
-                checkDate = checkDate.subtract(1, 'day');
-                continue;
-            }
-
-            // 2. ビールを飲んでいない（かつ休肝日NGとも言っていない）なら継続
-            if (!dayLogs.hasBeer && isDry !== false) {
-                streak++;
-                checkDate = checkDate.subtract(1, 'day');
-                continue;
-            }
-
-            // 3. ビールを飲んだが、運動で完済している (Balance >= 0) なら継続
-            // ※端数計算の誤差を許容するため -0.1kcal 程度までセーフとしても良い
-            if (dayLogs.hasBeer && dayLogs.balance >= -0.1) {
-                streak++;
-                checkDate = checkDate.subtract(1, 'day');
-                continue;
-            }
-
-            // ▼▼▼ 追加: 日付変更線対策 (Dateline Protection) ▼▼▼
-            // 直前のチェックで「継続NG」となったが、もし「そのさらに前日」に有効な記録があれば、
-            // 「時差による日付飛び」または「1日のうっかり忘れ」とみなしてチェーンをつなぐ。
-            
-            const prevDate = checkDate.subtract(1, 'day');
-            const prevStr = prevDate.format('YYYY-MM-DD');
-            const prevLog = logMap.get(prevStr) || { hasBeer: false, hasExercise: false, balance: 0 };
-            const prevCheck = checkMap.get(prevStr);
-
-            // 前日が有効条件を満たしているか確認
-            const isPrevValid = (prevCheck === true) || 
-                                (!prevLog.hasBeer && prevCheck !== false) || 
-                                (prevLog.hasBeer && prevLog.balance >= -0.1);
-
-            if (isPrevValid) {
-                // 前日は有効だった = 今日だけ抜けている
-                // 日付を1日戻して continue することで、今回の「抜け」をスキップし、次のループで前日（有効）を判定させる
-                // ※この「抜けた日」自体は streak カウントには加算されないが、連続記録は途切れない
-                checkDate = checkDate.subtract(1, 'day');
-                continue;
-            }
-            // ▲▲▲ 追加終了 ▲▲▲
-
-            // ここまで来たらストリーク終了
-            break;
-            
-            if (streak > 3650) break; // 無限ループガード
+        // --- A. 【成功判定（ストリーク加算）】 ---
+        // 手動休肝日 or お酒なし or 完済済み
+        if (isDry === true || !dayLogs.hasBeer || (dayLogs.hasBeer && dayLogs.balance >= -0.1)) {
+            streak++;
+            checkDate = checkDate.subtract(1, 'day');
+            continue;
         }
 
-        return streak;
-    },
+        // --- B. 【救済措置（ストリーク維持・カウント不変）】 ---
+        // 記録がない(undefined)が、その前日が成功していればブリッジする
+        const prevDate = checkDate.subtract(1, 'day');
+        const prevStr = prevDate.format('YYYY-MM-DD');
+        const prevLog = logMap.get(prevStr) || { hasBeer: false, hasExercise: false, balance: 0 };
+        const prevCheck = checkMap.get(prevStr);
+
+        const isPrevValid = (prevCheck === true) || 
+                           (!prevLog.hasBeer && prevCheck !== false) || 
+                           (prevLog.hasBeer && prevLog.balance >= -0.1);
+
+        if (isDry === undefined && !dayLogs.hasBeer && isPrevValid) {
+            checkDate = checkDate.subtract(1, 'day');
+            continue;
+        }
+
+        // --- C. 【失敗判定（ストリーク終了）】 ---
+        // 借金がある、または明確に「飲酒のみ（isDry === false）」の場合
+        break;
+    }
+
+    return streak;
+},
 
     getStreakMultiplier: (streak) => {
         if (streak >= 14) return 1.3;
@@ -463,3 +436,6 @@ export const getVirtualDate = (timestamp = Date.now()) => {
     return date.format('YYYY-MM-DD');
 
 };
+
+
+

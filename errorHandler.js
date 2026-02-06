@@ -21,7 +21,7 @@ export const showErrorOverlay = (msg, source, lineno) => {
         
         const copyBtn = document.getElementById('btn-copy-error');
         if (copyBtn) {
-            copyBtn.onclick = () => {
+            copyBtn.addEventListener('click', () => {
                 navigator.clipboard.writeText(errText)
                     .then(() => alert('エラーログをコピーしました'))
                     .catch(() => alert('コピーに失敗しました'));
@@ -35,10 +35,10 @@ export const showErrorOverlay = (msg, source, lineno) => {
  * グローバルエラーリスナーの初期化
  */
 export const initErrorHandler = () => {
-    window.onerror = function(msg, source, lineno, colno, error) {
-        showErrorOverlay(msg, source, lineno);
-        return false;
-    };
+    window.addEventListener('error', function(event) {
+        showErrorOverlay(event.message, event.filename, event.lineno);
+        event.preventDefault();
+    });
 
     window.addEventListener('unhandledrejection', function(event) {
         showErrorOverlay(`Unhandled Promise Rejection: ${event.reason}`, 'Promise', 0);

@@ -1,8 +1,119 @@
-import { STYLE_SPECS, CALORIES, SIZE_DATA, STYLE_METADATA, APP } from '../constants.js';
+import { STYLE_SPECS, SIZE_DATA, CALORIES, STYLE_METADATA, APP } from '../constants.js';
 import { Calc, getVirtualDate } from '../logic.js';
 import { db } from '../store.js';
-import { showMessage, Feedback } from './dom.js';
+import { showMessage, Feedback, toggleModal } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
+
+/* --- Beer Modal Logic --- */
+
+export const openBeerModal = (e, dateStr = null, log = null) => {
+    // 1. 引数に true を渡して、リセット処理による「今日への強制戻し」を阻止する
+    resetBeerForm(true); 
+
+    // 2. 日付のバトンを確実に受け取る（dayjsを通して YYYY-MM-DD に変換）
+    let targetDate;
+    if (log) {
+        // 編集時
+        targetDate = dayjs(log.timestamp).format('YYYY-MM-DD');
+    } else {
+        // ★ここを修正：dateStrがあればそれを使い、なければ今日にする。
+        // dayjsを通すことで、Dateオブジェクトや文字列など、どんな形式でも正しく変換されます。
+        targetDate = dayjs(dateStr || getVirtualDate()).format('YYYY-MM-DD');
+    }
+
+    const dateInput = document.getElementById('beer-date');
+    if (dateInput) {
+        dateInput.value = targetDate;
+        console.log(`[BeerForm] Target date set to: ${targetDate}`); // デバッグ用
+    }
+
+    updateBeerSelectOptions();
+
+    const abvInput = document.getElementById('preset-abv');
+    updateInputSuggestions(); // 予測変換リスト更新
+
+    if (log) {
+        const idField = document.getElementById('editing-log-id');
+        if(idField) idField.value = log.id;
+        document.getElementById('beer-count').value = log.count || 1;
+        document.getElementById('beer-brewery').value = log.brewery || '';
+        document.getElementById('beer-brand').value = log.brand || log.name || ''; 
+        document.getElementById('beer-rating').value = log.rating || 0;
+        document.getElementById('beer-memo').value = log.memo || '';
+        
+        if (log.isCustom) {
+            switchBeerInputTab('custom');
+            document.getElementById('custom-abv').value = log.abv || 5.0;
+            document.getElementById('custom-amount').value =
+                Number.isFinite(log.ml) && log.ml > 0 ? log.ml : 350;
+            // カスタムタイプの復元
+            if (log.customType) {
+                const radio = document.querySelector(`input[name="customType"][value="${log.customType}"]`);
+                if (radio) radio.checked = true;
+            }
+        } else {
+            switchBeerInputTab('preset');
+            const styleSel = document.getElementById('beer-select');
+            const sizeSel = document.getElementById('beer-size');
+            if (log.style) styleSel.value = log.style;
+            if (log.size) sizeSel.value = log.size;
+            
+            // ★編集時：保存されていた度数がデフォと違うなら入力欄にセット
+            const spec = STYLE_SPECS[log.style];
+            if (spec && log.abv !== undefined && log.abv !== spec.abv) {
+                if (abvInput) abvInput.value = log.abv;
+            }
+        }
+    }
+    
+    // --- イベントリスナーの登録 ---
+    // 入力が変わるたびにプレビューを走らせる
+    const monitorIds = ['beer-select', 'beer-size', 'beer-count', 'preset-abv', 'custom-abv', 'custom-amount'];
+    monitorIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.oninput = updateBeerKcalPreview;
+            el.onchange = updateBeerKcalPreview;
+        }
+    });
+
+    // カスタムタブのタイプ切り替えも監視
+    document.querySelectorAll('input[name="customType"]').forEach(radio => {
+        radio.onchange = updateBeerKcalPreview;
+    });
+
+    // スタイル選択時にプレースホルダーを更新
+    const styleSel = document.getElementById('beer-select');
+    if (styleSel && abvInput) {
+        styleSel.onchange = () => {
+    updateBeerKcalPreview(); // 既存の処理
+    
+    // 追加: プレースホルダー更新
+    const spec = STYLE_SPECS[styleSel.value];
+    if (spec && abvInput) abvInput.placeholder = spec.abv;
+    };
+        // 初期プレースホルダー設定
+        const initialSpec = STYLE_SPECS[styleSel.value];
+        if (initialSpec) abvInput.placeholder = initialSpec.abv;
+    }
+
+    const delBtn = document.getElementById('btn-delete-beer');
+    if (delBtn) {
+        if (log) { delBtn.classList.remove('hidden'); delBtn.classList.add('flex'); }
+        else { delBtn.classList.add('hidden'); delBtn.classList.remove('flex'); }
+    }
+    
+    const saveBtn = document.getElementById('btn-save-beer');
+    if (saveBtn) {
+        saveBtn.textContent = log ? 'Update Drink' : 'Log Drink';
+    }
+
+    // 初回プレビュー実行
+    updateBeerKcalPreview();
+
+    toggleModal('beer-modal', true);
+};
+
 
 // ★ 引数に existingLog = null を追加します
 export const getBeerFormData = (existingLog = null) => {
@@ -63,16 +174,17 @@ export const getBeerFormData = (existingLog = null) => {
     const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
     
     const styleSel = document.getElementById('beer-select');
-    const style = styleSel.options[styleSel.selectedIndex]?.value || '国産ピルスナー';
+    const style = styleSel.value || APP.DEFAULTS.MODE1;
     
     const sizeSel = document.getElementById('beer-size');
-    const size = sizeSel.options[sizeSel.selectedIndex]?.value || '350';
+    const size = sizeSel.value;
     
-    let count = parseInt(document.getElementById('beer-count').value) || 1;
-    if (count <= 0) count = 1; 
+    let count = parseInt(document.getElementById('beer-count').value);
+    if (!Number.isFinite(count) || count < 1) count = 1;
     
     const presetAbvInput = document.getElementById('preset-abv');
-    const userAbv = presetAbvInput ? parseFloat(presetAbvInput.value) : NaN;
+    const rawUserAbv = presetAbvInput ? parseFloat(presetAbvInput.value) : null;
+    const userAbv = Number.isFinite(rawUserAbv) ? rawUserAbv : null;
 
     let customAbv = Math.abs(parseFloat(document.getElementById('custom-abv').value) || 5.0);
     if (customAbv > 100) customAbv = 100;
@@ -94,16 +206,27 @@ export const getBeerFormData = (existingLog = null) => {
         type = (carb <= 0.5) ? 'dry' : 'sweet';
     }
 
+    let finalAbv, finalMl;
+
+    if (isCustom) {
+        finalAbv = customAbv;
+        finalMl = customMl;
+    } else {
+        const spec = STYLE_SPECS[style] || { abv: 5.0 };
+        finalAbv = userAbv ?? spec.abv;      // ユーザー補正があれば優先
+        finalMl = parseInt(size) || 350;     // サイズ選択値
+    }
+
     return {
         timestamp: ts,
         brewery, brand, rating, memo,
         style, size, count,
         isCustom,
         userAbv,
-        abv: customAbv,
-        ml: customMl,
+        abv: finalAbv,
+        ml: finalMl,
         carb: carb,
-        type: type,
+        customType: type,
         useUntappd
     };
 };
@@ -118,35 +241,41 @@ export const updateBeerKcalPreview = () => {
 
     try {
         const isCustom = !document.getElementById('beer-input-custom').classList.contains('hidden');
-        const count = parseInt(document.getElementById('beer-count').value) || 1;
+        let count = parseInt(document.getElementById('beer-count').value);
+        if (!Number.isFinite(count) || count < 1) count = 1;
 
-        // ▼▼▼ 修正点1: ここでまとめて宣言（const sizeMl... の行は削除しました） ▼▼▼
         let abv, carb, sizeMl;
 
         if (isCustom) {
-            // カスタムタブ: custom-amount から取得
-            sizeMl = parseInt(document.getElementById('custom-amount').value) || 350;
-            
-            abv = parseFloat(document.getElementById('custom-abv').value) || 5.0;
+            sizeMl = parseInt(document.getElementById('custom-amount').value);
+            if (!Number.isFinite(sizeMl) || sizeMl <= 0) sizeMl = 350;
+
+            const rawAbv = parseFloat(document.getElementById('custom-abv').value);
+            abv = Number.isFinite(rawAbv) ? rawAbv : 5.0;
+
             const typeEl = document.querySelector('input[name="customType"]:checked');
             const type = typeEl ? typeEl.value : 'sweet';
             carb = (type === 'dry') ? 0.0 : 3.0;
+
         } else {
-            // プリセットタブ: beer-size から取得
-            sizeMl = parseInt(document.getElementById('beer-size').value) || 0;
-            
+            sizeMl = parseInt(document.getElementById('beer-size').value) || 350;
+
             const styleKey = document.getElementById('beer-select').value;
             const spec = STYLE_SPECS[styleKey] || { abv: 5.0, carb: 3.5 };
-            const userAbvInput = document.getElementById('preset-abv').value;
-            abv = (userAbvInput !== "") ? parseFloat(userAbvInput) : spec.abv;
+
+            const rawUserAbv = parseFloat(document.getElementById('preset-abv').value);
+            abv = Number.isFinite(rawUserAbv) ? rawUserAbv : spec.abv;
+
             carb = spec.carb;
         }
 
-        // カロリー計算
-        const kcal = Math.abs(Calc.calculateBeerDebit(sizeMl, abv, carb, count));
-        previewEl.innerHTML = `${Math.round(kcal)} <span class="text-[10px] font-bold ml-1 text-gray-400">kcal</span>`;
+        const kcal = Calc.calculateBeerDebit(sizeMl, abv, carb, count);
+
+        previewEl.innerHTML =
+            `${Math.round(kcal)} <span class="text-[10px] font-bold ml-1 text-gray-400">kcal</span>`;
+
     } catch (e) {
-        console.error(e); // エラーが見えるようにログに出力
+        console.error(e);
     }
 };
 
@@ -297,7 +426,3 @@ export const updateInputSuggestions = async () => {
         console.error("Failed to update suggestions:", e);
     }
 };
-
-
-
-

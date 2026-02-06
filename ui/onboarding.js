@@ -3,7 +3,6 @@ import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';
 import { Feedback, showConfetti, showMessage } from './dom.js';
 import { DataManager } from '../dataManager.js';
-import { CloudManager } from '../cloudManager.js';
 
 let currentStepIndex = 0;
 
@@ -18,7 +17,7 @@ const WIZARD_STEPS = [
         desc: '開始方法を選択してください。',
         render: () => `
             <div class="space-y-4">
-                <button onclick="document.getElementById('restore-options').classList.add('hidden'); Onboarding.nextStep();" 
+                <button data-action="onboarding:start-new" 
                         class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl">
@@ -31,7 +30,7 @@ const WIZARD_STEPS = [
                     </div>
                 </button>
 
-                <button onclick="document.getElementById('restore-options').classList.toggle('hidden')" 
+                <button id="btn-toggle-restore" 
                         class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left hover:border-indigo-300 transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
@@ -45,13 +44,13 @@ const WIZARD_STEPS = [
                 </button>
 
                 <div id="restore-options" class="hidden space-y-2 p-2 bg-gray-50 dark:bg-black/20 rounded-xl animate-fadeIn">
-                    <button onclick="Onboarding.handleCloudRestore()" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
+                    <button data-action="onboarding:handleCloudRestore" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
                         <i class="ph-fill ph-google-logo text-indigo-500"></i> Google Driveから復元
                     </button>
-                    <button onclick="document.getElementById('wizard-import-file').click()" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
+                    <button data-action="onboarding:triggerJson" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
                         <i class="ph-fill ph-file-js text-amber-500"></i> JSONファイルを選択
                     </button>
-                    <input type="file" id="wizard-import-file" class="hidden" onchange="Onboarding.handleJsonRestore(this)">
+                    <input type="file" id="wizard-import-file" class="hidden">
                 </div>
             </div>
         `,
@@ -159,7 +158,7 @@ const WIZARD_STEPS = [
         desc: '借金（カロリー）をリセットする間隔を選んでください。<br>オススメは「1週間」です。',
         render: () => `
             <div class="space-y-3">
-                <button onclick="Onboarding.setPeriodMode('weekly')" 
+                <button data-action="onboarding:setPeriod" data-mode="weekly" 
                         class="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-500 rounded-2xl text-left relative shadow-lg transform transition active:scale-95 group">
                     <div class="absolute -top-3 -right-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce">
                         RECOMMENDED
@@ -179,7 +178,7 @@ const WIZARD_STEPS = [
                     </div>
                 </button>
 
-                <button onclick="Onboarding.setPeriodMode('monthly')" 
+                <button data-action="onboarding:setPeriod" data-mode="monthly" 
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
@@ -194,7 +193,7 @@ const WIZARD_STEPS = [
                     </div>
                 </button>
 
-                <button onclick="Onboarding.setPeriodMode('permanent')" 
+                <button data-action="onboarding:setPeriod" data-mode="permanent" 
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
@@ -320,6 +319,15 @@ export const Onboarding = {
         title.textContent = step.title;
         desc.innerHTML = step.desc;
         container.innerHTML = step.render();
+
+        const fileInput = container.querySelector('#wizard-import-file');
+    if (fileInput) {
+        fileInput.onchange = (e) => Onboarding.handleJsonRestore(e.target);
+    }
+    const toggleBtn = container.querySelector('#btn-toggle-restore');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => document.getElementById('restore-options').classList.toggle('hidden'));
+    }
         
         // 初期値セット
         if (index === 1) {
@@ -558,7 +566,7 @@ Onboarding.handleCloudRestore = async () => {
     try {
             // インポートしていれば window. は不要で、存在チェックも不要になります
             showMessage('Google Driveを確認中...', 'info');
-            const success = await CloudManager.restore();
+            const success = await DataManager.restoreFromCloud();
             if (success) {
                 showMessage('☁️ ドライブから復元しました', 'success');
                 Onboarding.completeAfterRestore();
@@ -654,6 +662,4 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-
-window.Onboarding = Onboarding;
 

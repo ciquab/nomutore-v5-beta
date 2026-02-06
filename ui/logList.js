@@ -3,6 +3,7 @@ import { DOM, escapeHtml, Feedback, AudioEngine } from './dom.js';
 import { EXERCISE, CALORIES, STYLE_METADATA } from '../constants.js';
 import { StateManager } from './state.js';
 import { Service } from '../service.js'; 
+import { openLogDetail } from './logDetail.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // 状態管理
@@ -108,7 +109,7 @@ export const updateLogListView = async (isLoadMore = false) => {
     }
 
     // データ取得
-    const { allLogs } = await Service.getAllDataForUI();
+    const { allLogs } = await Service.getAppDataSnapshot();
     
     // 全期間のログを日付順（新しい順）に並べ替え
     const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
@@ -201,7 +202,7 @@ export const updateLogListView = async (isLoadMore = false) => {
                 ${iconHtml}
             </div>
 
-            <div class="flex-1 min-w-0 cursor-pointer" onclick="UI.openLogDetail(${log.id})">
+            <div class="flex-1 min-w-0 cursor-pointer" data-log-id="${log.id}">
                 <div class="flex justify-between items-start">
                     <div class="text-base font-bold text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>
@@ -221,12 +222,23 @@ export const updateLogListView = async (isLoadMore = false) => {
     listEl.innerHTML = '';
     listEl.appendChild(fragment);
 
+    listEl.addEventListener('click', (e) => {
+       // 編集モード中はクリック無効
+        if (StateManager.isEditMode) return;
+    
+        const clickableArea = e.target.closest('[data-log-id]');
+        if (clickableArea) {
+            const logId = parseInt(clickableArea.dataset.logId);
+            openLogDetail(logId);
+        }
+    });
+
     // 「Load More」ボタンの表示制御
     if (loadMoreBtn) {
         if (totalCount > currentLimit) {
             loadMoreBtn.classList.remove('hidden');
             loadMoreBtn.textContent = `Load More (${totalCount - currentLimit} remaining)`;
-            loadMoreBtn.onclick = () => updateLogListView(true);
+            loadMoreBtn.addEventListener('click', () => updateLogListView(true));
         } else {
             loadMoreBtn.classList.add('hidden');
         }

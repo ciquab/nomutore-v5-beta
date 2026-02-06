@@ -17,16 +17,17 @@ import { Timer } from './timer.js';
 import { Share } from './share.js';
 
 import { 
-    openBeerModal, openCheckModal, openManualInput, renderSettings, openHelp, openLogDetail, 
+    renderSettings, openHelp, 
     updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
     openActionMenu, handleSaveSettings, 
-    validateInput, openDayDetail as _originalOpenDayDetail, handleRolloverAction,
+    validateInput, handleRolloverAction,
     renderRecordTabShortcuts, // ★新規追加
     openShareModal, // ★新規追加
     showRolloverModal
 } from './modal.js';
 import {
+    openBeerModal,
     getBeerFormData,
     updateBeerKcalPreview,
     resetBeerForm,
@@ -36,61 +37,43 @@ import {
     adjustBeerCount,
     searchUntappd
 } from './beerForm.js';
+import { getExerciseFormData, openManualInput } from './exerciseForm.js';
+import { renderCheckEditor, openCheckModal, getCheckFormData,
+         renderCheckLibrary,
+         applyLibraryChanges,
+         applyPreset,
+         deleteCheckItem,
+         addNewCheckItem } from './checkForm.js';
+import * as LogDetail from './logDetail.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
-
-window.Service = Service;
 
 export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
-        // ★Serviceから「期間内(logs)」と「全部(allLogs)」を同時にもらう
-        const { logs, checks: rawChecks, allLogs } = await Service.getAllDataForUI();
+        // 1. Serviceから「調理済み」のデータ一式をもらう
+        // ここで既に重複排除もバランス計算も終わっています
+        const { logs, checks, allLogs, balance } = await Service.getAppDataSnapshot();
 
-        // ★重要: 重複チェックデータの排除ロジックを追加
-        // 同じ日付が複数ある場合、isSaved: true のものを最優先で1件だけ残す
-        const checks = Object.values(rawChecks.reduce((acc, cur) => {
-            const dateStr = dayjs(cur.timestamp).format('YYYY-MM-DD');
-            // まだその日のデータがない、または「既存が未保存」で「今回が保存済み」なら上書き
-            if (!acc[dateStr] || (!acc[dateStr].isSaved && cur.isSaved)) {
-                acc[dateStr] = cur;
-            }
-            return acc;
-        }, {}));
-        
-        // バランス計算 (全ログ対象)
-        const profile = Store.getProfile();
-        let balance = 0;
-        logs.forEach(l => {
-            // カロリーが記録されていればそれを使い、なければ計算
-            const val = l.kcal !== undefined ? l.kcal : (l.type === 'exercise' ? (l.minutes * Calc.burnRate(6.0, profile)) : 0);
-            balance += val;
-        });
-        
-        // 各コンポーネント再描画 (全データを渡す)
+        UI._statsData.periodLogs = logs;
+        UI._statsData.allLogs = allLogs;
+
+        // 2. あとは描画関数に渡すだけ
         renderBeerTank(balance);
         renderLiverRank(checks, allLogs);
         renderCheckStatus(checks, logs);
         
-        // 週間カレンダーは今週分(logs)、ヒートマップは全期間(allLogs)を渡す
         await renderWeeklyAndHeatUp(logs, checks);
-        
         renderChart(allLogs, checks);
-
         await renderRecordTabShortcuts();
-        
-        // タブごとの個別更新処理
-        const cellarMode = StateManager.cellarViewMode;
-        if (cellarMode === 'logs') {
-            if (typeof updateLogListView === 'function') {
-                updateLogListView(); 
-            }
-        } else if (cellarMode === 'stats') {
-            // ★修正: 第2引数に全期間ログ (allLogs) を渡す
-            // これで "No Data" にならず、即座にグラフが更新されます
+
+        await updateLogListView(false);
+
+        // タブ固有の更新も Service からもらったデータを使う
+        if (StateManager.cellarViewMode === 'stats') {
             renderBeerStats(logs, allLogs);
-        } else if (cellarMode === 'archives') {
+        } else if (StateManager.cellarViewMode === 'archives') {
             renderArchives();
         }
 
@@ -102,6 +85,11 @@ export const refreshUI = async () => {
 };
 
 export const UI = {
+    _statsData: {
+    periodLogs: [],
+    allLogs: []
+    },
+
     setFetchLogsHandler: (fn) => { setFetchLogsHandler(fn); },
     _fetchAllDataHandler: null,
     setFetchAllDataHandler: (fn) => { UI._fetchAllDataHandler = fn; },
@@ -126,108 +114,196 @@ export const UI = {
         const bind = (id, event, fn) => {
             const el = document.getElementById(id);
             if(el) el.addEventListener(event, fn);
+
         };
-
-        bind('nav-tab-home', 'click', () => {
-            AudioEngine.init();
-            UI.switchTab('home');
-        });
-        bind('nav-tab-record', 'click', () => {
-            AudioEngine.init();
-            UI.switchTab('record');
-        });
-
-        bind('nav-tab-cellar', 'click', () => {
-            AudioEngine.init();
-            UI.switchTab('cellar');
-        });
-
-        bind('nav-tab-settings', 'click', () => {
-            AudioEngine.init();
-            UI.switchTab('settings');
-        });
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {
-    // detailの構造を { data, existingId } に変更して受け取る
+    const btn = document.getElementById('btn-save-beer');
+    if (btn && btn.disabled) return;
     const { data, existingId } = e.detail;
 
-    // 保存実行 (既存の Service.saveBeerLog はそのまま使えます)
-    await Service.saveBeerLog(data, existingId);
-    
-    // 演出：新規登録時のみ豪華に（更新時は控えめに）
-    if (!existingId) {
-        Feedback.beer();
-        showConfetti();
-        showToastAnimation();
-    } else {
-        // 更新時はタップ音だけで十分（Feedback.tapはクリック時に鳴らしているので、ここでは不要でもOK）
-        // 必要なら Feedback.success() など控えめな音に。
-    }
+    try {
 
-    // Untappd連携
-    if (data.useUntappd) {
-        const query = encodeURIComponent(`${data.brewery || ''} ${data.brand || ''}`.trim());
-        if(query) setTimeout(() => window.open(`https://untappd.com/search?q=${query}`, '_blank'), 100);
-    }
-
-    await refreshUI();
-});
-
-        // 🏃 運動保存
-        document.addEventListener('save-exercise', async (e) => {
-            const { exerciseKey, minutes, date, applyBonus, id } = e.detail;
-            
-            try {
-                await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
+        if (btn) {
+            btn.disabled = true; // 処理開始時にロック
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Saving...';
+        }
+        // 1. Serviceに保存を依頼し、結果を受け取る
+        const result = await Service.saveBeerLog(data, existingId);
+        
+        if (result.success) {
+            // 2. メッセージの組み立て
+            let msg = "";
+            if (result.isUpdate) {
+                msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
+                Feedback.tap(); // 更新時は控えめな音
+            } else {
+                // 新規登録時のメッセージ構築
+                const kcalText = Math.abs(result.kcal) > 500 
+                    ? `${Math.round(Math.abs(result.kcal))}kcalの借金です` 
+                    : '記録しました！';
+                msg = `<i class="ph-fill ph-beer-bottle text-lg"></i> ${kcalText}`;
                 
-                // 演出
-                if (!id) {
-                    Feedback.success();
-                    showConfetti();
-                } else {
-                    Feedback.tap();
+                // 休肝日解除の追記
+                if (result.dryDayCanceled) {
+                    msg += '<br><span class="text-xs font-bold opacity-80">※休肝日設定を解除しました</span>';
                 }
 
-                // UIの後処理
-                toggleModal('exercise-modal', false);
-                const editIdField = document.getElementById('editing-exercise-id');
-                if(editIdField) editIdField.value = '';
-
-                await refreshUI();
-            } catch(err) {
-                console.error(err);
-                showMessage('運動の記録に失敗しました', 'error');
+                // 新規登録時の豪華な演出
+                Feedback.beer();
+                showConfetti();
+                showToastAnimation();
             }
-        });
 
-        // ✅ デイリーチェック保存
-        document.addEventListener('save-check', async (e) => {
-            await Service.saveDailyCheck(e.detail);
-            Feedback.success();
+            // 3. メッセージを表示（シェアボタン等のアクションを添えて）
+            // Serviceから返ってきた shareAction をそのまま渡します
+            showMessage(msg, 'success', result.shareAction);
+
+            // 4. Untappd連携（Serviceが生成したURLがあれば開く）
+            if (result.untappdUrl) {
+                setTimeout(() => window.open(result.untappdUrl, '_blank'), 100);
+            }
+
+            // 5. 画面の更新
+            toggleModal('beer-modal', false);
             await refreshUI();
-        });
+        }
+    } catch (err) {
+        console.error('Save Beer Error:', err);
+        showMessage('保存中にエラーが発生しました', 'error');
+        } finally {
+        // 【重要】成功しても失敗しても必ずボタンを復帰させる
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Save Record';
+        }
+    }
+});
 
-        // 🗑️ 一括削除 修正版
-        document.addEventListener('bulk-delete', async () => {
+       // 🏃 運動保存リスナーの修正案
+document.addEventListener('save-exercise', async (e) => {
+    const btn = document.getElementById('btn-save-exercise');
+    if (btn && btn.disabled) return; // ガード
+    const { exerciseKey, minutes, date, applyBonus, id } = e.detail;
+    
+    try {
+         if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Saving...';
+        }
+        // 1. Serviceの実行結果を待つ
+        const result = await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
+        
+        if (result.success) {
+            // 2. メッセージの動的な組み立て
+            let msg = "";
+            if (result.isUpdate) {
+                msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
+                Feedback.tap();
+            } else {
+                // 新規保存時の演出
+                msg = `<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(result.kcal)}kcal 返済しました！`;
+                
+                // ボーナス適用時の追記
+                if (result.bonusMultiplier > 1.0) {
+                    msg += `<br><span class="text-[10px] font-bold opacity-80">Streak Bonus x${result.bonusMultiplier.toFixed(1)} 適用済み</span>`;
+                }
+
+                Feedback.success();
+                showConfetti();
+            }
+
+            // 3. UIへのフィードバック
+            showMessage(msg, 'success', result.shareAction);
+
+            // 4. クリーンアップ処理
+            toggleModal('exercise-modal', false);
+            const editIdField = document.getElementById('editing-exercise-id');
+            if(editIdField) editIdField.value = '';
+            
+            await refreshUI();
+        }
+    } catch(err) {
+        console.error('Save Exercise Error:', err);
+        showMessage('運動の記録に失敗しました', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Save Record';
+        }
+    }
+});
+
+        // ✅ デイリーチェック保存リスナー
+document.addEventListener('save-check', async (e) => {
+    try {
+        const result = await Service.saveDailyCheck(e.detail);
+        
+        if (result.success) {
+            // メッセージの決定
+            const msg = result.isUpdate
+                ? '✅ デイリーチェックを更新しました'
+                : '✅ デイリーチェックを記録しました';
+
+            // 演出の実行
+            Feedback.success();
+            showMessage(msg, 'success', result.shareAction);
+
+            // 画面更新
+            await refreshUI();
+        }
+    } catch (err) {
+        console.error('Save Check Error:', err);
+        showMessage('チェックの記録に失敗しました', 'error');
+    }
+});
+
+        // 🗑️ 個別削除リクエストの処理
+document.addEventListener('request-delete-log', async (e) => {
+    try {
+        const result = await Service.deleteLog(e.detail.id);
+        
+        if (result.success) {
+            // 音の演出
+            if (typeof Feedback !== 'undefined' && Feedback.delete) {
+                Feedback.delete();
+            }
+            showMessage('削除しました', 'success');
+            await refreshUI();
+        }
+    } catch (err) {
+        console.error('Delete Error:', err);
+        showMessage('削除に失敗しました', 'error');
+    }
+});
+
+// 🗑️ 一括削除の処理
+document.addEventListener('bulk-delete', async () => {
     const checkboxes = document.querySelectorAll('.log-checkbox:checked');
     const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
 
-    if (ids.length > 0) {
-        // --- ★ここからが重要 ---
-        // 個別削除で鳴っている「Feedback.delete()」を、
-        // 重い処理(Service)の前に、ブラウザの権限がある状態で直叩きする
-        
-        AudioEngine.resume(); // エンジンを起こす
-        Feedback.delete();    // 個別削除と同じ音を即座に鳴らす
+    if (ids.length === 0) return;
 
-        // その後にDB削除を実行
-        await Service.bulkDeleteLogs(ids);
-        
-        // 編集モードを閉じる演出
-        if (typeof UI.toggleEditMode === 'function') {
-            UI.toggleEditMode();
+    try {
+        // 先に音を鳴らす（UX向上：削除が重くても反応を即座に返す）
+        if (typeof AudioEngine !== 'undefined') AudioEngine.resume();
+        if (typeof Feedback !== 'undefined' && Feedback.delete) Feedback.delete();
+
+        const result = await Service.bulkDeleteLogs(ids);
+
+        if (result.success) {
+            showMessage(`${result.count}件削除しました`, 'success');
+            
+            // 編集モードを閉じるなどのUI操作
+            if (typeof UI.toggleEditMode === 'function') {
+                UI.toggleEditMode();
+            }
+            await refreshUI();
         }
+    } catch (err) {
+        console.error('Bulk Delete Error:', err);
+        showMessage('一括削除に失敗しました', 'error');
     }
 });
 
@@ -329,112 +405,70 @@ export const UI = {
         bind('btn-search-untappd', 'click', searchUntappd);
 
         // 🍺 ビールの削除ボタン
-        bind('btn-delete-beer', 'click', async () => {
-            const idVal = document.getElementById('editing-log-id').value;
-            if (!idVal) return;
+        bind('btn-delete-beer', 'click', () => {
+    const idVal = document.getElementById('editing-log-id').value;
+    if (!idVal) return;
+    if (!confirm('このビール記録を削除しますか？')) return;
 
-            if (!confirm('このビール記録を削除しますか？')) return;
+    document.dispatchEvent(new CustomEvent('request-delete-log', {
+        detail: { id: parseInt(idVal) }
+    }));
 
-            try {
-                // 削除実行
-                await Service.deleteLog(parseInt(idVal));
-                
-                // 画面を更新して閉じる
-                toggleModal('beer-modal', false);
-                await refreshUI();
-            } catch (e) { console.error(e); }
-        });
+    toggleModal('beer-modal', false);
+});
 
         // --- 運動の保存処理 ---
         bind('btn-save-exercise', 'click', async () => {
-            // 1. IDの取得
-            const idField = document.getElementById('editing-exercise-id');
-            const editId = idField && idField.value ? parseInt(idField.value) : null;
-            const isEdit = !!editId;
+    try {
+        // 1. フォーム担当者にデータを集めさせる
+        const detail = getExerciseFormData();
 
-            const date = document.getElementById('manual-date').value;
-            const minutesInput = document.getElementById('manual-minutes').value;
-            const minutes = parseInt(minutesInput, 10);
-            const key = document.getElementById('exercise-select').value;
-            
-            const bonusEl = document.getElementById('manual-apply-bonus');
-            const applyBonus = bonusEl ? bonusEl.checked : true;
+        // 2. タップ音を鳴らす
+        Feedback.tap();
 
-            // 2. バリデーション
-            if (!date || isNaN(minutes) || minutes <= 0) {
-                Feedback.error(); // ★明示的にエラー音を鳴らす
-                showMessage('日付と時間を正しく入力してください', 'error');
-                return; // ここで終了。完了音へは行かない
-            }
+        // 3. 「保存してくれ！」というイベントを発火するだけ
+        document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
 
-            // modal.js 側の詳細チェック
-            if (!validateInput(date, minutes)) {
-                // validateInput 内でエラー音が鳴るように修正(後述)
-                return; 
-            }
+        // 4. モーダルを閉じる
+        closeModal('exercise-modal');
 
-            // ▼▼▼ 追加: タイムスタンプ計算ロジック ▼▼▼
-            const now = dayjs();
-            const inputDate = dayjs(date);
-            // 当日なら現在時刻、過去なら12:00
-            const timestamp = inputDate.isSame(now, 'day')
-                ? Date.now()
-                : inputDate.startOf('day').add(12, 'hour').valueOf();
-            // ▲▲▲ 追加ここまで ▲▲▲
-
-            // 4. 保存イベント発火
-            const detail = {
-                exerciseKey: key,
-                minutes: minutes,
-                date: date,
-                timestamp: timestamp,
-                applyBonus: applyBonus,
-                id: editId || null
-            };
-
-            document.dispatchEvent(new CustomEvent('save-exercise', { detail }));
-            
-            closeModal('exercise-modal');
-        });
+    } catch (err) {
+        // バリデーションエラー等の失敗時
+        Feedback.error();
+        showMessage(err.message, 'error');
+    }
+});
 
         // --- 運動の削除ボタン ---
-        bind('btn-delete-exercise', 'click', async () => {
-            const idVal = document.getElementById('editing-exercise-id').value;
-            
-            if (!idVal) return;
-            if (!confirm('この運動記録を削除しますか？')) return;
+        bind('btn-delete-exercise', 'click', () => {
+    const idVal = document.getElementById('editing-exercise-id').value;
+    if (!idVal) return;
+    if (!confirm('この運動記録を削除しますか？')) return;
 
-            await Service.deleteLog(parseInt(idVal));
-                
-            closeModal('exercise-modal');
-        });
+    document.dispatchEvent(new CustomEvent('request-delete-log', {
+        detail: { id: parseInt(idVal) }
+    }));
+
+    closeModal('exercise-modal'); // UI都合の処理だけここでOK
+});
 
         bind('btn-save-check', 'click', () => {
-            // 判定用に「保存済みデータ」の存在をチェック（音の出し分け用）
-            const isUpdate = document.getElementById('btn-save-check').textContent === 'Update Check';
-            const date = document.getElementById('check-date').value;
-            const isDryDay = document.getElementById('check-is-dry').checked;
-            const weight = document.getElementById('check-weight').value;
+    try {
+        // 専門家（checkForm.js）にデータを集めてもらう
+        const detail = getCheckFormData();
+        
+        // 常にタップ音を出す
+        Feedback.tap();
 
-            // ★追加: 動的スキーマから値を取得
-            let schema = CHECK_SCHEMA;
-            try {
-                const stored = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
-                if (stored) schema = JSON.parse(stored);
-            } catch(e) {}
-
-            // 基本データ
-            const detail = { date, isDryDay, weight, isSaved: true };
-
-            // 動的データの収集
-            schema.forEach(item => {
-                const el = document.getElementById(`check-${item.id}`);
-                detail[item.id] = el ? el.checked : false;
-            });
-
-            document.dispatchEvent(new CustomEvent('save-check', { detail }));
-            toggleModal('check-modal', false);
-        });
+        // 収集したデータをイベントで飛ばす
+        document.dispatchEvent(new CustomEvent('save-check', { detail }));
+        
+        toggleModal('check-modal', false);
+    } catch (e) {
+        console.error('Check Form Data Collection Error:', e);
+        showMessage('入力内容の取得に失敗しました', 'error');
+    }
+});
 
         bind('tab-beer-preset', 'click', () => switchBeerInputTab('preset'));
         bind('tab-beer-custom', 'click', () => switchBeerInputTab('custom'));
@@ -557,19 +591,6 @@ if (checkModal) {
             UI.editLog(e.detail.id);
         });
 
-        // ★追加: modal.js からの削除リクエストを受け取る
-        document.addEventListener('request-delete-log', async (e) => {
-        // 1. 削除実務を待機
-            await Service.deleteLog(e.detail.id); 
-    
-        // 2. 削除が終わってから音を鳴らす
-            if (typeof Feedback !== 'undefined' && Feedback.delete) {
-                Feedback.delete();
-            }
-    
-        // 3. 画面更新
-        await refreshUI();
-        });
 
         initTheme();
 
@@ -582,8 +603,6 @@ if (checkModal) {
             fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
             fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
         }
-
-        window.handleRepeat = UI.handleRepeat;
 
         UI.isInitialized = true;
     },
@@ -690,14 +709,7 @@ if (checkModal) {
             activeEl.classList.remove('hidden');
             (async () => {
                 if (mode === 'stats') {
-                    // ★ここを修正
-                    // 1. 現在の期間（今週/月）のデータを取得
-                    const { logs: periodLogs } = await Service.getAllDataForUI();
-                    // 2. データベースから全てのメインログを取得
-                    const allLogs = await db.logs.toArray();
-                    
-                    // 両方を渡して描画
-                    renderBeerStats(periodLogs, allLogs);
+                    // 何もしない（refreshUIが描画する）
                 } else if (mode === 'archives') {
                     renderArchives();
                 }
@@ -729,13 +741,13 @@ if (checkModal) {
         }
     },
 
-    // ★追加: HTMLのonclick属性から呼べるように公開する
-    openLogDetail: (id) => {
+    openLogDetail: async (id) => {
         Feedback.tap();
-        // idからログデータを取得して詳細モーダルを開く
-        db.logs.get(id).then(log => {
-            if (log) openLogDetail(log);
-        });
+        const log = await db.logs.get(parseInt(id));
+        if (log) {
+            // 「LogDetailファイルの openLogDetail を呼ぶ」と明確にわかる
+            LogDetail.openLogDetail(log); 
+        }
     },
 
     /**
@@ -745,40 +757,43 @@ if (checkModal) {
      */
     handleRepeat: async (log) => {
     try {
-        // 直接 Service を呼ぶのではなく、イベントを発生させる
         if (log.type === 'beer') {
-            // Service.repeatLog を介さず、直接 save-beer イベントを飛ばして
-            // index.js 側のリスナーに演出と保存を任せる
-            const event = new CustomEvent('save-beer', { 
+            document.dispatchEvent(new CustomEvent('save-beer', {
                 detail: {
-                    // ★修正: ここで { data: ... } の形に包む必要があります！
                     data: {
-                        ...log,
                         timestamp: Date.now(),
-                        isCustom: false,
-                        useUntappd: false // リピート時は自動起動しない
+                        brewery: log.brewery || '',
+                        brand: log.brand || '',
+                        rating: log.rating || 0,
+                        memo: log.memo || '',
+                        style: log.style || '国産ピルスナー',
+                        size: String(log.size || 350),
+                        count: log.count || 1,
+                        isCustom: log.isCustom || false,
+                        userAbv: log.userAbv ?? NaN,
+                        abv: log.abv ?? 5.0,
+                        ml: log.ml ?? 350,
+                        carb: log.carb ?? 3.0,
+                        type: log.type ?? 'sweet',   // ★修正
+                        useUntappd: false
                     },
-                    existingId: null // 新規作成であることを明示
-                } 
-            });
-            document.dispatchEvent(event);
+                    existingId: null
+                }
+            }));
+        }
 
-        } else if (log.type === 'exercise') {
-            // 運動の方は変更なし（受け取り手がフラットな構造を期待しているため）
-            const event = new CustomEvent('save-exercise', { 
+        else if (log.type === 'exercise') {
+            document.dispatchEvent(new CustomEvent('save-exercise', {
                 detail: {
                     exerciseKey: log.exerciseKey,
                     minutes: log.minutes,
                     date: Date.now(),
                     applyBonus: true,
                     id: null
-                } 
-            });
-            document.dispatchEvent(event);
+                }
+            }));
         }
 
-        // ※イベントリスナー側で refreshUI() が呼ばれるため、ここでの実行は不要です。
-        
     } catch (e) {
         console.error('Repeat Error:', e);
         showMessage('登録に失敗しました', 'error');
@@ -815,18 +830,9 @@ if (checkModal) {
     applyTheme: applyTheme,
     toggleDryDay: toggleDryDay,
 
-    openDayDetail: async (date) => {
-        // 1. Serviceから全データを取得
-        const { allLogs } = await Service.getAllDataForUI();
-        
-        // 2. クリックされた日付のログを全データから抽出
-        const targetDateStr = dayjs(date).format('YYYY-MM-DD');
-        const dayLogs = allLogs.filter(log => 
-            dayjs(log.timestamp).format('YYYY-MM-DD') === targetDateStr
-        );
-
-        // 3. modal.jsから読み込んだ元の関数に、抽出したデータを渡す
-        _originalOpenDayDetail(date, dayLogs);
+    openDayDetail: (date) => {
+        // 「LogDetailファイルの openDayDetail を呼ぶ」
+        LogDetail.openDayDetail(date);
     },
           
     handleRolloverAction: handleRolloverAction, 
@@ -837,6 +843,11 @@ if (checkModal) {
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
+    renderCheckLibrary: renderCheckLibrary,
+    applyLibraryChanges: applyLibraryChanges,
+    applyPreset: applyPreset,
+    deleteCheckItem: deleteCheckItem,
+    addNewCheckItem: addNewCheckItem,
 
 };
 
@@ -854,4 +865,26 @@ export {
 };
 
 
-
+export const initHandleRepeatDelegation = () => {
+    document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-action="repeat"]');
+        if (!target) return;
+        
+        try {
+            const payload = JSON.parse(target.dataset.payload);
+            UI.handleRepeat(payload);
+            
+            // オプション: 成功後のアクション
+            const onSuccess = target.dataset.onSuccess;
+            const onSuccessParam = target.dataset.onSuccessParam;
+            if (onSuccess && onSuccessParam) {
+                // 例: modal:close → toggleModal(param, false)
+                if (onSuccess === 'modal:close') {
+                    toggleModal(onSuccessParam, false);
+                }
+            }
+        } catch (err) {
+            console.error('[handleRepeat] Error:', err);
+        }
+    });
+};

@@ -20,6 +20,16 @@ if (!document.getElementById(styleId)) {
             transform-style: preserve-3d !important;
             -webkit-transform-style: preserve-3d !important;
             will-change: transform; 
+            position: relative; /* 子要素の基準にする */
+        }
+        /* ★追加: 泡のコンテナを水面で切り取る設定 */
+        .bubble-container {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            overflow: hidden; /* ★これではみ出た泡をカット */
+            pointer-events: none;
+            z-index: 5;
         }
         /* ヒントアイコンの点滅アニメーション */
         @keyframes hint-pulse {
@@ -121,8 +131,8 @@ export function renderBeerTank(currentBalanceKcal) {
             if (hint) hint.style.opacity = '0';
 
             // 音再生
-            if (window.AudioEngine) {
-                window.AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
+            if (AudioEngine) {
+                AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
 
             // 1. 回転して消える
@@ -152,8 +162,8 @@ export function renderBeerTank(currentBalanceKcal) {
                     fill: 'forwards'
                 });
 
-                if (window.AudioEngine) {
-                   setTimeout(() => window.AudioEngine.playTone(600, 'sine', 0.1), 50);
+                if (AudioEngine) {
+                   setTimeout(() => AudioEngine.playTone(600, 'sine', 0.1), 50);
                 }
 
                 flipIn.onfinish = () => {
@@ -266,7 +276,9 @@ export function renderBeerTank(currentBalanceKcal) {
 
             const debtCans = Math.abs(canCount);
             const rawRatio = (debtCans / APP.TANK_MAX_CANS) * 100;
-            fillRatio = Math.max(10, Math.min(94, rawRatio)); 
+            fillRatio = Math.max(10, Math.min(94, rawRatio));
+
+            const topVal = 100 - fillRatio; 
 
             let bubbleContainer = orbContainer.querySelector('.bubble-container');
             if (!bubbleContainer) {
@@ -287,6 +299,12 @@ export function renderBeerTank(currentBalanceKcal) {
                     bubble.style.animationDelay = `-${delay}s`;
                     bubbleContainer.appendChild(bubble);
                 }
+            }
+
+            // ★ここが重要: 泡の箱のサイズをビールの液体部分にピッタリ合わせる
+            if (bubbleContainer) {
+                bubbleContainer.style.top = `${topVal}%`;     // 天井を水面に合わせる
+                bubbleContainer.style.height = `${fillRatio}%`; // 底までを覆う
             }
 
             if (debtCans > 2.5) {

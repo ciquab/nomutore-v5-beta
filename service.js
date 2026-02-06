@@ -229,7 +229,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
             });
         }
     });
-}
+},
 
     /**
     * 期間設定の更新とデータ移行（復元）の実行

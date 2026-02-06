@@ -104,24 +104,22 @@ export const DataManager = {
                 });
             }
 
-            // UI更新
-            UI.updateModeSelector();
-            updateBeerSelectOptions(); 
-            UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
+            localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
 
-            // ★追加: 設定画面の入力欄を最新のデータで上書き表示する
-            if (UI.renderSettings) {
-                UI.renderSettings();
-               }
-
-            await refreshUI(); 
-            
-            return true;
-        } catch(err) {
-            console.error(err);
-            throw new Error('データの復元中にエラーが発生しました');
+            // --- 3. UIの即時反映（リロードまでの繋ぎ） ---
+        // リロードするまでの1〜2秒間、ユーザーに「変わった感」を出すならこれを入れる
+        if (typeof UI !== 'undefined') {
+            const savedTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
+            if (UI.applyTheme) UI.applyTheme(savedTheme);
+            if (UI.updateModeSelector) UI.updateModeSelector();
         }
-    },
+
+        return true; // 成功を restoreFromCloud に返す
+    } catch(err) {
+        console.error(err);
+        throw new Error('復元失敗');
+    }
+},
 
     // --- クラウド連携 (Google Drive) ---
 

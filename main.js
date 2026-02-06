@@ -179,7 +179,7 @@ const registerActions = () => {
         },
         
         // ========== System系 ==========
-        'system:reload': () => location.reload(),
+        'system:reload': () => location.reload();
 
         // ========== Rollover系 (追加) ==========
         'rollover:weekly': () => UI.handleRolloverAction('weekly');

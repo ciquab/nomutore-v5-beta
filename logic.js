@@ -2,6 +2,9 @@ import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANT
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export const Calc = {
+    
+    getVirtualDate,
+
     /**
      * 基礎代謝計算
      */

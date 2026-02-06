@@ -179,14 +179,14 @@ const registerActions = () => {
         },
         
         // ========== System系 ==========
-        'system:reload': () => location.reload();
+        'system:reload': () => location.reload(),
 
         // ========== Rollover系 (追加) ==========
-        'rollover:weekly': () => UI.handleRolloverAction('weekly');
+        'rollover:weekly': () => UI.handleRolloverAction('weekly'),
         
-        'rollover:new_custom': () => UI.handleRolloverAction('new_custom');
+        'rollover:new_custom': () => UI.handleRolloverAction('new_custom'),
         
-        'rollover:extend': () => UI.handleRolloverAction('extend');
+        'rollover:extend': () => UI.handleRolloverAction('extend'),
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});

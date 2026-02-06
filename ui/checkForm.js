@@ -275,7 +275,7 @@ export const renderCheckLibrary = () => {
                             : '<i class="ph-bold ph-circle text-gray-300"></i>';
                     }
                 }
-            };
+            });
 
             // ★修正: アイコンのレンダリング
             const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');

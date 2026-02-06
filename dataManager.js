@@ -166,8 +166,6 @@ export const DataManager = {
                 UI.showMessage('☁️ ドライブから復元しました', 'success');
                 if(statusEl) statusEl.textContent = 'Restore Complete';
 
-                // メッセージを読ませてからリロード
-                setTimeout(() => window.location.reload(), 2000);
             } else {
                 if(statusEl) statusEl.textContent = 'Restore Cancelled';
             }

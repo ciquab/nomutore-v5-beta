@@ -591,7 +591,7 @@ Onboarding.handleJsonRestore = async (input) => {
 // 復元成功後の処理
 Onboarding.completeAfterRestore = () => {
     // 1. 復元が完了したことをフラグで保存
-    localStorage.setItem('nomutore_onboarding_complete', 'true');
+    localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
     localStorage.setItem('nomutore_lp_seen_v5', 'true');
 
     // 2. 少しだけ待ってからリロード（メッセージを読ませるため）

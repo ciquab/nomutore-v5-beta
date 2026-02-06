@@ -98,7 +98,7 @@ const renderActionMenuBeerPresets = async () => {
             const kcal = Math.abs(Math.round(beer.kcal / (beer.count || 1))); // 1本当たりのカロリー
 
             html += `
-                <button  data-action="repeat" 
+                <button  data-action="log:repeat" 
                          data-payload='${jsonParam}' 
                          data-on-success="modal:close" 
                          data-on-success-param="action-menu-modal" 
@@ -164,11 +164,11 @@ const renderActionMenuExerciseShortcuts = async () => {
             const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
             const safeName = escapeHtml(log.name);
 
-            // ★修正:  data-action="repeat" に変更済み
+            // ★修正:  data-action="log:repeat" に変更済み
             // これにより、window.handleRepeat が呼ばれ、スコープエラーを回避できます
             const btn = document.createElement('div'); // innerHTMLでボタンを作るためラッパーdiv
             btn.innerHTML = `
-            <button  data-action="repeat" 
+            <button  data-action="log:repeat" 
                      data-payload='${jsonParam}' 
                      data-on-success="modal:close" 
                      data-on-success-param="action-menu-modal"
@@ -518,7 +518,7 @@ export const renderRecordTabShortcuts = async () => {
                 const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
 
                 html += `
-                    <button  data-action="repeat" 
+                    <button  data-action="log:repeat" 
                              data-payload='${jsonParam}' 
                              data-on-success="modal:close" 
                              data-on-success-param="action-menu-modal" 
@@ -559,7 +559,7 @@ export const renderRecordTabShortcuts = async () => {
                 const safeName = escapeHtml(log.name);
 
                 html += `
-                    <button  data-action="repeat" 
+                    <button  data-action="log:repeat" 
                              data-payload='${jsonParam}' 
                              data-on-success="modal:close" 
                              data-on-success-param="action-menu-modal" 
@@ -586,21 +586,17 @@ export const handleRolloverAction = async (action) => {
     // modal.js内で import されている toggleModal を使用
     toggleModal('rollover-modal', false);
 
+    try{
     if (action === 'weekly') {
         // Weeklyに戻す
         await Service.updatePeriodSettings('weekly');
         showConfetti();
         showMessage('Weeklyモードに戻りました', 'success');
-        // UI更新イベントを発火（refreshUIを直接インポートせずに済むテクニック）
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
         
     } else if (action === 'new_custom') {
         // 設定画面へ移動
-        const settingsTab = document.getElementById('nav-tab-settings');
-            if (settingsTab) {
-                settingsTab.click();
-            }
-        
+        UI.switchTab('settings');
+
         // 少し遅れてメッセージ
         setTimeout(() => {
             showMessage('新しい期間を設定してください', 'info');
@@ -611,24 +607,30 @@ export const handleRolloverAction = async (action) => {
                 pMode.dispatchEvent(new Event('change'));
             }
         }, 300);
+        return;
         
     } else if (action === 'extend') {
-        // 延長処理
-        const currentEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE)) || Date.now();
-        const newEnd = dayjs(currentEnd).add(7, 'day').endOf('day').valueOf();
-        localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, newEnd);
-        
-        showMessage('期間を1週間延長しました', 'success');
+        // ✅ 直接 localStorage を触らず、Service層に委譲する
+            await Service.extendPeriod(7);
+            showMessage('期間を1週間延長しました', 'success');
+    }
+// 2. 最後に共通のUI更新イベントを発火
         document.dispatchEvent(new CustomEvent('refresh-ui'));
+
+    } catch (err) {
+        console.error('Rollover Action Error:', err);
+        showMessage('期間の更新に失敗しました', 'error');
     }
 };
 
 export const openShareModal = (mode = 'status') => {
     // Shareモジュールが持つ generateAndShare を呼ぶ
-    // ※ import { Share } from './share.js'; が必要
-    Share.generateAndShare(mode);
+    if (typeof Share !== 'undefined' && Share.generateAndShare) {
+        Share.generateAndShare(mode);
+    } else {
+        console.error('Share module not loaded');
+    }
 };
-
 /**
  * 期間終了（ロールオーバー）時のモーダルを表示
  * モード（Weekly/Monthly/Custom）に応じて内容を出し分ける
@@ -666,8 +668,11 @@ export const showRolloverModal = () => {
         const btn = document.createElement('button');
         btn.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2";
         btn.innerHTML = `<span>Start New ${label}</span>`;
-        // 閉じるだけ
-        btn.addEventListener('click', () => toggleModal('rollover-modal', false));
+        btn.addEventListener('click', async () => {
+            await Service.updatePeriodSettings(mode); // 期間を更新（次週へ）
+            toggleModal('rollover-modal', false);
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        });
         
         actionsContainer.appendChild(btn);
     } 

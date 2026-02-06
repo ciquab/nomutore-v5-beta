@@ -305,6 +305,20 @@ export const Onboarding = {
         Onboarding.showWizard(0);
     },
 
+    /**
+     * 新規ユーザーとしてウィザードを進行させる
+     */
+    startNew: () => {
+        // 復元オプションが表示されている場合は隠す
+        const restoreOptions = document.getElementById('restore-options');
+        if (restoreOptions) {
+            restoreOptions.classList.add('hidden');
+        }
+
+        // 次のステップ（通常はプロフィール設定）へ進む
+        Onboarding.nextStep();
+    },
+
     showWizard: (index) => {
         currentStepIndex = index;
         const step = WIZARD_STEPS[index];
@@ -602,10 +616,9 @@ Onboarding.completeAfterRestore = () => {
 };
 
 // ★追加: HTMLのonclickから呼ぶためのヘルパー関数
-Onboarding.setPeriodMode = (mode) => {
-    // モジュール内の APP 定数を使って安全に保存
-    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, mode);
-    // 次のステップへ
+Onboarding.setPeriodMode = async (mode) => { // asyncにする
+    // 単なる保存ではなく、Serviceを通じて「開始日」の確定まで行う
+    await Service.updatePeriodSettings(mode); 
     Onboarding.nextStep();
 };
 

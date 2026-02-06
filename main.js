@@ -44,7 +44,7 @@ const registerActions = () => {
             const isDark = document.documentElement.classList.contains('dark');
             UI.applyTheme(isDark ? 'light' : 'dark');
         },
-        'ui:shareModal': () => UI.shareModal(),
+        'ui:openShareModal': () => UI.openShareModal(),
         
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),
@@ -81,6 +81,25 @@ const registerActions = () => {
         },
         'log:toggleEditMode': () => UI.toggleEditMode(),
         'log:toggleSelectAll': () => UI.toggleSelectAll(),
+        'log:openDetail': (data) => {
+            if (UI && UI.openLogDetail) {
+                UI.openLogDetail(data.id);
+            }
+        },
+        'log:repeat': (payload, event) => {
+            UI.handleRepeat(payload);
+    
+            // イベント元の要素から data-on-success 属性を取得
+            const target = event.target.closest('[data-action="log:repeat"]');
+            if (target) {
+                const onSuccess = target.dataset.onSuccess;
+                const param = target.dataset.onSuccessParam;
+        
+                if (onSuccess === 'modal:close' && param) {
+                    setTimeout(() => toggleModal(param, false), 100);
+                }
+            }
+        },
         
         // ========== Check系 ==========
         'check:applyPreset': (presetName) => {
@@ -116,10 +135,7 @@ const registerActions = () => {
         'onboarding:prevStep': () => Onboarding.prevStep(),
         'onboarding:finish': () => Onboarding.finishWizard(),
         'onboarding:goToWizard': () => Onboarding.goToWizard(),
-        'onboarding:start-new': () => {
-        document.getElementById('restore-options').classList.add('hidden');
-        Onboarding.nextStep();
-        },
+        'onboarding:start-new': () => Onboarding.startNew(),
         'onboarding:setPeriod': (args) => {
             // data-mode="weekly" などの値が args.mode に入る
             Onboarding.setPeriodMode(args.mode);
@@ -149,41 +165,11 @@ const registerActions = () => {
             setTimeout(() => UI.openCheckModal(UI.selectedDate), 200);
         },
 
-       // ========== DayDetail系 (追加) ==========
-        'open-day-detail': (data) => {
-            if (UI && UI.openDayDetail) {
-                UI.openDayDetail(data.date);
-            }
-        },
-        
-        // もし logList.js の修正も反映させるなら、これも必要です
-        'open-log-detail': (data) => {
-            if (UI && UI.openLogDetail) {
-                UI.openLogDetail(data.id);
-            }
-        },
         // ========== Beer系 ==========
 
         'beer:openFirst': () => {
             UI.openBeerModal();
             toggleModal('action-menu-modal', false);
-        },
-
-
-        // ========== Repeat系 ==========
-        'repeat': (payload, event) => {
-            UI.handleRepeat(payload);
-    
-            // イベント元の要素から data-on-success 属性を取得
-            const target = event.target.closest('[data-action="repeat"]');
-            if (target) {
-                const onSuccess = target.dataset.onSuccess;
-                const param = target.dataset.onSuccessParam;
-        
-                if (onSuccess === 'modal:close' && param) {
-                    setTimeout(() => toggleModal(param, false), 100);
-                }
-            }
         },
 
         // ========== Help系 ==========
@@ -194,53 +180,13 @@ const registerActions = () => {
         
         // ========== System系 ==========
         'system:reload': () => location.reload(),
-        
-        // ========== 後方互換性エイリアス（段階的削除対象） ==========
-        'share:open': () => UI.openShareModal(),
-        'open-help': (section) => openHelp(section),
-        'toggle-edit-mode': () => UI.toggleEditMode(),
-        'toggle-select-all': () => UI.toggleSelectAll(),
-        'delete-selected': () => {
-            import('./ui/logList.js').then(m => m.deleteSelectedLogs());
-        },
-        'switch-tab': (tabName) => UI.switchTab(tabName),
-        'close-modal': (modalId) => toggleModal(modalId, false),
-        'toggle-modal': (modalId) => {
-            const modal = document.getElementById(modalId);
-            const isVisible = modal && !modal.classList.contains('hidden');
-            toggleModal(modalId, !isVisible);
-        },
 
         // ========== Rollover系 (追加) ==========
-        'rollover:weekly': async () => {
-            toggleModal('rollover-modal', false);
-            await Service.updatePeriodSettings('weekly');
-            showConfetti();
-            showMessage('Weeklyモードに戻りました', 'success');
-            document.dispatchEvent(new CustomEvent('refresh-ui'));
-        },
+        'rollover:weekly': () => UI.handleRolloverAction('weekly');
         
-        'rollover:new_custom': () => {
-            toggleModal('rollover-modal', false);
-            UI.switchTab('settings');
-            setTimeout(() => {
-                showMessage('新しい期間を設定してください', 'info');
-                const pMode = document.getElementById('setting-period-mode');
-                if(pMode) {
-                    pMode.value = 'custom';
-                    pMode.dispatchEvent(new Event('change'));
-                }
-            }, 300);
-        },
+        'rollover:new_custom': () => UI.handleRolloverAction('new_custom');
         
-        'rollover:extend': () => {
-            toggleModal('rollover-modal', false);
-            const currentEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE)) || Date.now();
-            const newEnd = dayjs(currentEnd).add(7, 'day').endOf('day').valueOf();
-            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, newEnd);
-            showMessage('期間を1週間延長しました', 'success');
-            document.dispatchEvent(new CustomEvent('refresh-ui'));
-        },
+        'rollover:extend': () => UI.handleRolloverAction('extend');
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});
@@ -470,53 +416,82 @@ let touchEndX = 0;
 let touchEndY = 0;
 
 const setupGlobalListeners = () => {
-    // タッチ開始
+    // --- 1. スワイプ操作 (既存) ---
     document.addEventListener('touchstart', (e) => {
-        // 横スクロールエリア（.overflow-x-auto）内の操作ならスワイプ判定しない
         if (e.target.closest('.overflow-x-auto')) {
-            touchStartX = null;
-            touchStartY = null;
-            return;
+            touchStartX = null; touchStartY = null; return;
         }
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
     }, { passive: false });
 
-    // タッチ終了
     document.addEventListener('touchend', (e) => {
         if (touchStartX === null || touchStartY === null) return;
-
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
     }, { passive: false });
-};
 
-// スワイプ判定ロジック
+    // --- 2. FABのスクロール制御 (新規追加) ---
+    let lastScrollTop = 0;
+    const fab = document.getElementById('btn-fab-fixed');
+    
+    if (fab) {
+        window.addEventListener('scroll', () => {
+            // タブ切り替えによって非表示に設定されている（scale-0）時は処理しない
+            if (fab.classList.contains('scale-0')) return;
+
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const threshold = 100; // 100px以上スクロールしたら反応させる
+
+            if (scrollTop > lastScrollTop && scrollTop > threshold) {
+                // 下にスクロール: FABを隠す (画面外へ押し出す)
+                fab.classList.add('translate-y-24', 'opacity-0');
+                fab.classList.remove('translate-y-0', 'opacity-100');
+            } else {
+                // 上にスクロール: FABを出す
+                fab.classList.remove('translate-y-24', 'opacity-0');
+                fab.classList.add('translate-y-0', 'opacity-100');
+            }
+            lastScrollTop = scrollTop;
+        }, { passive: true }); // スクロール性能を落とさないために passive 指定
+    }
+};
+// スワイプ判定ロジック（強化版）
 const handleSwipe = () => {
     if (touchStartX === null) return;
+
+    // --- 追加: モーダル表示中はスワイプを無効化する ---
+    if (document.querySelector('.modal.flex')) return; 
 
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
     const swipeThreshold = 80; 
     
+    // 縦の移動量が大きい（＝スクロールしようとしている）場合は無視
+    // Math.abs(diffX) * 0.5 のように比率を設けると斜めスワイプの誤爆を防げます
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
     const tabs = ['home', 'record', 'cellar', 'settings'];
-    
     const activeTab = document.querySelector('.nav-pill-active');
     if (!activeTab) return;
     
     const currentTab = activeTab.id.replace('nav-tab-', '');
     const currentIndex = tabs.indexOf(currentTab);
 
-    // 縦スクロールの意図が強い場合は無視
-    if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-    // 横移動量がしきい値を超えた場合
     if (Math.abs(diffX) > swipeThreshold) {
+        let targetTabIndex = -1;
+        
         if (diffX > 0 && currentIndex < tabs.length - 1) {
-            UI.switchTab(tabs[currentIndex + 1]); // 次のタブ
+            targetTabIndex = currentIndex + 1; // 右へスワイプ（左のタブへ）
         } else if (diffX < 0 && currentIndex > 0) {
-            UI.switchTab(tabs[currentIndex - 1]); // 前のタブ
+            targetTabIndex = currentIndex - 1; // 左へスワイプ（右のタブへ）
+        }
+
+        if (targetTabIndex !== -1) {
+            UI.switchTab(tabs[targetTabIndex]);
+            // タブを切り替えたら、画面を最上部へ戻す（UX向上）
+            window.scrollTo({ top: 0, behavior: 'instant' });
         }
     }
 };

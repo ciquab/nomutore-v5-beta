@@ -867,7 +867,7 @@ export {
 
 export const initHandleRepeatDelegation = () => {
     document.addEventListener('click', (e) => {
-        const target = e.target.closest('[data-action="repeat"]');
+        const target = e.target.closest('[data-action="log:repeat"]');
         if (!target) return;
         
         try {

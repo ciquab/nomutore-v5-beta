@@ -410,6 +410,24 @@ recalcImpactedHistory: async (changedTimestamp) => {
         });
     },
 
+ /**
+ * 期間を延長する
+ * @param {number} days 延長日数
+ */
+extendPeriod: async (days = 7) => {
+    // 現在の終了日を取得（なければ今日を起点）
+    const currentEnd = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END) || dayjs().format('YYYY-MM-DD');
+    
+    // 7日間延長
+    const newEnd = dayjs(currentEnd).add(days, 'day').format('YYYY-MM-DD');
+    
+    // 重要：延長した場合は、自動計算と衝突しないようモードを 'custom' に切り替える
+    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END, newEnd);
+    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'custom');
+    
+    console.log(`[Service] Extended to ${newEnd} and switched to custom mode.`);
+},
+
     /**
      * ★追加: よく飲むビールを取得（ランキング集計）
      * Recordタブで使用 (Frequency)

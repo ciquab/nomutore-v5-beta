@@ -1,6 +1,22 @@
 import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANTS } from './constants.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+
+// ユーザーの生活スタイルに合わせた「日付の境界線（Rollover Time）」を導入
+// デフォルトは午前4:00までを「前日」とみなす
+
+export const getVirtualDate = (timestamp = Date.now()) => {
+    const rolloverHour = 4; // 設定画面で可変にしても良い
+    const date = dayjs(timestamp);
+    
+    // 現在時刻が4時未満なら、前日の日付として扱う
+    if (date.hour() < rolloverHour) {
+        return date.subtract(1, 'day').format('YYYY-MM-DD');
+    }
+    return date.format('YYYY-MM-DD');
+
+};
+
 export const Calc = {
     
     getVirtualDate,
@@ -425,20 +441,6 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
     }
 };
 
-// ユーザーの生活スタイルに合わせた「日付の境界線（Rollover Time）」を導入
-// デフォルトは午前4:00までを「前日」とみなす
-
-export const getVirtualDate = (timestamp = Date.now()) => {
-    const rolloverHour = 4; // 設定画面で可変にしても良い
-    const date = dayjs(timestamp);
-    
-    // 現在時刻が4時未満なら、前日の日付として扱う
-    if (date.hour() < rolloverHour) {
-        return date.subtract(1, 'day').format('YYYY-MM-DD');
-    }
-    return date.format('YYYY-MM-DD');
-
-};
 
 
 

@@ -44,6 +44,7 @@ const registerActions = () => {
             const isDark = document.documentElement.classList.contains('dark');
             UI.applyTheme(isDark ? 'light' : 'dark');
         },
+        'ui:shareModal': () => UI.shareModal(),
         
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),

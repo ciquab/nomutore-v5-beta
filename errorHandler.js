@@ -25,7 +25,7 @@ export const showErrorOverlay = (msg, source, lineno) => {
                 navigator.clipboard.writeText(errText)
                     .then(() => alert('エラーログをコピーしました'))
                     .catch(() => alert('コピーに失敗しました'));
-            };
+            });
         }
     }
     console.error('Global Error Caught:', msg);

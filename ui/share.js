@@ -65,7 +65,7 @@ const startBeerPhotoFlow = (logData) => {
             }
         }
         input.remove();
-    };
+    });
     input.click();
 };
 

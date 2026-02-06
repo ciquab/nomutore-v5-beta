@@ -298,7 +298,7 @@ export const Onboarding = {
      * 完了済みならアプリ本体を表示して終了する
      */
     start: async () => {
-        if (localStorage.getItem('nomutore_onboarding_complete')) {
+        if (localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) {
             Onboarding.showAppUI(); // ★ここが重要：完了済みなら本体を表示
             return;
         }
@@ -408,7 +408,7 @@ export const Onboarding = {
     },
 
     complete: () => {
-        localStorage.setItem('nomutore_onboarding_complete', 'true');
+        localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
         Onboarding.showAppUI();
         Onboarding.startTour();
     },

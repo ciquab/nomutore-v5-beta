@@ -155,7 +155,7 @@ export const DataManager = {
             if (!data) {
                 UI.showMessage('ドライブ上にバックアップが見つかりません', 'error');
                 if(statusEl) statusEl.textContent = 'File not found';
-                return;
+                return false;
             }
 
             // 2. 復元処理
@@ -171,11 +171,13 @@ export const DataManager = {
             } else {
                 if(statusEl) statusEl.textContent = 'Restore Cancelled';
             }
+            return success;
 
         } catch (err) {
             console.error(err);
             UI.showMessage('復元失敗: コンソールを確認してください', 'error');
             if(statusEl) statusEl.textContent = 'Error: Restore failed';
+            return false;
         }
     },
 

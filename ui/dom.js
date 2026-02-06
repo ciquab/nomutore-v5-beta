@@ -713,7 +713,7 @@ export const showUpdateNotification = (waitingWorker) => {
         // 2. ボタンをローディング状態に
         btn.textContent = '...';
         btn.disabled = true;
-    };
+    });
 };
 
 

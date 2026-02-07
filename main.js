@@ -441,28 +441,24 @@ const setupGlobalListeners = () => {
     let lastScrollTop = 0;
     const fab = document.getElementById('btn-fab-fixed');
     
-    // window ではなく document (または全体) に対してスクロールを監視
-    // スロットリング（頻度制限）をあえて入れず、ブラウザの最適化に任せます
-    document.addEventListener('scroll', () => {
+    window.addEventListener('scroll', () => {
+        const fab = document.getElementById('btn-fab-fixed');
+        // scale-0（非表示モード）の時は計算しない
         if (!fab || fab.classList.contains('scale-0')) return;
 
-        // 複数の取得方法を試行（ブラウザ互換性）
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const diff = scrollTop - lastScrollTop;
 
-        // 下にスクロール（diff > 0）かつ 一定以上(20px)スクロールした
-        if (diff > 5 && scrollTop > 20) {
-            fab.style.transform = 'translateY(110px)'; // classList ではなく直接 style で制御するとより確実
-            fab.style.opacity = '0';
-        } 
-        // 上にスクロール、または最上部付近
-        else if (diff < -5 || scrollTop <= 10) {
-            fab.style.transform = 'translateY(0)';
-            fab.style.opacity = '1';
+        if (diff > 10 && scrollTop > 50) {
+            // クラス操作に戻すことで、CSSの transition が効いて「ヌルっと」沈みます
+            fab.classList.add('translate-y-24', 'opacity-0');
+            fab.classList.remove('translate-y-0', 'opacity-100');
+        } else if (diff < -10 || scrollTop < 20) {
+            fab.classList.remove('translate-y-24', 'opacity-0');
+            fab.classList.add('translate-y-0', 'opacity-100');
         }
-        
         lastScrollTop = scrollTop;
-    }, true); // ★ 第3引数を true (Capture) にすることで、子要素のスクロールも拾えるようになります
+    }, { passive: true });
 };
 
 // スワイプ判定ロジック
@@ -591,6 +587,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

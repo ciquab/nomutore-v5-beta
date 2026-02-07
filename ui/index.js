@@ -637,11 +637,18 @@ if (checkModal) {
                 const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
 
                 if (shouldShowFab) {
-                    // 表示： hidden を外し、アニメーション
-                    fab.classList.remove('hidden', 'scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
-                    fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
+                    // 表示：2段階アニメーション
+                    // まずhiddenを外してpointer-eventsを有効化
+                    fab.classList.remove('hidden', 'pointer-events-none');
+                    fab.classList.add('pointer-events-auto');
+                    
+                    // 次のフレームでtransform/scale/opacityをアニメーション
+                    requestAnimationFrame(() => {
+                        fab.classList.remove('scale-0', 'opacity-0', 'translate-y-24');
+                        fab.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                    });
                 } else {
-                    // 非表示： hidden を追加して完全に隠す
+                    // 非表示：即座に全て適用
                     fab.classList.add('hidden', 'scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                 }
@@ -702,15 +709,19 @@ if (checkModal) {
             if (tabId === 'settings' && !isOnboarding) {
                 // settingsタブの場合：500ms待ってからアニメーション表示
                 setTimeout(() => {
-                    // まずpointer-eventsを有効化
-                    saveBtn.classList.remove('pointer-events-none');
-                    saveBtn.classList.add('pointer-events-auto');
-                    
-                    // 次のフレームでtransformとopacityをアニメーション
-                    requestAnimationFrame(() => {
-                        saveBtn.classList.remove('translate-y-10', 'opacity-0');
-                        saveBtn.classList.add('translate-y-0', 'opacity-100');
-                    });
+                    // タブが切り替わっていないか再確認
+                    const currentActiveTab = document.querySelector('.tab-content.active');
+                    if (currentActiveTab && currentActiveTab.id === 'tab-settings') {
+                        // まずpointer-eventsを有効化
+                        saveBtn.classList.remove('pointer-events-none');
+                        saveBtn.classList.add('pointer-events-auto');
+                        
+                        // 次のフレームでtransformとopacityをアニメーション
+                        requestAnimationFrame(() => {
+                            saveBtn.classList.remove('translate-y-10', 'opacity-0');
+                            saveBtn.classList.add('translate-y-0', 'opacity-100');
+                        });
+                    }
                 }, 500);
             } else {
                 // 他のタブの場合：即座に非表示（アニメーションなし）
@@ -919,6 +930,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

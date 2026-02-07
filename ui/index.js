@@ -624,6 +624,7 @@ if (checkModal) {
             Feedback.uiSwitch();
 
             const fab = document.getElementById('btn-fab-fixed');
+            const saveBtn = document.getElementById('settings-save-container');
             
             
             // ★オンボーディング判定を強化（要素が存在し、かつ hidden でない場合）
@@ -696,9 +697,6 @@ if (checkModal) {
             await refreshUI();
 
         // ★★★ 重要修正: Save Changesボタンの制御をView Transitionの外に出して遅延実行 ★★★
-        const saveBtn = document.getElementById('settings-save-container');
-        const onboarding = document.getElementById('onboarding-screen');
-        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
         
         if (saveBtn) {
             if (tabId === 'settings' && !isOnboarding) {
@@ -921,6 +919,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

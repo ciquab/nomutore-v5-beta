@@ -623,7 +623,6 @@ if (checkModal) {
         DOM.withTransition(async () => {
             Feedback.uiSwitch();
 
-            const saveBtn = document.getElementById('settings-save-container');
             const fab = document.getElementById('btn-fab-fixed');
             
             
@@ -922,6 +921,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

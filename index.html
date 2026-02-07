@@ -605,10 +605,9 @@
     </div>
 </nav>
 
-    <div id="settings-save-container" class="fixed bottom-32 left-0 right-0 px-6 z-[9998] transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none will-change-transform">
-        <div class="max-w-md mx-auto">
-            <button id="btn-save-settings" class="w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold shadow-[0_10px_30px_rgba(79,70,229,0.4)] hover:bg-indigo-700 transition transform active:scale-95">
-            Save Changes
+    <div id="settings-save-container" class="fixed bottom-32 left-0 right-0 px-6 z-[9998] transition-opacity transition-transform duration-300 transform translate-y-10 opacity-0 pointer-events-none will-change-transform backdrop-blur-sm bg-gradient-to-t from-white/80 to-transparent dark:from-black/80 pt-6">
+        <div class="max-w-md mx-auto relative z-10">
+            <button id="btn-save-settings" class="relative z-10 w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold shadow-[0_10px_30px_rgba(79,70,229,0.4)] hover:bg-indigo-700 transition transform active:scale-95">          Save Changes
             </button>
         </div>
     </div>
@@ -1808,6 +1807,7 @@
 </body>
 
 </html>
+
 
 
 

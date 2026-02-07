@@ -221,7 +221,7 @@ document.addEventListener('click', (e) => {
     const clickableArea = e.target.closest('[data-log-id]');
     if (clickableArea) {
         const logId = parseInt(clickableArea.dataset.logId);
-        UI.openLogDetail(logId);
+        openLogDetail(logId);
     }
 });
 
@@ -237,5 +237,6 @@ updateLogListView.updateBulkCount = updateBulkCount;
 // ダミー関数（互換性維持）
 
 export const setFetchLogsHandler = (fn) => {};
+
 
 

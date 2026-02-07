@@ -434,7 +434,7 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.add('scale-95', 'opacity-0');
 
             // ★追加: 特定のモーダルの場合、スライドダウンのアニメーションも適用
-            if (modalId === 'day-detail-modal' || modalId === 'action-menu-modal' || modalId === 'day-add-selector') {
+            if (modalId === 'day-detail-modal' || modalId === 'action-menu-modal' || modalId === 'day-add-selector' || modalId === 'open-log-detail') {
                 content.classList.add('translate-y-full', 'sm:translate-y-10');
             }
         }
@@ -720,6 +720,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

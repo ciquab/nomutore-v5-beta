@@ -322,7 +322,7 @@ export const renderSettings = () => {
  */
 export const handleSaveSettings = async () => {
     const btn = document.getElementById('btn-save-settings');
-    const originalText = btn.textContent;
+    const originalText = btn?.textContent ?? '';
 
     // 1. UIの状態制御 (楽観的UIアップデート準備)
     btn.disabled = true;
@@ -383,11 +383,7 @@ export const handleSaveSettings = async () => {
         }
 
         // 6. 画面全体の同期
-        updateModeSelector();
         document.dispatchEvent(new CustomEvent('refresh-ui'));
-        
-        // モーダルを閉じる
-        if (typeof closeModal === 'function') closeModal('modal-settings');
 
     } catch (e) {
         // エラーハンドリングの一元化
@@ -712,5 +708,6 @@ export const showRolloverModal = () => {
     toggleModal('rollover-modal', true);
 
 };
+
 
 

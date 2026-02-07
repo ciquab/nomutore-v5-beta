@@ -92,8 +92,7 @@ export const openLogDetail = (log) => {
     
     modal.innerHTML = `
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-300 opacity-0" id="${modalId}-bg"></div>
-        
-        <div class="relative w-full sm:max-w-lg bg-white dark:bg-base-900 rounded-t-[2rem] sm:rounded-3xl shadow-2xl transform transition-transform duration-300 translate-y-full opacity-0 pointer-events-auto max-h-[90vh] flex flex-col overflow-hidden" id="${modalId}-content">
+        <div class="modal-content relative w-full sm:max-w-lg bg-white dark:bg-base-900 rounded-t-[2rem] sm:rounded-3xl shadow-2xl transform transition-all duration-300 translate-y-full opacity-0 pointer-events-auto max-h-[90vh] flex flex-col overflow-hidden" id="${modalId}-content">
             <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/30 rounded-full sm:hidden z-10"></div>
 
             <div class="relative h-36 bg-gradient-to-br ${bgGradient} shrink-0 overflow-hidden flex items-center justify-center">
@@ -349,6 +348,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

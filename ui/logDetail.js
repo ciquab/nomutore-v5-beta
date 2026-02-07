@@ -333,46 +333,26 @@ export const openDayDetail = async (dateStr) => {
     }
 
     // 5. ボタンのアクション設定
-    // 「ログ追加」ボタン
-    document.getElementById('btn-day-add-log').addEventListener('click', () => {
-        // --- ここから下が「ボタンを押した時」にだけ実行される ---
-    
+    // 「ログ追加」ボタンの処理
+const addLogBtn = document.getElementById('btn-day-add-log');
+if (addLogBtn) {
+    // .addEventListener ではなく .onclick を使うことで、二重登録を物理的に防ぎます
+    addLogBtn.onclick = () => {
         // 1. 日別詳細モーダルを閉じる
         toggleModal('day-detail-modal', false);
     
-        // 2. 選択された日付を記録
+        // 2. ★重要: 選択された日付を StateManager に保存
+        // これにより、次に開くメニューのボタン（ActionRouter管理）がこの日付を自動的に参照します
         StateManager.setSelectedDate(dateStr);
 
-        // 3. 次に表示される選択メニュー内のボタンの動きを「この日付用」に上書き
-        const beerBtn = document.getElementById('btn-day-selector-beer');
-        if (beerBtn) {
-            beerBtn.addEventListener('click', () => {
-                toggleModal('day-add-selector', false);
-                openBeerModal(null, dateStr); // 日付を渡す
-            });
-        }
-
-        const exerciseBtn = document.getElementById('btn-day-selector-exercise');
-        if (exerciseBtn) {
-            exerciseBtn.addEventListener('click', () => {
-                toggleModal('day-add-selector', false);
-                openManualInput(dateStr); // 日付を渡す
-            });
-        }
-
-        // 4. ラベル更新
+        // 3. ラベル更新（「02/07 (土) に追加」など）
         const label = document.getElementById('day-add-selector-label');
         if(label) label.textContent = dayjs(dateStr).format('MM/DD (ddd) に追加');
 
-        // 5. 選択メニューを開く
+        // 4. 選択メニューを開く
         setTimeout(() => toggleModal('day-add-selector', true), 200);
-    });
-
-    // 「Daily Check」ボタンも同様に包まれているか確認
-    document.getElementById('btn-day-check').addEventListener('click', () => {
-        toggleModal('day-detail-modal', false);
-        setTimeout(() => openCheckModal(dateStr), 200);
-    });
+    };
+}
 
     // モーダル表示
     toggleModal('day-detail-modal', true);

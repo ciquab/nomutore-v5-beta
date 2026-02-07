@@ -308,7 +308,7 @@ const initApp = async () => {
         console.log('App Initializing...');
 
         // 1. スマート・スプラッシュ判定 (Smart Splash Logic)
-        const isOnboarded = localStorage.getItem('APP.STORAGE_KEYS.ONBOARDED');
+        const isOnboarded = localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED);
         const lastLaunchKey = 'nomutore_last_launch_ts';
         const lastLaunch = parseInt(localStorage.getItem(lastLaunchKey) || '0');
         const now = Date.now();
@@ -584,6 +584,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

@@ -101,6 +101,8 @@ export const deleteSelectedLogs = async () => {
  * @param {boolean} isLoadMore - 追加読み込みかどうか
  * @param {Array} providedLogs - [新設] 外部から渡されたデータ（二重取得防止用）
  */
+
+// 引数に providedLogs を追加
 export const updateLogListView = async (isLoadMore = false, providedLogs = null) => {
     const listEl = document.getElementById('log-list');
     const loadMoreBtn = document.getElementById('btn-load-more');
@@ -112,13 +114,13 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         currentLimit = 20; 
     }
 
-    // --- 【修正点1】データの取得ロジックを分岐 ---
+    // --- ★修正点: データの取得をスマートにする ---
     let sortedLogs;
     if (providedLogs) {
-        // 外部（index.js）から渡されたデータを使用
+        // refreshUIから渡されたデータを使う（爆速）
         sortedLogs = providedLogs.sort((a, b) => b.timestamp - a.timestamp);
     } else {
-        // 直接呼ばれた場合のみDBにアクセス（基本的には通らないルートにする）
+        // 直接呼ばれた時だけDBから取る
         const { allLogs } = await Service.getAppDataSnapshot();
         sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
     }
@@ -235,4 +237,5 @@ updateLogListView.updateBulkCount = updateBulkCount;
 // ダミー関数（互換性維持）
 
 export const setFetchLogsHandler = (fn) => {};
+
 

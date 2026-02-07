@@ -448,7 +448,7 @@ export const toggleModal = (modalId, show = true) => {
                 el.classList.add('hidden');
                 el.classList.remove('flex');
             }
-        }, 200);
+        }, 300);
     }
 };
 
@@ -720,6 +720,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

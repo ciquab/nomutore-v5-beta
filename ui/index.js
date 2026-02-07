@@ -633,9 +633,6 @@ if (checkModal) {
     },
 
     switchTab: (tabId) => {
-    const currentTab = document.querySelector('.tab-content.active');
-    if (currentTab && currentTab.id === `tab-${tabId}`) return;
-
     DOM.withTransition(async () => {
         Feedback.uiSwitch();
 
@@ -923,21 +920,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -632,7 +632,7 @@ if (checkModal) {
             
             
             // ★オンボーディング判定を強化（要素が存在し、かつ hidden でない場合）
-            const onboarding = document.getElementById('onboarding-screen');
+            const onboarding = document.getElementById('onboarding-modal');
             const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
             // --- FAB (プラスボタン) の完全制御 ---
@@ -946,6 +946,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

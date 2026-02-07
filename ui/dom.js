@@ -432,6 +432,8 @@ export const toggleModal = (modalId, show = true) => {
                 content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
             }
         }, 10);
+// ui/dom.js
+
     } else {
         // --- 閉じる処理 ---
         if (bg) {
@@ -440,18 +442,18 @@ export const toggleModal = (modalId, show = true) => {
         }
 
         if (content) {
-            // translate-y-0 を外し、アニメーション開始
+            // 現在地(translate-y-0)を削除し、アニメーション対象(scale/opacity)を付与
             content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
 
             const slideDownModals = ['day-detail-modal', 'action-menu-modal', 'day-add-selector', 'log-detail-modal'];
             if (slideDownModals.includes(modalId)) {
-                // ★修正：sm:translate-y-10 を削除し、確実に画面外(full)へ飛ばす
-                content.classList.add('translate-y-full');
+                // ★ sm:translate-y-10 をここからも削除。確実に画面外(full)へ！
+                content.classList.add('translate-y-full'); 
             }
         }
         
-        // ★修正：待機時間を 300 -> 350ms に変更（アニメーション完遂のため）
+        // ★重要：350ms（duration-300 + 50msの余裕）待ってから削除
         setTimeout(() => {
             if (el.dataset.destroy === 'true') {
                 el.remove();
@@ -724,6 +726,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

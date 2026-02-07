@@ -800,3 +800,17 @@ select:disabled {
     -o-transition: none !important;
     transition: none !important;
 }
+
+/* Settings Save Buttonが確実に最前面に表示されるように */
+#settings-save-container {
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* tab-settings内のselect要素が固定要素より背面になるように */
+#tab-settings {
+    isolation: isolate;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}

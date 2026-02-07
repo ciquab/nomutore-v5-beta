@@ -141,59 +141,63 @@ export const openLogDetail = (log) => {
         </div>
     `;
 
-    document.body.appendChild(modal);
+        // ... 前半の HTML 生成部分はそのまま ...
 
-    // ★「閉じるときに削除する」という目印を付ける
+    document.body.appendChild(modal);
     modal.dataset.destroy = 'true';
 
-    // 閉じる処理を共通関数に任せる
+    // 共通の閉じる関数
     const closeModal = () => toggleModal(modalId, false);
 
-    // 背景と閉じるボタンにイベント登録
-    const bg = modal.querySelector(`#${modalId}-bg`);
-    const closeBtn = modal.querySelector(`#${modalId}-close`);
+    // --- 【修正】addEventListener に統一 ---
     
-    if (bg) bg.onclick = closeModal;
-    if (closeBtn) closeBtn.onclick = closeModal;
+    // 背景クリック
+    const bg = modal.querySelector(`#${modalId}-bg`);
+    if (bg) {
+        bg.addEventListener('click', closeModal);
+    }
 
-    // --- ★独自の開始アニメーションコードを消して、これ一行にする ---
+    // 閉じるボタン
+    const closeBtn = modal.querySelector(`#btn-close-detail`);
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+
+    // Shareボタン
+    const btnShare = modal.querySelector('#btn-detail-share');
+    if (btnShare) {
+        btnShare.addEventListener('click', () => {
+            closeModal();
+            setTimeout(() => Share.generateAndShare('beer', log), 300);
+        });
+    }
+
+    // Editボタン
+    const btnEdit = modal.querySelector('#btn-detail-edit');
+    if (btnEdit) {
+        btnEdit.addEventListener('click', () => {
+            toggleModal(modalId, false);
+            const event = new CustomEvent('request-edit-log', { detail: { id: log.id } });
+            document.dispatchEvent(event);
+        });
+    }
+
+    // Deleteボタン
+    const btnDelete = modal.querySelector('#btn-detail-delete');
+    if (btnDelete) {
+        btnDelete.addEventListener('click', () => {
+            if(confirm('このログを削除しますか？')) {
+                const event = new CustomEvent('request-delete-log', { detail: { id: log.id } });
+                document.dispatchEvent(event);
+                toggleModal(modalId, false);
+            }
+        });
+    }
+
+    // 表示開始
     toggleModal(modalId, true);
 };
 
-    // イベントリスナー設定
-    document.getElementById('btn-close-detail').addEventListener('click', closeModalFunc);
-    document.getElementById(`${modalId}-bg`).addEventListener('click', closeModalFunc);
-
-    const btnShare = document.getElementById('btn-detail-share');
-        if (btnShare) {
-            btnShare.addEventListener('click', () => {
-                if(typeof Feedback !== 'undefined') Feedback.uiSwitch();
-                closeModalFunc();
-                setTimeout(() => {
-                    Share.generateAndShare('beer', log);
-                }, 300);
-            });
-        }
-
-    // --- 編集ボタンの修正 ---
-    document.getElementById('btn-detail-edit').addEventListener('click', () => {
-        // ここでの音（uiSwitch）を削除
-        closeModalFunc(true); // 音なしで閉じる
-        const event = new CustomEvent('request-edit-log', { detail: { id: log.id } });
-        document.dispatchEvent(event);
-    });
-
-    // --- 削除ボタンの修正 ---
-    document.getElementById('btn-detail-delete').addEventListener('click', () => {
-        // ここでの音（uiSwitch）を削除
-        // 確認ダイアログを出し、OKならイベントを飛ばす
-        if(confirm('このログを削除しますか？')) {
-            const event = new CustomEvent('request-delete-log', { detail: { id: log.id } });
-            document.dispatchEvent(event);
-            closeModalFunc(true); // 削除音が index.js 側で鳴るので、こちらは音なしで閉じる
-        }
-    });
-};
 
 /**
  * 指定した日付の詳細モーダルを開く
@@ -348,6 +352,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

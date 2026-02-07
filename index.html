@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="ja" class="light">
 <head>
+    <style>
+    /* Tailwindロード前でも確実に隠す */
+    header.hidden, main.hidden {
+        display: none !important;
+    }
+    /* LPが表示されるべき時にメインコンテンツが透けないようにする */
+    body:not(.app-ready) main, 
+    body:not(.app-ready) header {
+        display: none !important;
+    }
+    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>NOMUTORE</title>
@@ -1808,6 +1819,7 @@
 </body>
 
 </html>
+
 
 
 

@@ -343,6 +343,13 @@ const initApp = async () => {
             localStorage.setItem(lastLaunchKey, now.toString());
         }
 
+        // LPを表示する必要がない（＝オンボーディング済み）場合だけ表示をONにする
+        if (isOnboarded) {
+            document.querySelector('header')?.classList.remove('hidden');
+            document.querySelector('main')?.classList.remove('hidden');
+            document.body.classList.add('app-ready'); // CSSでの制御
+        }
+
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
         CloudManager.init().then(() => {
             console.log('CloudManager ready');
@@ -591,3 +598,4 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+

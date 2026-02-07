@@ -100,7 +100,7 @@ export const openLogDetail = (log) => {
             <div class="relative h-36 bg-gradient-to-br ${bgGradient} shrink-0 overflow-hidden flex items-center justify-center">
                 <i class="ph-fill ${iconClass} text-7xl ${iconColor} drop-shadow-md opacity-80 scale-110"></i>
                 
-                <button id="btn-close-detail" class="absolute top-4 right-4 w-9 h-9 bg-black/10 hover:bg-black/20 backdrop-blur-md rounded-full text-white/80 flex items-center justify-center transition active:scale-90">
+                <button id="${modalId}-close" class="absolute top-4 right-4 w-9 h-9 bg-black/10 hover:bg-black/20 backdrop-blur-md rounded-full text-white/80 flex items-center justify-center transition active:scale-90">
                     <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
@@ -350,6 +350,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

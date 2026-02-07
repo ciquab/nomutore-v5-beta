@@ -76,8 +76,7 @@ export const refreshUI = async () => {
             await renderRecordTabShortcuts();
         } 
         else if (activeTabId === 'cellar') {
-            // ★ Cellarが表示されている時だけ実行
-            await updateLogListView(false); 
+            await updateLogListView(false, allLogs);
             if (StateManager.cellarViewMode === 'stats') {
                 renderBeerStats(logs, allLogs);
             } else if (StateManager.cellarViewMode === 'archives') {
@@ -622,7 +621,7 @@ if (checkModal) {
         if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
         // ★ Phase 2: Reactive Transitions (View Transitions API)
-        DOM.withTransition(() => {
+        DOM.withTransition(async () => {
             // Haptics (Phase 1)
             Feedback.uiSwitch();
 
@@ -685,12 +684,13 @@ if (checkModal) {
                 renderSettings(); // 設定項目のみDOM構築が必要なため残す
             }
             if (tabId === 'cellar') {
-                // 表示切替のみ実行（中身の描画はrefreshUIが担当）
-                UI.switchCellarView(StateManager.cellarViewMode || 'logs');
+            // 表示モードのセットのみ行い、描画は refreshUI に任せる
+            StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
+            UI.switchCellarView(StateManager.cellarViewMode);
             }
             
             // どのタブへの切り替えでも、最終的に1回だけ更新をかける
-            refreshUI();
+            await refreshUI();
         });
     },
 
@@ -714,14 +714,7 @@ if (checkModal) {
         const activeEl = document.getElementById(`view-cellar-${mode}`);
         if (activeEl) {
             activeEl.classList.remove('hidden');
-            (async () => {
-                if (mode === 'stats') {
-                    // 何もしない（refreshUIが描画する）
-                } else if (mode === 'archives') {
-                    renderArchives();
-                }
-            })();
-        }
+            }
     },
 
     toggleTheme: () => {

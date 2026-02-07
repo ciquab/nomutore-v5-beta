@@ -519,8 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    initHandleRepeatDelegation(); 
-
     // 3. ファイル入力ハンドラー
     setupFileInputHandlers();
 

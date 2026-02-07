@@ -462,7 +462,7 @@ const setupGlobalListeners = () => {
         }
         
         lastScrollTop = scrollTop;
-    }, true);
+    }, true); // ★ 第3引数を true (Capture) にすることで、子要素のスクロールも拾えるようになります
 };
 
 // スワイプ判定ロジック
@@ -591,6 +591,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

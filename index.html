@@ -2,13 +2,19 @@
 <html lang="ja" class="light">
 <head>
     <style>
-    /* Tailwindロード前でも確実に隠す */
-    header.hidden, main.hidden {
+    /* header, main, 下部ナビ, FAB をJS制御が完了するまで完全に隠す */
+    header.hidden, 
+    main.hidden, 
+    #bottom-nav.hidden, 
+    #btn-fab-fixed.hidden {
         display: none !important;
     }
-    /* LPが表示されるべき時にメインコンテンツが透けないようにする */
-    body:not(.app-ready) main, 
-    body:not(.app-ready) header {
+
+    /* アプリの準備ができるまで、LP以外の表示を禁止する */
+    body:not(.app-ready) #bottom-nav,
+    body:not(.app-ready) #btn-fab-fixed,
+    body:not(.app-ready) header,
+    body:not(.app-ready) main {
         display: none !important;
     }
     </style>
@@ -590,7 +596,7 @@
 
     </main>
 
-<nav id="bottom-nav" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
+<nav id="bottom-nav" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
     <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center bg-white/80 dark:bg-base-900/80 backdrop-blur-xl shadow-float transition-all duration-300">
         
         <button id="nav-tab-home" data-action="ui:switchTab" data-args='["home"]' class="nav-item nav-pill-active">
@@ -1819,6 +1825,7 @@
 </body>
 
 </html>
+
 
 
 

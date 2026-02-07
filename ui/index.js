@@ -53,31 +53,40 @@ export const refreshUI = async () => {
         if (!DOM.isInitialized) DOM.init();
 
         // 1. Serviceから「調理済み」のデータ一式をもらう
-        // ここで既に重複排除もバランス計算も終わっています
         const { logs, checks, allLogs, balance } = await Service.getAppDataSnapshot();
 
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
 
-        // 2. あとは描画関数に渡すだけ
-        renderBeerTank(balance);
-        renderLiverRank(checks, allLogs);
-        renderCheckStatus(checks, logs);
-        
-        await renderWeeklyAndHeatUp(logs, checks);
-        renderChart(allLogs, checks);
-        await renderRecordTabShortcuts();
+        // 2. --- 全タブ共通の更新（ヘッダー等の共通パーツがあればここ） ---
+        // ※現在は共通パーツが少ないため、各タブの判定へ進みます
 
-        await updateLogListView(false);
+        // 3. --- アクティブなタブに応じた描画の振り分け（最適化） ---
+        const activeTabEl = document.querySelector('.tab-content.active');
+        const activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
 
-        // タブ固有の更新も Service からもらったデータを使う
-        if (StateManager.cellarViewMode === 'stats') {
-            renderBeerStats(logs, allLogs);
-        } else if (StateManager.cellarViewMode === 'archives') {
-            renderArchives();
+        if (activeTabId === 'home') {
+            renderBeerTank(balance);
+            renderLiverRank(checks, allLogs);
+            renderCheckStatus(checks, logs);
+            await renderWeeklyAndHeatUp(logs, checks);
+            renderChart(allLogs, checks);
+        } 
+        else if (activeTabId === 'record') {
+            await renderRecordTabShortcuts();
+        } 
+        else if (activeTabId === 'cellar') {
+            // ★ Cellarが表示されている時だけ実行
+            await updateLogListView(false); 
+            if (StateManager.cellarViewMode === 'stats') {
+                renderBeerStats(logs, allLogs);
+            } else if (StateManager.cellarViewMode === 'archives') {
+                renderArchives();
+            }
+        } 
+        else if (activeTabId === 'settings') {
+            updateModeSelector(); 
         }
-
-        updateModeSelector(); 
 
     } catch (e) {
         console.error('UI Refresh Error:', e);
@@ -635,12 +644,6 @@ if (checkModal) {
                 }
             }
 
-            if (tabId !== 'cellar') {
-                StateManager.setIsEditMode(false);
-                const deleteBtn = document.getElementById('btn-delete-selected');
-                if (deleteBtn) deleteBtn.classList.add('translate-y-20', 'opacity-0');
-            }
-
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
                 el.style.viewTransitionName = ''; 
@@ -651,7 +654,8 @@ if (checkModal) {
             if (target) {
                 target.style.display = 'block';
                 target.style.viewTransitionName = 'tab-content'; 
-    
+                target.classList.add('active'); 
+   
                 // ★ 修正: わずかな遅延を入れ、かつ window だけでなく 
                 // 文書全体に対してスクロールを強制する
                 requestAnimationFrame(() => {
@@ -659,7 +663,7 @@ if (checkModal) {
                 document.documentElement.scrollTop = 0;
                 document.body.scrollTop = 0;
         
-                target.classList.add('active');
+  
                 });
             }
 
@@ -676,14 +680,17 @@ if (checkModal) {
                 if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
             }
 
-            if (tabId === 'cellar') {
-                updateLogListView(false); 
-                UI.switchCellarView(StateManager.cellarViewMode || 'logs');
-            } else if (tabId === 'home') {
-                refreshUI();
-            } else if (tabId === 'settings') {
-                renderSettings(); 
+            // 修正後（一本化）:
+            if (tabId === 'settings') {
+                renderSettings(); // 設定項目のみDOM構築が必要なため残す
             }
+            if (tabId === 'cellar') {
+                // 表示切替のみ実行（中身の描画はrefreshUIが担当）
+                UI.switchCellarView(StateManager.cellarViewMode || 'logs');
+            }
+            
+            // どのタブへの切り替えでも、最終的に1回だけ更新をかける
+            refreshUI();
         });
     },
 

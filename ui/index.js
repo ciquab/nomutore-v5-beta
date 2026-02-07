@@ -705,8 +705,15 @@ if (checkModal) {
             
             if (saveBtn) {
                 if (tabId === 'settings' && !isOnboarding) {
-                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    // 2段階アニメーション：まずpointer-eventsを有効化
+                    saveBtn.classList.remove('pointer-events-none');
+                    saveBtn.classList.add('pointer-events-auto');
+                    
+                    // 次のフレームでtransformとopacityをアニメーション
+                    requestAnimationFrame(() => {
+                        saveBtn.classList.remove('translate-y-10', 'opacity-0');
+                        saveBtn.classList.add('translate-y-0', 'opacity-100');
+                    });
                 } else {
                     saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
                     saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
@@ -914,6 +921,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

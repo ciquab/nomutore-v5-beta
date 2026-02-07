@@ -800,3 +800,9 @@ select:disabled {
     -o-transition: none !important;
     transition: none !important;
 }
+
+/* アニメーション中の要素が他の要素に隠されないように強制する */
+#settings-save-container {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+}

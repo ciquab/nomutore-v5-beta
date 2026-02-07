@@ -624,7 +624,7 @@ if (checkModal) {
             Feedback.uiSwitch();
 
             const fab = document.getElementById('btn-fab-fixed');
-            const saveBtn = document.getElementById('settings-save-container');
+            
             
             // ★オンボーディング判定を強化（要素が存在し、かつ hidden でない場合）
             const onboarding = document.getElementById('onboarding-screen');
@@ -643,17 +643,6 @@ if (checkModal) {
                     // 非表示： 全ての「出る」クラスを剥ぎ取り、物理的に小さくして隠す
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
-                }
-            }
-
-            // --- Save Changes ボタンの制御 ---
-            if (saveBtn) {
-                if (tabId === 'settings' && !isOnboarding) {
-                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                } else {
-                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
 
@@ -705,6 +694,26 @@ if (checkModal) {
             
             // どのタブへの切り替えでも、最終的に1回だけ更新をかける
             await refreshUI();
+
+        // ★★★ 重要修正: Save Changesボタンの制御をView Transitionの外に出して遅延実行 ★★★
+        // View Transitionが完了してから実行することで、z-indexの競合を回避
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                
+                const onboarding = document.getElementById('onboarding-screen');
+                const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+                
+                if (saveBtn) {
+                    if (tabId === 'settings' && !isOnboarding) {
+                        saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                        saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    } else {
+                        saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                        saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    }
+                }
+            });
+        });
         });
     },
 
@@ -906,3 +915,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

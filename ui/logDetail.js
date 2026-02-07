@@ -24,6 +24,9 @@ export const openLogDetail = (log) => {
         : logDate.format('YYYY.MM.DD HH:mm');
 
     const isBeer = log.type === 'beer';
+    const displayName = isBeer 
+        ? (log.brand?.trim() || log.name || 'Unknown Beer') 
+        : (log.name || 'Exercise');
     
     // デザインの分岐
     let iconClass = 'ph-beer-bottle';
@@ -112,7 +115,7 @@ export const openLogDetail = (log) => {
                 </div>
 
                 <h2 class="text-2xl font-black text-base-900 dark:text-white leading-tight mb-2 line-clamp-2">
-                    ${escapeHtml(log.name || (isBeer ? 'Unknown Beer' : 'Exercise'))}
+                    ${escapeHtml(displayName)}
                 </h2>
                 
                 ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.round(Math.abs(log.kcal))}<span class="text-sm font-bold text-gray-400">kcal</span></div>` : ''}
@@ -348,6 +351,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

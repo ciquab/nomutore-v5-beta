@@ -403,52 +403,67 @@ export const escapeHtml = (str) => {
 };
 
 export const toggleModal = (modalId, show = true) => {
-    const el = DOM.elements[modalId] || document.getElementById(modalId);
+    // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
+    const el = document.getElementById(modalId) || DOM.elements[modalId];
     if (!el) return;
     
     if (show) Feedback.uiSwitch();
 
-    // モーダル内にある「アニメーション対象のコンテナ」を取得
+    // 背景とコンテンツを特定
+    const bg = el.querySelector('.modal-bg') || el.querySelector('[id$="-bg"]');
     const content = el.querySelector('div[class*="transform"]');
 
     if (show) {
-        // 1. まずコンテナを表示状態にする (flex)
+        // --- 【表示処理】 ---
         el.classList.remove('hidden');
         el.classList.add('flex');
         
-        // 2. わずかに遅らせてアニメーションクラスを適用 (CSS transitionを発火させるため)
-        setTimeout(() => {
-            if (content) {
-                // 共通: 透明度とスケールを元に戻す
-                content.classList.remove('scale-95', 'opacity-0');
-                content.classList.add('scale-100', 'opacity-100');
+        // ブラウザに「今この瞬間」の状態を強制認識させる（リフロー）
+        el.offsetHeight; 
 
-                // ★追加: ボトムシート用の位置ズレ(translate-y-full)を除去して画面内に入れる
-                content.classList.remove('translate-y-full', 'sm:translate-y-10');
+        setTimeout(() => {
+            if (bg) {
+                bg.classList.remove('opacity-0');
+                bg.classList.add('opacity-100');
+            }
+            if (content) {
+                // translate-y-full（画面外）を消し、translate-y-0（表示位置）を足す
+                content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+                content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
             }
         }, 10);
     } else {
-        // 閉じる処理
+        // --- 【非表示処理】 ---
+        
+        // 1. 背景をじわっと消す
+        if (bg) {
+            bg.classList.replace('opacity-100', 'opacity-0');
+        }
+
         if (content) {
-            content.classList.remove('scale-100', 'opacity-100');
+            // 2. 現在地（translate-y-0）を外してアニメーション開始
+            content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
 
-            // ★追加: 特定のモーダルの場合、スライドダウンのアニメーションも適用
-            if (modalId === 'day-detail-modal' || modalId === 'action-menu-modal' || modalId === 'day-add-selector' || modalId === 'log-detail-modal') {
+            // 3. ボトムシート対象のIDリスト
+            const slideDownModals = ['day-detail-modal', 'action-menu-modal', 'day-add-selector', 'log-detail-modal'];
+            
+            if (slideDownModals.includes(modalId)) {
+                // 画面下へスライド
                 content.classList.add('translate-y-full', 'sm:translate-y-10');
             }
         }
         
-        // アニメーション完了後に非表示 (hidden) にする
+        // 4. ★最重要★ 待機時間を 300ms に変更（CSSの duration-300 と同期）
+        // これで「最後まで沈み切る」のを待ってから消去/非表示にします
         setTimeout(() => {
-            // ★【ここがポイント】dataset.destroy が true なら DOM から削除、そうでなければ hidden
             if (el.dataset.destroy === 'true') {
                 el.remove();
             } else {
                 el.classList.add('hidden');
                 el.classList.remove('flex');
             }
-        }, 300);
+        }, 300); 
     }
 };
 
@@ -458,13 +473,6 @@ export const showConfetti = () => {
         colors: ['#FBBF24', '#F59E0B', '#FFFFFF']
     });
 };
-
-/* ui/dom.js */
-
-// ... (importsやAudioEngineなどはそのまま) ...
-
-// ★ shareContent はこのファイル内に定義されている前提
-// const shareContent = async (text) => { ... }
 
 export const showMessage = (text, type = 'info', action = null) => {
     const box = DOM.elements['message-box'] || document.getElementById('message-box');
@@ -720,6 +728,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

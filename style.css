@@ -802,20 +802,10 @@ select:disabled {
 }
 
 #settings-save-container {
-    /* 1. 画面遷移のスナップショット（写真）からこの要素を除外する。
-       これで背景が動いてもボタンは「写真の外」で不動を保つため、絶対に欠けません */
+    /* 1. 画面遷移の「写真」からこのボタンを除外します。
+       これで背景が切り替わる際もボタンが切り抜かれず、100%欠けなくなります。 */
     view-transition-name: none !important;
     
-    /* 2. 念のため重なり順をFAB(z-40)より少しだけ高くして安定させます */
-    z-index: 50 !important;
-    
-    /* 3. 描画を別レイヤーに隔離して、遷移中のクリッピング計算から外します */
-    isolation: isolate;
-}
-
-/* 画面全体の遷移アニメーションの「枠」が中身を切り取らないようにする強制設定 */
-::view-transition-group(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-    overflow: visible !important;
+    /* 2. 重なり順をFABより少し高くして、遷移レイヤーの背後に回るのを防ぎます */
+    z-index: 100 !important;
 }

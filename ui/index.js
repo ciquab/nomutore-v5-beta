@@ -631,9 +631,10 @@ if (checkModal) {
         UI.isInitialized = true;
     },
 
-    switchTab: (tabId) => {
+// ui/index.js (333行目付近)
+switchTab: (tabId, options = { silent: false }) => { // 引数に options を追加
     DOM.withTransition(async () => {
-
+        // options.silent が true ではない時だけ音を鳴らす
         if (!options.silent) {
             Feedback.uiSwitch();
         }
@@ -922,5 +923,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

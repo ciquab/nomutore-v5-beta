@@ -601,52 +601,76 @@ if (checkModal) {
 
         initTheme();
         UI.isInitialized = true;
+
+        const initialTab = document.querySelector('.tab-content.active')?.id.replace('tab-', '') || 'home';
+        UI.updateFloatingElements(initialTab);
     },
 
+    /**
+     * FAB（プラスボタン）と設定保存ボタンの表示・非表示を
+     * 状態（タブ、オンボーディング）に合わせて一括管理する
+     */
+    updateFloatingElements: (tabId) => {
+        const fab = document.getElementById('btn-fab-fixed');
+        const saveBtn = document.getElementById('settings-save-container');
+        
+        // オンボーディング画面が表示されているか厳密にチェック
+        const onboarding = document.getElementById('onboarding-screen');
+        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+
+        // 1. FAB (プラスボタン) の制御
+        if (fab) {
+            // ホーム または セラー の時、かつオンボーディング中でない場合のみ表示
+            const isTargetTab = ['home', 'cellar'].includes(tabId);
+            const shouldShowFab = isTargetTab && !isOnboarding;
+
+            if (shouldShowFab) {
+                // ヌルっと出す（scale-0を外してscale-100にする）
+                fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
+                fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
+            } else {
+                // 物理的に消す（scale-0にして計算から外す）
+                fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
+                fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
+            }
+        }
+
+        // 2. Save Changes ボタンの制御
+        if (saveBtn) {
+            // 設定タブ、かつオンボーディング中でない場合のみ表示
+            const shouldShowSave = (tabId === 'settings') && !isOnboarding;
+
+            if (shouldShowSave) {
+                // ヌルっと浮き上がらせる
+                saveBtn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none', 'hidden');
+                saveBtn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            } else {
+                // ヌルっと沈ませる
+                saveBtn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                saveBtn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                // アニメーション完了後に hidden にする（背後のクリックを邪魔しないため）
+                setTimeout(() => {
+                    if (saveBtn.classList.contains('opacity-0')) saveBtn.classList.add('hidden');
+                }, 300);
+            }
+        }
+    },
+
+    /**
+     * タブ切り替えの司令塔
+     */
     switchTab: (tabId) => {
         const currentTab = document.querySelector('.tab-content.active');
         if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
+        // View Transition API を使って滑らかに遷移
         DOM.withTransition(async () => {
-            Feedback.uiSwitch();
+            Feedback.uiSwitch(); // 切り替え音
 
-            const fab = document.getElementById('btn-fab-fixed');
-            const saveBtn = document.getElementById('settings-save-container');
-            
-            // オンボーディング状態の判定
-            const onboarding = document.getElementById('onboarding-screen');
-            const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+            // 1. 固定要素（ボタン類）の状態を更新
+            UI.updateFloatingElements(tabId);
 
-            // --- FAB (プラスボタン) の表示管理 ---
-            if (fab) {
-                // ホーム か セラー の時、かつオンボーディング中でない場合のみ
-                const isTargetTab = ['home', 'cellar'].includes(tabId);
-                const shouldShowFab = isTargetTab && !isOnboarding;
-
-                if (shouldShowFab) {
-                    fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
-                    fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
-                } else {
-                    // 他のタブ（record, settings）やオンボーディングでは物理的に消す
-                    fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
-                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
-                }
-            }
-
-            // --- Save Changes ボタンの表示管理 ---
-            if (saveBtn) {
-                const isSettingsTab = (tabId === 'settings');
-                const shouldShowSave = isSettingsTab && !isOnboarding;
-
-                if (shouldShowSave) {
-                    saveBtn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-                    saveBtn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                } else {
-                    saveBtn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-                    saveBtn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                }
-            }
-
+            // 2. タブコンテンツの表示切り替え
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
                 el.style.viewTransitionName = ''; 
@@ -658,18 +682,16 @@ if (checkModal) {
                 target.style.display = 'block';
                 target.style.viewTransitionName = 'tab-content'; 
                 target.classList.add('active'); 
-   
-                // ★ 修正: わずかな遅延を入れ、かつ window だけでなく 
-                // 文書全体に対してスクロールを強制する
+
+                // スクロール位置を最上部にリセット
                 requestAnimationFrame(() => {
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-        
-  
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
                 });
             }
 
+            // 3. ナビゲーションバーの見た目を更新
             document.querySelectorAll('.nav-item').forEach(el => {
                 el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
                 const icon = el.querySelector('i');
@@ -683,17 +705,14 @@ if (checkModal) {
                 if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
             }
 
-            // 修正後（一本化）:
-            if (tabId === 'settings') {
-                renderSettings(); // 設定項目のみDOM構築が必要なため残す
-            }
+            // 4. タブ固有の追加描画
+            if (tabId === 'settings') renderSettings();
             if (tabId === 'cellar') {
-            // 表示モードのセットのみ行い、描画は refreshUI に任せる
-            StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
-            UI.switchCellarView(StateManager.cellarViewMode);
+                StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
+                UI.switchCellarView(StateManager.cellarViewMode);
             }
             
-            // どのタブへの切り替えでも、最終的に1回だけ更新をかける
+            // 5. 全体更新
             await refreshUI();
         });
     },
@@ -896,6 +915,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

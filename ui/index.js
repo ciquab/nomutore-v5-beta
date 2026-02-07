@@ -616,7 +616,6 @@ if (checkModal) {
     },
 
     switchTab: (tabId) => {
-        // 同じタブなら何もしない（誤操作防止）
         const currentTab = document.querySelector('.tab-content.active');
         if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
@@ -626,34 +625,41 @@ if (checkModal) {
             const fab = document.getElementById('btn-fab-fixed');
             const saveBtn = document.getElementById('settings-save-container');
             
-            // ★オンボーディング判定を強化（要素が存在し、かつ hidden でない場合）
+            // ★オンボーディングが表示されているか厳密にチェック
             const onboarding = document.getElementById('onboarding-screen');
             const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
             // --- FAB (プラスボタン) の完全制御 ---
             if (fab) {
-                // ホームかセラー、かつオンボーディング中でない時だけ表示
+                // ホームかセラー、かつ「オンボーディング中でない」場合のみ表示
                 const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
 
                 if (shouldShowFab) {
-                    // 表示： scale-0 を外し、scale-100 を足す
                     fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                     fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                 } else {
-                    // 非表示： 全ての「出る」クラスを剥ぎ取り、物理的に小さくして隠す
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                 }
             }
 
-            // --- Save Changes ボタンの制御 ---
+            // --- Save Changes ボタンの完全制御 ---
             if (saveBtn) {
-                if (tabId === 'settings' && !isOnboarding) {
-                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                // セッティングタブ、かつ「オンボーディング中でない」場合のみ表示
+                const shouldShowSave = (tabId === 'settings') && !isOnboarding;
+
+                if (shouldShowSave) {
+                    // hiddenを外し、ヌルっと出す
+                    saveBtn.classList.remove('hidden', 'translate-y-10', 'opacity-0', 'pointer-events-none');
                     saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 } else {
+                    // ヌルっと消す
                     saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
                     saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    // アニメーション後にhidden（オプション）
+                    setTimeout(() => {
+                        if (saveBtn.classList.contains('opacity-0')) saveBtn.classList.add('hidden');
+                    }, 300);
                 }
             }
 

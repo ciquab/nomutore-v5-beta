@@ -95,7 +95,13 @@ export const deleteSelectedLogs = async () => {
 
 
 // リスト描画のメイン関数 (Phase 2 Optimized)
-export const updateLogListView = async (isLoadMore = false) => {
+
+/**
+ * ログリストの描画（最適化版）
+ * @param {boolean} isLoadMore - 追加読み込みかどうか
+ * @param {Array} providedLogs - [新設] 外部から渡されたデータ（二重取得防止用）
+ */
+export const updateLogListView = async (isLoadMore = false, providedLogs = null) => {
     const listEl = document.getElementById('log-list');
     const loadMoreBtn = document.getElementById('btn-load-more');
     if (!listEl) return;
@@ -103,22 +109,23 @@ export const updateLogListView = async (isLoadMore = false) => {
     if (isLoadMore) {
         currentLimit += LIMIT_STEP;
     } else {
-        // ★修正点1: 読み込み直し（タブ切り替え時など）はリセット
-        // これがないと、他のタブから戻った時にリストが長くなりすぎている場合があります
         currentLimit = 20; 
     }
 
-    // データ取得
-    const { allLogs } = await Service.getAppDataSnapshot();
-    
-    // 全期間のログを日付順（新しい順）に並べ替え
-    const sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
+    // --- 【修正点1】データの取得ロジックを分岐 ---
+    let sortedLogs;
+    if (providedLogs) {
+        // 外部（index.js）から渡されたデータを使用
+        sortedLogs = providedLogs.sort((a, b) => b.timestamp - a.timestamp);
+    } else {
+        // 直接呼ばれた場合のみDBにアクセス（基本的には通らないルートにする）
+        const { allLogs } = await Service.getAppDataSnapshot();
+        sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
+    }
     
     const totalCount = sortedLogs.length;
     const logs = sortedLogs.slice(0, currentLimit);
 
-    // ★修正点2: 高速化のための DocumentFragment 作成
-    // メモリ上でDOMを構築し、最後に一度だけ画面に描画します（再描画コストの削減）
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
@@ -130,66 +137,41 @@ export const updateLogListView = async (isLoadMore = false) => {
     let currentDateStr = '';
 
     logs.forEach((log, index) => {
-        // 日付のみ表示
         const dateStr = dayjs(log.timestamp).format('YYYY-MM-DD (ddd)');
         
-        // Sticky Header Logic (デザイン維持)
         if (dateStr !== currentDateStr) {
             const header = document.createElement('li');
             header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
             header.innerHTML = `<span>${dateStr}</span>`;
-            
-            // ★ fragmentに追加
             fragment.appendChild(header);
             currentDateStr = dateStr;
         }
 
         const li = document.createElement('li');
         li.className = "log-item relative group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
-        
-        // アニメーション用遅延
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         
-        let iconSizeClass = "w-12 h-12 text-xl";
-        let colorClass = 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
-        let iconDef = 'ph-duotone ph-beer-bottle';
-        let mainText = '';
-        let subText = '';
-        let rightContent = '';
+        const iconDef = log.type === 'exercise' 
+            ? (EXERCISE[log.exerciseKey]?.icon || 'ph-duotone ph-sneaker-move')
+            : (STYLE_METADATA[log.style]?.icon || 'ph-duotone ph-beer-bottle');
 
-        if (log.type === 'exercise') {
-            const ex = EXERCISE[log.exerciseKey];
-            iconDef = ex ? ex.icon : 'ph-duotone ph-sneaker-move';
-            colorClass = 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
-            mainText = log.name; 
-            subText = `<span class="font-bold text-gray-600 dark:text-gray-300">${log.minutes} min</span> · -${Math.round(log.kcal)} kcal`;
-            rightContent = `<span class="text-sm font-black text-indigo-500">+${Math.round(log.kcal)}</span>`;
-        } else if (log.type === 'beer') {
-            const size = log.size || 350;
-            const count = log.count || 1;
+        const colorClass = log.type === 'exercise' 
+            ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' 
+            : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
 
-            // ★修正: スタイル定義からアイコンクラスを取得
-            const styleMeta = STYLE_METADATA[log.style];
-            iconDef = styleMeta ? styleMeta.icon : 'ph-duotone ph-beer-bottle';
-            
-            if (log.brand) {
-                mainText = log.brewery ? `<span class="text-[10px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand);
-            } else {
-                mainText = escapeHtml(log.name); 
-            }
+        let mainText = log.type === 'beer' && log.brand 
+            ? (log.brewery ? `<span class="text-[10px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand))
+            : escapeHtml(log.name);
 
-            const styleInfo = log.style ? ` · ${log.style}` : ''; 
-            const totalMl = size * count;
-            subText = `${count} cans <span class="opacity-60">(${totalMl}ml)</span>${styleInfo}`;
-            
-            if(log.rating > 0) {
-                rightContent = `<div class="flex items-center bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-lg"><span class="text-xs font-bold text-yellow-600 dark:text-yellow-400">★${log.rating}</span></div>`;
-            }
-        }
+        let subText = log.type === 'exercise'
+            ? `<span class="font-bold text-gray-600 dark:text-gray-300">${log.minutes} min</span> · -${Math.round(log.kcal)} kcal`
+            : `${log.count || 1} cans <span class="opacity-60">(${(log.size || 350) * (log.count || 1)}ml)</span>${log.style ? ` · ${log.style}` : ''}`;
 
-        // ★修正: DOM.renderIconを通してHTMLタグ化
+        let rightContent = log.type === 'exercise'
+            ? `<span class="text-sm font-black text-indigo-500">+${Math.round(log.kcal)}</span>`
+            : (log.rating > 0 ? `<div class="flex items-center bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-lg"><span class="text-xs font-bold text-yellow-600 dark:text-yellow-400">★${log.rating}</span></div>` : '');
+
         const iconHtml = DOM.renderIcon(iconDef, 'text-2xl');
-
         const checkboxHtml = StateManager.isEditMode ? `
             <div class="mr-2">
                 <input type="checkbox" class="log-checkbox checkbox checkbox-sm checkbox-primary rounded-md" data-id="${log.id}">
@@ -198,58 +180,55 @@ export const updateLogListView = async (isLoadMore = false) => {
 
         li.innerHTML = `
             ${checkboxHtml}
-            <div class="${iconSizeClass} rounded-full ${colorClass} flex items-center justify-center shrink-0 shadow-inner">
+            <div class="w-12 h-12 rounded-full ${colorClass} flex items-center justify-center shrink-0 shadow-inner">
                 ${iconHtml}
             </div>
-
-            <div class="flex-1 min-w-0 cursor-pointer" data-log-id="${log.id}">
+            <div class="flex-1 min-w-0" data-log-id="${log.id}">
                 <div class="flex justify-between items-start">
                     <div class="text-base font-bold text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-medium opacity-90">${subText}</div>
-                
                 ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70"></i>${escapeHtml(log.memo)}</div>` : ''}
             </div>
         `;
         
-        // ★ fragmentに追加
         fragment.appendChild(li);
     });
 
-    // ★修正点3: 最後にまとめて描画 (innerHTMLクリア -> append)
-    // これにより、リスト書き換えによる「ガタつき」や「リフロー（再計算）」が1回だけで済みます
+    // --- 【修正点2】描画を一本化し、リスナーの重複登録を削除 ---
     listEl.innerHTML = '';
     listEl.appendChild(fragment);
 
-    listEl.addEventListener('click', (e) => {
-       // 編集モード中はクリック無効
-        if (StateManager.isEditMode) return;
-    
-        const clickableArea = e.target.closest('[data-log-id]');
-        if (clickableArea) {
-            const logId = parseInt(clickableArea.dataset.logId);
-            openLogDetail(logId);
-        }
-    });
-
-    // 「Load More」ボタンの表示制御
     if (loadMoreBtn) {
+        loadMoreBtn.classList.toggle('hidden', totalCount <= currentLimit);
         if (totalCount > currentLimit) {
-            loadMoreBtn.classList.remove('hidden');
             loadMoreBtn.textContent = `Load More (${totalCount - currentLimit} remaining)`;
-            loadMoreBtn.addEventListener('click', () => updateLogListView(true));
-        } else {
-            loadMoreBtn.classList.add('hidden');
+            // ボタンのリスナーも重複防止のため一度クリアして登録
+            loadMoreBtn.onclick = () => updateLogListView(true, sortedLogs);
         }
     }
-    
-    // イベントリスナー再設定
-    document.querySelectorAll('.log-checkbox').forEach(cb => {
-        cb.addEventListener('change', updateBulkCount);
-    });
 };
 
+// --- 【修正点3】イベント委譲（関数の外で1回だけ登録） ---
+document.addEventListener('click', (e) => {
+    const listEl = document.getElementById('log-list');
+    if (!listEl || !listEl.contains(e.target)) return;
+    if (StateManager.isEditMode) return;
+
+    const clickableArea = e.target.closest('[data-log-id]');
+    if (clickableArea) {
+        const logId = parseInt(clickableArea.dataset.logId);
+        UI.openLogDetail(logId);
+    }
+});
+
+// チェックボックス用の委譲
+document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('log-checkbox')) {
+        updateBulkCount();
+    }
+});
 // モジュール外から呼べるように割り当て
 updateLogListView.updateBulkCount = updateBulkCount;
 

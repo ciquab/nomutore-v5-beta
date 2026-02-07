@@ -801,8 +801,23 @@ select:disabled {
     transition: none !important;
 }
 
-/* アニメーション中の要素が他の要素に隠されないように強制する */
+/* 1. View Transition（ヌルっとした画面切り替え）の対象から外す */
+#btn-fab-fixed,
+#settings-save-container {
+    view-transition-name: none !important; /* 画面遷移時のスナップショットに含めない */
+    isolation: isolate;                   /* 新しいスタッキングコンテキストを強制 */
+    z-index: 9999 !important;             /* セレクトボックスより確実に上にする */
+    backface-visibility: hidden;          /* チラつき防止 */
+    transform-gpu: translateZ(0);         /* GPUレイヤーに固定 */
+}
+
+/* 2. アニメーション中の重なりを安定させる */
 #settings-save-container {
     will-change: transform, opacity;
-    backface-visibility: hidden;
+}
+
+/* 3. モバイルのセレクトボックスが突き抜けないようにする（念のため） */
+select, input {
+    position: relative;
+    z-index: 1;
 }

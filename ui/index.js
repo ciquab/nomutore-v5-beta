@@ -629,12 +629,14 @@ if (checkModal) {
 });
 
         UI.isInitialized = true;
-        UI.switchTab('home'); 
     },
 
     switchTab: (tabId) => {
     DOM.withTransition(async () => {
-        Feedback.uiSwitch();
+
+        if (!options.silent) {
+            Feedback.uiSwitch();
+        }
 
         const onboarding = document.getElementById('onboarding-modal');
         const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
@@ -920,4 +922,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

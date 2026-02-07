@@ -88,7 +88,7 @@ export const openLogDetail = (log) => {
     const modal = document.createElement('div');
     modal.id = modalId;
     // 下寄せ(items-end) + ポインターイベント制御
-    modal.className = "fixed inset-0 z-[1100] hidden items-end sm:items-center justify-center pointer-events-none";
+    modal.className = "fixed inset-0 z-[1100] hidden items-end sm:items-center justify-center pointer-events-none"; 
     
     modal.innerHTML = `
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-300 opacity-0" id="${modalId}-bg"></div>
@@ -350,6 +350,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

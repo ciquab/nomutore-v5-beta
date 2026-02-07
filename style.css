@@ -801,20 +801,27 @@ select:disabled {
     transition: none !important;
 }
 
-/* 1. 画面遷移時に固定要素を「写真」の中に含めない設定 */
-#btn-fab-fixed,
-#settings-save-container {
-    view-transition-name: none !important; /* 遷移の写真に写さない */
-    position: fixed !important;
-    z-index: 99999 !important;             /* 最前面を維持 */
-    isolation: isolate;                   /* 他の要素との重なりを完全に独立させる */
-    backface-visibility: hidden;          /* チラつき防止 */
-    transform: translateZ(0);             /* GPUレイヤーを強制（これで欠けが消えます） */
+/* --- 固定要素を遷移の「写真」から独立させる --- */
+
+#btn-fab-fixed {
+    view-transition-name: fab-button; /* 遷移の写真から除外する魔法のID */
 }
 
-/* 2. 遷移アニメーション自体のクリッピングを無効化 */
-::view-transition-group(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-    overflow: visible !important;
+#settings-save-container {
+    view-transition-name: save-button; /* 同上 */
+}
+
+/* 遷移中の重なり順を固定し、欠けを防ぐ */
+::view-transition-group(fab-button),
+::view-transition-group(save-button) {
+    z-index: 9999 !important;
+}
+
+/* ボタン自体の安定化 */
+#btn-fab-fixed,
+#settings-save-container {
+    z-index: 9999 !important;
+    isolation: isolate; 
+    backface-visibility: hidden;
+    transform-gpu: translateZ(0);
 }

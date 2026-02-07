@@ -48,6 +48,9 @@ import * as LogDetail from './logDetail.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
+let fabEl = null;
+let saveEl = null;
+
 export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();
@@ -107,7 +110,7 @@ export const UI = {
         if (UI.isInitialized) return;
         
         DOM.init();
-        
+
         // ▼▼▼ ここから追加 ▼▼▼
         // ★修正: 固定要素がアニメーションでチラつかないようにCSS設定を注入
         const style = document.createElement('style');
@@ -602,73 +605,45 @@ if (checkModal) {
 
         initTheme();
 
-        // ★追加: FABとSave Changesボタンの初期状態を設定
-        const fab = document.getElementById('btn-fab-fixed');
-        const saveBtn = document.getElementById('settings-save-container');
+        // ===== FAB / Save DOMを一度だけ取得 =====
+        fabEl  = document.getElementById('btn-fab-fixed');
+        saveEl = document.getElementById('settings-save-container');
         
-        if (fab) {
-            // FABの初期状態を設定（非表示）
-            fab.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
-        }
-        
-        if (saveBtn) {
-            // Save Changesボタンの初期状態を設定（非表示）
-            saveBtn.classList.add('transform', 'translate-y-10', 'scale-0', 'opacity-0');
-        }
+        // 初期状態：FAB方式で完全非表示
+        [fabEl, saveEl].forEach(el => {
+            if (!el) return;
+            el.classList.add(
+                'hidden',
+                'transform',
+                'translate-y-24',
+                'scale-0',
+                'opacity-0',
+                'pointer-events-none'
+            );
+        });
 
         UI.isInitialized = true;
     },
 
     switchTab: (tabId) => {
-        // 同じタブなら何もしない（誤操作防止）
-        const currentTab = document.querySelector('.tab-content.active');
-        if (currentTab && currentTab.id === `tab-${tabId}`) return;
+    const currentTab = document.querySelector('.tab-content.active');
+    if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
-        DOM.withTransition(async () => {
-            Feedback.uiSwitch();
+    DOM.withTransition(async () => {
+        Feedback.uiSwitch();
 
-            const fab = document.getElementById('btn-fab-fixed');
-            const saveBtn = document.getElementById('settings-save-container');
-            
-            
-            // ★オンボーディング判定を強化（要素が存在し、かつ hidden でない場合）
-            const onboarding = document.getElementById('onboarding-modal');
-            const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+        const onboarding = document.getElementById('onboarding-modal');
+        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
-            // --- FAB (プラスボタン) の完全制御 ---
-            if (fab) {
-                // ホームかセラー、かつオンボーディング中でない時だけ表示
-                const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
+        toggleFabLike(
+            fabEl,
+            ['home', 'cellar'].includes(tabId) && !isOnboarding
+        );
 
-                if (shouldShowFab) {
-                    // 表示：2段階アニメーション
-                    // ステップ1: hidden、pointer-events-noneを削除し、初期transform状態を確保
-                    fab.classList.remove('hidden', 'pointer-events-none');
-                    fab.classList.add('pointer-events-auto');
-                    
-                    // 念のため、transform状態が設定されていることを確認
-                    if (!fab.classList.contains('translate-y-24')) {
-                        fab.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
-                    }
-                    
-                    // ステップ2: 次のフレームでtransform/scale/opacityをアニメーション
-                    requestAnimationFrame(() => {
-                        fab.classList.remove('scale-0', 'opacity-0', 'translate-y-24');
-                        fab.classList.add('opacity-100', 'translate-y-0');
-                    });
-                } else {
-                    // 非表示：まずアニメーションで消す
-                    fab.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
-                    
-                    // アニメーション完了後にhiddenを追加
-                    setTimeout(() => {
-                        if (!fab.classList.contains('scale-100')) {
-                            fab.classList.add('hidden');
-                        }
-                    }, 300);
-                }
-            }
+        toggleFabLike(
+            saveEl,
+            tabId === 'settings' && !isOnboarding
+        );
 
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
@@ -718,33 +693,6 @@ if (checkModal) {
             
             // どのタブへの切り替えでも、最終的に1回だけ更新をかける
             await refreshUI();
-
-        // ★★★ 重要修正: Save Changesボタンの制御をView Transitionの外に出して遅延実行 ★★★
-        
-        if (saveBtn) {
-            if (tabId === 'settings' && !isOnboarding) {
-                // settingsタブの場合：500ms待ってからアニメーション表示
-                setTimeout(() => {
-                    // タブが切り替わっていないか再確認
-                    const currentActiveTab = document.querySelector('.tab-content.active');
-                    if (currentActiveTab && currentActiveTab.id === 'tab-settings') {
-                        // まずpointer-eventsを有効化
-                        saveBtn.classList.remove('pointer-events-none');
-                        saveBtn.classList.add('pointer-events-auto');
-                        
-                        // 次のフレームでtransform、scale、opacityをアニメーション
-                        requestAnimationFrame(() => {
-                            saveBtn.classList.remove('translate-y-10', 'scale-0', 'opacity-0');
-                            saveBtn.classList.add('translate-y-0', 'opacity-100');
-                        });
-                    }
-                }, 500);
-            } else {
-                // 他のタブの場合：アニメーションで非表示
-                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                saveBtn.classList.add('translate-y-10', 'scale-0', 'opacity-0', 'pointer-events-none');
-            }
-        }
         });
     },
     
@@ -922,6 +870,29 @@ export {
     toggleModal
 };
 
+const toggleFabLike = (el, show) => {
+    if (!el) return;
+
+    if (show) {
+        el.classList.remove('hidden', 'pointer-events-none');
+        el.classList.add('pointer-events-auto');
+
+        requestAnimationFrame(() => {
+            el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
+            el.classList.add('translate-y-0', 'opacity-100');
+        });
+    } else {
+        el.classList.remove('opacity-100', 'pointer-events-auto');
+        el.classList.add(
+            'translate-y-24',
+            'scale-0',
+            'opacity-0',
+            'pointer-events-none'
+        );
+
+        setTimeout(() => el.classList.add('hidden'), 300);
+    }
+};
 
 export const initHandleRepeatDelegation = () => {
     document.addEventListener('click', (e) => {
@@ -946,6 +917,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

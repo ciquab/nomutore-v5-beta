@@ -213,7 +213,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
 };
 
 // --- 【修正点3】イベント委譲（関数の外で1回だけ登録） ---
-document.addEventListener('click', (e) => {
+document.addEventListener('click', async (e) => { 
     const listEl = document.getElementById('log-list');
     if (!listEl || !listEl.contains(e.target)) return;
     if (StateManager.isEditMode) return;
@@ -221,7 +221,14 @@ document.addEventListener('click', (e) => {
     const clickableArea = e.target.closest('[data-log-id]');
     if (clickableArea) {
         const logId = parseInt(clickableArea.dataset.logId);
-        openLogDetail(logId);
+        
+        // ★修正ポイント：IDからログデータを取得する
+        const log = await db.logs.get(logId);
+        
+        if (log) {
+            // データが正しく取得できたら、オブジェクトを渡して開く
+            openLogDetail(log);
+        }
     }
 });
 
@@ -237,6 +244,7 @@ updateLogListView.updateBulkCount = updateBulkCount;
 // ダミー関数（互換性維持）
 
 export const setFetchLogsHandler = (fn) => {};
+
 
 
 

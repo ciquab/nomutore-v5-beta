@@ -697,15 +697,15 @@ if (checkModal) {
             await refreshUI();
 
         // ★★★ 重要修正: Save Changesボタンの制御をView Transitionの外に出して遅延実行 ★★★
-        // View Transitionが完了してから実行することで、z-indexの競合を回避
-        setTimeout(() => {
-            const saveBtn = document.getElementById('settings-save-container');
-            const onboarding = document.getElementById('onboarding-screen');
-            const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
-            
-            if (saveBtn) {
-                if (tabId === 'settings' && !isOnboarding) {
-                    // 2段階アニメーション：まずpointer-eventsを有効化
+        const saveBtn = document.getElementById('settings-save-container');
+        const onboarding = document.getElementById('onboarding-screen');
+        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+        
+        if (saveBtn) {
+            if (tabId === 'settings' && !isOnboarding) {
+                // settingsタブの場合：500ms待ってからアニメーション表示
+                setTimeout(() => {
+                    // まずpointer-eventsを有効化
                     saveBtn.classList.remove('pointer-events-none');
                     saveBtn.classList.add('pointer-events-auto');
                     
@@ -714,12 +714,13 @@ if (checkModal) {
                         saveBtn.classList.remove('translate-y-10', 'opacity-0');
                         saveBtn.classList.add('translate-y-0', 'opacity-100');
                     });
-                } else {
-                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                }
+                }, 500);
+            } else {
+                // 他のタブの場合：即座に非表示（アニメーションなし）
+                saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
-        }, 500);
+        }
         });
     },
 
@@ -921,6 +922,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

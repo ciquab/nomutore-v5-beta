@@ -622,7 +622,14 @@ if (checkModal) {
             );
         });
 
+        document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#btn-save-settings');
+    if (!btn) return;
+    handleSaveSettings();
+});
+
         UI.isInitialized = true;
+        UI.switchTab('home'); 
     },
 
     switchTab: (tabId) => {
@@ -875,22 +882,21 @@ const toggleFabLike = (el, show) => {
 
     if (show) {
         el.classList.remove('hidden', 'pointer-events-none');
-        el.classList.add('pointer-events-auto');
+
+        // 初期状態を保証
+        el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
 
         requestAnimationFrame(() => {
             el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-            el.classList.add('translate-y-0', 'opacity-100');
+            el.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
         });
     } else {
         el.classList.remove('opacity-100', 'pointer-events-auto');
-        el.classList.add(
-            'translate-y-24',
-            'scale-0',
-            'opacity-0',
-            'pointer-events-none'
-        );
+        el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
 
-        setTimeout(() => el.classList.add('hidden'), 300);
+        setTimeout(() => {
+            el.classList.add('hidden');
+        }, 300);
     }
 };
 
@@ -917,6 +923,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

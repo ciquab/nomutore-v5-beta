@@ -602,6 +602,20 @@ if (checkModal) {
 
         initTheme();
 
+        // ★追加: FABとSave Changesボタンの初期状態を設定
+        const fab = document.getElementById('btn-fab-fixed');
+        const saveBtn = document.getElementById('settings-save-container');
+        
+        if (fab) {
+            // FABの初期状態を設定（非表示）
+            fab.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
+        }
+        
+        if (saveBtn) {
+            // Save Changesボタンの初期状態を設定（非表示）
+            saveBtn.classList.add('transform', 'translate-y-10', 'scale-0', 'opacity-0');
+        }
+
         UI.isInitialized = true;
     },
 
@@ -728,7 +742,7 @@ if (checkModal) {
         }
         });
     },
-
+    
     switchCellarView: (mode) => {
         if (typeof Feedback !== 'undefined') {
         Feedback.uiSwitch();
@@ -927,6 +941,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

@@ -265,6 +265,9 @@ export const Onboarding = {
     start: async () => {
         if (localStorage.getItem('nomutore_onboarding_complete')) {
             Onboarding.showAppUI(); // ★ここが重要：完了済みなら本体を表示
+           requestAnimationFrame(() => {
+               UI.switchTab('home');
+           });
             return;
         }
         Onboarding.showWizard(0);
@@ -620,4 +623,5 @@ Onboarding.playSplash = () => {
 };
 
 window.Onboarding = Onboarding;
+
 

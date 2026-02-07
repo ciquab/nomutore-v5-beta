@@ -441,9 +441,14 @@ export const toggleModal = (modalId, show = true) => {
         
         // アニメーション完了後に非表示 (hidden) にする
         setTimeout(() => {
-            el.classList.add('hidden');
-            el.classList.remove('flex');
-        }, 200); // duration-200 と合わせる
+            // ★【ここがポイント】dataset.destroy が true なら DOM から削除、そうでなければ hidden
+            if (el.dataset.destroy === 'true') {
+                el.remove();
+            } else {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+        }, 200);
     }
 };
 
@@ -715,6 +720,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

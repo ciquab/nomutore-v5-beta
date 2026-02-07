@@ -712,7 +712,7 @@ if (checkModal) {
                     saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
-        }, 50);
+        }, 500);
         });
     },
 
@@ -914,6 +914,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

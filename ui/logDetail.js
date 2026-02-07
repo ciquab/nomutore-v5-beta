@@ -141,8 +141,6 @@ export const openLogDetail = (log) => {
         </div>
     `;
 
-        // ... 前半の HTML 生成部分はそのまま ...
-
     document.body.appendChild(modal);
     modal.dataset.destroy = 'true';
 
@@ -352,6 +350,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

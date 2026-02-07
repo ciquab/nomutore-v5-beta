@@ -396,7 +396,7 @@ const initApp = async () => {
         }
         
         // ホームタブを確実にアクティブにする
-        UI.switchTab('home');
+        UI.switchTab('home', { silent: true });
 
         document.body.style.pointerEvents = 'auto';
         console.log('🚀 UI initialized and interactions enabled');
@@ -597,5 +597,6 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 

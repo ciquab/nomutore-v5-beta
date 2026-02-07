@@ -888,7 +888,8 @@ const toggleFabLike = (el, show) => {
 
         requestAnimationFrame(() => {
             el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-            el.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+});
         });
     } else {
         el.classList.remove('opacity-100', 'pointer-events-auto');
@@ -923,6 +924,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

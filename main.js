@@ -439,30 +439,27 @@ const setupGlobalListeners = () => {
 
     // --- 2. FABのスクロール制御 (強化版) ---
     let lastScrollTop = 0;
-    const fab = document.getElementById('btn-fab-fixed');
     
-    // window と document 両方を監視対象にする（ブラウザ互換性）
+    // windowに対してスクロールを監視
     window.addEventListener('scroll', () => {
+        // 毎回その場で取得することで、タブ切り替え後の生存を確実にする
+        const fab = document.getElementById('btn-fab-fixed');
         if (!fab || fab.classList.contains('scale-0')) return;
 
-        // 現在のスクロール位置を取得
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const diff = scrollTop - lastScrollTop;
-        const threshold = 10; // わずかな動きでも反応させる
 
-        // 下にスクロール中 かつ 一定以上スクロールしている
-        if (diff > threshold && scrollTop > 50) {
-            // ヌルっと隠す
+        // 感度を上げるため threshold を 10px に。
+        // 下に 10px 以上スクロールしたら隠す
+        if (diff > 10 && scrollTop > 50) {
             fab.classList.add('translate-y-28', 'opacity-0');
             fab.classList.remove('translate-y-0', 'opacity-100');
         } 
-        // 上にスクロール中（または最上部付近）
-        else if (diff < -threshold || scrollTop < 20) {
-            // ヌルっと出す
+        // 上に 10px 以上スクロール、または最上部に近いなら出す
+        else if (diff < -10 || scrollTop < 20) {
             fab.classList.remove('translate-y-28', 'opacity-0');
             fab.classList.add('translate-y-0', 'opacity-100');
         }
-        
         lastScrollTop = scrollTop;
     }, { passive: true });
 };
@@ -593,6 +590,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

@@ -620,26 +620,32 @@ if (checkModal) {
         const currentTab = document.querySelector('.tab-content.active');
         if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
-        // ★ Phase 2: Reactive Transitions (View Transitions API)
         DOM.withTransition(async () => {
-            // Haptics (Phase 1)
             Feedback.uiSwitch();
 
-            // ★修正: FAB (＋ボタン) の表示制御 (アニメーション版)
+            // FAB (プラスボタン) と同様に、Settings保存ボタンの制御を追加
             const fab = document.getElementById('btn-fab-fixed');
-            if (fab) {
-                // Settings(保存ボタンと被る) と Record(画面自体がメニュー) では隠す
-                // Home と Cellar では表示する
-                const shouldShow = ['home', 'cellar'].includes(tabId);
+            const saveBtn = document.getElementById('settings-save-container'); // ★追加
 
-                if (shouldShow) {
-                    // 表示: 拡大して不透明に
+            if (fab) {
+                const isHomeOrCellar = ['home', 'cellar'].includes(tabId);
+                if (isHomeOrCellar) {
                     fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
                     fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
                 } else {
-                    // 非表示: 縮小して透明に (DOMからは消さないのでチカチカしない)
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+                }
+            }
+
+            // ★追加: 設定タブの時だけ保存ボタンをヌルっと出す
+            if (saveBtn) {
+                if (tabId === 'settings') {
+                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                } else {
+                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
 
@@ -892,5 +898,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

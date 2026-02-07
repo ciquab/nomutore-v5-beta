@@ -801,16 +801,26 @@ select:disabled {
     transition: none !important;
 }
 
-/* Settings Save Buttonが確実に最前面に表示されるように */
 #settings-save-container {
     isolation: isolate;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    /* 3Dレンダリングを強制し、他の要素より手前に配置 */
+    transform: translateZ(100px); 
+    -webkit-transform: translateZ(100px);
+    /* アニメーション中もこの「高度」を維持させる */
+    backface-visibility: hidden;
+    z-index: 9998 !important;
 }
 
-/* tab-settings内のselect要素が固定要素より背面になるように */
 #tab-settings {
-    isolation: isolate;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
+    position: relative;
+    z-index: 0;
+    /* ボタンより確実に低い位置であることをブラウザに教える */
+    transform: translateZ(-1px);
+    -webkit-transform: translateZ(-1px);
+}
+
+/* プルダウンメニュー（select）自体にも設定 */
+#tab-settings select {
+    position: relative;
+    z-index: 1;
 }

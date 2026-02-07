@@ -62,7 +62,7 @@ const registerActions = () => {
         'modal:openExercise': () => UI.openManualInput(),
         'modal:openCheck': () => UI.openCheckModal(),
         'modal:openSettings': () => toggleModal('settings-modal', true),
-        'modal:openTimer': () => UI.openTimer(),
+        'modal:openTimer': () => UI.openTimer(true),
         'modal:closeTimer': () => UI.closeTimer(),
         'modal:openHelp': (section) => UI.openHelp(section),
         'modal:openActionMenu': () => UI.openActionMenu(),
@@ -584,6 +584,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

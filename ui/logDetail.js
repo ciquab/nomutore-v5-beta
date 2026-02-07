@@ -144,15 +144,23 @@ export const openLogDetail = (log) => {
     document.body.appendChild(modal);
 
     // ▼▼▼ アニメーション実行 ▼▼▼
+    // 1. 強制的にレイアウトを計算させ、初期状態（translate-y-full）をブラウザに記憶させる
+    modal.offsetHeight; 
+
+    // 2. 次の描画フレームでクラスを操作する
     requestAnimationFrame(() => {
         const bg = document.getElementById(`${modalId}-bg`);
         const content = document.getElementById(`${modalId}-content`);
-        if(bg) bg.classList.remove('opacity-0');
         
-        // 画面下からスライドアップ
-        if(content) {
+        if (bg) {
+            bg.classList.add('opacity-100');
+            bg.classList.remove('opacity-0');
+        }
+        
+        if (content) {
+            // translate-y-full を外すことで、CSSの transition が「下から上」への動きを計算します
             content.classList.remove('translate-y-full', 'sm:translate-y-10', 'opacity-0', 'scale-95');
-            // opacity-100 scale-100 はデフォルトなのでクラス削除だけでOKだが、明示的に追加も可
+            content.classList.add('translate-y-0', 'sm:translate-y-0', 'opacity-100', 'scale-100');
         }
     });
 
@@ -357,4 +365,5 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 

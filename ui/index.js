@@ -637,20 +637,14 @@ if (checkModal) {
                 const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
 
                 if (shouldShowFab) {
-                    // 表示： scale-0 を外し、scale-100 を足す
-                    fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
+                    // 表示： hidden を外し、アニメーション
+                    fab.classList.remove('hidden', 'scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                     fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                 } else {
-                    // 非表示： 全ての「出る」クラスを剥ぎ取り、物理的に小さくして隠す
+                    // 非表示： hidden を追加して完全に隠す
+                    fab.classList.add('hidden', 'scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
-                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                 }
-            }
-
-            // --- Save Changesボタンを即座に非表示にする（View Transition内） ---
-            if (saveBtn && tabId !== 'settings') {
-                saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
 
             document.querySelectorAll('.tab-content').forEach(el => {
@@ -704,24 +698,21 @@ if (checkModal) {
 
         // ★★★ 重要修正: Save Changesボタンの制御をView Transitionの外に出して遅延実行 ★★★
         // View Transitionが完了してから実行することで、z-indexの競合を回避
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                const saveBtn = document.getElementById('settings-save-container');
-                
-                const onboarding = document.getElementById('onboarding-screen');
-                const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
-                
-                if (saveBtn) {
-                    if (tabId === 'settings' && !isOnboarding) {
-                        saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
-                        saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                    } else {
-                        saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                        saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                    }
+        setTimeout(() => {
+            const saveBtn = document.getElementById('settings-save-container');
+            const onboarding = document.getElementById('onboarding-screen');
+            const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+            
+            if (saveBtn) {
+                if (tabId === 'settings' && !isOnboarding) {
+                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                } else {
+                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
-            });
-        });
+            }
+        }, 50);
         });
     },
 
@@ -923,5 +914,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

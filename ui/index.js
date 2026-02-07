@@ -695,6 +695,9 @@ if (checkModal) {
     },
 
     switchCellarView: (mode) => {
+        if (typeof Feedback !== 'undefined') {
+        Feedback.uiSwitch();
+        }
         StateManager.setCellarViewMode(mode);
         ['logs', 'stats', 'archives'].forEach(m => {
             const el = document.getElementById(`view-cellar-${m}`);
@@ -889,4 +892,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

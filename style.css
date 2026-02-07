@@ -800,16 +800,3 @@ select:disabled {
     -o-transition: none !important;
     transition: none !important;
 }
-
-/* Save Changes ボタンの欠け（重なりとクリッピング）を解消する最小修正 */
-#settings-save-container {
-    /* 1. プルダウンメニュー等より確実に前面に出す (FABと同じ9999) */
-    z-index: 9999 !important;
-    
-    /* 2. 画面遷移の「写真」から独立させ、背景に巻き込まれて欠けるのを防ぐ */
-    view-transition-name: settings-save-btn;
-    
-    /* 3. 描画レイヤーを固定し、アニメーション中のチラつきを防止 */
-    isolation: isolate;
-    transform: translateZ(0);
-}

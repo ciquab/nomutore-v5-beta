@@ -394,7 +394,6 @@ const initApp = async () => {
             Timer.init();
         }
 
-        document.getElementById('btn-fab-fixed')?.classList.remove('hidden');
         // ホームタブを確実にアクティブにする
         UI.switchTab('home', { silent: true });
 
@@ -597,6 +596,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

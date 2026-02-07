@@ -439,29 +439,30 @@ const setupGlobalListeners = () => {
 
     // --- 2. FABのスクロール制御 (強化版) ---
     let lastScrollTop = 0;
+    const fab = document.getElementById('btn-fab-fixed');
     
-    // windowに対してスクロールを監視
-    window.addEventListener('scroll', () => {
-        // 毎回その場で取得することで、タブ切り替え後の生存を確実にする
-        const fab = document.getElementById('btn-fab-fixed');
+    // window ではなく document (または全体) に対してスクロールを監視
+    // スロットリング（頻度制限）をあえて入れず、ブラウザの最適化に任せます
+    document.addEventListener('scroll', () => {
         if (!fab || fab.classList.contains('scale-0')) return;
 
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        // 複数の取得方法を試行（ブラウザ互換性）
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
         const diff = scrollTop - lastScrollTop;
 
-        // 感度を上げるため threshold を 10px に。
-        // 下に 10px 以上スクロールしたら隠す
-        if (diff > 10 && scrollTop > 50) {
-            fab.classList.add('translate-y-28', 'opacity-0');
-            fab.classList.remove('translate-y-0', 'opacity-100');
+        // 下にスクロール（diff > 0）かつ 一定以上(20px)スクロールした
+        if (diff > 5 && scrollTop > 20) {
+            fab.style.transform = 'translateY(110px)'; // classList ではなく直接 style で制御するとより確実
+            fab.style.opacity = '0';
         } 
-        // 上に 10px 以上スクロール、または最上部に近いなら出す
-        else if (diff < -10 || scrollTop < 20) {
-            fab.classList.remove('translate-y-28', 'opacity-0');
-            fab.classList.add('translate-y-0', 'opacity-100');
+        // 上にスクロール、または最上部付近
+        else if (diff < -5 || scrollTop <= 10) {
+            fab.style.transform = 'translateY(0)';
+            fab.style.opacity = '1';
         }
+        
         lastScrollTop = scrollTop;
-    }, { passive: true });
+    }, true);
 };
 
 // スワイプ判定ロジック
@@ -590,6 +591,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

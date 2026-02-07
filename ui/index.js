@@ -602,16 +602,6 @@ if (checkModal) {
 
         initTheme();
 
-        // ★修正: FABの初期化 (hiddenを削除し、アニメーション用のクラスを付与)
-        const fab = document.getElementById('btn-fab-fixed');
-        if (fab) {
-            fab.classList.remove('hidden');
-            fab.classList.add('transition-all', 'duration-300', 'transform', 'ease-out');
-            // 初期状態はHomeなので表示
-            fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
-            fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
-        }
-
         UI.isInitialized = true;
     },
 
@@ -648,9 +638,9 @@ if (checkModal) {
                         fab.classList.add('scale-100', 'opacity-100', 'translate-y-0');
                     });
                 } else {
-                    // 非表示：即座に全て適用
-                    fab.classList.add('hidden', 'scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
+                    // 非表示：アニメーションで消す（hiddenは使わない）
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
+                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                 }
             }
 
@@ -716,17 +706,17 @@ if (checkModal) {
                         saveBtn.classList.remove('pointer-events-none');
                         saveBtn.classList.add('pointer-events-auto');
                         
-                        // 次のフレームでtransformとopacityをアニメーション
+                        // 次のフレームでtransform、scale、opacityをアニメーション
                         requestAnimationFrame(() => {
-                            saveBtn.classList.remove('translate-y-10', 'opacity-0');
-                            saveBtn.classList.add('translate-y-0', 'opacity-100');
+                            saveBtn.classList.remove('translate-y-10', 'scale-0', 'opacity-0');
+                            saveBtn.classList.add('translate-y-0', 'scale-100', 'opacity-100');
                         });
                     }
                 }, 500);
             } else {
-                // 他のタブの場合：即座に非表示（アニメーションなし）
-                saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                // 他のタブの場合：アニメーションで非表示
+                saveBtn.classList.remove('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+                saveBtn.classList.add('translate-y-10', 'scale-0', 'opacity-0', 'pointer-events-none');
             }
         }
         });
@@ -930,6 +920,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

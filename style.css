@@ -801,21 +801,29 @@ select:disabled {
     transition: none !important;
 }
 
-/* 1. 全ての遷移アニメーションから固定要素を除外 */
+/* 1. 画面遷移の「写真」から固定要素を完全に除外する */
 ::view-transition-group(*),
 ::view-transition-old(*),
 ::view-transition-new(*) {
-    /* 遷移中のクリッピングを防止 */
+    /* 遷移中の要素のクリッピングを無効化 */
     overflow: visible !important;
 }
 
-/* 2. ボタンを独立したレイヤーとして隔離 */
+/* 2. ボタンを独立した「最前面レイヤー」として隔離する */
 #btn-fab-fixed,
 #settings-save-container {
-    view-transition-name: none !important; /* 遷移の写真に写さない */
+    /* これが重要：画面遷移アニメーションの対象から外す */
+    view-transition-name: none !important; 
+    
     position: fixed !important;
-    z-index: 99999 !important;             /* 最前面 */
-    isolation: isolate;                   /* 独自の重なり王国を作る */
-    transform: translateZ(0);             /* GPU 描画を強制 */
-    backface-visibility: hidden;
+    z-index: 99999 !important;             /* 絶対的に最前面 */
+    isolation: isolate;                   /* 重なり順を他から完全に独立させる */
+    backface-visibility: hidden;          /* チラつき防止 */
+    transform: translateZ(0);             /* GPUレイヤーを強制（欠け防止） */
+}
+
+/* 3. 保存ボタンが背景に透けないよう、色を確実に付ける */
+#settings-save-container {
+    background: transparent;
+    pointer-events: none;
 }

@@ -801,24 +801,3 @@ select:disabled {
     transition: none !important;
 }
 
-#btn-fab-fixed,
-#settings-save-container {
-    /* 1. 画面遷移（View Transition）の写真に写さない設定 */
-    view-transition-name: none !important;
-    
-    /* 2. アニメーション設定はCSS側で固定する */
-    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    
-    /* 3. 描画を別レイヤーに隔離（欠け対策） */
-    position: fixed !important;
-    z-index: 99999 !important;
-    isolation: isolate;
-    transform: translateZ(0);
-}
-
-/* 画面全体の遷移中に、他の要素がボタンを隠さないようにする */
-::view-transition-group(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-    overflow: visible !important;
-}

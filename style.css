@@ -800,12 +800,3 @@ select:disabled {
     -o-transition: none !important;
     transition: none !important;
 }
-
-#settings-save-container {
-    /* 1. 画面遷移の「写真」からこのボタンを除外します。
-       これで背景が切り替わる際もボタンが切り抜かれず、100%欠けなくなります。 */
-    view-transition-name: none !important;
-    
-    /* 2. 重なり順をFABより少し高くして、遷移レイヤーの背後に回るのを防ぎます */
-    z-index: 100 !important;
-}

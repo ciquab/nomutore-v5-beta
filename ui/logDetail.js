@@ -143,39 +143,22 @@ export const openLogDetail = (log) => {
 
     document.body.appendChild(modal);
 
-    // ▼▼▼ アニメーション実行 ▼▼▼
-    // 1. 強制的にレイアウトを計算させ、初期状態（translate-y-full）をブラウザに記憶させる
-    modal.offsetHeight; 
+    // ★「閉じるときに削除する」という目印を付ける
+    modal.dataset.destroy = 'true';
 
-    // 2. 次の描画フレームでクラスを操作する
-    requestAnimationFrame(() => {
-        const bg = document.getElementById(`${modalId}-bg`);
-        const content = document.getElementById(`${modalId}-content`);
-        
-        if (bg) {
-            bg.classList.add('opacity-100');
-            bg.classList.remove('opacity-0');
-        }
-        
-        if (content) {
-            // translate-y-full を外すことで、CSSの transition が「下から上」への動きを計算します
-            content.classList.remove('translate-y-full', 'sm:translate-y-10', 'opacity-0', 'scale-95');
-            content.classList.add('translate-y-0', 'sm:translate-y-0', 'opacity-100', 'scale-100');
-        }
-    });
+    // 閉じる処理を共通関数に任せる
+    const closeModal = () => toggleModal(modalId, false);
 
-    // 閉じる関数
-    const closeModalFunc = (silent = false) => {
-        // 引数が true でない時だけ音を鳴らす
-        if(!silent && typeof Feedback !== 'undefined') Feedback.uiSwitch();
+    // 背景と閉じるボタンにイベント登録
+    const bg = modal.querySelector(`#${modalId}-bg`);
+    const closeBtn = modal.querySelector(`#${modalId}-close`);
+    
+    if (bg) bg.onclick = closeModal;
+    if (closeBtn) closeBtn.onclick = closeModal;
 
-        const bg = document.getElementById(`${modalId}-bg`);
-        const content = document.getElementById(`${modalId}-content`);
-        if(bg) bg.classList.add('opacity-0');
-        if(content) content.classList.add('translate-y-full', 'sm:translate-y-10', 'opacity-0');
-        
-        setTimeout(() => modal.remove(), 300);
-    };
+    // --- ★独自の開始アニメーションコードを消して、これ一行にする ---
+    toggleModal(modalId, true);
+};
 
     // イベントリスナー設定
     document.getElementById('btn-close-detail').addEventListener('click', closeModalFunc);
@@ -365,5 +348,6 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 

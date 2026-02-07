@@ -156,7 +156,7 @@ export const openLogDetail = (log) => {
     }
 
     // 閉じるボタン
-    const closeBtn = modal.querySelector(`#btn-close-detail`);
+    const closeBtn = modal.querySelector(`#${modalId}-close`); 
     if (closeBtn) {
         closeBtn.addEventListener('click', closeModal);
     }
@@ -350,6 +350,7 @@ if (addLogBtn) {
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

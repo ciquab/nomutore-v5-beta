@@ -433,29 +433,25 @@ export const toggleModal = (modalId, show = true) => {
             }
         }, 10);
     } else {
-        // --- 【非表示処理】 ---
-        
-        // 1. 背景をじわっと消す
+        // --- 閉じる処理 ---
         if (bg) {
-            bg.classList.replace('opacity-100', 'opacity-0');
+            bg.classList.remove('opacity-100');
+            bg.classList.add('opacity-0');
         }
 
         if (content) {
-            // 2. 現在地（translate-y-0）を外してアニメーション開始
+            // translate-y-0 を外し、アニメーション開始
             content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
 
-            // 3. ボトムシート対象のIDリスト
             const slideDownModals = ['day-detail-modal', 'action-menu-modal', 'day-add-selector', 'log-detail-modal'];
-            
             if (slideDownModals.includes(modalId)) {
-                // 画面下へスライド
-                content.classList.add('translate-y-full', 'sm:translate-y-10');
+                // ★修正：sm:translate-y-10 を削除し、確実に画面外(full)へ飛ばす
+                content.classList.add('translate-y-full');
             }
         }
         
-        // 4. ★最重要★ 待機時間を 300ms に変更（CSSの duration-300 と同期）
-        // これで「最後まで沈み切る」のを待ってから消去/非表示にします
+        // ★修正：待機時間を 300 -> 350ms に変更（アニメーション完遂のため）
         setTimeout(() => {
             if (el.dataset.destroy === 'true') {
                 el.remove();
@@ -463,7 +459,7 @@ export const toggleModal = (modalId, show = true) => {
                 el.classList.add('hidden');
                 el.classList.remove('flex');
             }
-        }, 300); 
+        }, 350);
     }
 };
 
@@ -728,6 +724,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

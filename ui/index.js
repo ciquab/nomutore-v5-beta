@@ -623,6 +623,7 @@ if (checkModal) {
         DOM.withTransition(async () => {
             Feedback.uiSwitch();
 
+            const saveBtn = document.getElementById('settings-save-container');
             const fab = document.getElementById('btn-fab-fixed');
             
             
@@ -644,6 +645,12 @@ if (checkModal) {
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                 }
+            }
+
+            // --- Save Changesボタンを即座に非表示にする（View Transition内） ---
+            if (saveBtn && tabId !== 'settings') {
+                saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
 
             document.querySelectorAll('.tab-content').forEach(el => {
@@ -699,6 +706,7 @@ if (checkModal) {
         // View Transitionが完了してから実行することで、z-indexの競合を回避
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
+                const saveBtn = document.getElementById('settings-save-container');
                 
                 const onboarding = document.getElementById('onboarding-screen');
                 const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
@@ -915,4 +923,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

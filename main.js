@@ -345,9 +345,11 @@ const initApp = async () => {
 
         // LPを表示する必要がない（＝オンボーディング済み）場合だけ表示をONにする
         if (isOnboarded) {
-            document.querySelector('header')?.classList.remove('hidden');
-            document.querySelector('main')?.classList.remove('hidden');
-            document.body.classList.add('app-ready'); // CSSでの制御
+    document.querySelector('header')?.classList.remove('hidden');
+    document.querySelector('main')?.classList.remove('hidden');
+    document.getElementById('bottom-nav')?.classList.remove('hidden'); // 追加
+    document.getElementById('btn-fab-fixed')?.classList.remove('hidden'); // 追加
+    document.body.classList.add('app-ready'); 
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
@@ -393,9 +395,6 @@ const initApp = async () => {
             Timer.init();
         }
 
-        // 画面のロックを強制解除して表示する
-        document.querySelector('header')?.classList.remove('hidden');
-        document.querySelector('main')?.classList.remove('hidden');
         // ホームタブを確実にアクティブにする
         UI.switchTab('home');
 
@@ -598,4 +597,5 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 

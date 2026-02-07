@@ -599,19 +599,7 @@ if (checkModal) {
             UI.editLog(e.detail.id);
         });
 
-
         initTheme();
-
-        // ★修正: FABの初期化 (hiddenを削除し、アニメーション用のクラスを付与)
-        const fab = document.getElementById('btn-fab-fixed');
-        if (fab) {
-            fab.classList.remove('hidden');
-            fab.classList.add('transition-all', 'duration-300', 'transform', 'ease-out');
-            // 初期状態はHomeなので表示
-            fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
-            fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
-        }
-
         UI.isInitialized = true;
     },
 
@@ -625,41 +613,37 @@ if (checkModal) {
             const fab = document.getElementById('btn-fab-fixed');
             const saveBtn = document.getElementById('settings-save-container');
             
-            // ★オンボーディングが表示されているか厳密にチェック
+            // オンボーディング状態の判定
             const onboarding = document.getElementById('onboarding-screen');
             const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
-            // --- FAB (プラスボタン) の完全制御 ---
+            // --- FAB (プラスボタン) の表示管理 ---
             if (fab) {
-                // ホームかセラー、かつ「オンボーディング中でない」場合のみ表示
-                const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
+                // ホーム か セラー の時、かつオンボーディング中でない場合のみ
+                const isTargetTab = ['home', 'cellar'].includes(tabId);
+                const shouldShowFab = isTargetTab && !isOnboarding;
 
                 if (shouldShowFab) {
                     fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                     fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                 } else {
+                    // 他のタブ（record, settings）やオンボーディングでは物理的に消す
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
                 }
             }
 
-            // --- Save Changes ボタンの完全制御 ---
+            // --- Save Changes ボタンの表示管理 ---
             if (saveBtn) {
-                // セッティングタブ、かつ「オンボーディング中でない」場合のみ表示
-                const shouldShowSave = (tabId === 'settings') && !isOnboarding;
+                const isSettingsTab = (tabId === 'settings');
+                const shouldShowSave = isSettingsTab && !isOnboarding;
 
                 if (shouldShowSave) {
-                    // hiddenを外し、ヌルっと出す
-                    saveBtn.classList.remove('hidden', 'translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                    saveBtn.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                    saveBtn.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 } else {
-                    // ヌルっと消す
-                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                    // アニメーション後にhidden（オプション）
-                    setTimeout(() => {
-                        if (saveBtn.classList.contains('opacity-0')) saveBtn.classList.add('hidden');
-                    }, 300);
+                    saveBtn.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                    saveBtn.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
                 }
             }
 
@@ -912,6 +896,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

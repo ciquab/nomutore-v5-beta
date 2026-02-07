@@ -714,6 +714,7 @@ if (checkModal) {
         const activeEl = document.getElementById(`view-cellar-${mode}`);
         if (activeEl) {
             activeEl.classList.remove('hidden');
+            refreshUI();
             }
     },
 
@@ -888,3 +889,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

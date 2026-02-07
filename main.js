@@ -349,7 +349,6 @@ const initApp = async () => {
             document.querySelector('main')?.classList.remove('hidden');
             document.body.classList.add('app-ready'); // CSSでの制御
             document.getElementById('bottom-nav')?.classList.remove('hidden');
-            document.getElementById('btn-fab-fixed')?.classList.remove('hidden');
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
@@ -394,7 +393,8 @@ const initApp = async () => {
         if (Timer && Timer.init) {
             Timer.init();
         }
-        
+
+        document.getElementById('btn-fab-fixed')?.classList.remove('hidden');
         // ホームタブを確実にアクティブにする
         UI.switchTab('home', { silent: true });
 
@@ -597,6 +597,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

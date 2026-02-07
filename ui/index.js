@@ -621,33 +621,40 @@ if (checkModal) {
         if (currentTab && currentTab.id === `tab-${tabId}`) return;
 
         DOM.withTransition(async () => {
-            Feedback.uiSwitch();
+        Feedback.uiSwitch();
 
-            // FAB (プラスボタン) と同様に、Settings保存ボタンの制御を追加
-            const fab = document.getElementById('btn-fab-fixed');
-            const saveBtn = document.getElementById('settings-save-container'); // ★追加
+        const fab = document.getElementById('btn-fab-fixed');
+        const saveBtn = document.getElementById('settings-save-container');
+        
+        // ★修正: オンボーディングが表示されているかチェック
+        const onboarding = document.getElementById('onboarding-screen');
+        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
-            if (fab) {
-                const isHomeOrCellar = ['home', 'cellar'].includes(tabId);
-                if (isHomeOrCellar) {
-                    fab.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
-                    fab.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
-                } else {
-                    fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
-                    fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
-                }
+        if (fab) {
+            // ホームまたはセラー、かつオンボーディング中でない場合のみ表示
+            const shouldShowFab = ['home', 'cellar'].includes(tabId) && !isOnboarding;
+            
+            if (shouldShowFab) {
+                // ヌルっと出る（以前の動きを復元）
+                fab.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none', 'scale-0');
+                fab.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto', 'scale-100');
+            } else {
+                // ヌルっと消える
+                fab.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto', 'scale-100');
+                fab.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none', 'scale-0');
             }
+        }
 
-            // ★追加: 設定タブの時だけ保存ボタンをヌルっと出す
-            if (saveBtn) {
-                if (tabId === 'settings') {
-                    saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                } else {
-                    saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
-                    saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-                }
+        // 保存ボタンの制御（ここもヌルっと感を維持）
+        if (saveBtn) {
+            if (tabId === 'settings') {
+                saveBtn.classList.remove('translate-y-10', 'opacity-0', 'pointer-events-none');
+                saveBtn.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            } else {
+                saveBtn.classList.add('translate-y-10', 'opacity-0', 'pointer-events-none');
+                saveBtn.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
             }
+        }
 
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
@@ -898,6 +905,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

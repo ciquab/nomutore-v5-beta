@@ -45,7 +45,11 @@ const registerActions = () => {
             UI.applyTheme(isDark ? 'light' : 'dark');
         },
         'ui:openShareModal': () => UI.openShareModal(),
-        
+        'ui:openDayDetail': (data) => {
+            if (UI && UI.openDayDetail) {
+                UI.openDayDetail(data.date);
+            }
+        },       
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),

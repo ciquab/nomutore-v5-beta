@@ -800,3 +800,21 @@ select:disabled {
     -o-transition: none !important;
     transition: none !important;
 }
+
+/* 1. 画面遷移時に固定要素を「写真」の中に含めない設定 */
+#btn-fab-fixed,
+#settings-save-container {
+    view-transition-name: none !important; /* 遷移の写真に写さない */
+    position: fixed !important;
+    z-index: 99999 !important;             /* 最前面を維持 */
+    isolation: isolate;                   /* 他の要素との重なりを完全に独立させる */
+    backface-visibility: hidden;          /* チラつき防止 */
+    transform: translateZ(0);             /* GPUレイヤーを強制（これで欠けが消えます） */
+}
+
+/* 2. 遷移アニメーション自体のクリッピングを無効化 */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+    overflow: visible !important;
+}

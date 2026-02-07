@@ -420,84 +420,93 @@ let touchEndX = 0;
 let touchEndY = 0;
 
 const setupGlobalListeners = () => {
-    // --- 1. スワイプ操作 (既存) ---
+    // --- 1. スワイプ操作 ---
     document.addEventListener('touchstart', (e) => {
-        if (e.target.closest('.overflow-x-auto')) {
+        // 横スクロールエリア（チャート等）での操作は除外
+        if (e.target.closest('.overflow-x-auto, .chart-container')) {
             touchStartX = null; touchStartY = null; return;
         }
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
-    }, { passive: false });
+    }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
         if (touchStartX === null || touchStartY === null) return;
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
-    }, { passive: false });
+    }, { passive: true });
 
-    // --- 2. FABのスクロール制御 (新規追加) ---
+    // --- 2. FABのスクロール制御 (強化版) ---
     let lastScrollTop = 0;
     const fab = document.getElementById('btn-fab-fixed');
     
-    if (fab) {
-        window.addEventListener('scroll', () => {
-            // タブ切り替えによって非表示に設定されている（scale-0）時は処理しない
-            if (fab.classList.contains('scale-0')) return;
+    // window と document 両方を監視対象にする（ブラウザ互換性）
+    window.addEventListener('scroll', () => {
+        if (!fab || fab.classList.contains('scale-0')) return;
 
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const threshold = 100; // 100px以上スクロールしたら反応させる
+        // 現在のスクロール位置を取得
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const diff = scrollTop - lastScrollTop;
+        const threshold = 10; // わずかな動きでも反応させる
 
-            if (scrollTop > lastScrollTop && scrollTop > threshold) {
-                // 下にスクロール: FABを隠す (画面外へ押し出す)
-                fab.classList.add('translate-y-24', 'opacity-0');
-                fab.classList.remove('translate-y-0', 'opacity-100');
-            } else {
-                // 上にスクロール: FABを出す
-                fab.classList.remove('translate-y-24', 'opacity-0');
-                fab.classList.add('translate-y-0', 'opacity-100');
-            }
-            lastScrollTop = scrollTop;
-        }, { passive: true }); // スクロール性能を落とさないために passive 指定
-    }
+        // 下にスクロール中 かつ 一定以上スクロールしている
+        if (diff > threshold && scrollTop > 50) {
+            // ヌルっと隠す
+            fab.classList.add('translate-y-28', 'opacity-0');
+            fab.classList.remove('translate-y-0', 'opacity-100');
+        } 
+        // 上にスクロール中（または最上部付近）
+        else if (diff < -threshold || scrollTop < 20) {
+            // ヌルっと出す
+            fab.classList.remove('translate-y-28', 'opacity-0');
+            fab.classList.add('translate-y-0', 'opacity-100');
+        }
+        
+        lastScrollTop = scrollTop;
+    }, { passive: true });
 };
-// スワイプ判定ロジック（強化版）
+
+// スワイプ判定ロジック
 const handleSwipe = () => {
     if (touchStartX === null) return;
 
-    // --- 追加: モーダル表示中はスワイプを無効化する ---
-    if (document.querySelector('.modal.flex')) return; 
+    // --- 【修正】モーダル（IDに -modal が付く要素）が表示中ならスワイプをブロック ---
+    const activeModal = document.querySelector('[id$="-modal"].flex, [id$="-modal-container"].flex, .modal-bg');
+    if (activeModal) return; 
 
     const diffX = touchStartX - touchEndX;
     const diffY = touchStartY - touchEndY;
     const swipeThreshold = 80; 
     
-    // 縦の移動量が大きい（＝スクロールしようとしている）場合は無視
-    // Math.abs(diffX) * 0.5 のように比率を設けると斜めスワイプの誤爆を防げます
+    // 縦スクロール優先なら無視
     if (Math.abs(diffY) > Math.abs(diffX)) return;
 
     const tabs = ['home', 'record', 'cellar', 'settings'];
-    const activeTab = document.querySelector('.nav-pill-active');
-    if (!activeTab) return;
+    const activeNav = document.querySelector('.nav-pill-active');
+    if (!activeNav) return;
     
-    const currentTab = activeTab.id.replace('nav-tab-', '');
+    const currentTab = activeNav.id.replace('nav-tab-', '');
     const currentIndex = tabs.indexOf(currentTab);
 
     if (Math.abs(diffX) > swipeThreshold) {
         let targetTabIndex = -1;
         
         if (diffX > 0 && currentIndex < tabs.length - 1) {
-            targetTabIndex = currentIndex + 1; // 右へスワイプ（左のタブへ）
+            targetTabIndex = currentIndex + 1; // 次のタブへ
         } else if (diffX < 0 && currentIndex > 0) {
-            targetTabIndex = currentIndex - 1; // 左へスワイプ（右のタブへ）
+            targetTabIndex = currentIndex - 1; // 前のタブへ
         }
 
         if (targetTabIndex !== -1) {
             UI.switchTab(tabs[targetTabIndex]);
-            // タブを切り替えたら、画面を最上部へ戻す（UX向上）
             window.scrollTo({ top: 0, behavior: 'instant' });
         }
     }
+    
+    // 初期化
+    touchStartX = null;
+    touchStartY = null;
 };
 
 /* ==========================================================================
@@ -584,6 +593,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

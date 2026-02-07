@@ -638,9 +638,16 @@ if (checkModal) {
                         fab.classList.add('scale-100', 'opacity-100', 'translate-y-0');
                     });
                 } else {
-                    // 非表示：アニメーションで消す（hiddenは使わない）
+                    // 非表示：まずアニメーションで消す
                     fab.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto', 'translate-y-0');
                     fab.classList.add('scale-0', 'opacity-0', 'pointer-events-none', 'translate-y-24');
+                    
+                    // アニメーション完了後にhiddenを追加
+                    setTimeout(() => {
+                        if (!fab.classList.contains('scale-100')) {
+                            fab.classList.add('hidden');
+                        }
+                    }, 300);
                 }
             }
 
@@ -920,6 +927,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

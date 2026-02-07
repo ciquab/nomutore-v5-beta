@@ -534,20 +534,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const generateSettingsOptions = () => {
     const createOpts = (obj, id, isKey = false) => {
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.innerHTML = '';
-        Object.keys(obj).forEach(k => {
-            const o = document.createElement('option');
-            o.value = k;
-            o.textContent = isKey 
-                ? k 
-                : (obj[k].label 
-                    ? (obj[k].icon ? `${obj[k].icon} ${obj[k].label}` : obj[k].label)
-                    : obj[k].label);
-            el.appendChild(o);
-        });
-    };
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = '';
+    Object.keys(obj).forEach(k => {
+        const o = document.createElement('option');
+        o.value = k;
+        
+        // ★修正点: アイコンクラスを表示せず、ラベルだけを表示する
+        o.textContent = isKey ? k : (obj[k].label || k);
+        
+        el.appendChild(o);
+    });
+};
 
     createOpts(EXERCISE, 'exercise-select');
     createOpts(EXERCISE, 'setting-base-exercise');
@@ -585,5 +584,6 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 

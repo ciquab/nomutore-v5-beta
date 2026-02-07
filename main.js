@@ -343,16 +343,11 @@ const initApp = async () => {
             localStorage.setItem(lastLaunchKey, now.toString());
         }
 
-        UI.init();
-        
         // LPを表示する必要がない（＝オンボーディング済み）場合だけ表示をONにする
         if (isOnboarded) {
-    document.querySelector('header')?.classList.remove('hidden');
-    document.querySelector('main')?.classList.remove('hidden');
-    document.getElementById('bottom-nav')?.classList.remove('hidden'); // 追加
-    document.getElementById('btn-fab-fixed')?.classList.remove('hidden'); // 追加
-    document.body.classList.add('app-ready'); 
-        UI.switchTab('home', { silent: true }); 
+            document.querySelector('header')?.classList.remove('hidden');
+            document.querySelector('main')?.classList.remove('hidden');
+            document.body.classList.add('app-ready'); // CSSでの制御
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
@@ -361,6 +356,9 @@ const initApp = async () => {
         }).catch(err => {
             console.warn('CloudManager init failed:', err);
         });
+
+        UI.init();
+        
 
         // 3. Migration & Initial Data Logic
         let isFirstRun = false;
@@ -394,6 +392,12 @@ const initApp = async () => {
         if (Timer && Timer.init) {
             Timer.init();
         }
+
+        // 画面のロックを強制解除して表示する
+        document.querySelector('header')?.classList.remove('hidden');
+        document.querySelector('main')?.classList.remove('hidden');
+        // ホームタブを確実にアクティブにする
+        UI.switchTab('home');
 
         document.body.style.pointerEvents = 'auto';
         console.log('🚀 UI initialized and interactions enabled');
@@ -594,7 +598,4 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
-
-
-
 

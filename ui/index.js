@@ -894,6 +894,10 @@ const toggleFabLike = (el, show) => {
             'opacity-100'
         );
 
+        // ★修正1.5: スクロール制御で入ったインラインスタイルを解除してアニメーションを優先
+        el.style.transform = '';
+        el.style.opacity = '';
+
         // ★修正2: 強制的にリフローを発生させる（ブラウザに変更を認識させる）
         void el.offsetHeight;
 
@@ -939,3 +943,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

@@ -1016,6 +1016,8 @@ const startShowAnimation = (el) => {
     });
 };
 
+
+
 export const initHandleRepeatDelegation = () => {
     document.addEventListener('click', (e) => {
         const target = e.target.closest('[data-action="log:repeat"]');

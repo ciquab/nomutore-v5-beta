@@ -631,7 +631,6 @@ if (checkModal) {
         UI.isInitialized = true;
     },
 
-// ui/index.js (333行目付近)
 switchTab: (tabId, options = { silent: false }) => { // 引数に options を追加
     DOM.withTransition(async () => {
         // options.silent が true ではない時だけ音を鳴らす
@@ -881,14 +880,16 @@ const toggleFabLike = (el, show) => {
     if (!el) return;
 
     if (show) {
+        // Settings の Save ボタンの場合のみ、特別処理
         let delayMs = 0;
         if (el.id === 'settings-save-container') {
+            // ★修正: Settingsタブが開いた直後は必ず遅延を入れる（プルダウンより後に表示）
+            delayMs = 200;
+            
+            // さらに、フォーカス中の要素があればblur
             const activeEl = document.activeElement;
             if (activeEl && typeof activeEl.blur === 'function') {
                 activeEl.blur();
-                if (activeEl.tagName === 'SELECT') {
-                    delayMs = 120;
-                }
             }
         }
 
@@ -905,36 +906,40 @@ const toggleFabLike = (el, show) => {
             'opacity-100'
         );
 
-        // ★修正1.5: スクロール制御で入ったインラインスタイルを解除してアニメーションを優先
-        el.style.transform = '';
-        el.style.opacity = '';
+        // ★修正2: スクロール制御で入ったインラインスタイルを完全にクリア
+        el.style.removeProperty('transform');
+        el.style.removeProperty('opacity');
+        el.style.removeProperty('transition');
 
-        // ★修正2: 強制的にリフローを発生させる（ブラウザに変更を認識させる）
-        void el.offsetHeight;
-
-        // ★修正3: 初期状態を設定（画面外・縮小・透明）
-        el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
+        // ★修正3: アニメーション中フラグを立てる（スクロール制御を無効化）
         el.dataset.animating = 'true';
 
-        // ★修正4: 次のフレームでアニメーション開始
-        requestAnimationFrame(() => {
+        // ★修正4: 強制的にリフローを発生させる
+        void el.offsetHeight;
+
+        // ★修正5: 初期状態を設定（画面外・縮小・透明）
+        el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
+
+        // ★修正6: アニメーション開始（delayがあれば待つ）
+        const startAnimation = () => {
             requestAnimationFrame(() => {
-                const startAnimation = () => {
-                    el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-                    el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
-                    setTimeout(() => {
-                        delete el.dataset.animating;
-                    }, 350);
-                };
-                if (delayMs > 0) {
-                    setTimeout(startAnimation, delayMs);
-                } else {
-                    startAnimation();
-                }
+                el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
+                el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+                
+                // アニメーション完了後にフラグを削除
+                setTimeout(() => {
+                    delete el.dataset.animating;
+                }, 350);
             });
-        });
+        };
+
+        if (delayMs > 0) {
+            setTimeout(startAnimation, delayMs);
+        } else {
+            startAnimation();
+        }
     } else {
-        // 非表示アニメーション（元のまま）
+        // 非表示アニメーション
         el.classList.remove('opacity-100', 'pointer-events-auto');
         el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
         delete el.dataset.animating;
@@ -968,6 +973,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

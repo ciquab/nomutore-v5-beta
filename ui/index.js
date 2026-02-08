@@ -885,7 +885,7 @@ const toggleFabLike = (el, show) => {
         let delayMs = 0;
         if (el.id === 'settings-save-container') {
             // ★修正: Settingsタブが開いた直後は必ず遅延を入れる
-            delayMs = 200;
+            delayMs = 400;  // ★修正: タブアニメーション完了後に表示
             
             // フォーカス中の要素があればblur
             const activeEl = document.activeElement;
@@ -956,8 +956,6 @@ const startShowAnimation = (el) => {
         }, 350);
     });
 };
-
-
 
 export const initHandleRepeatDelegation = () => {
     document.addEventListener('click', (e) => {

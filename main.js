@@ -359,7 +359,6 @@ const initApp = async () => {
         });
 
         UI.init();
-        
 
         // 3. Migration & Initial Data Logic
         let isFirstRun = false;
@@ -393,9 +392,6 @@ const initApp = async () => {
         if (Timer && Timer.init) {
             Timer.init();
         }
-
-        // ホームタブを確実にアクティブにする
-        UI.switchTab('home', { silent: true });
 
         document.body.style.pointerEvents = 'auto';
         console.log('🚀 UI initialized and interactions enabled');
@@ -596,6 +592,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

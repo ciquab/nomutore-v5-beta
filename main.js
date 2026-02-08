@@ -447,7 +447,7 @@ const setupGlobalListeners = () => {
     // window ではなく document (または全体) に対してスクロールを監視
     // スロットリング（頻度制限）をあえて入れず、ブラウザの最適化に任せます
     document.addEventListener('scroll', () => {
-        if (!fab || fab.classList.contains('scale-0')) return;
+        if (!fab || fab.classList.contains('scale-0') || fab.dataset.animating === 'true') return;
 
         // 複数の取得方法を試行（ブラウザ互換性）
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
@@ -594,6 +594,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

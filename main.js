@@ -393,6 +393,8 @@ const initApp = async () => {
             Timer.init();
         }
 
+        UI.switchTab('home', { silent: true });
+        
         document.body.style.pointerEvents = 'auto';
         console.log('🚀 UI initialized and interactions enabled');
 
@@ -592,6 +594,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

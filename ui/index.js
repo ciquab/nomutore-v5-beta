@@ -631,6 +631,7 @@ if (checkModal) {
         UI.isInitialized = true;
     },
 
+// ui/index.js (333行目付近)
 switchTab: (tabId, options = { silent: false }) => { // 引数に options を追加
     DOM.withTransition(async () => {
         // options.silent が true ではない時だけ音を鳴らす
@@ -883,60 +884,28 @@ const toggleFabLike = (el, show) => {
         // Settings の Save ボタンの場合のみ、特別処理
         let delayMs = 0;
         if (el.id === 'settings-save-container') {
-            // ★修正: Settingsタブが開いた直後は必ず遅延を入れる（プルダウンより後に表示）
+            // ★修正: Settingsタブが開いた直後は必ず遅延を入れる
             delayMs = 200;
             
-            // さらに、フォーカス中の要素があればblur
+            // フォーカス中の要素があればblur
             const activeEl = document.activeElement;
             if (activeEl && typeof activeEl.blur === 'function') {
                 activeEl.blur();
             }
         }
 
-        // ★修正1: まず表示関連のクラスをすべて削除してリセット
-        el.classList.remove(
-            'hidden',
-            'pointer-events-none',
-            'pointer-events-auto',
-            'translate-y-0',
-            'translate-y-24',
-            'scale-0',
-            'scale-100',
-            'opacity-0',
-            'opacity-100'
-        );
-
-        // ★修正2: スクロール制御で入ったインラインスタイルを完全にクリア
-        el.style.removeProperty('transform');
-        el.style.removeProperty('opacity');
-        el.style.removeProperty('transition');
-
-        // ★修正3: アニメーション中フラグを立てる（スクロール制御を無効化）
+        // ★修正: アニメーション中フラグを立てる
         el.dataset.animating = 'true';
 
-        // ★修正4: 強制的にリフローを発生させる
-        void el.offsetHeight;
-
-        // ★修正5: 初期状態を設定（画面外・縮小・透明）
-        el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
-
-        // ★修正6: アニメーション開始（delayがあれば待つ）
-        const startAnimation = () => {
-            requestAnimationFrame(() => {
-                el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-                el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
-                
-                // アニメーション完了後にフラグを削除
-                setTimeout(() => {
-                    delete el.dataset.animating;
-                }, 350);
-            });
-        };
-
+        // ★重要: delayがある場合は、hidden を保持したまま待つ
         if (delayMs > 0) {
-            setTimeout(startAnimation, delayMs);
+            setTimeout(() => {
+                // ここからアニメーション開始
+                startShowAnimation(el);
+            }, delayMs);
         } else {
-            startAnimation();
+            // delayなしの場合は即座に開始
+            startShowAnimation(el);
         }
     } else {
         // 非表示アニメーション
@@ -949,6 +918,46 @@ const toggleFabLike = (el, show) => {
         }, 300);
     }
 };
+
+// アニメーション開始処理を別関数に分離
+const startShowAnimation = (el) => {
+    // ★修正1: まず表示関連のクラスをすべて削除してリセット
+    el.classList.remove(
+        'hidden',
+        'pointer-events-none',
+        'pointer-events-auto',
+        'translate-y-0',
+        'translate-y-24',
+        'scale-0',
+        'scale-100',
+        'opacity-0',
+        'opacity-100'
+    );
+
+    // ★修正2: スクロール制御で入ったインラインスタイルを完全にクリア
+    el.style.removeProperty('transform');
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('transition');
+
+    // ★修正3: 強制的にリフローを発生させる
+    void el.offsetHeight;
+
+    // ★修正4: 初期状態を設定（画面外・縮小・透明）
+    el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
+
+    // ★修正5: アニメーション開始
+    requestAnimationFrame(() => {
+        el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
+        el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+        
+        // アニメーション完了後にフラグを削除
+        setTimeout(() => {
+            delete el.dataset.animating;
+        }, 350);
+    });
+};
+
+
 
 export const initHandleRepeatDelegation = () => {
     document.addEventListener('click', (e) => {
@@ -973,7 +982,3 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
-
-
-

@@ -881,16 +881,32 @@ const toggleFabLike = (el, show) => {
     if (!el) return;
 
     if (show) {
-        el.classList.remove('hidden', 'pointer-events-none');
+        // ★修正1: まず表示関連のクラスをすべて削除してリセット
+        el.classList.remove(
+            'hidden',
+            'pointer-events-none',
+            'pointer-events-auto',
+            'translate-y-0',
+            'translate-y-24',
+            'scale-0',
+            'scale-100',
+            'opacity-0',
+            'opacity-100'
+        );
 
-        // 初期状態を保証
+        // ★修正2: 強制的にリフローを発生させる（ブラウザに変更を認識させる）
+        void el.offsetHeight;
+
+        // ★修正3: 初期状態を設定（画面外・縮小・透明）
         el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
 
+        // ★修正4: 次のフレームでアニメーション開始
         requestAnimationFrame(() => {
             el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
             el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
         });
     } else {
+        // 非表示アニメーション（元のまま）
         el.classList.remove('opacity-100', 'pointer-events-auto');
         el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
 
@@ -923,6 +939,3 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
-
-

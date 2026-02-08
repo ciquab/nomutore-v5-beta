@@ -881,10 +881,14 @@ const toggleFabLike = (el, show) => {
     if (!el) return;
 
     if (show) {
+        let delayMs = 0;
         if (el.id === 'settings-save-container') {
             const activeEl = document.activeElement;
             if (activeEl && typeof activeEl.blur === 'function') {
                 activeEl.blur();
+                if (activeEl.tagName === 'SELECT') {
+                    delayMs = 120;
+                }
             }
         }
 
@@ -910,19 +914,31 @@ const toggleFabLike = (el, show) => {
 
         // ★修正3: 初期状態を設定（画面外・縮小・透明）
         el.classList.add('transform', 'translate-y-24', 'scale-0', 'opacity-0');
+        el.dataset.animating = 'true';
 
         // ★修正4: 次のフレームでアニメーション開始
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-                el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+                const startAnimation = () => {
+                    el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
+                    el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+                    setTimeout(() => {
+                        delete el.dataset.animating;
+                    }, 350);
+                };
+                if (delayMs > 0) {
+                    setTimeout(startAnimation, delayMs);
+                } else {
+                    startAnimation();
+                }
             });
         });
     } else {
         // 非表示アニメーション（元のまま）
         el.classList.remove('opacity-100', 'pointer-events-auto');
         el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
-
+        delete el.dataset.animating;
+        
         setTimeout(() => {
             el.classList.add('hidden');
         }, 300);
@@ -952,5 +968,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

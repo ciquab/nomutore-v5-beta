@@ -918,32 +918,34 @@ const toggleFabLike = (el, show) => {
 };
 
 const startShowAnimation = (el) => {
+    // ★修正: クラスとインラインスタイルをリセット
     el.classList.remove('hidden', 'pointer-events-none', 'pointer-events-auto',
         'translate-y-0', 'translate-y-24', 'scale-0', 'scale-100', 'opacity-0', 'opacity-100');
     
     el.style.removeProperty('transform');
     el.style.removeProperty('opacity');
-    el.style.removeProperty('transition');
+    // ★重要: transition は削除しない（HTMLのtransitionクラスを維持）
     
     void el.offsetHeight;
     
+    // ★修正: 初期状態をインラインスタイルで設定
     el.style.transform = 'translateY(6rem) scale(0)';
     el.style.opacity = '0';
     
+    // ★修正: HTMLのtransitionクラスを利用するため、RAF1回だけ
     requestAnimationFrame(() => {
-        el.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-        requestAnimationFrame(() => {
-            el.style.transform = 'translateY(0) scale(1)';
-            el.style.opacity = '1';
-            el.classList.add('pointer-events-auto');
-            setTimeout(() => {
-                delete el.dataset.animating;
-                el.style.removeProperty('transform');
-                el.style.removeProperty('opacity');
-                el.style.removeProperty('transition');
-                el.classList.add('translate-y-0', 'scale-100', 'opacity-100');
-            }, 350);
-        });
+        el.style.transform = 'translateY(0) scale(1)';
+        el.style.opacity = '1';
+        el.classList.add('pointer-events-auto');
+        
+        // アニメーション完了後にクリーンアップ
+        setTimeout(() => {
+            delete el.dataset.animating;
+            // インラインスタイルを削除してクラスベースに戻す
+            el.style.removeProperty('transform');
+            el.style.removeProperty('opacity');
+            el.classList.add('translate-y-0', 'scale-100', 'opacity-100');
+        }, 350);
     });
 };
 

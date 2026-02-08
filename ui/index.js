@@ -881,6 +881,13 @@ const toggleFabLike = (el, show) => {
     if (!el) return;
 
     if (show) {
+        if (el.id === 'settings-save-container') {
+            const activeEl = document.activeElement;
+            if (activeEl && typeof activeEl.blur === 'function') {
+                activeEl.blur();
+            }
+        }
+
         // ★修正1: まず表示関連のクラスをすべて削除してリセット
         el.classList.remove(
             'hidden',
@@ -906,8 +913,10 @@ const toggleFabLike = (el, show) => {
 
         // ★修正4: 次のフレームでアニメーション開始
         requestAnimationFrame(() => {
-            el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
-            el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+            requestAnimationFrame(() => {
+                el.classList.remove('translate-y-24', 'scale-0', 'opacity-0');
+                el.classList.add('translate-y-0', 'scale-100', 'opacity-100', 'pointer-events-auto');
+            });
         });
     } else {
         // 非表示アニメーション（元のまま）
@@ -943,4 +952,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

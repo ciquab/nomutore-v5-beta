@@ -885,7 +885,7 @@ const toggleFabLike = (el, show) => {
         let delayMs = 0;
         if (el.id === 'settings-save-container') {
             // ★修正: Settingsタブが開いた直後は必ず遅延を入れる
-            delayMs = 400;  // ★修正: タブアニメーション完了後に表示
+            delayMs = 400;  // タブアニメーション完了後に表示
             
             // フォーカス中の要素があればblur
             const activeEl = document.activeElement;
@@ -908,20 +908,79 @@ const toggleFabLike = (el, show) => {
             startShowAnimation(el);
         }
     } else {
-        // 非表示アニメーション
-        el.classList.remove('opacity-100', 'pointer-events-auto');
-        el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
-        delete el.dataset.animating;
-        
-        setTimeout(() => {
+        // ★修正: 非表示アニメーション
+        // Settings の Save ボタンの場合は即座に hidden にする（プルダウン透け防止）
+        if (el.id === 'settings-save-container') {
+            // プルダウンが見えないように即座に hidden
             el.classList.add('hidden');
-        }, 300);
+            el.classList.remove('opacity-100', 'pointer-events-auto');
+            el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
+            delete el.dataset.animating;
+        } else {
+            // FABボタンなど他の要素は通常通りアニメーション
+            el.classList.remove('opacity-100', 'pointer-events-auto');
+            el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
+            delete el.dataset.animating;
+            
+            setTimeout(() => {
+                el.classList.add('hidden');
+            }, 300);
+        }
     }
 };
 
 // アニメーション開始処理を別関数に分離
 const startShowAnimation = (el) => {
     // ★修正1: まず表示関連のクラスをすべて削除してリセット
+    el.classList.remove(
+        'hidden',
+        'pointer-events-none',
+        'pointer-events-auto',
+        'translate-y-0',
+        'translate-y-24',
+        'scale-0',
+        'scale-100',
+        'opacity-0',
+        'opacity-100'
+    );
+
+    // ★修正2: スクロール制御で入ったインラインスタイルを完全にクリア
+    el.style.removeProperty('transform');
+    el.style.removeProperty('opacity');
+    el.style.removeProperty('transition');
+
+    // ★修正3: 強制的にリフローを発生させる
+    void el.offsetHeight;
+
+    // ★修正4: 初期状態を設定（画面外・縮小・透明）
+    // translate と scale を両方適用するため、インラインスタイルを使用
+    el.style.transform = 'translateY(6rem) scale(0)';
+    el.style.opacity = '0';
+
+    // ★修正5: アニメーション開始
+    requestAnimationFrame(() => {
+        // transition を設定
+        el.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+        
+        requestAnimationFrame(() => {
+            // アニメーション実行
+            el.style.transform = 'translateY(0) scale(1)';
+            el.style.opacity = '1';
+            el.classList.add('pointer-events-auto');
+            
+            // アニメーション完了後にフラグを削除とクリーンアップ
+            setTimeout(() => {
+                delete el.dataset.animating;
+                // クラスベースに戻す
+                el.style.removeProperty('transform');
+                el.style.removeProperty('opacity');
+                el.style.removeProperty('transition');
+                el.classList.add('translate-y-0', 'scale-100', 'opacity-100');
+            }, 350);
+        });
+    });
+};
+
     el.classList.remove(
         'hidden',
         'pointer-events-none',

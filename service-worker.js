@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nomutore-v0.0.9';
+const CACHE_NAME = 'nomutore-v0.1.0';
 const APP_SHELL = [
     './',
     './index.html',
@@ -109,6 +109,7 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
+
 
 
 

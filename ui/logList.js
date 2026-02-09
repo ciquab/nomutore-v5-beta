@@ -105,9 +105,14 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     if (providedLogs) {
         sortedLogs = [...providedLogs].sort((a, b) => b.timestamp - a.timestamp);
     } else {
-        // ✅ 修正: 直接 db を見ず、LogService から全件取得（Service.getAppDataSnapshotの代替）
-        sortedLogs = await LogService.getAll();
-        sortedLogs.sort((a, b) => b.timestamp - a.timestamp);
+        // ✅ 修正点: Service を通じて「調理済み」のデータを取得
+        // これにより「収支計算」「キャッシュ更新」「期間フィルタ」が正しく実行される
+        const snapshot = await Service.getAppDataSnapshot();
+        
+        // セラー画面（履歴一覧）では「全履歴」を見せたい場合は snapshot.allLogs を、
+        // 設定された期間内だけを見せたい場合は snapshot.logs を使います。
+        // 元のロジックに合わせて snapshot.allLogs を採用します。
+        sortedLogs = snapshot.allLogs.sort((a, b) => b.timestamp - a.timestamp);
     }
     
     const totalCount = sortedLogs.length;
@@ -222,3 +227,4 @@ document.addEventListener('change', (e) => {
 
 /** @type {any} */(updateLogListView).updateBulkCount = updateBulkCount;
 export const setFetchLogsHandler = (fn) => {};
+

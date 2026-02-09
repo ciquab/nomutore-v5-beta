@@ -1,3 +1,4 @@
+// @ts-check
 /* ui/timer.js */
 import { APP, EXERCISE, BEER_COLORS, CALORIES } from '../constants.js'; 
 import { Calc } from '../logic.js';

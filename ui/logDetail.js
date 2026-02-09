@@ -1,3 +1,4 @@
+// @ts-check
 import { EXERCISE } from '../constants.js';
 import { db } from '../store.js';
 import { StateManager } from './state.js';

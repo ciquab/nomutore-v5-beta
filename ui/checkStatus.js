@@ -1,3 +1,4 @@
+// @ts-check
 import { Calc, getVirtualDate } from '../logic.js';
 import { DOM, escapeHtml } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';

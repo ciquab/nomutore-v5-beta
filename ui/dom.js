@@ -1,3 +1,4 @@
+// @ts-check
 import { APP } from '../constants.js';
 
 import confetti from 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm';

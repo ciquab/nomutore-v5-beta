@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * @typedef {Object} Profile
  * @property {number} weight - 体重 (kg)

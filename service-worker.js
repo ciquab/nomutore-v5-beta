@@ -1,3 +1,4 @@
+// @ts-check
 const CACHE_NAME = 'nomutore-v0.1.1';
 const APP_SHELL = [
     './',

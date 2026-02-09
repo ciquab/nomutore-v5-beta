@@ -1,3 +1,4 @@
+// @ts-check
 import { APP } from './constants.js';
 import { db, Store } from './store.js';
 import { Calc } from './logic.js';

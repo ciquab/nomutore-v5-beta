@@ -27,17 +27,18 @@ const _deduplicateChecks = (rawChecks) => {
 
 export const Service = {
 
-    // getAllDataForUI を getAppDataSnapshot にリネームして強化
     getAppDataSnapshot: async () => {
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
         const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
         const start = startStr ? parseInt(startStr) : 0;
 
-        // 1. 全生データを取得
-        const allLogs = await db.logs.toArray();
+        // 1. ✅ LogService を使って生データを取得 (db.logs.toArray を隠蔽)
+        const allLogs = await LogService.getAll();
+        
+        // ChecksはまだService化していないので一旦現状維持（後でCheckServiceに切り出し）
         const rawChecks = await db.checks.toArray();
         
-        // 2. [追加] データのクレンジング（重複排除）
+        // 2. データのクレンジング（重複排除）
         const checks = _deduplicateChecks(rawChecks);
 
         // 3. 期間内データの抽出
@@ -46,11 +47,10 @@ export const Service = {
             periodLogs = allLogs.filter(l => l.timestamp >= start);
         }
 
-        // 4. [追加] カロリー収支の合計計算
-        // UI側でやっていた計算をここに集約
+        // 4. カロリー収支の合計計算 (Calcロジックを利用)
         const balance = periodLogs.reduce((sum, l) => sum + (l.kcal || 0), 0);
 
-        // 5. キャッシュの更新（既存ロジック）
+        // 5. キャッシュの更新
         Store.setCachedData(allLogs, checks, periodLogs);
 
         // 6. 全て「調理済み」の状態で返す
@@ -841,4 +841,5 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 

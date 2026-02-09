@@ -378,8 +378,16 @@ const initApp = async () => {
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();
         if (rolledOver) {
-        // ★修正: 単にtoggleModalするのではなく、UIの関数を呼ぶ
-        UI.showRolloverModal();
+            // モーダルを表示するだけ
+            UI.showRolloverModal();
+            // refreshUI と switchTab は実行しない
+        } else {
+            // ロールオーバーがない場合のみ実行
+            await refreshUI();
+            if (Timer && Timer.init) {
+                Timer.init();
+            }
+            UI.switchTab('home', { silent: true });
         }
 
         // 5. Initial Render
@@ -594,6 +602,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

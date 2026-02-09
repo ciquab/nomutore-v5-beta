@@ -2,7 +2,6 @@
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
 import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
-import { showConfetti, showMessage } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
@@ -23,35 +22,6 @@ export const setupFileInputHandlers = () => {
         importFileInput.addEventListener('change', function(e) {
             DataManager.importJSON(this);
         });
-    }
-};
-
-const handleRollover = async (action) => {
-    toggleModal('rollover-modal', false);
-    try {
-        if (action === 'weekly') {
-            await Service.updatePeriodSettings('weekly');
-            showConfetti();
-            showMessage('Weeklyモードに戻りました', 'success');
-        } else if (action === 'new_custom') {
-            UI.switchTab('settings');
-            setTimeout(() => {
-                showMessage('新しい期間を設定してください', 'info');
-                const pMode = document.getElementById('setting-period-mode');
-                if (pMode) {
-                    pMode.value = 'custom';
-                    pMode.dispatchEvent(new Event('change'));
-                }
-            }, 300);
-            return;
-        } else if (action === 'extend') {
-            await Service.extendPeriod(7);
-            showMessage('期間を1週間延長しました', 'success');
-        }
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
-    } catch (err) {
-        console.error('Rollover Action Error:', err);
-        showMessage('期間の更新に失敗しました', 'error');
     }
 };
 
@@ -214,9 +184,9 @@ const registerActions = () => {
         'system:reload': () => location.reload(),
 
         // ========== Rollover系 ==========
-        'rollover:weekly':     () => handleRollover('weekly'),
-        'rollover:new_custom': () => handleRollover('new_custom'),
-        'rollover:extend':     () => handleRollover('extend'),
+        'rollover:weekly':     () => UI.handleRollover('weekly'),
+        'rollover:new_custom': () => UI.handleRollover('new_custom'),
+        'rollover:extend':     () => UI.handleRollover('extend'),
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});

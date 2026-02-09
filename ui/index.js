@@ -16,6 +16,7 @@ import { renderBeerStats } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
 import { Share } from './share.js';
+import { handleRollover } from './rollover.js';
 
 import { 
     renderSettings, openHelp, 
@@ -865,6 +866,7 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
     applyPreset: applyPreset,
     deleteCheckItem: deleteCheckItem,
     addNewCheckItem: addNewCheckItem,
+    handleRollover: handleRollover,
 
 };
 

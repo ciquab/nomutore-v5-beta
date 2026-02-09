@@ -29,37 +29,54 @@ export const Service = {
 
     // getAllDataForUI を getAppDataSnapshot にリネームして強化
     getAppDataSnapshot: async () => {
+        // --- A. 設定の取得 ---
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
         const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
         const start = startStr ? parseInt(startStr) : 0;
 
-        // 1. 全生データを取得
-        const allLogs = await db.logs.toArray();
-        const rawChecks = await db.checks.toArray();
+        // --- B. 生データの収集 ---
+        // 1. Current Logs: 現在の仕様では、これが「全期間の編集可能なログ」の正本です。
+        // ※ LogServiceをimportしていない場合はファイルの先頭に追加してください
+        const currentLogs = await LogService.getAll();
         
-        // 2. [追加] データのクレンジング（重複排除）
+        // 2. Checks: 体調記録
+        const rawChecks = await db.checks.toArray();
         const checks = _deduplicateChecks(rawChecks);
 
-        // 3. 期間内データの抽出
-        let periodLogs = allLogs;
+        // --- C. データの統合 ---
+        
+        // NOTE: 将来的に「アーカイブ後に db.logs からデータを消す」仕様に変更する場合は、
+        // ここで archives を読み込み、currentLogs とマージする処理が必要になります。
+        // 現在は db.logs に全て残る仕様のため、currentLogs をそのまま正とします。
+        const universalLogs = currentLogs;
+
+
+        // --- D. フィルタリングと計算 ---
+
+        // 3. Target Logs: リスト表示・収支計算の対象
+        // 基本は全データ（universalLogs）ですが、期間設定があればフィルタします。
+        let targetLogs = universalLogs;
+        
         if (mode !== 'permanent') {
-            periodLogs = allLogs.filter(l => l.timestamp >= start);
+            // 現在の仕様では、期間設定に関わらず universalLogs（全件）を持っているので、
+            // ここでフィルタすることで「今週分」などを抽出します。
+            targetLogs = universalLogs.filter(l => l.timestamp >= start);
         }
+        
+        // 4. Balance Calculation
+        const balance = targetLogs.reduce((sum, l) => sum + (l.kcal || 0), 0);
+        
+        // 5. Cache Update
+        Store.setCachedData(currentLogs, checks, targetLogs);
 
-        // 4. [追加] カロリー収支の合計計算
-        // UI側でやっていた計算をここに集約
-        const balance = periodLogs.reduce((sum, l) => sum + (l.kcal || 0), 0);
 
-        // 5. キャッシュの更新（既存ロジック）
-        Store.setCachedData(allLogs, checks, periodLogs);
-
-        // 6. 全て「調理済み」の状態で返す
+        // --- E. 結果の返却 ---
         return { 
-            logs: periodLogs, 
-            checks, 
-            allLogs, 
-            balance, 
-            mode 
+            logs: targetLogs,       // 「期間内のデータ」（主にBalance計算の根拠として保持/デバッグ用）
+            allLogs: universalLogs, // weekly.js/chart.js等で利用（全期間）
+            checks: checks,
+            balance: balance,
+            mode: mode 
         };
     },
 
@@ -841,4 +858,5 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 

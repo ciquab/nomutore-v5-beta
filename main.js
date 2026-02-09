@@ -7,7 +7,6 @@ import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
-import { handleSaveSettings } from './ui/modal.js'; 
 import { CloudManager } from './cloudManager.js';
 import { Onboarding } from './ui/onboarding.js';
 import { actionRouter, initActionRouter } from './ui/actionRouter.js';
@@ -24,6 +23,35 @@ export const setupFileInputHandlers = () => {
         importFileInput.addEventListener('change', function(e) {
             DataManager.importJSON(this);
         });
+    }
+};
+
+const handleRollover = async (action) => {
+    toggleModal('rollover-modal', false);
+    try {
+        if (action === 'weekly') {
+            await Service.updatePeriodSettings('weekly');
+            showConfetti();
+            showMessage('Weeklyモードに戻りました', 'success');
+        } else if (action === 'new_custom') {
+            UI.switchTab('settings');
+            setTimeout(() => {
+                showMessage('新しい期間を設定してください', 'info');
+                const pMode = document.getElementById('setting-period-mode');
+                if (pMode) {
+                    pMode.value = 'custom';
+                    pMode.dispatchEvent(new Event('change'));
+                }
+            }, 300);
+            return;
+        } else if (action === 'extend') {
+            await Service.extendPeriod(7);
+            showMessage('期間を1週間延長しました', 'success');
+        }
+        document.dispatchEvent(new CustomEvent('refresh-ui'));
+    } catch (err) {
+        console.error('Rollover Action Error:', err);
+        showMessage('期間の更新に失敗しました', 'error');
     }
 };
 
@@ -153,7 +181,7 @@ const registerActions = () => {
         'timer:reset': () => Timer.reset(),
         
         // ========== Settings系 ==========
-        'settings:save': () => handleSaveSettings(),
+        'settings:save': () => UI.handleSaveSettings(),
         
         // ========== Day Add Selector系 ==========
         'dayAdd:openBeer': () => {
@@ -186,31 +214,9 @@ const registerActions = () => {
         'system:reload': () => location.reload(),
 
         // ========== Rollover系 ==========
-        'rollover:weekly': async () => {
-            toggleModal('rollover-modal', false);
-            await Service.updatePeriodSettings('weekly');
-            showConfetti();
-            showMessage('Weeklyモードに戻りました', 'success');
-            document.dispatchEvent(new CustomEvent('refresh-ui'));
-        },
-        'rollover:new_custom': () => {
-            toggleModal('rollover-modal', false);
-            UI.switchTab('settings');
-            setTimeout(() => {
-                showMessage('新しい期間を設定してください', 'info');
-                const pMode = document.getElementById('setting-period-mode');
-                if (pMode) {
-                    pMode.value = 'custom';
-                    pMode.dispatchEvent(new Event('change'));
-                }
-            }, 300);
-        },
-        'rollover:extend': async () => {
-            toggleModal('rollover-modal', false);
-            await Service.extendPeriod(7);
-            showMessage('期間を1週間延長しました', 'success');
-            document.dispatchEvent(new CustomEvent('refresh-ui'));
-        },
+        'rollover:weekly':     () => handleRollover('weekly'),
+        'rollover:new_custom': () => handleRollover('new_custom'),
+        'rollover:extend':     () => handleRollover('extend'),
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});
@@ -622,6 +628,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

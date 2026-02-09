@@ -300,7 +300,6 @@ export const Onboarding = {
     start: async () => {
         if (localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) {
             Onboarding.showAppUI(); // ★ここが重要：完了済みなら本体を表示
-            UI.switchTab('home');
             return;
         }
         Onboarding.showWizard(0);
@@ -676,5 +675,6 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
+
 
 

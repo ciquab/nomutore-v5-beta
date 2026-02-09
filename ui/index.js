@@ -892,6 +892,10 @@ const toggleFabLike = (el, show) => {
         el.dataset.animating = 'true';
 
         const startAnimation = () => {
+            // ★修正: inline style をクリア（スクロール制御の影響を削除）
+            el.style.removeProperty('transform');
+            el.style.removeProperty('opacity');
+            
             // 1. hidden を削除
             el.classList.remove('hidden');
             
@@ -951,3 +955,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

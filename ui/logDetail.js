@@ -347,10 +347,22 @@ if (addLogBtn) {
         setTimeout(() => toggleModal('day-add-selector', true), 200);
     };
 }
+   
+    // ★追加: Daily Checkボタンのハンドラ
+    const dayCheckBtn = document.getElementById('btn-day-check');
+    if (dayCheckBtn) {
+        dayCheckBtn.onclick = () => {
+            toggleModal('day-detail-modal', false);
+            setTimeout(() => {
+                openCheckModal(dateStr);
+            }, 200);
+        };
+    }
 
     // モーダル表示
     toggleModal('day-detail-modal', true);
 };
+
 
 
 

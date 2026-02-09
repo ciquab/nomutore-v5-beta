@@ -18,7 +18,10 @@ const APP_SHELL = [
     './ui/timer.js',
     './ui/share.js',
     './ui/beerForm.js',
+    './ui/exerciseForm.js',   
+    './ui/checkForm.js',   
     './ui/state.js',
+    './ui/actionRouter.js',   
     './store.js',
     './service.js',
     './logic.js',
@@ -109,6 +112,7 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
+
 
 
 

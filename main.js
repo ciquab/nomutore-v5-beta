@@ -1,7 +1,6 @@
 // @ts-check
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
-import { Calc } from './logic.js';
 import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
 import { showConfetti, showMessage } from './ui/dom.js';
 import { Service } from './service.js';
@@ -159,7 +158,7 @@ const registerActions = () => {
         // ========== Day Add Selector系 ==========
         'dayAdd:openBeer': () => {
             toggleModal('day-add-selector', false);
-            setTimeout(() => UI.openBeerModal(UI.selectedDate), 200);
+            setTimeout(() => UI.openBeerModal(null, UI.selectedDate), 200);
         },
         'dayAdd:openExercise': () => {
             toggleModal('day-add-selector', false);
@@ -603,6 +602,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

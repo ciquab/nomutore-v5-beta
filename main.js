@@ -460,8 +460,8 @@ const setupGlobalListeners = () => {
         } 
         // 上にスクロール、または最上部付近
         else if (diff < -5 || scrollTop <= 10) {
-            fab.style.transform = 'translateY(0)';
-            fab.style.opacity = '1';
+            fab.style.removeProperty('transform');
+            fab.style.removeProperty('opacity');
         }
         
         lastScrollTop = scrollTop;
@@ -594,6 +594,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

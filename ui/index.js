@@ -881,7 +881,6 @@ const toggleFabLike = (el, show) => {
     if (!el) return;
 
     if (show) {
-        // Settings の Save ボタンの場合のみ、特別処理
         let delayMs = 0;
         if (el.id === 'settings-save-container') {
             delayMs = 400;
@@ -893,60 +892,30 @@ const toggleFabLike = (el, show) => {
 
         el.dataset.animating = 'true';
 
+        const startAnimation = () => {
+            el.classList.remove('hidden', 'scale-0', 'opacity-0', 'pointer-events-none');
+            el.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+            setTimeout(() => { delete el.dataset.animating; }, 350);
+        };
+
         if (delayMs > 0) {
-            setTimeout(() => {
-                startShowAnimation(el);
-            }, delayMs);
+            setTimeout(startAnimation, delayMs);
         } else {
-            startShowAnimation(el);
+            startAnimation();
         }
     } else {
         if (el.id === 'settings-save-container') {
             el.classList.add('hidden');
-            el.classList.remove('opacity-100', 'pointer-events-auto');
-            el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
+            el.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
+            el.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
             delete el.dataset.animating;
         } else {
-            el.classList.remove('opacity-100', 'pointer-events-auto');
-            el.classList.add('translate-y-24', 'scale-0', 'opacity-0', 'pointer-events-none');
+            el.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
+            el.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
             delete el.dataset.animating;
-            setTimeout(() => {
-                el.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { el.classList.add('hidden'); }, 300);
         }
     }
-};
-
-const startShowAnimation = (el) => {
-    // ★修正: クラスとインラインスタイルをリセット
-    el.classList.remove('hidden', 'pointer-events-none', 'pointer-events-auto',
-        'translate-y-0', 'translate-y-24', 'scale-0', 'scale-100', 'opacity-0', 'opacity-100');
-    
-    el.style.removeProperty('transform');
-    el.style.removeProperty('opacity');
-    // ★重要: transition は削除しない（HTMLのtransitionクラスを維持）
-    
-    void el.offsetHeight;
-    
-    // ★修正: 初期状態をインラインスタイルで設定
-    el.style.transform = 'translateY(6rem) scale(0)';
-    el.style.opacity = '0';
-    
-    // ★修正: HTMLのtransitionクラスを利用するため、RAF1回だけ
-    requestAnimationFrame(() => {
-        el.style.transform = 'translateY(0) scale(1)';
-        el.style.opacity = '1';
-        el.classList.add('pointer-events-auto');
-        
-        // アニメーション完了後にクリーンアップ
-        setTimeout(() => {
-            delete el.dataset.animating;
-            // インラインスタイルを削除してクラスベースに戻す
-            el.style.removeProperty('transform');
-            el.style.removeProperty('opacity');
-            el.classList.add('translate-y-0', 'scale-100', 'opacity-100');
-        }, 350);
-    });
 };
 
 export const initHandleRepeatDelegation = () => {

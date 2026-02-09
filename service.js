@@ -28,8 +28,6 @@ const _deduplicateChecks = (rawChecks) => {
 
 export const Service = {
 
-    // service.js の getAppDataSnapshot をこれに差し替えてください
-
     // getAllDataForUI を getAppDataSnapshot にリネームして強化
     getAppDataSnapshot: async () => {
         // --- A. 設定の取得 ---
@@ -890,8 +888,6 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
-
-
 
 
 

@@ -1,5 +1,6 @@
 // @ts-check
 import { db, Store } from './store.js';
+import { logService } from './logService.js';
 import { Calc, getVirtualDate } from './logic.js';
 import { APP, EXERCISE, STYLE_SPECS } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -889,6 +890,7 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 
 
 

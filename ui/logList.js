@@ -1,5 +1,5 @@
 // @ts-check
-import { db } from '../store.js';
+import { LogService } from '../logService.js'; // ✅ db の代わりに LogService を導入
 import { DOM, escapeHtml, Feedback, AudioEngine } from './dom.js';
 import { EXERCISE, CALORIES, STYLE_METADATA } from '../constants.js';
 import { StateManager } from './state.js';
@@ -8,17 +8,15 @@ import { openLogDetail } from './logDetail.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 // 状態管理
-let currentLimit = 20; // 最初に表示する件数
-const LIMIT_STEP = 20; // 追加で読み込む件数
+let currentLimit = 20; 
+const LIMIT_STEP = 20; 
 
 export const toggleEditMode = () => {
     const isEdit = !StateManager.isEditMode;
     StateManager.setIsEditMode(isEdit);
     
-    // UI反映
-    updateLogListView(false); // 再描画してチェックボックスを表示
+    updateLogListView(false); 
     
-    // Select Allボタンの表示制御
     const selectAllBtn = document.getElementById('btn-select-all');
     if (selectAllBtn) {
         if (isEdit) selectAllBtn.classList.remove('hidden');
@@ -30,30 +28,24 @@ export const toggleEditMode = () => {
 
 export const toggleSelectAll = () => {
     const checkboxes = document.querySelectorAll('.log-checkbox');
-    // 全てチェック済みなら解除、そうでなければ全選択
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
+    const allChecked = Array.from(checkboxes).every(cb => /** @type {HTMLInputElement} */(cb).checked);
+    checkboxes.forEach(cb => (/** @type {HTMLInputElement} */(cb).checked = !allChecked));
     updateBulkActionUI();
 };
 
-// 選択状態に応じてアクションバー（削除ボタン等）の表示を更新
 export const updateBulkCount = () => {
     updateBulkActionUI();
 };
 
 const updateBulkActionUI = () => {
     const count = document.querySelectorAll('.log-checkbox:checked').length;
-    
-    // 編集モードツールバー（Select Allなど）の制御
-    const toolbar = document.getElementById('edit-toolbar'); // HTMLに存在すれば
+    const toolbar = document.getElementById('edit-toolbar'); 
     if (toolbar) toolbar.classList.toggle('hidden', !StateManager.isEditMode);
     
-    // 一括削除ボタンエリア
-    const deleteBtn = document.getElementById('btn-delete-selected');
+    const deleteBtn = /** @type {HTMLButtonElement} */(document.getElementById('btn-delete-selected'));
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
         deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> Delete (${count})`;
-        // ボタンの表示/非表示
         if(StateManager.isEditMode) {
              deleteBtn.classList.remove('translate-y-20', 'opacity-0');
         } else {
@@ -61,28 +53,27 @@ const updateBulkActionUI = () => {
         }
     }
     
-    // 既存のツールバー内カウント更新（もしあれば）
     const countLabel = document.getElementById('bulk-selected-count');
-    if (countLabel) countLabel.textContent = count;
+    if (countLabel) countLabel.textContent = String(count);
 };
 
-// 選択されたログを一括削除
 export const deleteSelectedLogs = async () => {
     const checkboxes = document.querySelectorAll('.log-checkbox:checked');
     if (checkboxes.length === 0) return;
 
     if (!confirm(`合計 ${checkboxes.length} 件の記録を削除しますか？`)) return;
 
-    const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
+    const ids = Array.from(checkboxes).map(cb => parseInt(/** @type {HTMLInputElement} */(cb).dataset.id || '0'));
     
-   try {
-        // --- ★ここを追加！ブラウザの権限があるこの瞬間に鳴らす ---
+    try {
         if (typeof AudioEngine !== 'undefined') AudioEngine.resume();
         if (typeof Feedback !== 'undefined' && Feedback.delete) {
-            Feedback.delete(); // 「シュッ」という音
+            Feedback.delete(); 
         }
-        // -----------------------------------------------------
 
+        // ✅ 修正: 内部で db.logs.bulkDelete を呼ぶ新 Service メソッド（または LogService 直接）
+        // ここでは Service 層の整合性維持のため Service.bulkDeleteLogs を維持します
+        // (Service.js 側で LogService を使うよう修正するため)
         await Service.bulkDeleteLogs(ids);
         
         StateManager.setIsEditMode(false);
@@ -94,16 +85,11 @@ export const deleteSelectedLogs = async () => {
     }
 };
 
-
-// リスト描画のメイン関数 (Phase 2 Optimized)
-
 /**
  * ログリストの描画（最適化版）
  * @param {boolean} isLoadMore - 追加読み込みかどうか
- * @param {Array} providedLogs - [新設] 外部から渡されたデータ（二重取得防止用）
+ * @param {Array} [providedLogs=null] - 外部から渡されたデータ
  */
-
-// 引数に providedLogs を追加
 export const updateLogListView = async (isLoadMore = false, providedLogs = null) => {
     const listEl = document.getElementById('log-list');
     const loadMoreBtn = document.getElementById('btn-load-more');
@@ -115,15 +101,13 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         currentLimit = 20; 
     }
 
-    // --- ★修正点: データの取得をスマートにする ---
     let sortedLogs;
     if (providedLogs) {
-        // refreshUIから渡されたデータを使う（爆速）
-        sortedLogs = providedLogs.sort((a, b) => b.timestamp - a.timestamp);
+        sortedLogs = [...providedLogs].sort((a, b) => b.timestamp - a.timestamp);
     } else {
-        // 直接呼ばれた時だけDBから取る
-        const { allLogs } = await Service.getAppDataSnapshot();
-        sortedLogs = allLogs.sort((a, b) => b.timestamp - a.timestamp);
+        // ✅ 修正: 直接 db を見ず、LogService から全件取得（Service.getAppDataSnapshotの代替）
+        sortedLogs = await LogService.getAll();
+        sortedLogs.sort((a, b) => b.timestamp - a.timestamp);
     }
     
     const totalCount = sortedLogs.length;
@@ -200,7 +184,6 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         fragment.appendChild(li);
     });
 
-    // --- 【修正点2】描画を一本化し、リスナーの重複登録を削除 ---
     listEl.innerHTML = '';
     listEl.appendChild(fragment);
 
@@ -208,46 +191,34 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         loadMoreBtn.classList.toggle('hidden', totalCount <= currentLimit);
         if (totalCount > currentLimit) {
             loadMoreBtn.textContent = `Load More (${totalCount - currentLimit} remaining)`;
-            // ボタンのリスナーも重複防止のため一度クリアして登録
             loadMoreBtn.onclick = () => updateLogListView(true, sortedLogs);
         }
     }
 };
 
-// --- 【修正点3】イベント委譲（関数の外で1回だけ登録） ---
 document.addEventListener('click', async (e) => { 
     const listEl = document.getElementById('log-list');
-    if (!listEl || !listEl.contains(e.target)) return;
+    if (!listEl || !listEl.contains(/** @type {Node} */(e.target))) return;
     if (StateManager.isEditMode) return;
 
-    const clickableArea = e.target.closest('[data-log-id]');
+    const clickableArea = /** @type {HTMLElement} */(e.target).closest('[data-log-id]');
     if (clickableArea) {
-        const logId = parseInt(clickableArea.dataset.logId);
+        const logId = parseInt(clickableArea.dataset.logId || '0');
         
-        // ★修正ポイント：IDからログデータを取得する
-        const log = await db.logs.get(logId);
+        // ✅ 修正: 直接 db を見ず、LogService 経由で取得
+        const log = await LogService.getById(logId);
         
         if (log) {
-            // データが正しく取得できたら、オブジェクトを渡して開く
             openLogDetail(log);
         }
     }
 });
 
-// チェックボックス用の委譲
 document.addEventListener('change', (e) => {
-    if (e.target.classList.contains('log-checkbox')) {
+    if (/** @type {HTMLElement} */(e.target).classList.contains('log-checkbox')) {
         updateBulkCount();
     }
 });
-// モジュール外から呼べるように割り当て
-updateLogListView.updateBulkCount = updateBulkCount;
 
-// ダミー関数（互換性維持）
-
+/** @type {any} */(updateLogListView).updateBulkCount = updateBulkCount;
 export const setFetchLogsHandler = (fn) => {};
-
-
-
-
-

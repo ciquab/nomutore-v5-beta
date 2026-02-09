@@ -464,16 +464,14 @@ recalcImpactedHistory: async (changedTimestamp) => {
  */
 extendPeriod: async (days = 7) => {
     // 現在の終了日を取得（なければ今日を起点）
-    const currentEnd = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END) || dayjs().format('YYYY-MM-DD');
+    const currentEndTs = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE)) || dayjs().endOf('day').valueOf();
     
-    // 7日間延長
-    const newEnd = dayjs(currentEnd).add(days, 'day').format('YYYY-MM-DD');
+    const newEnd = dayjs(currentEndTs).add(days, 'day').endOf('day').valueOf();
     
-    // 重要：延長した場合は、自動計算と衝突しないようモードを 'custom' に切り替える
-    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END, newEnd);
+    localStorage.setItem(APP.STORAGE_KEYS.PERIOD_END_DATE, newEnd);
     localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, 'custom');
     
-    console.log(`[Service] Extended to ${newEnd} and switched to custom mode.`);
+    console.log(`[Service] Extended to ${dayjs(newEnd).format('YYYY-MM-DD')} and switched to custom mode.`);
 },
 
     /**
@@ -888,6 +886,7 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 
 
 

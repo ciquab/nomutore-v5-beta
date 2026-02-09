@@ -185,12 +185,32 @@ const registerActions = () => {
         // ========== System系 ==========
         'system:reload': () => location.reload(),
 
-        // ========== Rollover系 (追加) ==========
-        'rollover:weekly': () => UI.handleRolloverAction('weekly'),
-        
-        'rollover:new_custom': () => UI.handleRolloverAction('new_custom'),
-        
-        'rollover:extend': () => UI.handleRolloverAction('extend'),
+        // ========== Rollover系 ==========
+        'rollover:weekly': async () => {
+            toggleModal('rollover-modal', false);
+            await Service.updatePeriodSettings('weekly');
+            showConfetti();
+            showMessage('Weeklyモードに戻りました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
+        'rollover:new_custom': () => {
+            toggleModal('rollover-modal', false);
+            UI.switchTab('settings');
+            setTimeout(() => {
+                showMessage('新しい期間を設定してください', 'info');
+                const pMode = document.getElementById('setting-period-mode');
+                if (pMode) {
+                    pMode.value = 'custom';
+                    pMode.dispatchEvent(new Event('change'));
+                }
+            }, 300);
+        },
+        'rollover:extend': async () => {
+            toggleModal('rollover-modal', false);
+            await Service.extendPeriod(7);
+            showMessage('期間を1週間延長しました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});

@@ -1,8 +1,7 @@
+// ui/weekly.js
 // @ts-check
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
-// ❌ import { db } ... 削除！
-// ❌ import { LogService } ... 削除！
 import { StateManager } from './state.js';
 import { DOM } from './dom.js';
 
@@ -10,15 +9,14 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /**
  * 週間カレンダーとヒートマップを描画する
- * @param {Array} logs - アーカイブを含む全てのログデータ (Serviceにより結合済み)
+ * @param {Array} allLogs - 全期間のログデータ
  * @param {Array} checks - 全てのチェックデータ
  */
-export async function renderWeeklyAndHeatUp(logs, checks) {
+// ✅ 修正: async を削除（内部でawaitしていないため同期処理とする）
+export function renderWeeklyAndHeatUp(allLogs, checks) {
     const profile = Store.getProfile();
 
-    // ✅ 修正完了: 内部でのデータ取得・結合ロジックを全削除
-    // Service.getAppDataSnapshot が作った「allLogs」が引数 logs に入ってくる前提
-    const allLogsForDisplay = logs || [];
+    const allLogsForDisplay = allLogs || [];
 
     // ストリーク計算とバッジ表示
     const streak = Calc.getCurrentStreak(allLogsForDisplay, checks, profile);
@@ -43,8 +41,9 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
     // ----------------------------------------------------
     const container = DOM.elements['weekly-calendar'] || document.getElementById('weekly-calendar');
     if (container) {
+        // 月曜始まりロジック
         const today = dayjs();
-        const currentDay = today.day() || 7; 
+        const currentDay = today.day() || 7; // Sun(0) -> 7
         const startOfWeek = today.subtract(currentDay - 1, 'day');
         
         let html = '';
@@ -139,12 +138,14 @@ export async function renderWeeklyAndHeatUp(logs, checks) {
     renderHeatmap(checks, allLogsForDisplay, profile);
 }
 
-export function renderHeatmap(checks, logs, profile) {
+// ✅ 修正: 引数名を logs -> allLogs に変更し、意味論を統一
+export function renderHeatmap(checks, allLogs, profile) {
     const container = DOM.elements['heatmap-grid'] || document.getElementById('heatmap-grid');
     if (!container) return;
 
     const offsetWeeks = StateManager.heatmapOffset || 0;
     
+    // 月曜始まり計算
     const today = dayjs();
     const dayOfWeek = today.day() === 0 ? 7 : today.day(); 
     const thisMonday = today.subtract(dayOfWeek - 1, 'day');
@@ -157,7 +158,8 @@ export function renderHeatmap(checks, logs, profile) {
 
     for (let i = 0; i < daysToShow; i++) {
         const d = startDate.add(i, 'day');
-        const status = Calc.getDayStatus(d, logs, checks, profile);
+        // ✅ 修正: allLogs を使用
+        const status = Calc.getDayStatus(d, allLogs, checks, profile);
         const isToday = d.isSame(dayjs(), 'day');
         
         let bgClass = 'bg-gray-100 dark:bg-gray-800';

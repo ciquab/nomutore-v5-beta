@@ -612,14 +612,13 @@ if (checkModal) {
         // 初期状態：FAB方式で完全非表示
         [fabEl, saveEl].forEach(el => {
             if (!el) return;
-            el.classList.add(
-                'hidden',
-                'transform',
-                'translate-y-24',
-                'scale-0',
-                'opacity-0',
-                'pointer-events-none'
-            );
+            // transition-all がHTMLにあることを確認（なければ追加）
+            if (!el.classList.contains('transition-all')) {
+                el.classList.add('transition-all', 'duration-300', 'ease-out');
+            }
+    
+            // ★重要: 初期状態は hidden のみ
+            el.classList.add('hidden');
         });
 
         document.addEventListener('click', (e) => {
@@ -893,8 +892,19 @@ const toggleFabLike = (el, show) => {
         el.dataset.animating = 'true';
 
         const startAnimation = () => {
-            el.classList.remove('hidden', 'scale-0', 'opacity-0', 'pointer-events-none');
+            // 1. hidden を削除
+            el.classList.remove('hidden');
+            
+            // 2. 初期状態を設定
+            el.classList.add('scale-0', 'opacity-0', 'pointer-events-none');
+            
+            // 3. 強制リフロー
+            void el.offsetHeight;
+            
+            // 4. アニメーション開始
+            el.classList.remove('scale-0', 'opacity-0', 'pointer-events-none');
             el.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+            
             setTimeout(() => { delete el.dataset.animating; }, 350);
         };
 

@@ -1,11 +1,20 @@
 // @ts-check
+
+/**
+ * 型定義のインポート
+ * @typedef {import('./types.js').Log} Log
+ * @typedef {import('./types.js').Check} Check
+ * @typedef {import('./types.js').Profile} Profile
+ */
 import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANTS } from './constants.js'; 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-
-// ユーザーの生活スタイルに合わせた「日付の境界線（Rollover Time）」を導入
-// デフォルトは午前4:00までを「前日」とみなす
-
+/**
+ * タイムスタンプから「仮想的な日付（営業日）」を取得する
+ * デフォルトは午前4:00までを「前日」とみなす
+ * @param {number} [timestamp=Date.now()] - 判定する日時のタイムスタンプ(ms)
+ * @returns {string} 'YYYY-MM-DD' 形式の日付文字列
+ */
 export const getVirtualDate = (timestamp = Date.now()) => {
     const rolloverHour = 4; // 設定画面で可変にしても良い
     const date = dayjs(timestamp);
@@ -23,7 +32,9 @@ export const Calc = {
     getVirtualDate,
 
     /**
-     * 基礎代謝計算
+     * 基礎代謝(BMR)計算 (Mifflin-St Jeor Equation based)
+     * @param {Profile} profile
+     * @returns {number} 1日あたりの基礎代謝(kcal)
      */
     getBMR: (profile) => {
         const weight = (profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT;
@@ -40,8 +51,11 @@ export const Calc = {
         }
     },
 
-    // ★追加: 現在のカロリー収支（バランス）を計算する関数
-    // シェア機能やタンク表示で、渡された期間ログの収支合計を算出します
+    /**
+     * 現在のカロリー収支（バランス）を計算する
+     * @param {Log[]} logs
+     * @returns {number}
+     */
     calculateBalance: (logs) => {
         if (!logs || !Array.isArray(logs)) return 0;
         return logs.reduce((total, log) => {
@@ -49,6 +63,13 @@ export const Calc = {
         }, 0);
     },
 
+    /**
+     * アルコールの純粋カロリー計算 (内部用)
+     * @param {number} ml 
+     * @param {number} abv 
+     * @param {number} carbPer100ml 
+     * @returns {number} kcal
+     */
     calculateAlcoholCalories: (ml, abv, carbPer100ml) => {
         const _ml = ml || 0;
         const _abv = abv || 0;
@@ -61,18 +82,39 @@ export const Calc = {
         return alcoholKcal + carbKcal;
     },
 
+    /**
+     * ビール摂取による借金計算 (負の値で返す)
+     * @param {number} ml 
+     * @param {number} abv 
+     * @param {number} carbPer100ml 
+     * @param {number} [count=1] 
+     * @returns {number} kcal (negative)
+     */
     calculateBeerDebit: (ml, abv, carbPer100ml, count = 1) => {
         const unitKcal = Calc.calculateAlcoholCalories(ml, abv, carbPer100ml);
         const totalKcal = unitKcal * (count || 1);
         return -Math.abs(totalKcal);
     },
 
+    /**
+     * 運動による消費カロリー計算
+     * @param {number} mets 
+     * @param {number} minutes 
+     * @param {Profile} profile 
+     * @returns {number} kcal
+     */
     calculateExerciseBurn: (mets, minutes, profile) => {
         const _mets = mets || 6.0;
         const rate = Calc.burnRate(_mets, profile);
         return (minutes || 0) * rate;
     },
 
+    /**
+     * ストリークボーナス適用後の運動クレジット計算
+     * @param {number} baseKcal 
+     * @param {number} streak 
+     * @returns {{kcal: number, bonusMultiplier: number}}
+     */
     calculateExerciseCredit: (baseKcal, streak) => {
         const multiplier = Calc.getStreakMultiplier(streak);
         return {
@@ -80,7 +122,13 @@ export const Calc = {
             bonusMultiplier: multiplier
         };
     },
-    
+
+    /**
+     * 分間消費カロリー率 (kcal/min) の計算
+     * @param {number} mets 
+     * @param {Profile} profile 
+     * @returns {number} kcal/min
+     */
     burnRate: (mets, profile) => {
         const bmr = Calc.getBMR(profile);
         const netMets = Math.max(0, mets - 1);
@@ -89,6 +137,14 @@ export const Calc = {
         return (rate && rate > 0.1) ? rate : 0.1;
     },
 
+    /**
+     * タンクアニメーション用の表示データ生成
+     * @param {number} currentKcal 
+     * @param {string} currentMode 
+     * @param {Object} settings 
+     * @param {Profile} profile 
+     * @returns {Object}
+     */
     getTankDisplayData: (currentKcal, currentMode, settings, profile) => {
         const modes = settings.modes || { mode1: APP.DEFAULTS.MODE1, mode2: APP.DEFAULTS.MODE2 };
         const baseEx = settings.baseExercise || APP.DEFAULTS.BASE_EXERCISE;
@@ -117,6 +173,13 @@ export const Calc = {
         };
     },
 
+    /**
+     * カロリーを運動時間に換算
+     * @param {number} kcal 
+     * @param {string} exerciseKey 
+     * @param {Profile} profile 
+     * @returns {number} minutes
+     */
     convertKcalToMinutes: (kcal, exerciseKey, profile) => {
         const ex = EXERCISE[exerciseKey] || EXERCISE['stepper'];
         const mets = ex.mets;
@@ -124,6 +187,12 @@ export const Calc = {
         return Math.round(kcal / rate);
     },
 
+    /**
+     * カロリーをビール本数に換算
+     * @param {number} kcal 
+     * @param {string} styleName 
+     * @returns {string} 本数(toFixed(1))
+     */
     convertKcalToBeerCount: (kcal, styleName) => {
         const unit = CALORIES.STYLES[styleName] || 140;
         const safeUnit = unit > 0 ? unit : 140;
@@ -131,8 +200,13 @@ export const Calc = {
     },
 
     /**
-     * 【修正版】UI用ラッパー関数
+     * 【修正版】現在の継続日数（ストリーク）を計算
      * 従来の引数(配列)を受け取り、内部でMapに変換して高速版を呼ぶ
+     * @param {Log[]} logs 
+     * @param {Check[]} checks 
+     * @param {Profile} profile 
+     * @param {number|string} [referenceDate=null]
+     * @returns {number}
      */
     getCurrentStreak: (logs, checks, profile, referenceDate = null) => {
         const safeLogs = Array.isArray(logs) ? logs : [];
@@ -187,66 +261,76 @@ export const Calc = {
     },
 
     /**
- * 【最終安定版】高速ストリーク計算（救済措置・歴史修正・無限ループガード完備）
- */
-getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
-    // 1. 判定基準日の決定（実時刻を仮想日付文字列に変換）
-    const targetDate = referenceDate ? dayjs(referenceDate) : dayjs();
-    const targetDateStr = Calc.getVirtualDate(targetDate.valueOf()); 
+     * 【最終安定版】高速ストリーク計算（救済措置・歴史修正・無限ループガード完備）
+     * @param {Map} logMap 
+     * @param {Map} checkMap 
+     * @param {Object} firstDate (dayjs)
+     * @param {number|string} [referenceDate=null]
+     * @returns {number}
+     */
+    getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
+        // 1. 判定基準日の決定（実時刻を仮想日付文字列に変換）
+        const targetDate = referenceDate ? dayjs(referenceDate) : dayjs();
+        const targetDateStr = Calc.getVirtualDate(targetDate.valueOf()); 
     
-    const hasLogOnTarget = logMap.has(targetDateStr);
-    const hasCheckOnTarget = checkMap.has(targetDateStr);
+        const hasLogOnTarget = logMap.has(targetDateStr);
+        const hasCheckOnTarget = checkMap.has(targetDateStr);
 
-    // 2. 判定開始地点の決定
-    // 基準日に何らかの記録があればその日から、なければ「まだ何もしてない今日」とみなし前日から遡る
-    let checkDate = (hasLogOnTarget || hasCheckOnTarget) 
+        // 2. 判定開始地点の決定
+        // 基準日に何らかの記録があればその日から、なければ「まだ何もしてない今日」とみなし前日から遡る
+        let checkDate = (hasLogOnTarget || hasCheckOnTarget) 
                     ? dayjs(targetDateStr) // 文字列から生成して時刻を00:00に正規化
                     : dayjs(targetDateStr).subtract(1, 'day');
     
-    let streak = 0;
-    let loopCount = 0; // 無限ループガード用
+        let streak = 0;
+        let loopCount = 0; // 無限ループガード用
 
-    while (true) {
-        // 安全装置：10年分以上のループ、または最古の日付を超えたら終了
-        loopCount++;
-        if (loopCount > 3650 || checkDate.isBefore(firstDate, 'day')) break;
+        while (true) {
+            // 安全装置：10年分以上のループ、または最古の日付を超えたら終了
+            loopCount++;
+                if (loopCount > 3650 || checkDate.isBefore(firstDate, 'day')) break;
+    
+            const dateStr = checkDate.format('YYYY-MM-DD');
+            const dayLogs = logMap.get(dateStr) || { hasBeer: false, hasExercise: false, balance: 0 };
+            const isDry = checkMap.get(dateStr); // true | false | undefined
 
-        const dateStr = checkDate.format('YYYY-MM-DD');
-        const dayLogs = logMap.get(dateStr) || { hasBeer: false, hasExercise: false, balance: 0 };
-        const isDry = checkMap.get(dateStr); // true | false | undefined
+            // --- A. 【成功判定（ストリーク加算）】 ---
+            // 手動休肝日 or お酒なし or 完済済み
+            if (isDry === true || !dayLogs.hasBeer || (dayLogs.hasBeer && dayLogs.balance >= -0.1)) {
+                streak++;
+                checkDate = checkDate.subtract(1, 'day');
+                continue;
+            }
 
-        // --- A. 【成功判定（ストリーク加算）】 ---
-        // 手動休肝日 or お酒なし or 完済済み
-        if (isDry === true || !dayLogs.hasBeer || (dayLogs.hasBeer && dayLogs.balance >= -0.1)) {
-            streak++;
-            checkDate = checkDate.subtract(1, 'day');
-            continue;
+            // --- B. 【救済措置（ストリーク維持・カウント不変）】 ---
+            // 記録がない(undefined)が、その前日が成功していればブリッジする
+            const prevDate = checkDate.subtract(1, 'day');
+            const prevStr = prevDate.format('YYYY-MM-DD');
+            const prevLog = logMap.get(prevStr) || { hasBeer: false, hasExercise: false, balance: 0 };
+            const prevCheck = checkMap.get(prevStr);
+
+            const isPrevValid = (prevCheck === true) || 
+                               (!prevLog.hasBeer && prevCheck !== false) || 
+                               (prevLog.hasBeer && prevLog.balance >= -0.1);
+
+            if (isDry === undefined && !dayLogs.hasBeer && isPrevValid) {
+                checkDate = checkDate.subtract(1, 'day');
+                continue;
+            }
+
+            // --- C. 【失敗判定（ストリーク終了）】 ---
+            // 借金がある、または明確に「飲酒のみ（isDry === false）」の場合
+            break;
         }
 
-        // --- B. 【救済措置（ストリーク維持・カウント不変）】 ---
-        // 記録がない(undefined)が、その前日が成功していればブリッジする
-        const prevDate = checkDate.subtract(1, 'day');
-        const prevStr = prevDate.format('YYYY-MM-DD');
-        const prevLog = logMap.get(prevStr) || { hasBeer: false, hasExercise: false, balance: 0 };
-        const prevCheck = checkMap.get(prevStr);
+        return streak;
+    },
 
-        const isPrevValid = (prevCheck === true) || 
-                           (!prevLog.hasBeer && prevCheck !== false) || 
-                           (prevLog.hasBeer && prevLog.balance >= -0.1);
-
-        if (isDry === undefined && !dayLogs.hasBeer && isPrevValid) {
-            checkDate = checkDate.subtract(1, 'day');
-            continue;
-        }
-
-        // --- C. 【失敗判定（ストリーク終了）】 ---
-        // 借金がある、または明確に「飲酒のみ（isDry === false）」の場合
-        break;
-    }
-
-    return streak;
-},
-
+    /**
+     * ストリークボーナス倍率を返す
+     * @param {number} streak 
+     * @returns {number}
+     */
     getStreakMultiplier: (streak) => {
         if (streak >= 14) return 1.3;
         if (streak >= 7) return 1.2;
@@ -254,6 +338,13 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         return 1.0;
     },
 
+    /**
+     * 最新のランク（LIVER RANK）を判定する
+     * @param {Check[]} checks 
+     * @param {Log[]} logs 
+     * @param {Profile} profile 
+     * @returns {Object} ランク情報
+     */
     getRecentGrade: (checks, logs, profile) => {
         const safeLogs = Array.isArray(logs) ? logs : [];
         const safeChecks = Array.isArray(checks) ? checks : [];
@@ -290,6 +381,12 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         return { rank: 'C', label: '要注意', color: 'text-red-500', bg: 'bg-red-50', next: 8, current: recentSuccessDays };
     },
 
+    /**
+     * 借金返済のための運動提案
+     * @param {number} debtKcal 
+     * @param {Profile} profile 
+     * @returns {Object|null}
+     */
     getRedemptionSuggestion: (debtKcal, profile) => {
         const debt = Math.abs(debtKcal || 0);
         if (debt < 50) return null; 
@@ -307,11 +404,25 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         return best;
     },
 
+    /**
+     * 指定日にアルコールログがあるか確認
+     * @param {Log[]} logs 
+     * @param {number} timestamp 
+     * @returns {boolean}
+     */
     hasAlcoholLog: (logs, timestamp) => {
         const target = dayjs(timestamp);
         return logs.some(l => l.type === 'beer' && dayjs(l.timestamp).isSame(target, 'day'));
     },
 
+    /**
+     * その日の状態ステータスを取得（カレンダー用）
+     * @param {string|number} date 
+     * @param {Log[]} logs 
+     * @param {Check[]} checks 
+     * @param {Profile} profile 
+     * @returns {string} status_key
+     */
     getDayStatus: (date, logs, checks, profile) => {
         const d = dayjs(date);
         const dayStart = d.startOf('day').valueOf();
@@ -341,6 +452,11 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         return 'none';
     },
 
+    /**
+     * ビール統計情報の生成
+     * @param {Log[]} allLogs 
+     * @returns {Object} stats
+     */
     getBeerStats: (allLogs) => {
         const beerLogs = allLogs.filter(l => l.type === 'beer');
         
@@ -401,7 +517,12 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         };
     },
 
-    // --- Phase 1.5 Add: SNS Share Text Generator ---
+    /**
+     * SNSシェア用のテキスト生成
+     * @param {Log} log 
+     * @param {number} [balanceKcal=0] 
+     * @returns {string}
+     */
     generateShareText: (log, balanceKcal = 0) => {
         const hashtags = APP.HASHTAGS;
         const balance = Math.round(balanceKcal);
@@ -441,7 +562,3 @@ getStreakFromMap: (logMap, checkMap, firstDate, referenceDate = null) => {
         return `${text} ${hashtags}`;
     }
 };
-
-
-
-

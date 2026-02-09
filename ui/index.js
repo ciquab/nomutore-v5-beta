@@ -73,7 +73,7 @@ export const refreshUI = async () => {
             renderBeerTank(balance);
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
-            await renderWeeklyAndHeatUp(allLogs, checks);
+            renderWeeklyAndHeatUp(allLogs, checks);
             renderChart(allLogs, checks);
         } 
         else if (activeTabId === 'record') {
@@ -961,6 +961,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

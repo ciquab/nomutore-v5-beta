@@ -86,6 +86,36 @@ export const Service = {
         return { logs, checks, allLogs };
     },
 
+    /**
+     * 指定した日付のチェック記録と飲酒状況を取得する
+     * @param {string|number} dateVal - 日付文字列(YYYY-MM-DD) または タイムスタンプ
+     * @returns {Promise<{ check: import('./types.js').Check | null, hasBeer: boolean }>}
+     */
+    getCheckStatusForDate: async (dateVal) => {
+        const d = dayjs(dateVal);
+        const start = d.startOf('day').valueOf();
+        const end = d.endOf('day').valueOf();
+
+        // Snapshotから最新データを取得
+        // NOTE: getAppDataSnapshot は内部でキャッシュ(Store)と連携しており、
+        // 頻繁に呼んでもDB負荷がかからない設計になっている前提。
+        const snapshot = await Service.getAppDataSnapshot();
+
+        // 1. その日のCheckを取得
+        const check = snapshot.checks.find(c => 
+            c.timestamp >= start && c.timestamp <= end
+        ) || null;
+
+        // 2. その日のビールログがあるか確認
+        // NOTE: hasBeer判定は「全期間ログ(allLogs)」から行う。
+        // 期間設定(Weekly等)でフィルタされた logs を使うと、範囲外の日付で判定ミスが起きるため。
+        const hasBeer = snapshot.allLogs.some(l => 
+            l.timestamp >= start && l.timestamp <= end && l.type === 'beer'
+        );
+
+        return { check, hasBeer };
+    },
+
     getLogsWithPagination: async (offset, limit) => {
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
         let logs, totalCount;
@@ -859,6 +889,7 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 
 
 

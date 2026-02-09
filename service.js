@@ -1,5 +1,6 @@
 // @ts-check
 import { db, Store } from './store.js';
+import { LogService } from './logService.js';
 import { Calc, getVirtualDate } from './logic.js';
 import { APP, EXERCISE, STYLE_SPECS } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -26,8 +27,6 @@ const _deduplicateChecks = (rawChecks) => {
 };
 
 export const Service = {
-
-    // service.js の getAppDataSnapshot をこれに差し替えてください
 
     // getAllDataForUI を getAppDataSnapshot にリネームして強化
     getAppDataSnapshot: async () => {

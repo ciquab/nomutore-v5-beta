@@ -10,7 +10,6 @@
 
 import { CHECK_SCHEMA, APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
-import { LogService } from '../logService.js'; 
 import { Service } from '../service.js';       
 import { DOM, toggleModal, showMessage, Feedback } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
@@ -544,3 +543,4 @@ export const getCheckFormData = () => {
 
     return data;
 };
+

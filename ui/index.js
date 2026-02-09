@@ -22,7 +22,7 @@ import {
     updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
     openActionMenu, handleSaveSettings, 
-    validateInput, handleRolloverAction,
+    validateInput, 
     renderRecordTabShortcuts, // ★新規追加
     openShareModal, // ★新規追加
     showRolloverModal
@@ -73,7 +73,7 @@ export const refreshUI = async () => {
             renderBeerTank(balance);
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
-            await renderWeeklyAndHeatUp(allLogs, checks);
+            renderWeeklyAndHeatUp(allLogs, checks);
             renderChart(allLogs, checks);
         } 
         else if (activeTabId === 'record') {
@@ -853,7 +853,6 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
         LogDetail.openDayDetail(date);
     },
           
-    handleRolloverAction: handleRolloverAction, 
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
@@ -961,7 +960,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
-
-
 

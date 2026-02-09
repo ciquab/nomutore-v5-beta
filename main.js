@@ -1,7 +1,6 @@
 // @ts-check
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
-import { Calc } from './logic.js';
 import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
 import { showConfetti, showMessage } from './ui/dom.js';
 import { Service } from './service.js';
@@ -159,7 +158,7 @@ const registerActions = () => {
         // ========== Day Add Selector系 ==========
         'dayAdd:openBeer': () => {
             toggleModal('day-add-selector', false);
-            setTimeout(() => UI.openBeerModal(UI.selectedDate), 200);
+            setTimeout(() => UI.openBeerModal(null, UI.selectedDate), 200);
         },
         'dayAdd:openExercise': () => {
             toggleModal('day-add-selector', false);
@@ -186,12 +185,32 @@ const registerActions = () => {
         // ========== System系 ==========
         'system:reload': () => location.reload(),
 
-        // ========== Rollover系 (追加) ==========
-        'rollover:weekly': () => UI.handleRolloverAction('weekly'),
-        
-        'rollover:new_custom': () => UI.handleRolloverAction('new_custom'),
-        
-        'rollover:extend': () => UI.handleRolloverAction('extend'),
+        // ========== Rollover系 ==========
+        'rollover:weekly': async () => {
+            toggleModal('rollover-modal', false);
+            await Service.updatePeriodSettings('weekly');
+            showConfetti();
+            showMessage('Weeklyモードに戻りました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
+        'rollover:new_custom': () => {
+            toggleModal('rollover-modal', false);
+            UI.switchTab('settings');
+            setTimeout(() => {
+                showMessage('新しい期間を設定してください', 'info');
+                const pMode = document.getElementById('setting-period-mode');
+                if (pMode) {
+                    pMode.value = 'custom';
+                    pMode.dispatchEvent(new Event('change'));
+                }
+            }, 300);
+        },
+        'rollover:extend': async () => {
+            toggleModal('rollover-modal', false);
+            await Service.extendPeriod(7);
+            showMessage('期間を1週間延長しました', 'success');
+            document.dispatchEvent(new CustomEvent('refresh-ui'));
+        },
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});
@@ -603,6 +622,7 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
 
 
 

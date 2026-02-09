@@ -1,3 +1,4 @@
+// @ts-check
 import { toPng } from 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/+esm';
 import { APP } from '../constants.js';
 import { Store } from '../store.js';

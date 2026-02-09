@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * ui/actionRouter.js
  * Phase 2対応: 循環依存を解消

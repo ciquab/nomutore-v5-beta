@@ -1,3 +1,4 @@
+// @ts-check
 import { EXERCISE, CALORIES, SIZE_DATA, STYLE_SPECS, STYLE_METADATA, APP } from '../constants.js';
 import { Calc, getVirtualDate } from '../logic.js';
 import { Store, db } from '../store.js';

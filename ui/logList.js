@@ -1,3 +1,4 @@
+// @ts-check
 import { db } from '../store.js';
 import { DOM, escapeHtml, Feedback, AudioEngine } from './dom.js';
 import { EXERCISE, CALORIES, STYLE_METADATA } from '../constants.js';

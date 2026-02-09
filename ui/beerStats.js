@@ -1,3 +1,4 @@
+// @ts-check
 import { Calc } from '../logic.js';
 import { DOM, escapeHtml } from './dom.js';
 import { STYLE_METADATA } from '../constants.js';

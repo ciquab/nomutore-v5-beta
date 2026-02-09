@@ -1,3 +1,4 @@
+// @ts-check
 import { driver } from "https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.mjs";
 import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';

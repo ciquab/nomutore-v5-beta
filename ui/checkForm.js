@@ -1,3 +1,4 @@
+// @ts-check
 import { CHECK_SCHEMA, APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
 import { db } from '../store.js';

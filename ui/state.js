@@ -1,3 +1,4 @@
+// @ts-check
 import { APP } from '../constants.js';
 import { refreshUI } from './index.js';
 

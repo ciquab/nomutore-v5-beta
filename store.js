@@ -1,3 +1,4 @@
+// @ts-check
 import { APP } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 

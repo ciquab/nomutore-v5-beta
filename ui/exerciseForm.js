@@ -1,3 +1,4 @@
+// @ts-check
 import { EXERCISE, APP } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
 import { showMessage, Feedback,toggleModal } from './dom.js';

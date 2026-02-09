@@ -321,7 +321,12 @@ document.addEventListener('bulk-delete', async () => {
         // 🔄 期間リセット同期
         document.addEventListener('confirm-rollover', async () => {
             toggleModal('rollover-modal', false);
+            if (Timer && Timer.init) {
+                Timer.init();
+            }
+    
             await refreshUI();
+            UI.switchTab('home', { silent: true });
             showConfetti();
         });
         
@@ -955,5 +960,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

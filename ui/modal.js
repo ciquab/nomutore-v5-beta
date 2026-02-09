@@ -181,7 +181,7 @@ const renderActionMenuExerciseShortcuts = async () => {
                         <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                     </div>
                     <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${safeName}</div>
-                    <div class="text-[9px] text-gray-500 font-mono">
+                    <div class="text-[9px] text-gray-500 truncate">
                         ${log.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(log.kcal)} kcal
                     </div>
                 </div>
@@ -508,7 +508,7 @@ export const renderRecordTabShortcuts = async () => {
                     brand: beer.brand || beer.name,
                     brewery: beer.brewery,
                     style: beer.style,
-                    size: '350',
+                    size: beer.size || '350',
                     count: 1
                 };
                 const jsonParam = JSON.stringify(repeatPayload).replace(/"/g, "&quot;");
@@ -525,6 +525,7 @@ export const renderRecordTabShortcuts = async () => {
                         <div class="text-left min-w-0 flex-1">
                             <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate">${safeName}</div>
+                            <div class="text-[9px] text-gray-400 truncate mt-0.5"> ${beer.size || '350'}ml</div>
                         </div>
                     </button>
                 `;
@@ -566,7 +567,7 @@ export const renderRecordTabShortcuts = async () => {
                         <div class="text-left min-w-0 flex-1">
                             <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${safeName}</div>
-                            <div class="text-[9px] text-gray-400 font-mono mt-0.5">${log.minutes} min</div>
+                            <div class="text-[9px] text-gray-400 truncate mt-0.5">${log.minutes} min</div>
                         </div>
                     </button>
                 `;
@@ -708,6 +709,7 @@ export const showRolloverModal = () => {
     toggleModal('rollover-modal', true);
 
 };
+
 
 
 

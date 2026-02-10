@@ -1,6 +1,6 @@
 // @ts-check
 import { Calc } from '../logic.js';
-import { Store, db } from '../store.js';
+import { Store } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
 import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification } from './dom.js';
@@ -380,7 +380,7 @@ document.addEventListener('bulk-delete', async () => {
     // 編集中の場合は、DBから元のログ情報を取得して getBeerFormData に渡す
     let existingLog = null;
     if (editingId) {
-        existingLog = await db.logs.get(editingId);
+        existingLog = await Service.getLogById(editingId);
     }
 
     // 引数に既存ログを渡す（beerForm.js側の修正とセットで機能します）
@@ -401,7 +401,7 @@ document.addEventListener('bulk-delete', async () => {
 
     let existingLog = null;
     if (editingId) {
-        existingLog = await db.logs.get(editingId);
+        existingLog = await Service.getLogById(editingId);
     }
 
     const data = getBeerFormData(existingLog);
@@ -577,13 +577,7 @@ if (checkModal) {
             if (confirm('【警告】\nすべてのデータを削除して初期化しますか？\nこの操作は取り消せません。')) {
                 if (confirm('本当に削除しますか？\n(復元用のバックアップがない場合、データは永遠に失われます)')) {
                     try {
-                        // テーブルが存在する場合のみ削除を実行 (エラー回避)
-                        if (db.logs) await db.logs.clear();
-                        if (db.checks) await db.checks.clear();
-                        if (db.period_archives) await db.period_archives.clear();
-                        
-                        // ローカルストレージ（設定）クリア
-                        localStorage.clear();
+                        await Service.resetAllData();
                         
                         alert('データを削除しました。アプリを再読み込みします。');
                         window.location.reload();
@@ -747,7 +741,7 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
     editLog: async (id) => {
         if (StateManager.isEditMode) return;
 
-        const log = await db.logs.get(id);
+        const log = await Service.getLogById(id);
         if(!log) return;
         
         // 編集モード確認は不要（タップで編集、長押し選択のUXの場合）
@@ -762,7 +756,7 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
 
     openLogDetail: async (id) => {
         Feedback.tap();
-        const log = await db.logs.get(parseInt(id));
+        const log = await Service.getLogById(parseInt(id));
         if (log) {
             // 「LogDetailファイルの openLogDetail を呼ぶ」と明確にわかる
             LogDetail.openLogDetail(log); 

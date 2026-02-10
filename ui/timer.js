@@ -216,7 +216,9 @@ export const Timer = {
         const minutes = diffMs / 1000 / 60;
         
         // 運動消費カロリー (kcal)
-        const burned = Calc.calculateExerciseBurn(mets, minutes, profile);
+        // ★修正: 算出された burned を小数点第1位で丸める
+        const rawBurned = Calc.calculateExerciseBurn(mets, minutes, profile);
+        const burned = Math.round(rawBurned * 10) / 10;
         
         const kcalEl = document.getElementById('timer-kcal');
         if(kcalEl) kcalEl.textContent = burned.toFixed(1);
@@ -421,4 +423,5 @@ export const Timer = {
             }
         }
     }
+
 };

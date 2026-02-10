@@ -1,8 +1,16 @@
+// ui/checkForm.js
 // @ts-check
+
+/**
+ * 型定義
+ * @typedef {import('../types.js').Check} Check
+ * @typedef {import('../types.js').Log} Log
+ * @typedef {import('../types.js').CheckSchemaItem} CheckSchemaItem
+ */
+
 import { CHECK_SCHEMA, APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
-import { db } from '../store.js';
-import { StateManager } from './state.js';
+import { Service } from '../service.js';       
 import { DOM, toggleModal, showMessage, Feedback } from './dom.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -24,16 +32,20 @@ const ICON_KEYWORDS = {
 
 /* --- Check Modal Logic --- */
 
-export const openCheckModal = async (dateStr) => {
+/**
+ * デイリーチェックモーダルを開く
+ * @param {string|null} [dateStr=null] - 指定日付 (YYYY-MM-DD)
+ */
+export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
-    const dateInput = document.getElementById('check-date');
+    const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) dateInput.value = dateVal;
 
     // 日付表示バッジの更新
     const displayEl = document.getElementById('daily-check-date-display');
-    const valueEl = document.getElementById('daily-check-date-value');
+    const valueEl = /** @type {HTMLInputElement} */ (document.getElementById('daily-check-date-value'));
     if (displayEl) displayEl.textContent = d.format('MM/DD (ddd)');
     if (valueEl) valueEl.value = dateVal;
     
@@ -47,7 +59,7 @@ export const openCheckModal = async (dateStr) => {
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
             
-            // ★修正: マスタデータ(constants.js)から最新定義を取得してアイコンを上書き表示
+            // マスタデータからアイコン取得
             const spec = getCheckItemSpec(item.id);
             const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
             const iconHtml = DOM.renderIcon(iconDef, 'text-xl text-indigo-500 dark:text-indigo-400');
@@ -69,11 +81,15 @@ export const openCheckModal = async (dateStr) => {
 
     const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-    isDryCheck.onchange = (e) => syncDryDayUI(e.target.checked);
+        isDryCheck.onchange = (e) => syncDryDayUI(/** @type {HTMLInputElement} */(e.target).checked);
     }
 
+    /**
+     * @param {string} id
+     * @param {boolean} val
+     */
     const setCheck = (id, val) => {
-        const el = document.getElementById(id);
+        const el = /** @type {HTMLInputElement} */ (document.getElementById(id));
         if(el) el.checked = !!val;
     };
     
@@ -81,43 +97,33 @@ export const openCheckModal = async (dateStr) => {
     setCheck('check-is-dry', false);
     syncDryDayUI(false);
     
-    const wEl = document.getElementById('check-weight');
+    const wEl = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
     if(wEl) wEl.value = '';
 
     const saveBtn = document.getElementById('btn-save-check');
     if (saveBtn) saveBtn.textContent = 'Log Check';
 
-    const isDryInput = document.getElementById('check-is-dry');
+    const isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
     const dryLabelText = dryLabelContainer ? dryLabelContainer.querySelector('span.font-bold') : null;
-    const hint = document.querySelector('#drinking-section p'); // ヒント要素の取得
+    const hint = document.querySelector('#drinking-section p');
 
-    // ★修正: ラベルを日本語化
+    // ラベルを日本語化
     if (dryLabelText) dryLabelText.innerHTML = "休肝日 <span class='text-xs opacity-70 font-normal ml-1'>(No Alcohol)</span>";
     if (isDryInput) isDryInput.disabled = false;
     // 以前の状態をリセット
     if (dryLabelContainer) dryLabelContainer.classList.remove('opacity-50', 'pointer-events-none');
     if (hint) {
         hint.classList.remove('text-red-500', 'font-bold');
-        // syncDryDayUI(false) でデフォルトテキストが入っています
     }
 
     try {
-        const start = d.startOf('day').valueOf();
-        const end = d.endOf('day').valueOf();
-        
-        const [existingLogs, beerLogs] = await Promise.all([
-            db.checks.where('timestamp').between(start, end, true, true).toArray(),
-            db.logs.where('timestamp').between(start, end, true, true).filter(l => l.type === 'beer').toArray()
-        ]);
-
-        const existingSaved = existingLogs.find(c => c.isSaved === true);
-        const anyRecord = existingLogs.length > 0 ? existingLogs[0] : null;
-        const hasBeer = beerLogs.length > 0;
+        // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽
+        const { check: anyRecord, hasBeer } = await Service.getCheckStatusForDate(d.valueOf());
 
         if (anyRecord) {
-            setCheck('check-is-dry', anyRecord.isDryDay);
-            syncDryDayUI(anyRecord.isDryDay);
+            setCheck('check-is-dry', !!anyRecord.isDryDay);
+            syncDryDayUI(!!anyRecord.isDryDay);
             
             let schema = CHECK_SCHEMA;
             try {
@@ -125,31 +131,28 @@ export const openCheckModal = async (dateStr) => {
                 if (s) schema = JSON.parse(s);
             } catch(e) {}
 
-            const renderedIds = new Set(['id', 'timestamp', 'isDryDay', 'weight', 'isSaved', 'date']); // 除外対象
+            const renderedIds = new Set(['id', 'timestamp', 'isDryDay', 'weight', 'isSaved', 'date']);
             schema.forEach(item => {
-                // anyRecord を参照するように修正
+                // ✅ Check型にIndex Signatureが入ったため、@ts-ignore 不要
                 if (anyRecord[item.id] !== undefined) {
+                    // @ts-ignore
                     setCheck(`check-${item.id}`, anyRecord[item.id]);
                 }
                 renderedIds.add(item.id);
             });
 
-            // ▼▼▼ 追加: スキーマにない「遺産項目」を探して表示する (Legacy Item Recovery) ▼▼▼
+            // Legacy Item Recovery
             const container = document.getElementById('check-items-container');
             const legacyKeys = Object.keys(anyRecord).filter(key => !renderedIds.has(key));
 
             legacyKeys.forEach(key => {
-                // 値が true (チェックあり) の場合のみ復元表示する
-                if (anyRecord[key] === true) {
-                    // 辞書から定義を取得（廃止項目でもここなら取れる！）
+                // ✅ Check型のおかげで、ここも安全にアクセス可能
+                if (anyRecord[key] === true && container) {
                     const spec = getCheckItemSpec(key);
-                    
-                    // ★修正: アイコンのレンダリング
                     const iconHtml = DOM.renderIcon(spec?.icon || 'ph-bold ph-clock-counter-clockwise', 'text-lg text-amber-500');
 
-                    // DOM生成（通常の項目とは少し見た目を変えて「過去の遺産」感を出す）
                     const div = document.createElement('div');
-                    div.className = "legacy-item-wrapper"; // 識別用クラス
+                    div.className = "legacy-item-wrapper";
                     div.innerHTML = `
                         <label class="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700 opacity-80 cursor-not-allowed">
                             <input type="checkbox" checked disabled class="rounded text-amber-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300">
@@ -165,25 +168,22 @@ export const openCheckModal = async (dateStr) => {
                     container.appendChild(div);
                 }
             });
-            // ▲▲▲ 追加終了 ▲▲▲
 
-            // anyRecord を参照するように修正
-            if(wEl) wEl.value = anyRecord.weight || '';
+            if(wEl) wEl.value = String(anyRecord.weight || '');
 
             if (saveBtn) {
-                saveBtn.textContent = existingSaved ? 'Update Check' : 'Log Check';
+                saveBtn.textContent = anyRecord.isSaved ? 'Update Check' : 'Log Check';
             }
-        } // if (anyRecord) の閉じカッコ
+        }
 
         if (hasBeer) {
             setCheck('check-is-dry', false); 
             syncDryDayUI(false);              
             if (isDryInput) isDryInput.disabled = true;
-            // ★修正: ビールがある場合、休肝日ラベル自体はいじらず、下のヒントテキストを赤字で書き換える
             if (hint) {
                 hint.innerHTML = "<i class='ph-bold ph-beer-bottle'></i> 飲酒記録があるため、休肝日は選択できません";
-                hint.classList.remove('text-orange-600/70', 'text-emerald-600'); // 他の状態の色を消す
-                hint.classList.add('text-red-500', 'font-bold'); // 赤字強調
+                hint.classList.remove('text-orange-600/70', 'text-emerald-600');
+                hint.classList.add('text-red-500', 'font-bold');
             }
         }
     } catch (e) { 
@@ -195,7 +195,13 @@ export const openCheckModal = async (dateStr) => {
 
 /* --- Check Library Logic (Phase 1.5 New) --- */
 
+/**
+ * IDリストからアクティブなスキーマオブジェクトを生成する
+ * @param {string[]} ids 
+ * @returns {CheckSchemaItem[]}
+ */
 const getActiveSchemaFromIds = (ids) => {
+    /** @type {CheckSchemaItem[]} */
     const activeSchema = [];
     ids.forEach(id => {
         let item = null;
@@ -207,7 +213,7 @@ const getActiveSchemaFromIds = (ids) => {
         if (!item) {
             try {
                 const current = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-                item = current.find(i => i.id === id);
+                item = current.find(/** @param {CheckSchemaItem} i */ i => i.id === id);
             } catch(e){}
         }
 
@@ -218,15 +224,22 @@ const getActiveSchemaFromIds = (ids) => {
     return activeSchema;
 };
 
+/**
+ * 現在のスキーマID一覧を取得
+ * @returns {string[]}
+ */
 const getCurrentActiveIds = () => {
     try {
         const schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-        return schema.map(i => i.id);
+        return schema.map(/** @param {CheckSchemaItem} i */ i => i.id);
     } catch(e) {
         return CHECK_DEFAULT_IDS;
     }
 };
 
+/**
+ * チェック項目ライブラリ画面を描画
+ */
 export const renderCheckLibrary = () => {
     const container = document.getElementById('library-content');
     if (!container) return;
@@ -262,7 +275,7 @@ export const renderCheckLibrary = () => {
             }`;
             
             btn.addEventListener('click', () => {
-                const checkbox = document.getElementById(`lib-chk-${item.id}`);
+                const checkbox = /** @type {HTMLInputElement} */ (document.getElementById(`lib-chk-${item.id}`));
                 if (checkbox) {
                     checkbox.checked = !checkbox.checked;
                     btn.className = checkbox.checked
@@ -278,7 +291,6 @@ export const renderCheckLibrary = () => {
                 }
             });
 
-            // ★修正: アイコンのレンダリング
             const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');
 
             btn.innerHTML = `
@@ -300,8 +312,11 @@ export const renderCheckLibrary = () => {
     });
 };
 
+/**
+ * ライブラリ変更を適用
+ */
 export const applyLibraryChanges = () => {
-    const checkedInputs = document.querySelectorAll('#library-content input[type="checkbox"]:checked');
+    const checkedInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('#library-content input[type="checkbox"]:checked'));
     const selectedIds = Array.from(checkedInputs).map(input => input.value);
     
     let currentSchema = [];
@@ -312,7 +327,7 @@ export const applyLibraryChanges = () => {
     const libraryIds = new Set();
     Object.values(CHECK_LIBRARY).flat().forEach(i => libraryIds.add(i.id));
 
-    const customItems = currentSchema.filter(item => !libraryIds.has(item.id));
+    const customItems = currentSchema.filter(/** @param {CheckSchemaItem} item */ item => !libraryIds.has(item.id));
 
     const newSchemaFromLibrary = getActiveSchemaFromIds(selectedIds);
     const finalSchema = [...newSchemaFromLibrary, ...customItems];
@@ -324,6 +339,10 @@ export const applyLibraryChanges = () => {
     showMessage('チェック項目を更新しました', 'success');
 };
 
+/**
+ * プリセット適用
+ * @param {string} presetKey 
+ */
 export const applyPreset = (presetKey) => {
     const preset = CHECK_PRESETS[presetKey];
     if (!preset) return;
@@ -338,14 +357,15 @@ export const applyPreset = (presetKey) => {
     } catch(e){}
     const libraryIds = new Set();
     Object.values(CHECK_LIBRARY).flat().forEach(i => libraryIds.add(i.id));
-    const customItems = currentSchema.filter(item => !libraryIds.has(item.id));
+    const customItems = currentSchema.filter(/** @param {CheckSchemaItem} item */ item => !libraryIds.has(item.id));
 
     const newSchemaFromLibrary = getActiveSchemaFromIds(selectedIds);
     const finalSchema = [...newSchemaFromLibrary, ...customItems];
 
     localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(finalSchema));
     
-    if(document.getElementById('check-library-modal') && !document.getElementById('check-library-modal').classList.contains('hidden')) {
+    const modal = document.getElementById('check-library-modal');
+    if(modal && !modal.classList.contains('hidden')) {
         renderCheckLibrary();
     }
     
@@ -353,11 +373,17 @@ export const applyPreset = (presetKey) => {
     showMessage(`プリセット「${preset.label}」を適用しました`, 'success');
 };
 
+/**
+ * ライブラリモーダルを開く
+ */
 export const openCheckLibrary = () => {
     renderCheckLibrary();
     toggleModal('check-library-modal', true);
 };
 
+/**
+ * エディタ画面を描画
+ */
 export const renderCheckEditor = () => {
     const container = document.getElementById('check-editor-list');
     if (!container) return; 
@@ -372,13 +398,12 @@ export const renderCheckEditor = () => {
         }
     } catch(e) {}
 
-    schema.forEach((item, index) => {
+    schema.forEach((/** @type {CheckSchemaItem} */ item, index) => {
         const div = document.createElement('div');
         div.className = "flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2";
         
         const deleteBtn = `<button data-action="check:deleteItem" data-args='{"index":${index}}' class="text-red-500 hover:bg-red-100 p-1 rounded"><i class="ph-bold ph-trash"></i></button>`;
 
-        // ★修正: アイコンのレンダリング
         const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-gray-500');
 
         div.innerHTML = `
@@ -395,24 +420,26 @@ export const renderCheckEditor = () => {
     });
 };
 
+/**
+ * 項目削除
+ * @param {number} index 
+ */
 export const deleteCheckItem = (index) => {
     if(!confirm('この項目を削除しますか？')) return;
     let schema = [];
-    try { schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA)); } catch(e) {}
+    try { schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]'); } catch(e) {}
     schema.splice(index, 1);
     localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema));
     renderCheckEditor();
 };
 
-
+/**
+ * 新規項目追加
+ */
 export const addNewCheckItem = () => {
-    // 1. ラベル入力（必須）
-    // ※ここでキャンセルを押した場合は、処理を中断（終了）します
     const label = prompt('項目名を入力してください (例: 筋トレ)');
     if (!label) return;
 
-    // 2. アイコン入力（任意）
-    // ※キャンセルを押した場合は、nullになるため if文をスキップし、デフォルト(iconClassの初期値)が採用されます
     const iconInput = prompt(
         'アイコン用の「絵文字」または「キーワード」を入力してください\n\n' + 
         '📝 絵文字: 🧖, 💪, 💊 ...\n' +
@@ -420,7 +447,6 @@ export const addNewCheckItem = () => {
         ''
     );
 
-    // デフォルト値を設定
     let iconClass = 'ph-duotone ph-check-circle';
     
     if (iconInput) {
@@ -428,25 +454,21 @@ export const addNewCheckItem = () => {
         if (ICON_KEYWORDS[lowerKey]) {
             iconClass = ICON_KEYWORDS[lowerKey];
         } else {
-            iconClass = iconInput; // 入力された絵文字などをそのまま使う
+            iconClass = iconInput;
         }
     }
 
-    // 3. 説明入力（任意）
-    // ※キャンセル(null)の場合は、空文字 '' に変換して保存します
     const descInput = prompt('説明を入力してください (例: 30分以上やった)', '');
     const desc = descInput || ''; 
 
-    // 4. 表示設定
     const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
 
     const id = `custom_${Date.now()}`;
     
-    // ★修正箇所: iconプロパティに、上で決定した iconClass 変数をセットします
     const newItem = {
         id, 
         label, 
-        icon: iconClass, // 以前はここが `icon` になっておりエラーでした
+        icon: iconClass,
         type: 'boolean', 
         desc, 
         drinking_only: drinkingOnly
@@ -462,6 +484,10 @@ export const addNewCheckItem = () => {
 
 // --- 内部ヘルパー関数群 ---
 
+/**
+ * 保存されたスキーマを取得
+ * @returns {CheckSchemaItem[]}
+ */
 const getStoredSchema = () => {
     try {
         const stored = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
@@ -471,6 +497,10 @@ const getStoredSchema = () => {
     }
 };
 
+/**
+ * 休肝日UIの同期
+ * @param {boolean} isDry 
+ */
 export const syncDryDayUI = (isDry) => {
     const items = document.querySelectorAll('.drinking-only');
     items.forEach(el => el.classList.toggle('hidden', isDry));
@@ -478,19 +508,36 @@ export const syncDryDayUI = (isDry) => {
 
 /**
  * デイリーチェックの入力内容を収集してオブジェクトで返す
- * @returns {Object} 収集されたチェックデータ
+ * ✅ timestampを追加して完全なCheck型として返す
+ * @returns {Check} 収集されたチェックデータ
  */
 export const getCheckFormData = () => {
-    const date = document.getElementById('check-date')?.value;
-    const isDryDay = document.getElementById('check-is-dry')?.checked || false;
-    const weight = document.getElementById('check-weight')?.value || '';
+    const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
+    const isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
+    const weightInput = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
 
-    // 現在のスキーマを取得して、動的チェックボックスの値を集める
+    const dateVal = dateInput?.value || getVirtualDate();
+    const isDryDay = isDryInput?.checked || false;
+    const weight = weightInput?.value || '';
+
+    // ★追加: 体重のバリデーション (数値チェックと範囲制限)
+    if (weight !== '') {
+        const w = parseFloat(weight);
+        if (isNaN(w) || w < 20 || w > 500) {
+            showMessage('体重を正しく入力してください (20kg - 500kg)', 'error');
+            throw new Error('Invalid weight');
+        }
+    }
+    
+    // ✅ timestamp をここで計算（Check型の必須プロパティ）
+    const timestamp = dayjs(dateVal).startOf('day').add(12, 'hour').valueOf();
+
     const schema = getStoredSchema();
 
-    // 基本データ構造
+    /** @type {Check} */
     const data = {
-        date,
+        date: dateVal,
+        timestamp, // ✅ 必須
         isDryDay,
         weight,
         isSaved: true
@@ -498,10 +545,12 @@ export const getCheckFormData = () => {
 
     // 各項目のチェック状態をIDをキーにして格納
     schema.forEach(item => {
-        const el = document.getElementById(`check-${item.id}`);
-        // 要素があればその checked 状態、なければ false
+        const el = /** @type {HTMLInputElement} */ (document.getElementById(`check-${item.id}`));
+        // ✅ Index Signature が types.js にあれば @ts-ignore は不要
         data[item.id] = el ? el.checked : false;
     });
 
     return data;
 };
+
+

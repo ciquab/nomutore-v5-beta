@@ -1,14 +1,11 @@
 // @ts-check
 import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
 import { Store, ExternalApp, db } from './store.js'; 
-import { Calc } from './logic.js';
 import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
-import { showConfetti, showMessage } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
 import { initErrorHandler } from './errorHandler.js';
-import { handleSaveSettings } from './ui/modal.js'; 
 import { CloudManager } from './cloudManager.js';
 import { Onboarding } from './ui/onboarding.js';
 import { actionRouter, initActionRouter } from './ui/actionRouter.js';
@@ -154,12 +151,12 @@ const registerActions = () => {
         'timer:reset': () => Timer.reset(),
         
         // ========== Settings系 ==========
-        'settings:save': () => handleSaveSettings(),
+        'settings:save': () => UI.handleSaveSettings(),
         
         // ========== Day Add Selector系 ==========
         'dayAdd:openBeer': () => {
             toggleModal('day-add-selector', false);
-            setTimeout(() => UI.openBeerModal(UI.selectedDate), 200);
+            setTimeout(() => UI.openBeerModal(null, UI.selectedDate), 200);
         },
         'dayAdd:openExercise': () => {
             toggleModal('day-add-selector', false);
@@ -186,12 +183,10 @@ const registerActions = () => {
         // ========== System系 ==========
         'system:reload': () => location.reload(),
 
-        // ========== Rollover系 (追加) ==========
-        'rollover:weekly': () => UI.handleRolloverAction('weekly'),
-        
-        'rollover:new_custom': () => UI.handleRolloverAction('new_custom'),
-        
-        'rollover:extend': () => UI.handleRolloverAction('extend'),
+        // ========== Rollover系 ==========
+        'rollover:weekly':     () => UI.handleRollover('weekly'),
+        'rollover:new_custom': () => UI.handleRollover('new_custom'),
+        'rollover:extend':     () => UI.handleRollover('extend'),
     });
 
     document.addEventListener('request-share-image', (e) => { UI.share(e.detail.type, e.detail.data);});
@@ -603,6 +598,8 @@ const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 }
+
+
 
 
 

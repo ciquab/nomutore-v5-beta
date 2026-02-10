@@ -29,7 +29,11 @@ export const openManualInput = (dateStr = null, log = null) => {
         // 【編集モード】
         if(idField) idField.value = log.id;
         if(minField) minField.value = log.rawMinutes || log.minutes || 30;
-        if (typeSel && log.exerciseKey) typeSel.value = log.exerciseKey;
+        // ★修正: マスタに存在しないキーの場合はデフォルト種目、または空文字をセット
+        if(typeSel) {
+            const isValidKey = log.exerciseKey && EXERCISE[log.exerciseKey];
+            typeSel.value = isValidKey ? log.exerciseKey : (APP.DEFAULTS.BASE_EXERCISE || '');
+        }
         if (saveBtn) saveBtn.textContent = 'Update Workout';
         if (deleteBtn) deleteBtn.classList.remove('hidden');
         
@@ -79,8 +83,15 @@ export const getExerciseFormData = () => {
     const applyBonus = document.getElementById('manual-apply-bonus')?.checked ?? true;
 
     // 2. バリデーション (UI層で弾くべき不備)
-    if (!date || isNaN(minutes) || minutes <= 0) {
-        throw new Error('日付と時間を正しく入力してください');
+    if (!date || isNaN(minutes) || minutes <= 0 || minutes > 1440) {
+        showMessage('時間は1〜1440分の間で正しく入力してください', 'error');
+        throw new Error('Invalid date or minutes');
+    }
+
+    // ★追加: 運動種目の存在チェック (EXERCISE 定数にキーが存在するか)
+    if (!key || !EXERCISE[key]) {
+        showMessage('有効な運動種目を選択してください', 'error');
+        throw new Error('Invalid exercise');
     }
 
     // 3. タイムスタンプの計算 (Logicとして整える)
@@ -99,4 +110,7 @@ export const getExerciseFormData = () => {
         applyBonus: applyBonus,
         id: idVal ? parseInt(idVal) : null
     };
+
 };
+
+

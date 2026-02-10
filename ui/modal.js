@@ -580,47 +580,6 @@ export const renderRecordTabShortcuts = async () => {
     }
 };
 
-export const handleRolloverAction = async (action) => {
-    // modal.js内で import されている toggleModal を使用
-    toggleModal('rollover-modal', false);
-
-    try{
-    if (action === 'weekly') {
-        // Weeklyに戻す
-        await Service.updatePeriodSettings('weekly');
-        showConfetti();
-        showMessage('Weeklyモードに戻りました', 'success');
-        
-    } else if (action === 'new_custom') {
-        // 設定画面へ移動
-        UI.switchTab('settings');
-
-        // 少し遅れてメッセージ
-        setTimeout(() => {
-            showMessage('新しい期間を設定してください', 'info');
-            // 設定パネルを開く演出（必要なら）
-            const pMode = document.getElementById('setting-period-mode');
-            if(pMode) {
-                pMode.value = 'custom';
-                pMode.dispatchEvent(new Event('change'));
-            }
-        }, 300);
-        return;
-        
-    } else if (action === 'extend') {
-        // ✅ 直接 localStorage を触らず、Service層に委譲する
-            await Service.extendPeriod(7);
-            showMessage('期間を1週間延長しました', 'success');
-    }
-// 2. 最後に共通のUI更新イベントを発火
-        document.dispatchEvent(new CustomEvent('refresh-ui'));
-
-    } catch (err) {
-        console.error('Rollover Action Error:', err);
-        showMessage('期間の更新に失敗しました', 'error');
-    }
-};
-
 export const openShareModal = (mode = 'status') => {
     // Shareモジュールが持つ generateAndShare を呼ぶ
     if (typeof Share !== 'undefined' && Share.generateAndShare) {
@@ -710,6 +669,7 @@ export const showRolloverModal = () => {
     toggleModal('rollover-modal', true);
 
 };
+
 
 
 

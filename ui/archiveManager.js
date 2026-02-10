@@ -1,5 +1,5 @@
 // @ts-check
-import { db } from '../store.js';
+import { Service } from '../service.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export async function renderArchives() {
@@ -7,7 +7,7 @@ export async function renderArchives() {
     if (!container) return;
 
     // DBからアーカイブ取得 (新しい順)
-    const archives = await db.period_archives.reverse().toArray();
+    const archives = await Service.getArchives();
 
     if (archives.length === 0) {
         container.innerHTML = `

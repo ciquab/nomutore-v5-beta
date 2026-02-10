@@ -37,9 +37,9 @@ export const Calc = {
      * @returns {number} 1日あたりの基礎代謝(kcal)
      */
     getBMR: (profile) => {
-        const weight = (profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT;
-        const height = (profile && profile.height) ? profile.height : APP.DEFAULTS.HEIGHT;
-        const age = (profile && profile.age) ? profile.age : APP.DEFAULTS.AGE;
+        const weight = Number((profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT);
+        const height = Number((profile && profile.height) ? profile.height : APP.DEFAULTS.HEIGHT);
+        const age = Number((profile && profile.age) ? profile.age : APP.DEFAULTS.AGE);
         const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
 
         const k = 1000 / 4.186; // kJ -> kcal conversion roughly
@@ -79,7 +79,8 @@ export const Calc = {
         const alcoholKcal = alcoholG * 7.0;
         const carbKcal = (_ml / 100) * _carb * ALCOHOL_CONSTANTS.CARB_CALORIES;
 
-        return alcoholKcal + carbKcal;
+        // ★修正: 合算結果を小数点第1位で丸める
+        return Math.round((alcoholKcal + carbKcal) * 10) / 10;
     },
 
     /**
@@ -106,7 +107,9 @@ export const Calc = {
     calculateExerciseBurn: (mets, minutes, profile) => {
         const _mets = mets || 6.0;
         const rate = Calc.burnRate(_mets, profile);
-        return (minutes || 0) * rate;
+        // ★修正: 乗算結果を小数点第1位で丸める
+        const totalBurn = (minutes || 0) * rate;
+        return Math.round(totalBurn * 10) / 10;
     },
 
     /**
@@ -117,8 +120,10 @@ export const Calc = {
      */
     calculateExerciseCredit: (baseKcal, streak) => {
         const multiplier = Calc.getStreakMultiplier(streak);
+        const finalKcal = Math.abs(baseKcal * multiplier);
         return {
-            kcal: Math.abs(baseKcal * multiplier),
+            // ★修正: 小数点第1位で丸める
+            kcal: Math.round(finalKcal * 10) / 10,
             bonusMultiplier: multiplier
         };
     },
@@ -562,3 +567,5 @@ export const Calc = {
         return `${text} ${hashtags}`;
     }
 };
+
+

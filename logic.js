@@ -79,7 +79,8 @@ export const Calc = {
         const alcoholKcal = alcoholG * 7.0;
         const carbKcal = (_ml / 100) * _carb * ALCOHOL_CONSTANTS.CARB_CALORIES;
 
-        return alcoholKcal + carbKcal;
+        // ★修正: 合算結果を小数点第1位で丸める
+        return Math.round((alcoholKcal + carbKcal) * 10) / 10;
     },
 
     /**
@@ -106,7 +107,9 @@ export const Calc = {
     calculateExerciseBurn: (mets, minutes, profile) => {
         const _mets = mets || 6.0;
         const rate = Calc.burnRate(_mets, profile);
-        return (minutes || 0) * rate;
+        // ★修正: 乗算結果を小数点第1位で丸める
+        const totalBurn = (minutes || 0) * rate;
+        return Math.round(totalBurn * 10) / 10;
     },
 
     /**
@@ -117,8 +120,10 @@ export const Calc = {
      */
     calculateExerciseCredit: (baseKcal, streak) => {
         const multiplier = Calc.getStreakMultiplier(streak);
+        const finalKcal = Math.abs(baseKcal * multiplier);
         return {
-            kcal: Math.abs(baseKcal * multiplier),
+            // ★修正: 小数点第1位で丸める
+            kcal: Math.round(finalKcal * 10) / 10,
             bonusMultiplier: multiplier
         };
     },
@@ -562,4 +567,5 @@ export const Calc = {
         return `${text} ${hashtags}`;
     }
 };
+
 

@@ -83,13 +83,15 @@ export const getExerciseFormData = () => {
     const applyBonus = document.getElementById('manual-apply-bonus')?.checked ?? true;
 
     // 2. バリデーション (UI層で弾くべき不備)
-    if (!date || isNaN(minutes) || minutes <= 0) {
-        throw new Error('日付と時間を正しく入力してください');
+    if (!date || isNaN(minutes) || minutes <= 0 || minutes > 1440) {
+        showMessage('時間は1〜1440分の間で正しく入力してください', 'error');
+        throw new Error('Invalid date or minutes');
     }
 
     // ★追加: 運動種目の存在チェック (EXERCISE 定数にキーが存在するか)
     if (!key || !EXERCISE[key]) {
-        throw new Error('有効な運動種目を選択してください');
+        showMessage('有効な運動種目を選択してください', 'error');
+        throw new Error('Invalid exercise');
     }
 
     // 3. タイムスタンプの計算 (Logicとして整える)
@@ -110,4 +112,5 @@ export const getExerciseFormData = () => {
     };
 
 };
+
 

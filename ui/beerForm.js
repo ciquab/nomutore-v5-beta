@@ -214,6 +214,20 @@ export const getBeerFormData = (existingLog = null) => {
         finalMl = parseInt(size) || 350;     
     }
 
+    // ★修正版: showMessage を追加してユーザーへの通知と処理中断をセットで行う
+    if (isNaN(finalMl) || finalMl <= 0 || finalMl > 10000) {
+        showMessage('分量を正しく入力してください (最大10L)', 'error');
+        throw new Error('Invalid amount');
+    }
+    if (isNaN(finalAbv) || finalAbv < 0 || finalAbv > 100) {
+        showMessage('度数を正しく入力してください (0-100%)', 'error');
+        throw new Error('Invalid ABV');
+    }
+    if (isNaN(count) || count <= 0 || count > 100) {
+        showMessage('本数を正しく入力してください (最大100本)', 'error');
+        throw new Error('Invalid count');
+    }
+
     return {
         timestamp: ts,
         brewery, brand, rating, memo,
@@ -441,3 +455,4 @@ export const updateInputSuggestions = async () => {
         console.error("Failed to update suggestions:", e);
     }
 };
+

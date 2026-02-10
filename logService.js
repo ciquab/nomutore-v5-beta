@@ -32,6 +32,16 @@ export const LogService = {
     },
 
     /**
+     * タイムスタンプ範囲でログを取得（新しい順）
+     * @param {number} start
+     * @param {number} end
+     * @returns {Promise<Log[]>}
+     */
+    async getByTimestampRange(start, end) {
+        return await db.logs.where('timestamp').between(start, end, true, true).reverse().toArray();
+    },
+
+    /**
      * ログ追加
      * @param {Log} log
      * @returns {Promise<number>}

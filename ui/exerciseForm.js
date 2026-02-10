@@ -29,7 +29,11 @@ export const openManualInput = (dateStr = null, log = null) => {
         // 【編集モード】
         if(idField) idField.value = log.id;
         if(minField) minField.value = log.rawMinutes || log.minutes || 30;
-        if (typeSel && log.exerciseKey) typeSel.value = log.exerciseKey;
+        // ★修正: マスタに存在しないキーの場合はデフォルト種目、または空文字をセット
+        if(typeSel) {
+            const isValidKey = log.exerciseKey && EXERCISE[log.exerciseKey];
+            typeSel.value = isValidKey ? log.exerciseKey : (APP.DEFAULTS.BASE_EXERCISE || '');
+        }
         if (saveBtn) saveBtn.textContent = 'Update Workout';
         if (deleteBtn) deleteBtn.classList.remove('hidden');
         
@@ -106,3 +110,4 @@ export const getExerciseFormData = () => {
     };
 
 };
+

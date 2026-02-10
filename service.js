@@ -57,7 +57,7 @@ export const Service = {
      * 全データを削除して初期化する
      */
     resetAllData: async () => {
-        if (db.logs) await db.logs.clear();
+        if (db.logs) await LogService.clear();
         if (db.checks) await db.checks.clear();
         if (db.period_archives) await db.period_archives.clear();
         localStorage.clear();
@@ -155,12 +155,12 @@ export const Service = {
         let logs, totalCount;
 
         if (mode === 'permanent') {
-            totalCount = await db.logs.count();
-            logs = await db.logs.orderBy('timestamp').reverse().offset(offset).limit(limit).toArray();
+            totalCount = await LogService.count();
+            logs = await LogService.getRecent(limit, offset);
         } else {
             const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START)) || 0;
-            totalCount = await db.logs.where('timestamp').aboveOrEqual(periodStart).count();
-            logs = await db.logs.where('timestamp').aboveOrEqual(periodStart).reverse().offset(offset).limit(limit).toArray();
+            totalCount = await LogService.countFrom(periodStart);
+            logs = await LogService.getRecentFrom(periodStart, limit, offset);
         }
 
         return { logs, totalCount };
@@ -199,7 +199,7 @@ export const Service = {
 recalcImpactedHistory: async (changedTimestamp) => {
     return db.transaction('rw', db.logs, db.checks, db.period_archives, async () => {
         
-        const allLogs = await db.logs.toArray();
+        const allLogs = await LogService.getAll();
         const allChecks = await db.checks.toArray();
         const profile = Store.getProfile();
 
@@ -278,7 +278,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
                     const oldKcal = log.kcal || 0;
                     
                     // DB更新
-                    await db.logs.update(log.id, {
+                    await LogService.update(log.id, {
                         kcal: updatedCredit.kcal,
                         memo: newMemo
                     });
@@ -302,7 +302,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
         // --- 3. アーカイブの同期 ---
         const affectedArchives = await db.period_archives.where('endDate').aboveOrEqual(changedTimestamp).toArray();
         for (const archive of affectedArchives) {
-            const periodLogs = await db.logs.where('timestamp').between(archive.startDate, archive.endDate, true, true).toArray();
+            const periodLogs = await LogService.getByTimestampRangeAsc(archive.startDate, archive.endDate);
             const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
             
             await db.period_archives.update(archive.id, {
@@ -346,7 +346,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
                 for (const arch of archives) {
                     if (arch.logs && arch.logs.length > 0) {
                         const logsToRestore = arch.logs.map(({id, ...rest}) => rest);
-                        await db.logs.bulkAdd(logsToRestore);
+                        await LogService.bulkAdd(logsToRestore);
                         restoredCount += logsToRestore.length;
                     }
                 }
@@ -464,7 +464,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
     archiveAndReset: async (currentStart, nextStart, mode) => {
         return db.transaction('rw', db.logs, db.period_archives, async () => {
             // 次の期間開始日より前のログを全て取得
-            const logsToArchive = await db.logs.where('timestamp').below(nextStart).toArray();
+            const logsToArchive = await LogService.getBefore(nextStart);
             
             if (logsToArchive.length > 0) {
                 // 既に同じ開始日のアーカイブが存在しないかチェック
@@ -514,7 +514,7 @@ extendPeriod: async (days = 7) => {
      * Recordタブで使用 (Frequency)
      */
     getFrequentBeers: async (limit = 3) => {
-        const logs = await db.logs.where('type').equals('beer').toArray();
+        const logs = await LogService.getByType('beer');
         const stats = Calc.getBeerStats(logs);
         const rankedBeers = stats.beerStats || [];
         return rankedBeers.slice(0, limit);
@@ -527,7 +527,7 @@ extendPeriod: async (days = 7) => {
      */
     getRecentBeers: async (limit = 2) => {
         // 1. 最新のログ100件をID降順（新しい順）で取得
-        const logs = await db.logs.toCollection().reverse().limit(100).toArray();
+        const logs = await LogService.getLatestByInsertOrder(100);
         
         const uniqueMap = new Map();
         const recents = [];
@@ -555,7 +555,7 @@ extendPeriod: async (days = 7) => {
      */
     getFrequentExercises: async (limit = 5) => {
         // 1. 直近100件取得
-        const logs = await db.logs.where('type').equals('exercise').reverse().limit(100).toArray();
+        const logs = await LogService.getByTypeRecent('exercise', 100);
 
         // 2. 集計
         const stats = {};
@@ -587,7 +587,7 @@ extendPeriod: async (days = 7) => {
      */
     getRecentExercises: async (limit = 2) => {
         // 1. 最新のログ100件をID降順（新しい順）で取得
-        const logs = await db.logs.toCollection().reverse().limit(100).toArray();
+        const logs = await LogService.getLatestByInsertOrder(100);
         
         const uniqueMap = new Map();
         const recents = [];
@@ -670,9 +670,9 @@ extendPeriod: async (days = 7) => {
 
         // --- ログ保存（新規 or 更新） ---
             if (id) {
-                await db.logs.update(parseInt(id), logData);
+                await LogService.update(parseInt(id), logData);
             } else {
-               await db.logs.add(logData);
+               await LogService.add(logData);
             }
 
         // --- Untappd導線の生成（保存後に実行） ---
@@ -749,7 +749,7 @@ extendPeriod: async (days = 7) => {
     
     // 2. ストリークボーナスの計算
     if (applyBonus) {
-        const logs = await db.logs.toArray();
+        const logs = await LogService.getAll();
         const checks = await db.checks.toArray();
         const streak = Calc.getCurrentStreak(logs, checks, profile, dayjs(ts));
         
@@ -779,10 +779,10 @@ extendPeriod: async (days = 7) => {
 
     if (id) {
         // 更新
-        await db.logs.update(parseInt(id), logData);
+        await LogService.update(parseInt(id), logData);
     } else {
         // 新規登録
-        await db.logs.add(logData);
+        await LogService.add(logData);
 
         // シェア文言の生成
         const { balance } = await Service.getAppDataSnapshot();
@@ -809,11 +809,11 @@ extendPeriod: async (days = 7) => {
  */
 deleteLog: async (id) => {
     const logId = parseInt(id);
-    const log = await db.logs.get(logId);
+    const log = await LogService.getById(logId);
     if (!log) throw new Error('削除対象のログが見つかりませんでした');
 
     const ts = log.timestamp;
-    await db.logs.delete(logId);
+    await LogService.delete(logId);
 
     // 履歴の再計算（データ整合性の維持はServiceの責務）
     await Service.recalcImpactedHistory(ts);
@@ -833,11 +833,11 @@ bulkDeleteLogs: async (ids) => {
     // 再計算のために最も古い日付を取得
     let oldestTs = Date.now();
     for (const id of ids) {
-        const log = await db.logs.get(id);
+        const log = await LogService.getById(id);
         if (log && log.timestamp < oldestTs) oldestTs = log.timestamp;
     }
 
-    await db.logs.bulkDelete(ids);
+    await LogService.bulkDelete(ids);
     
     // 履歴の再計算
     await Service.recalcImpactedHistory(oldestTs);

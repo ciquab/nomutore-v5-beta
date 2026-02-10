@@ -37,9 +37,9 @@ export const Calc = {
      * @returns {number} 1日あたりの基礎代謝(kcal)
      */
     getBMR: (profile) => {
-        const weight = (profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT;
-        const height = (profile && profile.height) ? profile.height : APP.DEFAULTS.HEIGHT;
-        const age = (profile && profile.age) ? profile.age : APP.DEFAULTS.AGE;
+        const weight = Number((profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT);
+        const height = Number((profile && profile.height) ? profile.height : APP.DEFAULTS.HEIGHT);
+        const age = Number((profile && profile.age) ? profile.age : APP.DEFAULTS.AGE);
         const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
 
         const k = 1000 / 4.186; // kJ -> kcal conversion roughly
@@ -562,3 +562,4 @@ export const Calc = {
         return `${text} ${hashtags}`;
     }
 };
+

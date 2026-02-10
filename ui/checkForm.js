@@ -520,6 +520,15 @@ export const getCheckFormData = () => {
     const isDryDay = isDryInput?.checked || false;
     const weight = weightInput?.value || '';
 
+    // ★追加: 体重のバリデーション (数値チェックと範囲制限)
+    if (weight !== '') {
+        const w = parseFloat(weight);
+        if (isNaN(w) || w < 20 || w > 500) {
+            showMessage('体重を正しく入力してください (20kg - 500kg)', 'error');
+            throw new Error('Invalid weight');
+        }
+    }
+    
     // ✅ timestamp をここで計算（Check型の必須プロパティ）
     const timestamp = dayjs(dateVal).startOf('day').add(12, 'hour').valueOf();
 
@@ -543,4 +552,5 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 

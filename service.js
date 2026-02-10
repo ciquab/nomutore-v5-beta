@@ -27,6 +27,8 @@ const _deduplicateChecks = (rawChecks) => {
 };
 
 export const Service = {
+    // ★追加: 非同期処理を直列化するためのプロミスチェーン
+    _recalcQueue: Promise.resolve(),
 
     /**
      * 指定日のログ一覧を取得する（新しい順）
@@ -197,16 +199,17 @@ export const Service = {
  * 履歴の再計算（最終安定版）
  */
 recalcImpactedHistory: async (changedTimestamp) => {
-    return db.transaction('rw', db.logs, db.checks, db.period_archives, async () => {
-        
-        const allLogs = await LogService.getAll();
-        const allChecks = await db.checks.toArray();
-        const profile = Store.getProfile();
+    Service._recalcQueue = Service._recalcQueue.then(async () => {
+            try {
+                return db.transaction('rw', db.logs, db.checks, db.period_archives, async () => {
+                    const allLogs = await LogService.getAll();
+                    const allChecks = await db.checks.toArray();
+                    const profile = Store.getProfile();
 
-        const logMap = new Map();
-        const checkMap = new Map();
-        let minTs = Number.MAX_SAFE_INTEGER;
-        let found = false;
+                    const logMap = new Map();
+                    const checkMap = new Map();
+                    let minTs = Number.MAX_SAFE_INTEGER;
+                    let found = false;
 
         // --- 1. Map作成（仮想日付ベース） ---
         allLogs.forEach(l => {
@@ -311,7 +314,15 @@ recalcImpactedHistory: async (changedTimestamp) => {
                 updatedAt: Date.now()
             });
         }
+                    
     });
+    } catch (e) {
+                console.error('[Service] Recalc impact error:', e);
+            }
+        });
+
+        // キューの完了を待機して結果を返す
+        return Service._recalcQueue;            
 },
 
     /**
@@ -921,6 +932,7 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
 
 
 

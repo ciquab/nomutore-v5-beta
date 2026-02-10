@@ -1,6 +1,6 @@
 // @ts-check
 import { EXERCISE } from '../constants.js';
-import { db } from '../store.js';
+import { Service } from '../service.js';
 import { StateManager } from './state.js';
 import { DOM, toggleModal, escapeHtml, showMessage, Feedback } from './dom.js';
 import { Share } from './share.js';
@@ -214,7 +214,7 @@ export const openDayDetail = async (dateStr) => {
     const end = d.endOf('day').valueOf();
     
     // StoreやDBから取得（ここではdbを直接叩く例ですが、StoreにあるならそれでもOK）
-    const logs = await db.logs.where('timestamp').between(start, end, true, true).reverse().toArray();
+    const logs = await Service.getLogsByTimestampRange(start, end);
     
     // 3. 計算（Earned, Consumed, Balance）
     let earned = 0;

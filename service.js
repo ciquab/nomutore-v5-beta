@@ -28,6 +28,41 @@ const _deduplicateChecks = (rawChecks) => {
 
 export const Service = {
 
+    /**
+     * 指定日のログ一覧を取得する（新しい順）
+     * @param {number} start
+     * @param {number} end
+     * @returns {Promise<import('./types.js').Log[]>}
+     */
+    getLogsByTimestampRange: async (start, end) => {
+        return await LogService.getByTimestampRange(start, end);
+    },
+
+    /**
+     * アーカイブ一覧を新しい順で取得する
+     */
+    getArchives: async () => {
+        return await db.period_archives.reverse().toArray();
+    },
+
+    /**
+     * IDでログを1件取得する
+     * @param {number} id
+     */
+    getLogById: async (id) => {
+        return await LogService.getById(parseInt(id));
+    },
+
+    /**
+     * 全データを削除して初期化する
+     */
+    resetAllData: async () => {
+        if (db.logs) await db.logs.clear();
+        if (db.checks) await db.checks.clear();
+        if (db.period_archives) await db.period_archives.clear();
+        localStorage.clear();
+    },
+
     // getAllDataForUI を getAppDataSnapshot にリネームして強化
     getAppDataSnapshot: async () => {
         // --- A. 設定の取得 ---

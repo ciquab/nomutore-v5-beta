@@ -270,6 +270,9 @@ recalcImpactedHistory: async (changedTimestamp) => {
                 const targetMins = log.rawMinutes || log.minutes || 0;
                 const baseBurn = Calc.calculateExerciseBurn(mets, targetMins, profile);
                 const updatedCredit = Calc.calculateExerciseCredit(baseBurn, streak);
+
+                // ★追加: 保存・比較前に値を小数点第1位で丸める
+                const roundedKcal = Math.round(updatedCredit.kcal * 10) / 10;
                 
                 let newMemo = (log.memo || '').replace(/Streak Bonus x[0-9.]+/g, '').trim();
                 if (updatedCredit.bonusMultiplier > 1.0) {
@@ -277,23 +280,24 @@ recalcImpactedHistory: async (changedTimestamp) => {
                     newMemo = newMemo ? `${newMemo} ${bonusTag}` : bonusTag;
                 }
 
-                if (Math.abs((log.kcal || 0) - updatedCredit.kcal) > 0.1 || log.memo !== newMemo) {
+                // ★修正: updatedCredit.kcal ではなく roundedKcal を比較と保存に使う
+                if (Math.abs((log.kcal || 0) - roundedKcal) > 0.1 || log.memo !== newMemo) {
                     const oldKcal = log.kcal || 0;
                     
                     // DB更新
                     await LogService.update(log.id, {
-                        kcal: updatedCredit.kcal,
+                        kcal: roundedKcal, // 修正
                         memo: newMemo
                     });
                     
                     // Map上の残高も更新（連鎖判定用）
                     const entry = logMap.get(dateStr);
                     if (entry) {
-                        entry.balance += (updatedCredit.kcal - oldKcal);
+                        entry.balance += (roundedKcal - oldKcal); // 修正
                     }
                     
-                    // メモリ上のログオブジェクトも更新（後のアーカイブ計算用）
-                    log.kcal = updatedCredit.kcal;
+                    // メモリ上のログオブジェクトも更新
+                    log.kcal = roundedKcal; // 修正
                     log.memo = newMemo;
                     
                     updateCount++;
@@ -655,7 +659,8 @@ extendPeriod: async (days = 7) => {
     abv = data.abv;
     const ml = data.ml;
     carb = data.carb ?? (data.isCustom ? (data.type === 'dry' ? 0.0 : 3.0) : (STYLE_SPECS[data.style]?.carb ?? 3.0));
-    kcal = Calc.calculateBeerDebit(ml, abv, carb, count);
+    const rawKcal = Calc.calculateBeerDebit(ml, abv, carb, count);
+    kcal = Math.round(rawKcal * 10) / 10; // 小数点第1位で丸める
 
     name = data.isCustom
         ? (data.type === 'dry' ? '蒸留酒 (糖質ゼロ)' : '醸造酒/カクテル')
@@ -772,6 +777,7 @@ extendPeriod: async (days = 7) => {
             memo = `Streak Bonus x${bonusMultiplier.toFixed(1)}`;
         }
     }
+    finalKcal = Math.round(finalKcal * 10) / 10;    
 
     const label = EXERCISE[exerciseKey] ? EXERCISE[exerciseKey].label : '運動';
 

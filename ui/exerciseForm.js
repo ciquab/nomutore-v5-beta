@@ -83,6 +83,11 @@ export const getExerciseFormData = () => {
         throw new Error('日付と時間を正しく入力してください');
     }
 
+    // ★追加: 運動種目の存在チェック (EXERCISE 定数にキーが存在するか)
+    if (!key || !EXERCISE[key]) {
+        throw new Error('有効な運動種目を選択してください');
+    }
+
     // 3. タイムスタンプの計算 (Logicとして整える)
     const now = dayjs();
     const inputDate = dayjs(date);
@@ -99,4 +104,5 @@ export const getExerciseFormData = () => {
         applyBonus: applyBonus,
         id: idVal ? parseInt(idVal) : null
     };
+
 };

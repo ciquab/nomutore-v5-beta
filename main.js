@@ -120,9 +120,18 @@ const registerActions = () => {
         'onboarding:finish': () => Onboarding.finishWizard(),
         'onboarding:goToWizard': () => Onboarding.goToWizard(),
         'onboarding:start-new': () => Onboarding.startNew(),
-        'onboarding:setPeriod': (args) => {
-            // data-mode="weekly" などの値が args.mode に入る
-            Onboarding.setPeriodMode(args.mode);
+        // ▼ 修正：Serviceの呼び出しをActionRouter側で行い、結果をOnboardingに伝える
+        'onboarding:setPeriod': async (args) => {
+            try {
+                // 1. データ層（Service）で期間設定を保存
+                await Service.updatePeriodSettings(args.mode);
+                
+                // 2. 成功したらUI層（Onboarding）を次のステップへ進める
+                Onboarding.nextStep();
+            } catch (e) {
+                console.error('Period setup failed:', e);
+                if (UI && UI.showMessage) UI.showMessage('設定の保存に失敗しました', 'error');
+            }
         },
         'onboarding:handleCloudRestore': () => Onboarding.handleCloudRestore(),
         'onboarding:triggerJson': () => UI.triggerFileInput('wizard-import-file'),
@@ -415,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
+
 
 
 

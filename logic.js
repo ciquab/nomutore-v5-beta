@@ -510,6 +510,51 @@ export const Calc = {
             averageRating: item.ratings.length ? (item.ratings.reduce((a,b)=>a+b,0) / item.ratings.length) : 0
         })).sort((a, b) => b.count - a.count); 
 
+        // ブルワリー別集計
+        const breweryMap = new Map();
+        statsMap.forEach((item) => {
+            const bKey = item.brewery || 'Unknown';
+            if (!breweryMap.has(bKey)) {
+                breweryMap.set(bKey, {
+                    brewery: bKey,
+                    totalCount: 0,
+                    totalMl: 0,
+                    ratings: [],
+                    abvs: [],
+                    styles: new Set(),
+                    beers: new Set(),
+                    lastDrank: 0
+                });
+            }
+            const bEntry = breweryMap.get(bKey);
+            bEntry.totalCount += item.count;
+            bEntry.totalMl += item.totalMl;
+            item.ratings.forEach(r => bEntry.ratings.push(r));
+            bEntry.styles.add(item.style);
+            bEntry.beers.add(item.name);
+            if (item.lastDrank > bEntry.lastDrank) bEntry.lastDrank = item.lastDrank;
+        });
+
+        // ABV情報をログから直接取得
+        beerLogs.forEach(l => {
+            const bKey = l.brewery ? l.brewery.trim() : 'Unknown';
+            const bEntry = breweryMap.get(bKey);
+            if (bEntry && l.abv > 0) bEntry.abvs.push(l.abv);
+        });
+
+        const breweryStats = Array.from(breweryMap.values()).map(item => ({
+            brewery: item.brewery,
+            totalCount: item.totalCount,
+            totalMl: item.totalMl,
+            uniqueBeers: item.beers.size,
+            styleCount: item.styles.size,
+            styles: [...item.styles],
+            averageRating: item.ratings.length ? (item.ratings.reduce((a,b) => a+b, 0) / item.ratings.length) : 0,
+            ratingCount: item.ratings.length,
+            averageAbv: item.abvs.length ? (item.abvs.reduce((a,b) => a+b, 0) / item.abvs.length) : 0,
+            lastDrank: item.lastDrank
+        }));
+
         return {
             totalCount,
             totalMl,
@@ -518,7 +563,8 @@ export const Calc = {
             topStyles,
             uniqueBeersCount: uniqueBeers,
             logsCount: beerLogs.length,
-            beerStats: beerStats 
+            beerStats: beerStats,
+            breweryStats: breweryStats
         };
     },
 

@@ -76,6 +76,17 @@ export function renderBeerStats(periodLogs, allLogs) {
                 </div>
             </div>
 
+            <div id="brewery-leaderboard-section" class="glass-panel p-4 rounded-3xl relative">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase flex items-center gap-1.5">
+                        <i class="ph-fill ph-trophy text-amber-500 text-sm"></i> Brewery Leaderboard
+                    </h3>
+                    <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
+                </div>
+                <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
+                <div id="brewery-ranking-list" class="space-y-2"></div>
+            </div>
+
             <div id="beer-collection-section">
                 <div class="sticky top-0 bg-gray-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                     <div class="flex items-center justify-between mb-3 px-1">
@@ -130,6 +141,9 @@ export function renderBeerStats(periodLogs, allLogs) {
 
     // チャート描画（全期間のスタイル傾向）
     renderStyleChart(allStats.styleCounts);
+
+    // ブルワリーランキング描画
+    renderBreweryLeaderboard(allStats.breweryStats || []);
 
     // フィルター機能の実装
     const applyFilters = () => {
@@ -286,4 +300,160 @@ function renderBeerList(beers) {
             </div>
         `;
     }).join('');
+}
+
+// =============================================
+// Brewery Leaderboard
+// =============================================
+const BREWERY_AXES = [
+    { key: 'totalCount',  label: '杯数',     icon: 'ph-duotone ph-beer-bottle', unit: '杯',  format: v => String(v) },
+    { key: 'uniqueBeers', label: '種類数',    icon: 'ph-duotone ph-books',       unit: '種',  format: v => String(v) },
+    { key: 'averageRating', label: '評価',    icon: 'ph-fill ph-star',           unit: '',    format: v => v.toFixed(2), filterFn: b => b.ratingCount > 0 },
+    { key: 'totalMl',     label: '総容量',    icon: 'ph-duotone ph-drop',        unit: 'L',   format: v => (v / 1000).toFixed(1) },
+    { key: 'styleCount',  label: 'スタイル幅', icon: 'ph-duotone ph-palette',    unit: '種',  format: v => String(v) },
+];
+
+let currentBreweryAxis = 'totalCount';
+
+/**
+ * ブルワリーランキングの描画
+ * @param {Array} breweryStats - Calc.getBeerStats().breweryStats
+ */
+function renderBreweryLeaderboard(breweryStats) {
+    const tabsEl = document.getElementById('brewery-axis-tabs');
+    const listEl = document.getElementById('brewery-ranking-list');
+    const countLabel = document.getElementById('brewery-count-label');
+    if (!tabsEl || !listEl) return;
+
+    // タブ描画
+    tabsEl.innerHTML = BREWERY_AXES.map(axis => {
+        const active = axis.key === currentBreweryAxis;
+        const base = 'flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer select-none';
+        const colors = active
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700';
+        return `<button class="${base} ${colors}" data-brewery-axis="${axis.key}">
+            <i class="${axis.icon} text-xs"></i>${axis.label}
+        </button>`;
+    }).join('');
+
+    // タブクリックイベント
+    tabsEl.querySelectorAll('[data-brewery-axis]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentBreweryAxis = btn.dataset.breweryAxis;
+            renderBreweryLeaderboard(breweryStats);
+        });
+    });
+
+    const axis = BREWERY_AXES.find(a => a.key === currentBreweryAxis);
+    if (!axis) return;
+
+    // フィルター＆ソート
+    let entries = axis.filterFn ? breweryStats.filter(axis.filterFn) : [...breweryStats];
+    entries.sort((a, b) => b[axis.key] - a[axis.key]);
+
+    // 空のブルワリーを除外
+    entries = entries.filter(b => b.brewery && b.brewery !== 'Unknown');
+
+    if (countLabel) countLabel.textContent = `${entries.length} breweries`;
+
+    if (entries.length === 0) {
+        listEl.innerHTML = `
+            <div class="text-center py-8 opacity-50">
+                <i class="ph-duotone ph-warehouse text-3xl mb-2"></i>
+                <p class="text-xs font-bold">No brewery data yet.</p>
+            </div>`;
+        return;
+    }
+
+    // 最大5件表示（展開可能に）
+    const TOP_N = 5;
+    const showAll = entries.length <= TOP_N + 2; // 残り1-2件なら全部出す
+    const visible = showAll ? entries : entries.slice(0, TOP_N);
+
+    listEl.innerHTML = visible.map((b, i) => {
+        // バーの幅を算出 (1位を100%とする)
+        const maxVal = entries[0][axis.key] || 1;
+        const pct = Math.round((b[axis.key] / maxVal) * 100);
+        const value = axis.format(b[axis.key]);
+
+        let rankBadge;
+        if (i === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500"></i>';
+        else if (i === 1) rankBadge = '<span class="text-xs font-black text-gray-400">2</span>';
+        else if (i === 2) rankBadge = '<span class="text-xs font-black text-amber-700">3</span>';
+        else rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
+
+        // サブ情報: 現在の軸以外の主要指標を1つ表示
+        const subInfo = buildBrewerySubInfo(b, axis.key);
+
+        return `
+            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800">
+                <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
+                <div class="relative flex items-center gap-2.5 px-3 py-2.5">
+                    <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
+                        <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
+                    </div>
+                    <div class="flex-shrink-0 text-right">
+                        <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                        <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+
+    // 「もっと見る」ボタン
+    if (!showAll && entries.length > TOP_N) {
+        const remaining = entries.length - TOP_N;
+        listEl.innerHTML += `
+            <button id="brewery-show-all" class="w-full text-center py-2 text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition">
+                <i class="ph-bold ph-caret-down mr-1"></i>他 ${remaining} 件を表示
+            </button>`;
+        const showAllBtn = document.getElementById('brewery-show-all');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', () => {
+                // 残り全件を追加
+                const extra = entries.slice(TOP_N);
+                showAllBtn.remove();
+                const fragment = extra.map((b, idx) => {
+                    const i = idx + TOP_N;
+                    const maxVal = entries[0][axis.key] || 1;
+                    const pct = Math.round((b[axis.key] / maxVal) * 100);
+                    const value = axis.format(b[axis.key]);
+                    const rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
+                    const subInfo = buildBrewerySubInfo(b, axis.key);
+                    return `
+                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800">
+                            <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
+                            <div class="relative flex items-center gap-2.5 px-3 py-2.5">
+                                <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
+                                <div class="flex-grow min-w-0">
+                                    <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
+                                    <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
+                                </div>
+                                <div class="flex-shrink-0 text-right">
+                                    <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                                    <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+                listEl.insertAdjacentHTML('beforeend', fragment);
+            });
+        }
+    }
+}
+
+/**
+ * ブルワリーのサブ情報を構築 (現在のソート軸以外の情報を表示)
+ */
+function buildBrewerySubInfo(b, currentKey) {
+    const parts = [];
+    if (currentKey !== 'uniqueBeers') parts.push(`${b.uniqueBeers}種`);
+    if (currentKey !== 'totalCount') parts.push(`${b.totalCount}杯`);
+    if (currentKey !== 'averageRating' && b.ratingCount > 0) parts.push(`★${b.averageRating.toFixed(1)}`);
+    if (currentKey !== 'totalMl') parts.push(`${(b.totalMl / 1000).toFixed(1)}L`);
+    if (currentKey !== 'styleCount') parts.push(`${b.styleCount}スタイル`);
+    return parts.slice(0, 3).join(' · ');
 }

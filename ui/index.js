@@ -722,25 +722,25 @@ if (checkModal) {
     },
 
 // ui/index.js (333行目付近)
-switchTab: (tabId, options = { silent: false }) => { // 引数に options を追加
-    DOM.withTransition(async () => {
-        // options.silent が true ではない時だけ音を鳴らす
-        if (!options.silent) {
-            Feedback.uiSwitch();
-        }
+    switchTab: (tabId, options = { silent: false }) => {
+        // ★修正1: async を外す（View Transitionを待機させない）
+        DOM.withTransition(() => {
+            if (!options.silent) {
+                Feedback.uiSwitch();
+            }
 
-        const onboarding = document.getElementById('onboarding-modal');
-        const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
+            const onboarding = document.getElementById('onboarding-modal');
+            const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
-        toggleFabLike(
-            fabEl,
-            ['home', 'cellar'].includes(tabId) && !isOnboarding
-        );
+            toggleFabLike(
+                fabEl,
+                ['home', 'cellar'].includes(tabId) && !isOnboarding
+            );
 
-        toggleFabLike(
-            saveEl,
-            tabId === 'settings' && !isOnboarding
-        );
+            toggleFabLike(
+                saveEl,
+                tabId === 'settings' && !isOnboarding
+            );
 
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
@@ -754,14 +754,10 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
                 target.style.viewTransitionName = 'tab-content'; 
                 target.classList.add('active'); 
    
-                // ★ 修正: わずかな遅延を入れ、かつ window だけでなく 
-                // 文書全体に対してスクロールを強制する
                 requestAnimationFrame(() => {
-                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-        
-  
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
                 });
             }
 
@@ -778,18 +774,18 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
                 if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
             }
 
-            // 修正後（一本化）:
             if (tabId === 'settings') {
-                renderSettings(); // 設定項目のみDOM構築が必要なため残す
-            }
-            if (tabId === 'cellar') {
-            // 表示モードのセットのみ行い、描画は refreshUI に任せる
-            StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
-            UI.switchCellarView(StateManager.cellarViewMode);
+                renderSettings(); 
             }
             
-            // どのタブへの切り替えでも、最終的に1回だけ更新をかける
-            await refreshUI();
+            if (tabId === 'cellar') {
+                StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
+                // switchCellarView の内部で refreshUI() が呼ばれるので、これに任せる
+                UI.switchCellarView(StateManager.cellarViewMode);
+            } else {
+                // ★修正2: await を付けずに実行（UIの切り替えアニメーションを止めない）
+                refreshUI();
+            }
         });
     },
     
@@ -1066,4 +1062,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

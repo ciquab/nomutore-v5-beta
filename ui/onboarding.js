@@ -2,7 +2,7 @@
 import { driver } from "https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.mjs";
 import { APP, CALORIES } from '../constants.js';
 import { StateManager } from './state.js';
-import { Feedback, showConfetti, showMessage } from './dom.js';
+import { Feedback, showConfetti, showMessage, showAppShell } from './dom.js';
 import { DataManager } from '../dataManager.js';
 
 let currentStepIndex = 0;
@@ -283,6 +283,13 @@ export const Onboarding = {
     styleGuards.forEach(s => {
         if (s.textContent.includes('#landing-page')) s.remove();
     });
+       // ★追加: 強力な非表示ガード（app-ready）を解除する
+        if (typeof showAppShell === 'function') {
+            showAppShell();
+        } else {
+            // 万が一関数がなくても確実に解除するフォールバック
+            document.body.classList.add('app-ready'); 
+        }
         const elements = [
             document.querySelector('header'),
             document.querySelector('main'),
@@ -668,6 +675,7 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
+
 
 
 

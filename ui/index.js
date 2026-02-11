@@ -43,7 +43,7 @@ import {
 } from './beerForm.js';
 import { getExerciseFormData, openManualInput } from './exerciseForm.js';
 import { renderCheckEditor, openCheckModal, getCheckFormData,
-         renderCheckLibrary,
+         renderCheckLibrary, openCheckLibrary,
          applyLibraryChanges,
          applyPreset,
          deleteCheckItem,
@@ -961,6 +961,7 @@ if (checkModal) {
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
     renderCheckLibrary: renderCheckLibrary,
+    openCheckLibrary: openCheckLibrary,
     applyLibraryChanges: applyLibraryChanges,
     applyPreset: applyPreset,
     deleteCheckItem: deleteCheckItem,
@@ -1062,5 +1063,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

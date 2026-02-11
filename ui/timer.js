@@ -37,6 +37,13 @@ export const Timer = {
             el.value = Store.getDefaultRecordExercise();
         }
         Timer.checkResume();
+
+        // ▼ 追加: アプリがバックグラウンドから復帰した際の即時同期
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isRunning) {
+                Timer.sync();
+            }
+        });
     },
 
     checkResume: () => {
@@ -141,6 +148,40 @@ export const Timer = {
         }
     },
 
+    // ▼ 追加: バックグラウンド復帰時の同期＆再起動ロジック
+    sync: () => {
+        if (!isRunning) return;
+
+        const storedStart = localStorage.getItem(APP.STORAGE_KEYS.TIMER_START);
+        if (storedStart) {
+            const currentNow = Date.now();
+            const diff = currentNow - parseInt(storedStart);
+
+            // タイムトラベラー（3時間上限）チェック
+            if (diff > MAX_ALLOWED_DURATION_MS) {
+                accumulatedTime = MAX_ALLOWED_DURATION_MS; // ① 先に変数を上限値にする
+                Timer.pause();                             // ② その値でポーズ（ストレージ保存）する
+    
+                const display = document.getElementById('timer-display');
+                if(display) display.textContent = formatTime(accumulatedTime);
+                Timer.updateCalculations(accumulatedTime);
+                showMessage('⚠️ タイマー上限(3時間)に達しました', 'warning');
+                return;
+            }
+
+            // 遅れていた分の時間を計算して即座にUIへ反映
+            accumulatedTime = diff;
+            const display = document.getElementById('timer-display');
+            if(display) display.textContent = formatTime(diff);
+            Timer.updateCalculations(diff);
+
+            // OSにより setInterval が停止/破棄されている場合に備え、確実に再起動する
+            if (timerInterval) clearInterval(timerInterval);
+            isRunning = false; // Timer.start() 冒頭の重複起動ガードを抜けるため一時的にfalse
+            Timer.start();     // 再び正しい基準時刻でループを再開
+        }
+    },
+
     start: () => {
         console.log('[Timer] start() entered');
         if (isRunning && timerInterval) {
@@ -168,14 +209,13 @@ export const Timer = {
 
             // ★追加: アプリ起動中の3時間超えチェック
             if (diff > MAX_ALLOWED_DURATION_MS) {
-                Timer.pause();
-                accumulatedTime = MAX_ALLOWED_DURATION_MS;
-                
-                // 表示を上限値に更新
+                accumulatedTime = MAX_ALLOWED_DURATION_MS; // ① 先に変数を上限値にする
+                Timer.pause();                             // ② その値でポーズする
+    
                 const display = document.getElementById('timer-display');
                 if(display) display.textContent = formatTime(accumulatedTime);
                 Timer.updateCalculations(accumulatedTime);
-                
+    
                 showMessage('⚠️ タイマー上限(3時間)に達しました', 'warning');
                 return;
             }
@@ -425,3 +465,4 @@ export const Timer = {
     }
 
 };
+

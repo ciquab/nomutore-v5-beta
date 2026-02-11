@@ -396,6 +396,17 @@ export const DOM = {
     }
 };
 
+/**
+ * アプリのシェル要素（header, main, bottom-nav）を表示する。
+ * オンボーディング完了後の初期表示や、ページ復帰時に使用。
+ */
+export const showAppShell = () => {
+    document.querySelector('header')?.classList.remove('hidden');
+    document.querySelector('main')?.classList.remove('hidden');
+    document.body.classList.add('app-ready');
+    document.getElementById('bottom-nav')?.classList.remove('hidden');
+};
+
 export const escapeHtml = (str) => {
     if(typeof str !== 'string') return str;
     return str.replace(/[&<>"']/g, function(m) {

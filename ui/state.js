@@ -1,31 +1,11 @@
 // @ts-check
 import { APP } from '../constants.js';
+import { EventBus, Events } from '../eventBus.js';
 import { refreshUI } from './index.js';
 
-// ■ 1. イベントバス (Pub/Sub) の定義
+// ■ 1. イベントバス (Pub/Sub) — eventBus.js から再エクスポート
 // ---------------------------------------------------------
-export const EventBus = {
-    listeners: {},
-    /**
-     * イベントを購読する
-     * @param {string} event - イベント名 ('stateChange' など)
-     * @param {function} callback - コールバック関数
-     */
-    on(event, callback) {
-        if (!this.listeners[event]) this.listeners[event] = [];
-        this.listeners[event].push(callback);
-    },
-    /**
-     * イベントを発火する
-     * @param {string} event 
-     * @param {any} data 
-     */
-    emit(event, data) {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(cb => cb(data));
-        }
-    }
-};
+export { EventBus };
 
 // ■ 2. 内部状態 (直接アクセス禁止)
 // ---------------------------------------------------------

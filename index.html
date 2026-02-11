@@ -495,12 +495,12 @@
                 </p>
 
                 <div class="grid grid-cols-2 gap-3 mb-2">
-                    <button id="btn-cloud-backup" class="py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-cloud-backup" data-action="data:backupToCloud" class="py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95 flex flex-col items-center justify-center gap-1">
                         <i class="ph-bold ph-cloud-arrow-up text-xl"></i>
                         <span>Backup</span>
                     </button>
                     
-                    <button id="btn-cloud-restore" class="py-3 rounded-xl bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-cloud-restore" data-action="data:restoreFromCloud" class="py-3 rounded-xl bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition active:scale-95 flex flex-col items-center justify-center gap-1">
                         <i class="ph-bold ph-cloud-arrow-down text-xl"></i>
                         <span>Restore</span>
                     </button>
@@ -1818,6 +1818,7 @@
 </body>
 
 </html>
+
 
 
 

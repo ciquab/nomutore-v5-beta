@@ -49,6 +49,8 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
          deleteCheckItem,
          addNewCheckItem } from './checkForm.js';
 import * as LogDetail from './logDetail.js';
+import { setupGlobalListeners } from './gestures.js';
+import { DataManager } from '../dataManager.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -704,6 +706,18 @@ if (checkModal) {
     handleSaveSettings();
 });
 
+        // --- ファイル入力の change ハンドラ ---
+        // data-action では扱えないため個別にバインドする
+        const importFileInput = document.getElementById('import-file');
+        if (importFileInput) {
+            importFileInput.addEventListener('change', function() {
+                DataManager.importJSON(this);
+            });
+        }
+
+        // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
+        setupGlobalListeners((tabId) => UI.switchTab(tabId));
+
         UI.isInitialized = true;
     },
 
@@ -924,6 +938,16 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
         LogDetail.openDayDetail(date);
     },
           
+    triggerFileInput: (inputId) => {
+        const el = document.getElementById(inputId);
+        if (el) el.click();
+    },
+    enableInteractions: () => {
+        document.body.style.pointerEvents = 'auto';
+        setTimeout(() => {
+            document.body.classList.remove('preload');
+        }, 100);
+    },
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },

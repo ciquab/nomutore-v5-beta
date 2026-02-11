@@ -525,7 +525,7 @@ export const getCheckFormData = () => {
         const w = parseFloat(weight);
         if (isNaN(w) || w < 20 || w > 500) {
             showMessage('体重を正しく入力してください (20kg - 500kg)', 'error');
-            throw new Error('Invalid weight');
+            return null;
         }
     }
     
@@ -552,5 +552,6 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 
 

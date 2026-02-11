@@ -1,7 +1,8 @@
 // @ts-check
-import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
-import { Store, ExternalApp, db } from './store.js'; 
-import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
+import { APP } from './constants.js';
+import { Store } from './store.js';
+import { UI, StateManager, updateBeerSelectOptions, generateSettingsOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
+import { showAppShell } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
@@ -39,8 +40,7 @@ const registerActions = () => {
         'ui:switchTab': (tabName) => UI.switchTab(tabName),
         'ui:switchCellarView': (viewName) => UI.switchCellarViewHTML(viewName),
         'ui:applyTheme': () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            UI.applyTheme(isDark ? 'light' : 'dark');
+            UI.toggleTheme();
         },
         'ui:openShareModal': () => UI.openShareModal(),
         'ui:openDayDetail': (data) => {
@@ -52,9 +52,7 @@ const registerActions = () => {
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),
         'modal:toggle': (modalId) => {
-            const modal = document.getElementById(modalId);
-            const isVisible = modal && !modal.classList.contains('hidden');
-            toggleModal(modalId, !isVisible);
+            UI.toggleModal(modalId);
         },
         'modal:openBeer': () => UI.openBeerModal(),
         'modal:openExercise': () => UI.openManualInput(),
@@ -341,10 +339,7 @@ const initApp = async () => {
 
         // LPを表示する必要がない（＝オンボーディング済み）場合だけ表示をONにする
         if (isOnboarded) {
-            document.querySelector('header')?.classList.remove('hidden');
-            document.querySelector('main')?.classList.remove('hidden');
-            document.body.classList.add('app-ready'); // CSSでの制御
-            document.getElementById('bottom-nav')?.classList.remove('hidden');
+            showAppShell();
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
@@ -546,58 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
    Helper Functions
    ========================================================================== */
 
-const generateSettingsOptions = () => {
-    const createOpts = (obj, id, isKey = false) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = '';
-    Object.keys(obj).forEach(k => {
-        const o = document.createElement('option');
-        o.value = k;
-        
-        // ★修正点: アイコンクラスを表示せず、ラベルだけを表示する
-        o.textContent = isKey ? k : (obj[k].label || k);
-        
-        el.appendChild(o);
-    });
-};
-
-    createOpts(EXERCISE, 'exercise-select');
-    createOpts(EXERCISE, 'setting-base-exercise');
-    createOpts(EXERCISE, 'setting-default-record-exercise');
-    createOpts(CALORIES.STYLES, 'setting-mode-1', true);
-    createOpts(CALORIES.STYLES, 'setting-mode-2', true);
-    createOpts(SIZE_DATA, 'beer-size');
-    
-    const defRec = Store.getDefaultRecordExercise();
-    const exSel = document.getElementById('exercise-select');
-    if(exSel && defRec) exSel.value = defRec;
-    
-    const bSize = document.getElementById('beer-size');
-    if(bSize) bSize.value = '350';
-    
-    const profile = Store.getProfile();
-    const wIn = document.getElementById('weight-input');
-    if(wIn) wIn.value = profile.weight;
-    const hIn = document.getElementById('height-input');
-    if(hIn) hIn.value = profile.height;
-    const aIn = document.getElementById('age-input');
-    if(aIn) aIn.value = profile.age;
-    const gIn = document.getElementById('gender-input');
-    if(gIn) gIn.value = profile.gender;
-    
-    const modes = Store.getModes();
-    const m1 = document.getElementById('setting-mode-1');
-    if(m1) m1.value = modes.mode1;
-    const m2 = document.getElementById('setting-mode-2');
-    if(m2) m2.value = modes.mode2;
-    
-    const baseEx = document.getElementById('setting-base-exercise');
-    if(baseEx) baseEx.value = Store.getBaseExercise();
-    
-    const defRecSet = document.getElementById('setting-default-record-exercise');
-    if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
-}
+// generateSettingsOptions は ui/modal.js に移動済み（UI層の責務）
 
 
 

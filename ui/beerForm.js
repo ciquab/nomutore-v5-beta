@@ -129,7 +129,7 @@ export const getBeerFormData = (existingLog = null) => {
 
     if (dateVal && dayjs(dateVal).isAfter(dayjs(), 'day')) {
         showMessage('未来の日付は選択できません', 'error');
-        throw new Error('Future date selected');
+        return null;
     }
 
     const brewery = /** @type {HTMLInputElement} */ (document.getElementById('beer-brewery')).value;
@@ -217,15 +217,15 @@ export const getBeerFormData = (existingLog = null) => {
     // ★修正版: showMessage を追加してユーザーへの通知と処理中断をセットで行う
     if (isNaN(finalMl) || finalMl <= 0 || finalMl > 10000) {
         showMessage('分量を正しく入力してください (最大10L)', 'error');
-        throw new Error('Invalid amount');
+        return null;
     }
     if (isNaN(finalAbv) || finalAbv < 0 || finalAbv > 100) {
         showMessage('度数を正しく入力してください (0-100%)', 'error');
-        throw new Error('Invalid ABV');
+        return null;
     }
     if (isNaN(count) || count <= 0 || count > 100) {
         showMessage('本数を正しく入力してください (最大100本)', 'error');
-        throw new Error('Invalid count');
+        return null;
     }
 
     return {
@@ -455,4 +455,5 @@ export const updateInputSuggestions = async () => {
         console.error("Failed to update suggestions:", e);
     }
 };
+
 

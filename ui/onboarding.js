@@ -616,14 +616,6 @@ Onboarding.completeAfterRestore = () => {
     }, 2500);
 };
 
-// ★追加: HTMLのonclickから呼ぶためのヘルパー関数
-Onboarding.setPeriodMode = async (mode) => { // asyncにする
-    // 単なる保存ではなく、Serviceを通じて「開始日」の確定まで行う
-    await Service.updatePeriodSettings(mode); 
-    Onboarding.nextStep();
-};
-
-
 Onboarding.playSplash = () => {
     const lp = document.getElementById('landing-page');
     const content = document.getElementById('lp-content'); // ボタンを含むコンテナ
@@ -676,6 +668,7 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
+
 
 
 

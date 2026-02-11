@@ -76,7 +76,7 @@ self.addEventListener('fetch', (event) => {
                 event.waitUntil(
                     fetch(event.request).then((networkResponse) => {
                         if (networkResponse && networkResponse.ok) {
-                            const responseToCache = networkResponse.clone(); // 先にクローン
+                            const responseToCache = networkResponse.clone();
                             caches.open(CACHE_NAME).then((cache) => {
                                 cache.put(event.request, responseToCache);
                             });
@@ -86,33 +86,38 @@ self.addEventListener('fetch', (event) => {
                 return cachedResponse;
             }
 
-            }).catch((error) => {
-                // ★ 新規追加: オフライン時やネットワーク通信エラー時のフォールバック処理
-                console.warn('[Service Worker] Fetch failed (offline or network error):', event.request.url);
-
-                // 要求が「画面遷移（ナビゲーション）」または「HTMLファイル」だった場合、
-                // アプリの骨組みである index.html をキャッシュから返却する
-                if (event.request.mode === 'navigate' || 
-                   (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
-                    
-                    return caches.match('./index.html').then(fallback => {
-                        if (fallback) {
-                            return fallback;
-                        }
-                        // index.html すらキャッシュにない最悪のケース
-                        throw error; 
+            // B. キャッシュがない場合: ネットワークから取得
+            return fetch(event.request).then((networkResponse) => {
+                // 取得成功時はキャッシュに保存して返す
+                if (networkResponse && networkResponse.ok) {
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
                     });
                 }
-
-                // 画像やAPIなど、HTML以外のリクエストで失敗した場合はそのままエラーとする
-                throw error;
+                return networkResponse;
             });
+        }).catch((error) => {
+            // ★ オフライン時やネットワーク通信エラー時のフォールバック処理
+            console.warn('[Service Worker] Fetch failed (offline or network error):', event.request.url);
+
+            // 要求が「画面遷移」または「HTML」の場合、index.html を返す
+            if (event.request.mode === 'navigate' || 
+               (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
+                
+                return caches.match('./index.html').then(fallback => {
+                    if (fallback) {
+                        return fallback;
+                    }
+                    throw error; 
+                });
+            }
+            throw error;
         })
     );
 });
 
-
-// 新しいSWが待機状態のとき、クライアントから "SKIP_WAITING" メッセージを受け取ったら即座にアクティブにする
+// メッセージ受信: SKIP_WAITING
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();

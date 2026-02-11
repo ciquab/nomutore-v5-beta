@@ -385,6 +385,9 @@ document.addEventListener('bulk-delete', async () => {
 
     // 引数に既存ログを渡す（beerForm.js側の修正とセットで機能します）
     const data = getBeerFormData(existingLog); 
+
+    // ★追加: データが null (バリデーションエラー) の場合は処理を中断
+    if (!data) return;
     
     const event = new CustomEvent('save-beer', { 
         detail: { data, existingId: editingId } 
@@ -405,6 +408,10 @@ document.addEventListener('bulk-delete', async () => {
     }
 
     const data = getBeerFormData(existingLog);
+
+    // ★追加: データが null (バリデーションエラー) の場合は処理を中断
+    if (!data) return;
+            
     const event = new CustomEvent('save-beer', { 
         detail: { data, existingId: editingId } 
     });
@@ -441,6 +448,9 @@ document.addEventListener('bulk-delete', async () => {
         // 1. フォーム担当者にデータを集めさせる
         const detail = getExerciseFormData();
 
+        // ★追加: データが null (バリデーションエラー) の場合はここで処理を止める
+        if (!detail) return;
+
         // 2. タップ音を鳴らす
         Feedback.tap();
 
@@ -474,6 +484,9 @@ document.addEventListener('bulk-delete', async () => {
     try {
         // 専門家（checkForm.js）にデータを集めてもらう
         const detail = getCheckFormData();
+
+        // ★追加: データが null (バリデーションエラー) の場合はここで処理を止める
+        if (!detail) return;
         
         // 常にタップ音を出す
         Feedback.tap();
@@ -956,3 +969,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

@@ -32,7 +32,13 @@ db.version(4).stores({
     // 今回は全削除前提ならスキーマ定義だけでOKですが、念のため構造を整えます
 });
 
+const LAST_ACTIVE_KEY = 'nomutore_last_active_date';
+
 export const Store = {
+    // --- ライフサイクル状態 ---
+    getLastActiveDate: () => localStorage.getItem(LAST_ACTIVE_KEY),
+    setLastActiveDate: (date) => localStorage.setItem(LAST_ACTIVE_KEY, date),
+
     getProfile: () => ({
         weight: parseFloat(localStorage.getItem(APP.STORAGE_KEYS.WEIGHT)) || APP.DEFAULTS.WEIGHT,
         height: parseFloat(localStorage.getItem(APP.STORAGE_KEYS.HEIGHT)) || APP.DEFAULTS.HEIGHT,

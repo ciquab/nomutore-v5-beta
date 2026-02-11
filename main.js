@@ -1,7 +1,8 @@
 // @ts-check
-import { APP, EXERCISE, SIZE_DATA, CALORIES } from './constants.js';
-import { Store, ExternalApp, db } from './store.js'; 
-import { UI, StateManager, updateBeerSelectOptions, refreshUI, toggleModal, initHandleRepeatDelegation } from './ui/index.js';
+import { APP } from './constants.js';
+import { Store } from './store.js';
+import { UI, updateBeerSelectOptions, generateSettingsOptions, refreshUI, toggleModal } from './ui/index.js';
+import { showAppShell } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
 import { DataManager } from './dataManager.js';
@@ -11,19 +12,6 @@ import { Onboarding } from './ui/onboarding.js';
 import { actionRouter, initActionRouter } from './ui/actionRouter.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
-
-/**
- * FileInput の change イベント登録
- * （data-action では扱えないため個別に登録）
- */
-export const setupFileInputHandlers = () => {
-    const importFileInput = document.getElementById('import-file');
-    if (importFileInput) {
-        importFileInput.addEventListener('change', function(e) {
-            DataManager.importJSON(this);
-        });
-    }
-};
 
 // ========================================
 // ActionRouter への登録（新規追加）
@@ -39,8 +27,7 @@ const registerActions = () => {
         'ui:switchTab': (tabName) => UI.switchTab(tabName),
         'ui:switchCellarView': (viewName) => UI.switchCellarViewHTML(viewName),
         'ui:applyTheme': () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            UI.applyTheme(isDark ? 'light' : 'dark');
+            UI.toggleTheme();
         },
         'ui:openShareModal': () => UI.openShareModal(),
         'ui:openDayDetail': (data) => {
@@ -52,9 +39,7 @@ const registerActions = () => {
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),
         'modal:toggle': (modalId) => {
-            const modal = document.getElementById(modalId);
-            const isVisible = modal && !modal.classList.contains('hidden');
-            toggleModal(modalId, !isVisible);
+            UI.toggleModal(modalId);
         },
         'modal:openBeer': () => UI.openBeerModal(),
         'modal:openExercise': () => UI.openManualInput(),
@@ -72,10 +57,7 @@ const registerActions = () => {
         'data:importJSON': () => DataManager.importJSON(),
         'data:backupToCloud': () => DataManager.backupToCloud(),
         'data:restoreFromCloud': () => DataManager.restoreFromCloud(),
-        'data:triggerImportFile': () => {
-            const fileInput = document.getElementById('import-file');
-            if (fileInput) fileInput.click();
-        },
+        'data:triggerImportFile': () => UI.triggerFileInput('import-file'),
         
         // ========== Log系 ==========
         'log:deleteSelected': () => {
@@ -143,7 +125,7 @@ const registerActions = () => {
             Onboarding.setPeriodMode(args.mode);
         },
         'onboarding:handleCloudRestore': () => Onboarding.handleCloudRestore(),
-        'onboarding:triggerJson': () => document.getElementById('wizard-import-file').click(),
+        'onboarding:triggerJson': () => UI.triggerFileInput('wizard-import-file'),
         
         // ========== Timer系 ==========
         'timer:toggle': () => Timer.toggle(),
@@ -258,8 +240,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-const LAST_ACTIVE_KEY = 'nomutore_last_active_date';
-let lastActiveDate = localStorage.getItem(LAST_ACTIVE_KEY) || dayjs().format('YYYY-MM-DD');
+let lastActiveDate = Store.getLastActiveDate() || dayjs().format('YYYY-MM-DD');
 
 /* ==========================================================================
    Lifecycle Management
@@ -274,7 +255,7 @@ const setupLifecycleListeners = () => {
             if (lastActiveDate !== today) {
                 console.log('New day detected on resume. Refreshing...');
                 lastActiveDate = today;
-                localStorage.setItem(LAST_ACTIVE_KEY, today);
+                Store.setLastActiveDate(today);
                 isResuming = true;
                 await initApp(); 
                 isResuming = false;
@@ -341,10 +322,7 @@ const initApp = async () => {
 
         // LPを表示する必要がない（＝オンボーディング済み）場合だけ表示をONにする
         if (isOnboarded) {
-            document.querySelector('header')?.classList.remove('hidden');
-            document.querySelector('main')?.classList.remove('hidden');
-            document.body.classList.add('app-ready'); // CSSでの制御
-            document.getElementById('bottom-nav')?.classList.remove('hidden');
+            showAppShell();
         }
 
         // 2. 重い初期化（Google Drive 等）は、UI 表示と並行または後で行う
@@ -366,7 +344,7 @@ const initApp = async () => {
         // 4. Load & Verify Data
         updateBeerSelectOptions(); 
         generateSettingsOptions();
-        UI.applyTheme(localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system');
+        UI.applyTheme(Store.getTheme());
 
         // 当日のチェックレコードを確保（なければ作成）
         await Service.ensureTodayCheckRecord();
@@ -399,12 +377,8 @@ const initApp = async () => {
 
         UI.switchTab('home', { silent: true });
         
-        document.body.style.pointerEvents = 'auto';
+        UI.enableInteractions();
         console.log('🚀 UI initialized and interactions enabled');
-
-        setTimeout(() => {
-            document.body.classList.remove('preload');
-        }, 100);
        
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する
@@ -415,103 +389,6 @@ const initApp = async () => {
             0
         ));
     }
-};
-
-/* ==========================================================================
-   Global Event Listeners (Swipe, etc)
-   ========================================================================== */
-
-let touchStartX = null;
-let touchStartY = null;
-let touchEndX = 0;
-let touchEndY = 0;
-
-const setupGlobalListeners = () => {
-    // --- 1. スワイプ操作 ---
-    document.addEventListener('touchstart', (e) => {
-        // 横スクロールエリア（チャート等）での操作は除外
-        if (e.target.closest('.overflow-x-auto, .chart-container')) {
-            touchStartX = null; touchStartY = null; return;
-        }
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', (e) => {
-        if (touchStartX === null || touchStartY === null) return;
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
-        handleSwipe();
-    }, { passive: true });
-
-    // --- 2. FABのスクロール制御 (強化版) ---
-    let lastScrollTop = 0;
-    const fab = document.getElementById('btn-fab-fixed');
-    
-    // window ではなく document (または全体) に対してスクロールを監視
-    // スロットリング（頻度制限）をあえて入れず、ブラウザの最適化に任せます
-    document.addEventListener('scroll', () => {
-        if (!fab || fab.classList.contains('scale-0') || fab.dataset.animating === 'true') return;
-
-        // 複数の取得方法を試行（ブラウザ互換性）
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop;
-        const diff = scrollTop - lastScrollTop;
-
-        // 下にスクロール（diff > 0）かつ 一定以上(20px)スクロールした
-        if (diff > 5 && scrollTop > 20) {
-            fab.style.transform = 'translateY(110px)'; // classList ではなく直接 style で制御するとより確実
-            fab.style.opacity = '0';
-        } 
-        // 上にスクロール、または最上部付近
-        else if (diff < -5 || scrollTop <= 10) {
-            fab.style.removeProperty('transform');
-            fab.style.removeProperty('opacity');
-        }
-        
-        lastScrollTop = scrollTop;
-    }, true); // ★ 第3引数を true (Capture) にすることで、子要素のスクロールも拾えるようになります
-};
-
-// スワイプ判定ロジック
-const handleSwipe = () => {
-    if (touchStartX === null) return;
-
-    // --- 【修正】モーダル（IDに -modal が付く要素）が表示中ならスワイプをブロック ---
-    const activeModal = document.querySelector('[id$="-modal"].flex, [id$="-modal-container"].flex, .modal-bg');
-    if (activeModal) return; 
-
-    const diffX = touchStartX - touchEndX;
-    const diffY = touchStartY - touchEndY;
-    const swipeThreshold = 80; 
-    
-    // 縦スクロール優先なら無視
-    if (Math.abs(diffY) > Math.abs(diffX)) return;
-
-    const tabs = ['home', 'record', 'cellar', 'settings'];
-    const activeNav = document.querySelector('.nav-pill-active');
-    if (!activeNav) return;
-    
-    const currentTab = activeNav.id.replace('nav-tab-', '');
-    const currentIndex = tabs.indexOf(currentTab);
-
-    if (Math.abs(diffX) > swipeThreshold) {
-        let targetTabIndex = -1;
-        
-        if (diffX > 0 && currentIndex < tabs.length - 1) {
-            targetTabIndex = currentIndex + 1; // 次のタブへ
-        } else if (diffX < 0 && currentIndex > 0) {
-            targetTabIndex = currentIndex - 1; // 前のタブへ
-        }
-
-        if (targetTabIndex !== -1) {
-            UI.switchTab(tabs[targetTabIndex]);
-            window.scrollTo({ top: 0, behavior: 'instant' });
-        }
-    }
-    
-    // 初期化
-    touchStartX = null;
-    touchStartY = null;
 };
 
 /* ==========================================================================
@@ -533,73 +410,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. ファイル入力ハンドラー
-    setupFileInputHandlers();
-
+    // 3. ライフサイクル管理
     setupLifecycleListeners();
-    setupGlobalListeners();
 
     initApp();
 });
-
-/* ==========================================================================
-   Helper Functions
-   ========================================================================== */
-
-const generateSettingsOptions = () => {
-    const createOpts = (obj, id, isKey = false) => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = '';
-    Object.keys(obj).forEach(k => {
-        const o = document.createElement('option');
-        o.value = k;
-        
-        // ★修正点: アイコンクラスを表示せず、ラベルだけを表示する
-        o.textContent = isKey ? k : (obj[k].label || k);
-        
-        el.appendChild(o);
-    });
-};
-
-    createOpts(EXERCISE, 'exercise-select');
-    createOpts(EXERCISE, 'setting-base-exercise');
-    createOpts(EXERCISE, 'setting-default-record-exercise');
-    createOpts(CALORIES.STYLES, 'setting-mode-1', true);
-    createOpts(CALORIES.STYLES, 'setting-mode-2', true);
-    createOpts(SIZE_DATA, 'beer-size');
-    
-    const defRec = Store.getDefaultRecordExercise();
-    const exSel = document.getElementById('exercise-select');
-    if(exSel && defRec) exSel.value = defRec;
-    
-    const bSize = document.getElementById('beer-size');
-    if(bSize) bSize.value = '350';
-    
-    const profile = Store.getProfile();
-    const wIn = document.getElementById('weight-input');
-    if(wIn) wIn.value = profile.weight;
-    const hIn = document.getElementById('height-input');
-    if(hIn) hIn.value = profile.height;
-    const aIn = document.getElementById('age-input');
-    if(aIn) aIn.value = profile.age;
-    const gIn = document.getElementById('gender-input');
-    if(gIn) gIn.value = profile.gender;
-    
-    const modes = Store.getModes();
-    const m1 = document.getElementById('setting-mode-1');
-    if(m1) m1.value = modes.mode1;
-    const m2 = document.getElementById('setting-mode-2');
-    if(m2) m2.value = modes.mode2;
-    
-    const baseEx = document.getElementById('setting-base-exercise');
-    if(baseEx) baseEx.value = Store.getBaseExercise();
-    
-    const defRecSet = document.getElementById('setting-default-record-exercise');
-    if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
-}
-
-
 
 
 

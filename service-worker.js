@@ -85,25 +85,29 @@ self.addEventListener('fetch', (event) => {
                 return cachedResponse;
             }
 
-            // B. キャッシュがない場合: ネットワークへ
-            return fetch(event.request).then((networkResponse) => {
-                // レスポンスが不正ならそのまま返す
-                if (!networkResponse || !networkResponse.ok) {
-                    return networkResponse;
+            }).catch((error) => {
+                // ★ 新規追加: オフライン時やネットワーク通信エラー時のフォールバック処理
+                console.warn('[Service Worker] Fetch failed (offline or network error):', event.request.url);
+
+                // 要求が「画面遷移（ナビゲーション）」または「HTMLファイル」だった場合、
+                // アプリの骨組みである index.html をキャッシュから返却する
+                if (event.request.mode === 'navigate' || 
+                   (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
+                    
+                    return caches.match('./index.html').then(fallback => {
+                        if (fallback) {
+                            return fallback;
+                        }
+                        // index.html すらキャッシュにない最悪のケース
+                        throw error; 
+                    });
                 }
 
-                // キャッシュ用にクローンを作成
-                const responseToCache = networkResponse.clone();
-
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(event.request, responseToCache);
-                });
-
-                return networkResponse;
+                // 画像やAPIなど、HTML以外のリクエストで失敗した場合はそのままエラーとする
+                throw error;
             });
         })
     );
-
 });
 
 
@@ -113,17 +117,3 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-

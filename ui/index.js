@@ -3,8 +3,9 @@ import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
-import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification } from './dom.js';
+import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification, showAppShell } from './dom.js';
 import { StateManager } from './state.js';
+import { EventBus, Events } from '../eventBus.js';
 
 import { renderBeerTank } from './beerTank.js';
 import { renderLiverRank } from './liverRank.js';
@@ -18,15 +19,16 @@ import { Timer } from './timer.js';
 import { Share } from './share.js';
 import { handleRollover } from './rollover.js';
 
-import { 
-    renderSettings, openHelp, 
+import {
+    renderSettings, openHelp,
     updateModeSelector, renderQuickButtons, closeModal,
     openTimer, closeTimer,
-    openActionMenu, handleSaveSettings, 
-    validateInput, 
-    renderRecordTabShortcuts, // ★新規追加
-    openShareModal, // ★新規追加
-    showRolloverModal
+    openActionMenu, handleSaveSettings,
+    validateInput,
+    renderRecordTabShortcuts,
+    openShareModal,
+    showRolloverModal,
+    generateSettingsOptions
 } from './modal.js';
 import {
     openBeerModal,
@@ -47,11 +49,72 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
          deleteCheckItem,
          addNewCheckItem } from './checkForm.js';
 import * as LogDetail from './logDetail.js';
+import { setupGlobalListeners } from './gestures.js';
+import { DataManager } from '../dataManager.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 let fabEl = null;
 let saveEl = null;
+
+/**
+ * EventBus リスナーの一括登録
+ * データ層・サービス層からの通知を受け取り、UI を更新する。
+ * UI.init() の中で一度だけ呼ばれる。
+ */
+const setupEventBusListeners = () => {
+    // 1. 汎用メッセージ通知 (DataManager等から)
+    EventBus.on(Events.NOTIFY, ({ message, type, action }) => {
+        showMessage(message, type || 'info', action || null);
+    });
+
+    // 2. クラウド同期ステータス更新
+    EventBus.on(Events.CLOUD_STATUS, ({ message }) => {
+        const el = document.getElementById('cloud-status');
+        if (el) el.textContent = message;
+    });
+
+    // 3. グローバルエラー表示
+    EventBus.on(Events.ERROR_SHOW, ({ errText }) => {
+        const overlay = document.getElementById('global-error-overlay');
+        const details = document.getElementById('error-details');
+        if (overlay && details) {
+            details.textContent = errText;
+            overlay.classList.remove('hidden');
+
+            const copyBtn = document.getElementById('btn-copy-error');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(errText)
+                        .then(() => alert('エラーログをコピーしました'))
+                        .catch(() => alert('コピーに失敗しました'));
+                });
+            }
+        }
+    });
+
+    // 4. UI 更新リクエスト (rollover.js 等から)
+    EventBus.on(Events.REFRESH_UI, () => {
+        setTimeout(() => refreshUI(), 50);
+    });
+
+    // 5. 設定画面の期間モード変更 (rollover.js から)
+    EventBus.on(Events.SETTINGS_APPLY_PERIOD, ({ mode }) => {
+        const pMode = document.getElementById('setting-period-mode');
+        if (pMode) {
+            pMode.value = mode;
+            pMode.dispatchEvent(new Event('change'));
+        }
+    });
+
+    // 6. データ復元後のテーマ再適用
+    EventBus.on(Events.STATE_CHANGE, ({ key, value }) => {
+        if (key === 'themeRestored') {
+            applyTheme(value);
+            if (typeof updateModeSelector === 'function') updateModeSelector();
+        }
+    });
+};
 
 export const refreshUI = async () => {
     try {
@@ -113,7 +176,9 @@ export const UI = {
         
         DOM.init();
 
-        // ▼▼▼ ここから追加 ▼▼▼
+        // ───── EventBus リスナー登録（単方向データフロー: Data層 → UI層） ─────
+        setupEventBusListeners();
+
         // ★修正: 固定要素がアニメーションでチラつかないようにCSS設定を注入
         const style = document.createElement('style');
         style.textContent = `
@@ -385,6 +450,9 @@ document.addEventListener('bulk-delete', async () => {
 
     // 引数に既存ログを渡す（beerForm.js側の修正とセットで機能します）
     const data = getBeerFormData(existingLog); 
+
+    // ★追加: データが null (バリデーションエラー) の場合は処理を中断
+    if (!data) return;
     
     const event = new CustomEvent('save-beer', { 
         detail: { data, existingId: editingId } 
@@ -405,6 +473,10 @@ document.addEventListener('bulk-delete', async () => {
     }
 
     const data = getBeerFormData(existingLog);
+
+    // ★追加: データが null (バリデーションエラー) の場合は処理を中断
+    if (!data) return;
+            
     const event = new CustomEvent('save-beer', { 
         detail: { data, existingId: editingId } 
     });
@@ -441,6 +513,9 @@ document.addEventListener('bulk-delete', async () => {
         // 1. フォーム担当者にデータを集めさせる
         const detail = getExerciseFormData();
 
+        // ★追加: データが null (バリデーションエラー) の場合はここで処理を止める
+        if (!detail) return;
+
         // 2. タップ音を鳴らす
         Feedback.tap();
 
@@ -474,6 +549,9 @@ document.addEventListener('bulk-delete', async () => {
     try {
         // 専門家（checkForm.js）にデータを集めてもらう
         const detail = getCheckFormData();
+
+        // ★追加: データが null (バリデーションエラー) の場合はここで処理を止める
+        if (!detail) return;
         
         // 常にタップ音を出す
         Feedback.tap();
@@ -627,6 +705,18 @@ if (checkModal) {
     if (!btn) return;
     handleSaveSettings();
 });
+
+        // --- ファイル入力の change ハンドラ ---
+        // data-action では扱えないため個別にバインドする
+        const importFileInput = document.getElementById('import-file');
+        if (importFileInput) {
+            importFileInput.addEventListener('change', function() {
+                DataManager.importJSON(this);
+            });
+        }
+
+        // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
+        setupGlobalListeners((tabId) => UI.switchTab(tabId));
 
         UI.isInitialized = true;
     },
@@ -848,10 +938,29 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
         LogDetail.openDayDetail(date);
     },
           
+    triggerFileInput: (inputId) => {
+        const el = document.getElementById(inputId);
+        if (el) el.click();
+    },
+    enableInteractions: () => {
+        document.body.style.pointerEvents = 'auto';
+        setTimeout(() => {
+            document.body.classList.remove('preload');
+        }, 100);
+    },
     handleSaveSettings: handleSaveSettings,
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
-    toggleModal: (id, show) => toggleModal(id, show),
+    toggleModal: (id, show) => {
+        if (show === undefined) {
+            // showが省略された場合はトグル（現在の可視状態を反転）
+            const el = document.getElementById(id);
+            const isVisible = el && !el.classList.contains('hidden');
+            toggleModal(id, !isVisible);
+        } else {
+            toggleModal(id, show);
+        }
+    },
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
@@ -864,15 +973,16 @@ switchTab: (tabId, options = { silent: false }) => { // 引数に options を追
 
 };
 
-export { 
-    renderBeerTank, 
-    renderLiverRank, 
-    renderCheckStatus, 
-    renderWeeklyAndHeatUp, 
-    renderChart, 
-    updateLogListView, 
-    updateModeSelector, 
+export {
+    renderBeerTank,
+    renderLiverRank,
+    renderCheckStatus,
+    renderWeeklyAndHeatUp,
+    renderChart,
+    updateLogListView,
+    updateModeSelector,
     updateBeerSelectOptions,
+    generateSettingsOptions,
     StateManager,
     toggleModal
 };
@@ -956,3 +1066,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

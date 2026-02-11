@@ -2,7 +2,7 @@
 import { APP } from './constants.js';
 import { db, Store } from './store.js';
 import { Calc } from './logic.js';
-import { UI, updateBeerSelectOptions, refreshUI } from './ui/index.js';
+import { EventBus, Events } from './eventBus.js';
 import { CloudManager } from './cloudManager.js';
 
 export const DataManager = {
@@ -108,12 +108,9 @@ export const DataManager = {
             localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
 
             // --- 3. UIの即時反映（リロードまでの繋ぎ） ---
-        // リロードするまでの1〜2秒間、ユーザーに「変わった感」を出すならこれを入れる
-        if (typeof UI !== 'undefined') {
-            const savedTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
-            if (UI.applyTheme) UI.applyTheme(savedTheme);
-            if (UI.updateModeSelector) UI.updateModeSelector();
-        }
+        // EventBus経由でUI層に通知し、テーマ再適用とモードセレクタ更新を依頼する
+        const savedTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
+        EventBus.emit(Events.STATE_CHANGE, { key: 'themeRestored', value: savedTheme });
 
         return true; // 成功を restoreFromCloud に返す
     } catch(err) {
@@ -125,57 +122,54 @@ export const DataManager = {
     // --- クラウド連携 (Google Drive) ---
 
     backupToCloud: async () => {
-        const statusEl = document.getElementById('cloud-status');
         try {
-            if(statusEl) statusEl.textContent = 'Preparing backup...';
-            
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Preparing backup...' });
+
             // 1. データ生成
             const backupData = await DataManager.getBackupObject();
-            
+
             // 2. アップロード
-            if(statusEl) statusEl.textContent = 'Uploading to Google Drive...';
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Uploading to Google Drive...' });
             await CloudManager.uploadBackup(backupData);
-            
-            UI.showMessage('☁️ Googleドライブに保存しました', 'success');
-            if(statusEl) statusEl.textContent = `Last Backup: ${new Date().toLocaleString()}`;
-            
+
+            EventBus.emit(Events.NOTIFY, { message: 'Googleドライブに保存しました', type: 'success' });
+            EventBus.emit(Events.CLOUD_STATUS, { message: `Last Backup: ${new Date().toLocaleString()}` });
+
         } catch (err) {
             console.error(err);
-            UI.showMessage('バックアップ失敗: コンソールを確認してください', 'error');
-            if(statusEl) statusEl.textContent = 'Error: Backup failed';
+            EventBus.emit(Events.NOTIFY, { message: 'バックアップ失敗: コンソールを確認してください', type: 'error' });
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Error: Backup failed' });
         }
     },
 
     restoreFromCloud: async () => {
-        const statusEl = document.getElementById('cloud-status');
         try {
-            if(statusEl) statusEl.textContent = 'Connecting to Google Drive...';
-            
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Connecting to Google Drive...' });
+
             // 1. ダウンロード
             const data = await CloudManager.downloadBackup();
             if (!data) {
-                UI.showMessage('ドライブ上にバックアップが見つかりません', 'error');
-                if(statusEl) statusEl.textContent = 'File not found';
+                EventBus.emit(Events.NOTIFY, { message: 'ドライブ上にバックアップが見つかりません', type: 'error' });
+                EventBus.emit(Events.CLOUD_STATUS, { message: 'File not found' });
                 return false;
             }
 
             // 2. 復元処理
-            if(statusEl) statusEl.textContent = 'Restoring data...';
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Restoring data...' });
             const success = await DataManager.restoreFromObject(data);
-            
-            if (success) {
-                UI.showMessage('☁️ ドライブから復元しました', 'success');
-                if(statusEl) statusEl.textContent = 'Restore Complete';
 
+            if (success) {
+                EventBus.emit(Events.NOTIFY, { message: 'ドライブから復元しました', type: 'success' });
+                EventBus.emit(Events.CLOUD_STATUS, { message: 'Restore Complete' });
             } else {
-                if(statusEl) statusEl.textContent = 'Restore Cancelled';
+                EventBus.emit(Events.CLOUD_STATUS, { message: 'Restore Cancelled' });
             }
             return success;
 
         } catch (err) {
             console.error(err);
-            UI.showMessage('復元失敗: コンソールを確認してください', 'error');
-            if(statusEl) statusEl.textContent = 'Error: Restore failed';
+            EventBus.emit(Events.NOTIFY, { message: '復元失敗: コンソールを確認してください', type: 'error' });
+            EventBus.emit(Events.CLOUD_STATUS, { message: 'Error: Restore failed' });
             return false;
         }
     },
@@ -249,9 +243,9 @@ export const DataManager = {
                     // 1. 復元処理を実行（確認ダイアログが出ます）
                     const success = await DataManager.restoreFromObject(d);
                     
-                    // 2. ★メッセージ表示を残す
+                    // 2. メッセージ通知（EventBus経由でUI層が処理）
                     if (success) {
-                        UI.showMessage('✅ バックアップから復元しました', 'success');
+                        EventBus.emit(Events.NOTIFY, { message: 'バックアップから復元しました', type: 'success' });
 
                         // メッセージを読ませてからリロード
                         setTimeout(() => window.location.reload(), 2000);
@@ -259,9 +253,9 @@ export const DataManager = {
 
                     // 3. 呼び出し元（onboarding.js等）に結果を返す
                     resolve(success);
-                } catch(err) { 
+                } catch(err) {
                     console.error(err);
-                    UI.showMessage('読込失敗: データ形式が不正です', 'error'); 
+                    EventBus.emit(Events.NOTIFY, { message: '読込失敗: データ形式が不正です', type: 'error' });
                     reject(err); 
                 } 
                 inputElement.value = ''; 

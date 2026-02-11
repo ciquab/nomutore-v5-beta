@@ -1,14 +1,10 @@
 // @ts-check
 /**
- * ui/actionRouter.js
- * Phase 2対応: 循環依存を解消
- */
-
-/**
  * ActionRouter - Complete Implementation
  * HTML属性ベースのイベントハンドリングシステム
  * UIモジュールに依存せず、純粋なイベントルーターとして動作
  */
+import { showErrorOverlay } from '../errorHandler.js';
 
 export class ActionRouter {
     constructor() {
@@ -82,7 +78,7 @@ export class ActionRouter {
         }
 
         // クリックイベントの委譲
-        document.addEventListener('click', (e) => {
+        document.addEventListener('click', async (e) => {
             const target = e.target.closest('[data-action]');
             if (!target) return;
 
@@ -119,20 +115,40 @@ export class ActionRouter {
         });
 
         // change イベントの委譲（select, input用）
-        document.addEventListener('change', (e) => {
+        try {
+            await this.handle(action, args, e);
+            } catch (error) {
+                // ここで捕捉することで、Unhandled Promise Rejection を防ぎます
+                console.error(`[ActionRouter] Global catch for action "${action}":`, error);
+                
+                // ★ errorHandler.js の関数を呼び出してUIにエラーを表示
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                showErrorOverlay(`アクション「${action}」の実行中にエラーが発生しました。\n${errorMsg}`, 'actionRouter.js', 0);            }
+        });
+
+        // change イベントの委譲（select, input用）
+        document.addEventListener('change', async (e) => { // ★ 1. async を追加
             const target = e.target.closest('[data-action-change]');
             if (!target) return;
 
             const action = target.dataset.actionChange;
             const value = target.value;
             
-            this.handle(action, value, e);
+            // ★ 2. try-catch で囲み、await を付与
+            try {
+                await this.handle(action, value, e);
+            } catch (error) {
+                console.error(`[ActionRouter] Global catch for change action "${action}":`, error);
+
+                // ★ こちらにも同様にエラー表示を追加
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                showErrorOverlay(`入力処理「${action}」でエラーが発生しました。\n${errorMsg}`, 'actionRouter.js', 0);
+            }
         });
 
         this.initialized = true;
         console.log('[ActionRouter] Event delegation initialized.');
     }
-
     /**
      * 登録されているアクション一覧をデバッグ出力
      */
@@ -171,4 +187,5 @@ export const actionRouter = new ActionRouter();
 export const initActionRouter = () => {
     actionRouter.init();
     console.log('[ActionRouter] ✅ Initialized and ready');
+
 };

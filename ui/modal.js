@@ -670,6 +670,61 @@ export const showRolloverModal = () => {
 
 };
 
+/**
+ * 設定画面のセレクトボックスにオプションを生成し、
+ * 保存済みの値を各フォーム要素に反映する。
+ * (main.js から移動 — DOM操作はUI層の責務)
+ */
+export const generateSettingsOptions = () => {
+    const createOpts = (obj, id, isKey = false) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.innerHTML = '';
+        Object.keys(obj).forEach(k => {
+            const o = document.createElement('option');
+            o.value = k;
+            o.textContent = isKey ? k : (obj[k].label || k);
+            el.appendChild(o);
+        });
+    };
+
+    createOpts(EXERCISE, 'exercise-select');
+    createOpts(EXERCISE, 'setting-base-exercise');
+    createOpts(EXERCISE, 'setting-default-record-exercise');
+    createOpts(CALORIES.STYLES, 'setting-mode-1', true);
+    createOpts(CALORIES.STYLES, 'setting-mode-2', true);
+    createOpts(SIZE_DATA, 'beer-size');
+
+    const defRec = Store.getDefaultRecordExercise();
+    const exSel = document.getElementById('exercise-select');
+    if(exSel && defRec) exSel.value = defRec;
+
+    const bSize = document.getElementById('beer-size');
+    if(bSize) bSize.value = '350';
+
+    const profile = Store.getProfile();
+    const wIn = document.getElementById('weight-input');
+    if(wIn) wIn.value = profile.weight;
+    const hIn = document.getElementById('height-input');
+    if(hIn) hIn.value = profile.height;
+    const aIn = document.getElementById('age-input');
+    if(aIn) aIn.value = profile.age;
+    const gIn = document.getElementById('gender-input');
+    if(gIn) gIn.value = profile.gender;
+
+    const modes = Store.getModes();
+    const m1 = document.getElementById('setting-mode-1');
+    if(m1) m1.value = modes.mode1;
+    const m2 = document.getElementById('setting-mode-2');
+    if(m2) m2.value = modes.mode2;
+
+    const baseEx = document.getElementById('setting-base-exercise');
+    if(baseEx) baseEx.value = Store.getBaseExercise();
+
+    const defRecSet = document.getElementById('setting-default-record-exercise');
+    if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
+};
+
 
 
 

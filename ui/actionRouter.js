@@ -111,19 +111,13 @@ export class ActionRouter {
                 delete args.action; // action自体は除外
             }
 
-            this.handle(action, args, e);
-        });
-
-        // change イベントの委譲（select, input用）
-        try {
-            await this.handle(action, args, e);
+            try {
+                await this.handle(action, args, e);
             } catch (error) {
-                // ここで捕捉することで、Unhandled Promise Rejection を防ぎます
                 console.error(`[ActionRouter] Global catch for action "${action}":`, error);
-                
-                // ★ errorHandler.js の関数を呼び出してUIにエラーを表示
                 const errorMsg = error instanceof Error ? error.message : String(error);
-                showErrorOverlay(`アクション「${action}」の実行中にエラーが発生しました。\n${errorMsg}`, 'actionRouter.js', 0);            }
+                showErrorOverlay(`アクション「${action}」の実行中にエラーが発生しました。\n${errorMsg}`, 'actionRouter.js', 0);
+            }
         });
 
         // change イベントの委譲（select, input用）

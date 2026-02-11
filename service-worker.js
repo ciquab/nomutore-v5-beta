@@ -32,7 +32,8 @@ const APP_SHELL = [
     './manifest.json',
     './icon-192_2.png',
     './icon-512_2.png',
-    './logo-header.png'
+    './logo-header.png',
+    './tailwind-output.css'
 ];
 
 // インストール時: 基本ファイルをキャッシュ

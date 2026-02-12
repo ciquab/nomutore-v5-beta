@@ -20,7 +20,10 @@ const handleSwipe = () => {
     if (touchStartX === null) return;
 
     // モーダルが表示中ならスワイプをブロック
-    const activeModal = document.querySelector('[id$="-modal"].flex, [id$="-modal-container"].flex, .modal-bg');
+    const modals = document.querySelectorAll('[id$="-modal"], [id$="-modal-container"], .modal-bg');
+    const activeModal = Array.from(modals).find(el => {
+        return el.offsetParent !== null;
+    });
     if (activeModal) return;
 
     const diffX = touchStartX - touchEndX;
@@ -78,8 +81,8 @@ export const setupGlobalListeners = (onSwitchTab) => {
 
     document.addEventListener('touchend', (e) => {
         if (touchStartX === null || touchStartY === null) return;
-        touchEndX = e.changedTouches[0].screenX;
-        touchEndY = e.changedTouches[0].screenY;
+        touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
         handleSwipe();
     }, { passive: true });
 
@@ -109,3 +112,4 @@ export const setupGlobalListeners = (onSwitchTab) => {
         lastScrollTop = scrollTop;
     }, true); // Capture フェーズで子要素のスクロールも拾う
 };
+

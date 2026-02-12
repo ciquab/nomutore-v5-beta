@@ -530,7 +530,9 @@ function buildBrewerySubInfo(b, currentKey) {
  * @param {string} breweryName - ブルワリー名
  */
 function showBreweryDetail(breweryName) {
-    // 1. オーバーレイがまだなければ body に作成する (Portalパターン)
+    console.log('Open Brewery:', breweryName); // デバッグ用ログ
+
+    // 1. オーバーレイの取得・作成
     let overlay = document.getElementById('brewery-detail-overlay');
     
     if (!overlay) {
@@ -539,7 +541,7 @@ function showBreweryDetail(breweryName) {
         overlay.className = 'fixed inset-0 z-[1100] hidden'; // z-[1100] で最前面へ
         
         overlay.innerHTML = `
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="brewery-detail-backdrop"></div>
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="brewery-detail-backdrop"></div>
             <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 translate-y-full" id="brewery-detail-sheet">
                 <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
                     <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3"></div>
@@ -556,32 +558,40 @@ function showBreweryDetail(breweryName) {
         `;
         document.body.appendChild(overlay);
 
-        // 閉じるイベントの登録（作成時のみ）
-        const closeBtn = overlay.querySelector('#brewery-detail-close');
-        const backdrop = overlay.querySelector('#brewery-detail-backdrop');
+        // 閉じるイベントの設定
         const closeDetail = () => {
             const sheet = document.getElementById('brewery-detail-sheet');
+            const backdrop = document.getElementById('brewery-detail-backdrop');
+            
             if (sheet) sheet.style.transform = 'translateY(100%)';
+            if (backdrop) backdrop.style.opacity = '0';
+            
             setTimeout(() => {
                 const ov = document.getElementById('brewery-detail-overlay');
                 if(ov) ov.classList.add('hidden');
             }, 300);
         };
+
+        const closeBtn = overlay.querySelector('#brewery-detail-close');
+        const backdropEl = overlay.querySelector('#brewery-detail-backdrop');
+        
         if(closeBtn) closeBtn.onclick = closeDetail;
-        if(backdrop) backdrop.onclick = closeDetail;
+        if(backdropEl) backdropEl.onclick = closeDetail;
     }
 
-    // 2. データの流し込み
+    // 2. データの検索
     const brewery = _breweryStats.find(b => b.brewery === breweryName);
     const beers = _allBeers.filter(b => b.brewery === breweryName).sort((a, b) => b.count - a.count);
 
-    if (!brewery || beers.length === 0) return;
+    if (!brewery || beers.length === 0) {
+        console.warn('Brewery data not found:', breweryName);
+        return;
+    }
 
-    // タイトル
+    // 3. データの流し込み
     const titleEl = document.getElementById('brewery-detail-title');
     if (titleEl) titleEl.textContent = breweryName;
 
-    // メタ情報
     const metaEl = document.getElementById('brewery-detail-meta');
     if (metaEl) {
         const metaParts = [
@@ -595,7 +605,6 @@ function showBreweryDetail(breweryName) {
         metaEl.innerHTML = metaParts.join('');
     }
 
-    // リスト生成
     const listEl = document.getElementById('brewery-detail-list');
     if (listEl) {
         listEl.innerHTML = beers.map((beer, index) => {
@@ -622,11 +631,17 @@ function showBreweryDetail(breweryName) {
         }).join('');
     }
 
-    // 3. 表示アニメーション
+    // 4. 表示アニメーション (修正版)
     overlay.classList.remove('hidden');
-    // 少し待ってからシートをスライドアップ（CSS transition用）
-    requestAnimationFrame(() => {
+    
+    // ★重要: ブラウザに「hiddenが外れた」ことを認識させるための強制リフロー
+    void overlay.offsetWidth; 
+
+    // 少し待ってからスタイルを適用（setTimeoutの方がrAFより確実な場合があります）
+    setTimeout(() => {
         const sheet = document.getElementById('brewery-detail-sheet');
+        const backdrop = document.getElementById('brewery-detail-backdrop');
         if (sheet) sheet.style.transform = 'translateY(0)';
-    });
+        if (backdrop) backdrop.style.opacity = '1';
+    }, 10);
 }

@@ -981,8 +981,7 @@ export {
     updateBeerSelectOptions,
     generateSettingsOptions,
     StateManager,
-    toggleModal,
-    setupGlobalListeners
+    toggleModal
 };
 
 const toggleFabLike = (el, show) => {
@@ -1064,6 +1063,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

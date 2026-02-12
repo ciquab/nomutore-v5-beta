@@ -95,7 +95,7 @@ export function renderBeerStats(periodLogs, allLogs) {
         </div>
 
         <!-- ブルワリー詳細オーバーレイ -->
-        <div id="brewery-detail-overlay" class="fixed inset-0 z-50 hidden">
+        <div id="brewery-detail-overlay" class="fixed inset-0 z-[1100] hidden">
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="brewery-detail-backdrop"></div>
             <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300" id="brewery-detail-sheet">
                 <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">

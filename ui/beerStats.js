@@ -326,21 +326,25 @@ function renderBeerList(beers) {
     }).join('');
 
     // ビールエントリのクリック → 最新ログ詳細を表示
-    listEl.querySelectorAll('[data-beer-name]').forEach(el => {
-        el.addEventListener('click', () => {
-            const brewery = el.dataset.beerBrewery || '';
-            const name = el.dataset.beerName || '';
-            // 該当ビールの最新ログを検索
-            const matchingLog = _allLogs
-                .filter(l => l.type === 'beer' &&
-                    (l.brewery || '').trim() === brewery &&
-                    ((l.brand || l.name || '').trim() === name))
-                .sort((a, b) => b.timestamp - a.timestamp)[0];
-            if (matchingLog) {
-                openLogDetail(matchingLog);
-            }
-        });
-    });
+    // ★修正: イベントデリゲーションに変更（確実にクリックを拾う）
+    listEl.onclick = (e) => {
+        const el = e.target.closest('[data-beer-name]');
+        if (!el) return;
+
+        const brewery = el.dataset.beerBrewery || '';
+        const name = el.dataset.beerName || '';
+        
+        // 該当ビールの最新ログを検索
+        const matchingLog = _allLogs
+            .filter(l => l.type === 'beer' &&
+                (l.brewery || '').trim() === brewery &&
+                ((l.brand || l.name || '').trim() === name))
+            .sort((a, b) => b.timestamp - a.timestamp)[0];
+            
+        if (matchingLog) {
+            openLogDetail(matchingLog);
+        }
+    };
 }
 
 // =============================================
@@ -448,11 +452,17 @@ function renderBreweryLeaderboard(breweryStats) {
     }).join('');
 
     // ブルワリーエントリのクリックイベント
-    listEl.querySelectorAll('[data-brewery-name]').forEach(el => {
-        el.addEventListener('click', () => {
-            showBreweryDetail(el.dataset.breweryName);
-        });
-    });
+    // ★修正: イベントデリゲーションに変更
+    listEl.onclick = (e) => {
+        const target = e.target.closest('[data-brewery-name]');
+        if (target) {
+            // タップ時のフィードバック演出
+            target.classList.add('bg-gray-100', 'dark:bg-gray-700'); 
+            setTimeout(() => target.classList.remove('bg-gray-100', 'dark:bg-gray-700'), 100);
+            
+            showBreweryDetail(target.dataset.breweryName);
+        }
+    };
 
     // 「もっと見る」ボタン
     if (!showAll && entries.length > TOP_N) {
@@ -494,15 +504,6 @@ function renderBreweryLeaderboard(breweryStats) {
                         </div>`;
                 }).join('');
                 listEl.insertAdjacentHTML('beforeend', fragment);
-                // 追加分のクリックイベント
-                listEl.querySelectorAll('[data-brewery-name]').forEach(el => {
-                    if (!el._breweryClickBound) {
-                        el._breweryClickBound = true;
-                        el.addEventListener('click', () => {
-                            showBreweryDetail(el.dataset.breweryName);
-                        });
-                    }
-                });
             });
         }
     }
@@ -645,3 +646,4 @@ function showBreweryDetail(breweryName) {
         if (backdrop) backdrop.style.opacity = '1';
     }, 10);
 }
+

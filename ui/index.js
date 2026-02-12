@@ -95,6 +95,7 @@ const setupEventBusListeners = () => {
 
     // 4. UI 更新リクエスト (rollover.js 等から)
     EventBus.on(Events.REFRESH_UI, () => {
+        _lastHomeRenderKey = ''; // データ変更を反映するためキャッシュをリセット
         setTimeout(() => refreshUI(), 50);
     });
 
@@ -116,6 +117,9 @@ const setupEventBusListeners = () => {
     });
 };
 
+// Homeタブの描画スキップ用キャッシュ（データ未変更時に重い再描画を抑制）
+let _lastHomeRenderKey = '';
+
 export const refreshUI = async () => {
     try {
         if (!DOM.isInitialized) DOM.init();
@@ -126,23 +130,25 @@ export const refreshUI = async () => {
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
 
-        // 2. --- 全タブ共通の更新（ヘッダー等の共通パーツがあればここ） ---
-        // ※現在は共通パーツが少ないため、各タブの判定へ進みます
-
-        // 3. --- アクティブなタブに応じた描画の振り分け（最適化） ---
+        // 2. --- アクティブなタブに応じた描画の振り分け ---
         const activeTabEl = document.querySelector('.tab-content.active');
         const activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
 
         if (activeTabId === 'home') {
-            renderBeerTank(balance);
-            renderLiverRank(checks, allLogs);
-            renderCheckStatus(checks, logs);
-            renderWeeklyAndHeatUp(allLogs, checks);
-            renderChart(allLogs, checks);
-        } 
+            // データが変わっていなければ重い再描画をスキップ
+            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}`;
+            if (renderKey !== _lastHomeRenderKey) {
+                _lastHomeRenderKey = renderKey;
+                renderBeerTank(balance);
+                renderLiverRank(checks, allLogs);
+                renderCheckStatus(checks, logs);
+                renderWeeklyAndHeatUp(allLogs, checks);
+                renderChart(allLogs, checks);
+            }
+        }
         else if (activeTabId === 'record') {
             await renderRecordTabShortcuts();
-        } 
+        }
         else if (activeTabId === 'cellar') {
             await updateLogListView(false, allLogs);
             if (StateManager.cellarViewMode === 'stats') {
@@ -152,9 +158,9 @@ export const refreshUI = async () => {
             } else if (StateManager.cellarViewMode === 'archives') {
                 renderArchives();
             }
-        } 
+        }
         else if (activeTabId === 'settings') {
-            updateModeSelector(); 
+            updateModeSelector();
         }
 
     } catch (e) {
@@ -725,7 +731,7 @@ if (checkModal) {
 
 // ui/index.js (333行目付近)
     switchTab: (tabId, options = { silent: false }) => {
-        // ★修正1: async を外す（View Transitionを待機させない）
+        // View Transition 内は DOM 切替のみ（軽量）。データ取得・描画は後で行う。
         DOM.withTransition(() => {
             if (!options.silent) {
                 Feedback.uiSwitch();
@@ -746,16 +752,16 @@ if (checkModal) {
 
             document.querySelectorAll('.tab-content').forEach(el => {
                 el.classList.remove('active');
-                el.style.viewTransitionName = ''; 
-                el.style.display = 'none'; 
+                el.style.viewTransitionName = '';
+                el.style.display = 'none';
             });
 
             const target = document.getElementById(`tab-${tabId}`);
             if (target) {
                 target.style.display = 'block';
-                target.style.viewTransitionName = 'tab-content'; 
-                target.classList.add('active'); 
-   
+                target.style.viewTransitionName = 'tab-content';
+                target.classList.add('active');
+
                 requestAnimationFrame(() => {
                     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                     document.documentElement.scrollTop = 0;
@@ -766,34 +772,50 @@ if (checkModal) {
             document.querySelectorAll('.nav-item').forEach(el => {
                 el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
                 const icon = el.querySelector('i');
-                if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold'); 
+                if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold');
             });
 
             const activeNav = document.getElementById(`nav-tab-${tabId}`);
             if(activeNav) {
-                activeNav.className = 'nav-item nav-pill-active'; 
+                activeNav.className = 'nav-item nav-pill-active';
                 const icon = activeNav.querySelector('i');
                 if(icon) icon.className = icon.className.replace('ph-bold', 'ph-fill');
             }
 
             if (tabId === 'settings') {
-                renderSettings(); 
+                renderSettings();
             }
-            
+
+            // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
             if (tabId === 'cellar') {
-                StateManager.setCellarViewMode(StateManager.cellarViewMode || 'logs');
-                // switchCellarView の内部で refreshUI() が呼ばれるので、これに任せる
-                UI.switchCellarView(StateManager.cellarViewMode);
-            } else {
-                // ★修正2: await を付けずに実行（UIの切り替えアニメーションを止めない）
-                refreshUI();
+                const mode = StateManager.cellarViewMode || 'logs';
+                StateManager.setCellarViewMode(mode);
+                ['logs', 'stats', 'collection', 'archives'].forEach(m => {
+                    const el = document.getElementById(`view-cellar-${m}`);
+                    const btn = document.getElementById(`btn-cellar-${m}`);
+                    if (el) el.classList.add('hidden');
+                    if (btn) {
+                        if (m === mode) {
+                            btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                            btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                        } else {
+                            btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                            btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                        }
+                    }
+                });
+                const activeEl = document.getElementById(`view-cellar-${mode}`);
+                if (activeEl) activeEl.classList.remove('hidden');
             }
         });
+
+        // データ取得・描画は View Transition の外で実行（アニメーションをブロックしない）
+        requestAnimationFrame(() => refreshUI());
     },
     
     switchCellarView: (mode) => {
         if (typeof Feedback !== 'undefined') {
-        Feedback.uiSwitch();
+            Feedback.uiSwitch();
         }
         StateManager.setCellarViewMode(mode);
         ['logs', 'stats', 'collection', 'archives'].forEach(m => {
@@ -814,8 +836,9 @@ if (checkModal) {
         const activeEl = document.getElementById(`view-cellar-${mode}`);
         if (activeEl) {
             activeEl.classList.remove('hidden');
-            refreshUI();
-            }
+            // DOM切替を先に描画してからデータ取得・描画を実行
+            requestAnimationFrame(() => refreshUI());
+        }
     },
 
     toggleTheme: () => {

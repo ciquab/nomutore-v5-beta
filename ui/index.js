@@ -118,7 +118,7 @@ const setupEventBusListeners = () => {
 
 export const refreshUI = async () => {
     try {
-        if (!DOM.isInitialized) DOM.init();
+        if (!DOM.isInitialized) UI.init();
 
         // 1. Serviceから「調理済み」のデータ一式をもらう
         const { logs, checks, allLogs, balance } = await Service.getAppDataSnapshot();
@@ -1063,6 +1063,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

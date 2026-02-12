@@ -17,6 +17,7 @@ let _onSwitchTab = null;
  * スワイプ判定ロジック
  */
 const handleSwipe = () => {
+    console.log('handleSwipe fired');
     if (touchStartX === null) return;
 
     // モーダルが表示中ならスワイプをブロック
@@ -116,5 +117,6 @@ export const setupGlobalListeners = (onSwitchTab) => {
         lastScrollTop = scrollTop;
     }, true); // Capture フェーズで子要素のスクロールも拾う
 };
+
 
 

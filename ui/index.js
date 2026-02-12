@@ -13,7 +13,7 @@ import { renderCheckStatus } from './checkStatus.js';
 import { renderWeeklyAndHeatUp, renderHeatmap } from './weekly.js';
 import { renderChart } from './chart.js';
 import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs } from './logList.js';
-import { renderBeerStats } from './beerStats.js';
+import { renderBeerStats, renderBeerCollection } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
 import { Share } from './share.js';
@@ -147,6 +147,8 @@ export const refreshUI = async () => {
             await updateLogListView(false, allLogs);
             if (StateManager.cellarViewMode === 'stats') {
                 renderBeerStats(logs, allLogs);
+            } else if (StateManager.cellarViewMode === 'collection') {
+                renderBeerCollection(logs, allLogs);
             } else if (StateManager.cellarViewMode === 'archives') {
                 renderArchives();
             }
@@ -794,7 +796,7 @@ if (checkModal) {
         Feedback.uiSwitch();
         }
         StateManager.setCellarViewMode(mode);
-        ['logs', 'stats', 'archives'].forEach(m => {
+        ['logs', 'stats', 'collection', 'archives'].forEach(m => {
             const el = document.getElementById(`view-cellar-${m}`);
             const btn = document.getElementById(`btn-cellar-${m}`);
             if (el) el.classList.add('hidden');

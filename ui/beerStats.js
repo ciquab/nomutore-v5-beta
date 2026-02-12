@@ -2,8 +2,14 @@
 import { Calc } from '../logic.js';
 import { DOM, escapeHtml } from './dom.js';
 import { STYLE_METADATA } from '../constants.js';
+import { openLogDetail } from './logDetail.js';
 
 let statsChart = null;
+
+// モジュールスコープでビールデータを保持（ブルワリー詳細表示用）
+let _allBeers = [];
+let _breweryStats = [];
+let _allLogs = [];
 
 // フィルター状態管理
 let activeFilters = {
@@ -44,9 +50,9 @@ export function renderBeerStats(periodLogs, allLogs) {
     
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
 
-    // ユニークなリストの抽出（フィルター選択肢用：全期間ベース）
-    const uniqueBreweries = [...new Set(allBeers.map(b => b.brewery).filter(b => b && b !== 'Unknown'))].sort();
-    const uniqueStyles = [...new Set(allBeers.map(b => b.style).filter(s => s && s !== 'Unknown'))].sort();
+    // モジュールスコープに保存（ブルワリー詳細表示・Collection用）
+    _allBeers = allBeers;
+    _breweryStats = allStats.breweryStats || [];
 
     // 2. HTML構造生成
     container.innerHTML = `
@@ -86,55 +92,23 @@ export function renderBeerStats(periodLogs, allLogs) {
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
                 <div id="brewery-ranking-list" class="space-y-2"></div>
             </div>
+        </div>
 
-            <div id="beer-collection-section">
-                <div class="sticky top-0 bg-gray-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
-                    <div class="flex items-center justify-between mb-3 px-1">
-                        <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
-                            <i class="ph-fill ph-books text-indigo-500"></i> Collection
-                        </h3>
-                        <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length} beers</span>
+        <!-- ブルワリー詳細オーバーレイ -->
+        <div id="brewery-detail-overlay" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="brewery-detail-backdrop"></div>
+            <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300" id="brewery-detail-sheet">
+                <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+                    <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3"></div>
+                    <div class="flex items-center justify-between">
+                        <h3 id="brewery-detail-title" class="text-lg font-black text-base-900 dark:text-white truncate"></h3>
+                        <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
+                            <i class="ph-bold ph-x text-sm"></i>
+                        </button>
                     </div>
-
-                    <div class="space-y-2">
-                        <div class="relative">
-                            <input type="text" id="beer-search-input" placeholder="Search brewery or brand..." class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
-                            <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        </div>
-
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="relative">
-                                <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                    <option value="">All Breweries</option>
-                                    ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
-                                </select>
-                                <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
-                            </div>
-
-                            <div class="relative">
-                                <select id="filter-style" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                    <option value="">All Styles</option>
-                                    ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
-                                </select>
-                                <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
-                            </div>
-
-                            <div class="relative">
-                                <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                    <option value="0">All Ratings</option>
-                                    <option value="5">★ 5 Only</option>
-                                    <option value="4">★ 4 & up</option>
-                                    <option value="3">★ 3 & up</option>
-                                    <option value="2">★ 2 & up</option>
-                                </select>
-                                <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[10px] font-bold text-gray-400"></div>
                 </div>
-
-                <div id="beer-ranking-list" class="space-y-3 mt-4">
-                    </div>
+                <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2"></div>
             </div>
         </div>
     `;
@@ -144,16 +118,86 @@ export function renderBeerStats(periodLogs, allLogs) {
 
     // ブルワリーランキング描画
     renderBreweryLeaderboard(allStats.breweryStats || []);
+}
+
+/**
+ * ビールコレクション画面の描画（独立タブ用）
+ * @param {Array} periodLogs - 現在の期間のログ
+ * @param {Array} allLogs - 全てのログ
+ */
+export function renderBeerCollection(periodLogs, allLogs) {
+    const container = document.getElementById('view-cellar-collection');
+    if (!container) return;
+
+    _allLogs = allLogs;
+    const allStats = Calc.getBeerStats(allLogs);
+    const allBeers = allStats.beerStats || [];
+    _allBeers = allBeers;
+    _breweryStats = allStats.breweryStats || [];
+
+    const uniqueBreweries = [...new Set(allBeers.map(b => b.brewery).filter(b => b && b !== 'Unknown'))].sort();
+    const uniqueStyles = [...new Set(allBeers.map(b => b.style).filter(s => s && s !== 'Unknown'))].sort();
+
+    container.innerHTML = `
+        <div id="beer-collection-section">
+            <div class="sticky top-0 bg-gray-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
+                <div class="flex items-center justify-between mb-3 px-1">
+                    <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
+                        <i class="ph-fill ph-books text-indigo-500"></i> Collection
+                    </h3>
+                    <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length} beers</span>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="relative">
+                        <input type="text" id="beer-search-input" placeholder="Search brewery or brand..." class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="relative">
+                            <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                                <option value="">All Breweries</option>
+                                ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
+                            </select>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                        </div>
+
+                        <div class="relative">
+                            <select id="filter-style" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                                <option value="">All Styles</option>
+                                ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
+                            </select>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                        </div>
+
+                        <div class="relative">
+                            <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                                <option value="0">All Ratings</option>
+                                <option value="5">★ 5 Only</option>
+                                <option value="4">★ 4 & up</option>
+                                <option value="3">★ 3 & up</option>
+                                <option value="2">★ 2 & up</option>
+                            </select>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="beer-ranking-list" class="space-y-3 mt-4 pb-24"></div>
+        </div>
+    `;
 
     // フィルター機能の実装
     const applyFilters = () => {
         const term = activeFilters.term.toLowerCase();
-        
+
         const filtered = allBeers.filter(b => {
-            const matchTerm = !term || 
-                (b.name && b.name.toLowerCase().includes(term)) || 
+            const matchTerm = !term ||
+                (b.name && b.name.toLowerCase().includes(term)) ||
                 (b.brewery && b.brewery.toLowerCase().includes(term));
-            
+
             const matchBrewery = !activeFilters.brewery || b.brewery === activeFilters.brewery;
             const matchStyle = !activeFilters.style || b.style === activeFilters.style;
             const matchRating = !activeFilters.rating || b.averageRating >= activeFilters.rating;
@@ -161,14 +205,12 @@ export function renderBeerStats(periodLogs, allLogs) {
             return matchTerm && matchBrewery && matchStyle && matchRating;
         });
 
-        // 件数更新
         const countLabel = document.getElementById('beer-list-count');
         if(countLabel) countLabel.textContent = `${filtered.length} beers`;
 
         renderBeerList(filtered);
     };
 
-    // イベントリスナーの登録
     const bindFilter = (id, key) => {
         const el = document.getElementById(id);
         if (el) {
@@ -184,8 +226,7 @@ export function renderBeerStats(periodLogs, allLogs) {
     bindFilter('filter-brewery', 'brewery');
     bindFilter('filter-style', 'style');
     bindFilter('filter-rating', 'rating');
-    
-    // 初期描画（全件表示）
+
     activeFilters = { term: '', brewery: '', style: '', rating: 0 };
     applyFilters();
 }
@@ -276,9 +317,9 @@ function renderBeerList(beers) {
         const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
-            <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700">
+            <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
                 <div class="flex-shrink-0 w-8 text-center mr-1">${rankBadge}</div>
-                
+
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
@@ -290,7 +331,7 @@ function renderBeerList(beers) {
                             <span class="text-[9px] text-gray-400 font-bold uppercase">Cups</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
@@ -300,6 +341,23 @@ function renderBeerList(beers) {
             </div>
         `;
     }).join('');
+
+    // ビールエントリのクリック → 最新ログ詳細を表示
+    listEl.querySelectorAll('[data-beer-name]').forEach(el => {
+        el.addEventListener('click', () => {
+            const brewery = el.dataset.beerBrewery || '';
+            const name = el.dataset.beerName || '';
+            // 該当ビールの最新ログを検索
+            const matchingLog = _allLogs
+                .filter(l => l.type === 'beer' &&
+                    (l.brewery || '').trim() === brewery &&
+                    ((l.brand || l.name || '').trim() === name))
+                .sort((a, b) => b.timestamp - a.timestamp)[0];
+            if (matchingLog) {
+                openLogDetail(matchingLog);
+            }
+        });
+    });
 }
 
 // =============================================
@@ -387,7 +445,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const subInfo = buildBrewerySubInfo(b, axis.key);
 
         return `
-            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800">
+            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                 <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                 <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -395,13 +453,23 @@ function renderBreweryLeaderboard(breweryStats) {
                         <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
                         <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
                     </div>
-                    <div class="flex-shrink-0 text-right">
-                        <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                        <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                    <div class="flex-shrink-0 text-right flex items-center gap-1.5">
+                        <div>
+                            <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                            <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                        </div>
+                        <i class="ph-bold ph-caret-right text-[10px] text-gray-300 dark:text-gray-600"></i>
                     </div>
                 </div>
             </div>`;
     }).join('');
+
+    // ブルワリーエントリのクリックイベント
+    listEl.querySelectorAll('[data-brewery-name]').forEach(el => {
+        el.addEventListener('click', () => {
+            showBreweryDetail(el.dataset.breweryName);
+        });
+    });
 
     // 「もっと見る」ボタン
     if (!showAll && entries.length > TOP_N) {
@@ -424,7 +492,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     const rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
                     const subInfo = buildBrewerySubInfo(b, axis.key);
                     return `
-                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800">
+                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                             <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                             <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -432,14 +500,26 @@ function renderBreweryLeaderboard(breweryStats) {
                                     <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
                                     <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
                                 </div>
-                                <div class="flex-shrink-0 text-right">
-                                    <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                                    <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                                <div class="flex-shrink-0 text-right flex items-center gap-1.5">
+                                    <div>
+                                        <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                                        <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                                    </div>
+                                    <i class="ph-bold ph-caret-right text-[10px] text-gray-300 dark:text-gray-600"></i>
                                 </div>
                             </div>
                         </div>`;
                 }).join('');
                 listEl.insertAdjacentHTML('beforeend', fragment);
+                // 追加分のクリックイベント
+                listEl.querySelectorAll('[data-brewery-name]').forEach(el => {
+                    if (!el._breweryClickBound) {
+                        el._breweryClickBound = true;
+                        el.addEventListener('click', () => {
+                            showBreweryDetail(el.dataset.breweryName);
+                        });
+                    }
+                });
             });
         }
     }
@@ -456,4 +536,92 @@ function buildBrewerySubInfo(b, currentKey) {
     if (currentKey !== 'totalMl') parts.push(`${(b.totalMl / 1000).toFixed(1)}L`);
     if (currentKey !== 'styleCount') parts.push(`${b.styleCount}スタイル`);
     return parts.slice(0, 3).join(' · ');
+}
+
+// =============================================
+// Brewery Detail (ブルワリー詳細ボトムシート)
+// =============================================
+
+/**
+ * ブルワリー詳細をボトムシートで表示
+ * @param {string} breweryName - ブルワリー名
+ */
+function showBreweryDetail(breweryName) {
+    const overlay = document.getElementById('brewery-detail-overlay');
+    if (!overlay) return;
+
+    // ブルワリーの集計データ
+    const brewery = _breweryStats.find(b => b.brewery === breweryName);
+    // このブルワリーのビール一覧
+    const beers = _allBeers.filter(b => b.brewery === breweryName).sort((a, b) => b.count - a.count);
+
+    if (!brewery || beers.length === 0) return;
+
+    // タイトル
+    const titleEl = document.getElementById('brewery-detail-title');
+    if (titleEl) titleEl.textContent = breweryName;
+
+    // メタ情報
+    const metaEl = document.getElementById('brewery-detail-meta');
+    if (metaEl) {
+        const metaParts = [
+            `<span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-md">${brewery.totalCount}杯</span>`,
+            `<span class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md">${brewery.uniqueBeers}種</span>`,
+            `<span class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md">${(brewery.totalMl / 1000).toFixed(1)}L</span>`
+        ];
+        if (brewery.ratingCount > 0) {
+            metaParts.push(`<span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md flex items-center gap-0.5"><i class="ph-fill ph-star text-[9px]"></i>${brewery.averageRating.toFixed(1)}</span>`);
+        }
+        metaEl.innerHTML = metaParts.join('');
+    }
+
+    // ビールリスト
+    const listEl = document.getElementById('brewery-detail-list');
+    if (listEl) {
+        listEl.innerHTML = beers.map((beer, index) => {
+            let rankBadge = `<span class="text-gray-400 font-bold text-xs">#${index + 1}</span>`;
+            if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-xl text-yellow-500"></i>`;
+            if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-400"></i>`;
+            if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700"></i>`;
+
+            const styleMeta = STYLE_METADATA[beer.style];
+            const iconDef = styleMeta ? styleMeta.icon : 'ph-duotone ph-beer-bottle';
+            const iconColor = (styleMeta && styleMeta.color === 'black') ? 'text-gray-700 dark:text-gray-400' : 'text-amber-500';
+
+            return `
+                <div class="flex items-center bg-gray-50 dark:bg-base-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700">
+                    <div class="flex-shrink-0 w-7 text-center mr-2">${rankBadge}</div>
+                    <div class="flex-grow min-w-0">
+                        <h4 class="text-sm font-black text-base-900 dark:text-white truncate leading-tight">${escapeHtml(beer.name)}</h4>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(beer.style)}</span>
+                            ${renderRatingStars(beer.averageRating)}
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 text-right ml-2">
+                        <span class="block text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
+                        <span class="text-[9px] text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    // オーバーレイ表示
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        const sheet = document.getElementById('brewery-detail-sheet');
+        if (sheet) sheet.style.transform = 'translateY(0)';
+    });
+
+    // 閉じるイベント
+    const closeBtn = document.getElementById('brewery-detail-close');
+    const backdrop = document.getElementById('brewery-detail-backdrop');
+    const closeDetail = () => {
+        const sheet = document.getElementById('brewery-detail-sheet');
+        if (sheet) sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+    };
+
+    if (closeBtn) closeBtn.onclick = closeDetail;
+    if (backdrop) backdrop.onclick = closeDetail;
 }

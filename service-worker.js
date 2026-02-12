@@ -1,5 +1,5 @@
 // @ts-check
-const CACHE_NAME = 'nomutore-v0.1.1';
+const CACHE_NAME = 'nomutore-v0.1.2';
 const APP_SHELL = [
     './',
     './index.html',
@@ -123,3 +123,4 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
+

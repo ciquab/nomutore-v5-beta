@@ -94,23 +94,6 @@ export function renderBeerStats(periodLogs, allLogs) {
             </div>
         </div>
 
-        <!-- ブルワリー詳細オーバーレイ -->
-        <div id="brewery-detail-overlay" class="fixed inset-0 z-[1100] hidden">
-            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="brewery-detail-backdrop"></div>
-            <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300" id="brewery-detail-sheet">
-                <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
-                    <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3"></div>
-                    <div class="flex items-center justify-between">
-                        <h3 id="brewery-detail-title" class="text-lg font-black text-base-900 dark:text-white truncate"></h3>
-                        <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
-                            <i class="ph-bold ph-x text-sm"></i>
-                        </button>
-                    </div>
-                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[10px] font-bold text-gray-400"></div>
-                </div>
-                <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2"></div>
-            </div>
-        </div>
     `;
 
     // チャート描画（全期間のスタイル傾向）
@@ -547,12 +530,49 @@ function buildBrewerySubInfo(b, currentKey) {
  * @param {string} breweryName - ブルワリー名
  */
 function showBreweryDetail(breweryName) {
-    const overlay = document.getElementById('brewery-detail-overlay');
-    if (!overlay) return;
+    // 1. オーバーレイがまだなければ body に作成する (Portalパターン)
+    let overlay = document.getElementById('brewery-detail-overlay');
+    
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'brewery-detail-overlay';
+        overlay.className = 'fixed inset-0 z-[1100] hidden'; // z-[1100] で最前面へ
+        
+        overlay.innerHTML = `
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="brewery-detail-backdrop"></div>
+            <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 translate-y-full" id="brewery-detail-sheet">
+                <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
+                    <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3"></div>
+                    <div class="flex items-center justify-between">
+                        <h3 id="brewery-detail-title" class="text-lg font-black text-base-900 dark:text-white truncate"></h3>
+                        <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
+                            <i class="ph-bold ph-x text-sm"></i>
+                        </button>
+                    </div>
+                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[10px] font-bold text-gray-400"></div>
+                </div>
+                <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2 pb-10"></div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
 
-    // ブルワリーの集計データ
+        // 閉じるイベントの登録（作成時のみ）
+        const closeBtn = overlay.querySelector('#brewery-detail-close');
+        const backdrop = overlay.querySelector('#brewery-detail-backdrop');
+        const closeDetail = () => {
+            const sheet = document.getElementById('brewery-detail-sheet');
+            if (sheet) sheet.style.transform = 'translateY(100%)';
+            setTimeout(() => {
+                const ov = document.getElementById('brewery-detail-overlay');
+                if(ov) ov.classList.add('hidden');
+            }, 300);
+        };
+        if(closeBtn) closeBtn.onclick = closeDetail;
+        if(backdrop) backdrop.onclick = closeDetail;
+    }
+
+    // 2. データの流し込み
     const brewery = _breweryStats.find(b => b.brewery === breweryName);
-    // このブルワリーのビール一覧
     const beers = _allBeers.filter(b => b.brewery === breweryName).sort((a, b) => b.count - a.count);
 
     if (!brewery || beers.length === 0) return;
@@ -575,7 +595,7 @@ function showBreweryDetail(breweryName) {
         metaEl.innerHTML = metaParts.join('');
     }
 
-    // ビールリスト
+    // リスト生成
     const listEl = document.getElementById('brewery-detail-list');
     if (listEl) {
         listEl.innerHTML = beers.map((beer, index) => {
@@ -583,10 +603,6 @@ function showBreweryDetail(breweryName) {
             if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-xl text-yellow-500"></i>`;
             if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-400"></i>`;
             if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700"></i>`;
-
-            const styleMeta = STYLE_METADATA[beer.style];
-            const iconDef = styleMeta ? styleMeta.icon : 'ph-duotone ph-beer-bottle';
-            const iconColor = (styleMeta && styleMeta.color === 'black') ? 'text-gray-700 dark:text-gray-400' : 'text-amber-500';
 
             return `
                 <div class="flex items-center bg-gray-50 dark:bg-base-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700">
@@ -606,22 +622,11 @@ function showBreweryDetail(breweryName) {
         }).join('');
     }
 
-    // オーバーレイ表示
+    // 3. 表示アニメーション
     overlay.classList.remove('hidden');
+    // 少し待ってからシートをスライドアップ（CSS transition用）
     requestAnimationFrame(() => {
         const sheet = document.getElementById('brewery-detail-sheet');
         if (sheet) sheet.style.transform = 'translateY(0)';
     });
-
-    // 閉じるイベント
-    const closeBtn = document.getElementById('brewery-detail-close');
-    const backdrop = document.getElementById('brewery-detail-backdrop');
-    const closeDetail = () => {
-        const sheet = document.getElementById('brewery-detail-sheet');
-        if (sheet) sheet.style.transform = 'translateY(100%)';
-        setTimeout(() => overlay.classList.add('hidden'), 300);
-    };
-
-    if (closeBtn) closeBtn.onclick = closeDetail;
-    if (backdrop) backdrop.onclick = closeDetail;
 }

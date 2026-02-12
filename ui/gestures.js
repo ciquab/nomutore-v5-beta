@@ -71,18 +71,22 @@ export const setupGlobalListeners = (onSwitchTab) => {
 
     // --- 1. スワイプ操作 ---
     document.addEventListener('touchstart', (e) => {
-        // 横スクロールエリア（チャート等）での操作は除外
         if (e.target.closest('.overflow-x-auto, .chart-container')) {
-            touchStartX = null; touchStartY = null; return;
+            touchStartX = null;
+            touchStartY = null;
+            return;
         }
-        touchStartX = e.changedTouches[0].screenX;
-        touchStartY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', (e) => {
-        if (touchStartX === null || touchStartY === null) return;
+    
         touchStartX = e.changedTouches[0].clientX;
         touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', (e) => {
+        if (touchStartX === null || touchStartY === null) return;
+    
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+    
         handleSwipe();
     }, { passive: true });
 
@@ -112,4 +116,5 @@ export const setupGlobalListeners = (onSwitchTab) => {
         lastScrollTop = scrollTop;
     }, true); // Capture フェーズで子要素のスクロールも拾う
 };
+
 

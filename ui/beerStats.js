@@ -2,12 +2,14 @@
 import { Calc } from '../logic.js';
 import { DOM, escapeHtml } from './dom.js';
 import { STYLE_METADATA } from '../constants.js';
+import { openLogDetail } from './logDetail.js';
 
 let statsChart = null;
 
 // モジュールスコープでビールデータを保持（ブルワリー詳細表示用）
 let _allBeers = [];
 let _breweryStats = [];
+let _allLogs = [];
 
 // フィルター状態管理
 let activeFilters = {
@@ -127,6 +129,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
     const container = document.getElementById('view-cellar-collection');
     if (!container) return;
 
+    _allLogs = allLogs;
     const allStats = Calc.getBeerStats(allLogs);
     const allBeers = allStats.beerStats || [];
     _allBeers = allBeers;
@@ -314,9 +317,9 @@ function renderBeerList(beers) {
         const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
-            <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700">
+            <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
                 <div class="flex-shrink-0 w-8 text-center mr-1">${rankBadge}</div>
-                
+
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
@@ -328,7 +331,7 @@ function renderBeerList(beers) {
                             <span class="text-[9px] text-gray-400 font-bold uppercase">Cups</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
@@ -338,6 +341,23 @@ function renderBeerList(beers) {
             </div>
         `;
     }).join('');
+
+    // ビールエントリのクリック → 最新ログ詳細を表示
+    listEl.querySelectorAll('[data-beer-name]').forEach(el => {
+        el.addEventListener('click', () => {
+            const brewery = el.dataset.beerBrewery || '';
+            const name = el.dataset.beerName || '';
+            // 該当ビールの最新ログを検索
+            const matchingLog = _allLogs
+                .filter(l => l.type === 'beer' &&
+                    (l.brewery || '').trim() === brewery &&
+                    ((l.brand || l.name || '').trim() === name))
+                .sort((a, b) => b.timestamp - a.timestamp)[0];
+            if (matchingLog) {
+                openLogDetail(matchingLog);
+            }
+        });
+    });
 }
 
 // =============================================

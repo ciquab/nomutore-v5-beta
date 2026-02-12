@@ -444,7 +444,6 @@ export const toggleModal = (modalId, show = true) => {
                 content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
             }
         }, 10);
-// ui/dom.js
 
     } else {
         // --- 閉じる処理 ---
@@ -738,6 +737,7 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
+
 
 
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { APP } from './constants.js';
 import { Store } from './store.js';
-import { UI, updateBeerSelectOptions, generateSettingsOptions, refreshUI, toggleModal } from './ui/index.js';
+import { UI, updateBeerSelectOptions, generateSettingsOptions, refreshUI, toggleModal, setupGlobalListeners } from './ui/index.js';
 import { showAppShell } from './ui/dom.js';
 import { Service } from './service.js';
 import { Timer } from './ui/timer.js';
@@ -424,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
+
 
 
 

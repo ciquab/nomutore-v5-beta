@@ -421,9 +421,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. ライフサイクル管理
     setupLifecycleListeners();
+    setupGlobalListeners();
 
     initApp();
 });
+
 
 
 

@@ -90,6 +90,7 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+    const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
         
@@ -628,6 +629,7 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 
 
 

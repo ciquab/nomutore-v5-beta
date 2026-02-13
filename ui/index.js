@@ -120,7 +120,7 @@ const setupEventBusListeners = () => {
 // Homeタブの描画スキップ用キャッシュ（データ未変更時に重い再描画を抑制）
 let _lastHomeRenderKey = '';
 
-export const refreshUI = async () => {
+export const refreshUI = async (forcedTabId = null) => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
@@ -1104,6 +1104,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

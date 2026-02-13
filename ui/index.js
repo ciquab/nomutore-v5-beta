@@ -240,7 +240,6 @@ export const UI = {
             let msg = "";
             if (result.isUpdate) {
                 msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
-                Feedback.tap(); // 更新時は控えめな音
             } else {
                 // 新規登録時のメッセージ構築
                 const kcalText = Math.abs(result.kcal) > 500 
@@ -303,7 +302,6 @@ document.addEventListener('save-exercise', async (e) => {
             let msg = "";
             if (result.isUpdate) {
                 msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
-                Feedback.tap();
             } else {
                 // 新規保存時の演出
                 msg = `<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(result.kcal)}kcal 返済しました！`;
@@ -1106,6 +1104,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

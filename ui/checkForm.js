@@ -343,22 +343,6 @@ export const renderCheckLibrary = () => {
                 : 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300'
             }`;
             
-            
-                const checkbox = /** @type {HTMLInputElement} */ (document.getElementById(`lib-chk-${item.id}`));
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    btn.className = checkbox.checked
-                        ? 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500'
-                        : 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300';
-                    
-                    const iconArea = btn.querySelector('.check-icon');
-                    if (iconArea) {
-                        iconArea.innerHTML = checkbox.checked 
-                            ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' 
-                            : '<i class="ph-bold ph-circle text-gray-300"></i>';
-                    }
-                }
-
             const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');
 
             btn.innerHTML = `
@@ -635,6 +619,7 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 
 
 

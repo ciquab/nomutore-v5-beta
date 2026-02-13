@@ -114,7 +114,10 @@ export const openCheckModal = async (dateStr = null) => {
     // 以前の状態をリセット
     if (dryLabelContainer) dryLabelContainer.classList.remove('opacity-50', 'pointer-events-none');
     if (hint) {
+        hint.textContent = '一滴も飲まなかった日はスイッチON'; 
         hint.classList.remove('text-red-500', 'font-bold');
+        hint.classList.add('text-orange-600/70'); 
+        
     }
 
     try {
@@ -552,6 +555,7 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 
 
 

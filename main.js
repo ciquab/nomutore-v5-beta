@@ -112,6 +112,9 @@ const registerActions = () => {
                 UI.deleteCheckItem(index);
             }
         },
+        'check:changeDate': (args, event) => UI.handleCheckDateChange(event),
+        'check:toggleDry': (args, event) => UI.handleDryDayToggle(event),
+        'check:toggleLibraryItem': (args) => UI.handleLibraryItemToggle(args.id),
         
         // ========== Onboarding系 ==========
         'onboarding:close': () => Onboarding.closeLandingPage(),
@@ -424,6 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
+
 
 
 

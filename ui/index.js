@@ -48,7 +48,8 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
          applyLibraryChanges,
          applyPreset,
          deleteCheckItem,
-         addNewCheckItem } from './checkForm.js';
+         addNewCheckItem,
+         handleCheckDateChange, handleDryDayToggle, handleLibraryItemToggle } from './checkForm.js';
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
@@ -1015,7 +1016,11 @@ if (checkModal) {
     deleteCheckItem: deleteCheckItem,
     addNewCheckItem: addNewCheckItem,
     handleRollover: handleRollover,
+    handleCheckDateChange: handleCheckDateChange,
+    handleDryDayToggle: handleDryDayToggle, 
+    handleLibraryItemToggle: handleLibraryItemToggle
 
+    
 };
 
 export {
@@ -1111,6 +1116,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

@@ -28,7 +28,8 @@ import {
     renderRecordTabShortcuts,
     openShareModal,
     showRolloverModal,
-    generateSettingsOptions
+    generateSettingsOptions,
+    updateActionMenuContent
 } from './modal.js';
 import {
     openBeerModal,
@@ -129,6 +130,11 @@ export const refreshUI = async () => {
 
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
+
+        // ★重要: タブの状態に関わらず、ショートカット類は常に裏で最新化しておく
+        // await を付けずに "投げっぱなし" にすることで、メインの描画をブロックしません
+        renderRecordTabShortcuts(); 
+        updateActionMenuContent(); 
 
         // 2. --- アクティブなタブに応じた描画の振り分け ---
         const activeTabEl = document.querySelector('.tab-content.active');
@@ -1088,6 +1094,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

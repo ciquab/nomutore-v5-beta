@@ -96,7 +96,6 @@ const setupEventBusListeners = () => {
 
     // 4. UI 更新リクエスト (rollover.js 等から)
     EventBus.on(Events.REFRESH_UI, () => {
-        _lastHomeRenderKey = ''; // データ変更を反映するためキャッシュをリセット
         setTimeout(() => refreshUI(), 50);
     });
 
@@ -141,17 +140,25 @@ export const refreshUI = async () => {
         const activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
 
         if (activeTabId === 'home') {
-            // データが変わっていなければ重い再描画をスキップ
-            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}`;
+            // 1. 【軽量・即時反映】 設定やモード変更で見た目が変わるものは毎回描画する（軽いのでOK）
+            renderBeerTank(balance); 
+            renderLiverRank(checks, allLogs);
+            renderCheckStatus(checks, logs);
+
+            // 2. 【重量・キャッシュ】 グラフやヒートマップはデータorテーマ変更時のみ再描画
+            // ★キーに Store.getTheme() を追加して、テーマ変更時だけはグラフも書き直すようにする
+            const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
+            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
+            
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;
-                renderBeerTank(balance);
-                renderLiverRank(checks, allLogs);
-                renderCheckStatus(checks, logs);
+                
+                // ここは処理が重いので、本当に必要な時だけ実行
                 renderWeeklyAndHeatUp(allLogs, checks);
                 renderChart(allLogs, checks);
             }
         }
+
         else if (activeTabId === 'record') {
             await renderRecordTabShortcuts();
         }
@@ -415,8 +422,6 @@ document.addEventListener('bulk-delete', async () => {
         bind('header-mode-select', 'change', (e) => {
             // 既存のロジック
             StateManager.setBeerMode(e.target.value);
-            // ★追加: モードが変わったので強制再描画（色を即座に変えるため）
-            _lastHomeRenderKey = ''; 
             
             refreshUI();
 
@@ -686,8 +691,6 @@ if (checkModal) {
 
         // Service層などから 'refresh-ui' イベントが飛んできた時に、画面全体を再描画する
         document.addEventListener('refresh-ui', () => {
-            // ★追加: 設定変更などが反映されるよう、描画スキップのキーをリセットする
-            _lastHomeRenderKey = ''; 
             // データベースの更新完了と描画タイミングの衝突を防ぐため、ごくわずかに遅らせる
             setTimeout(() => {
                 // 現在ホームタブが開いている場合のみ、または全タブ更新
@@ -1099,6 +1102,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

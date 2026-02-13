@@ -90,12 +90,15 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
-    const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
-    // ★修正: onchange削除 -> data-action付与
-    dateInput.setAttribute('data-action', 'check:changeDate');
-    dateInput.onchange = null; 
+        
+        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
+        dateInput.setAttribute('data-action', 'check:changeDate');
+        
+        // 重複防止のため一度削除してから追加
+        dateInput.removeEventListener('change', handleCheckDateChange);
+        dateInput.addEventListener('change', handleCheckDateChange);
     }
 
     // 日付表示バッジの更新
@@ -134,11 +137,13 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }
 
-    const isDryCheck = document.getElementById('check-is-dry');
+        const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        // ★修正: onchange削除 -> data-action付与
+        // ★修正: トグルも同様に、直接イベントを繋ぐ
         isDryCheck.setAttribute('data-action', 'check:toggleDry');
-        isDryCheck.onchange = null;
+        
+        isDryCheck.removeEventListener('change', handleDryDayToggle);
+        isDryCheck.addEventListener('change', handleDryDayToggle);
     }
 
     /**
@@ -173,10 +178,14 @@ export const openCheckModal = async (dateStr = null) => {
     if (dryLabelContainer) dryLabelContainer.classList.remove('opacity-50', 'pointer-events-none');
     
     if (hint) {
-        // テキストとクラス（色）をデフォルト値で完全に上書き
+        // ★修正: classNameを直接上書きして、前の状態を完全にリセットする
         hint.textContent = '一滴も飲まなかった日はスイッチON'; 
         hint.className = 'text-xs text-orange-600/70'; 
     }
+
+    // UI同期（初期状態として呼ぶ）
+    syncDryDayUI(false);
+
 
     // UI同期（初期状態として呼ぶ）
     syncDryDayUI(false);
@@ -619,6 +628,7 @@ export const getCheckFormData = () => {
 
     return data;
 };
+
 
 
 

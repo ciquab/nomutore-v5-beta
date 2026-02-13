@@ -307,9 +307,9 @@ function renderBeerList(beers) {
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-[10px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || 'Unknown')}</p>
-                            <h4 class="text-sm font-black text-base-900 dark:text-white truncate leading-tight">${escapeHtml(beer.name)}</h4>
+                            <h4 class="text-sm font-black text-base-900 dark:text-white leading-tight">${escapeHtml(beer.name)}</h4>
                         </div>
-                        <div class="text-right ml-2">
+                        <div class="text-right ml-2 flex-shrink-0">
                             <span class="block text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
                             <span class="text-[9px] text-gray-400 font-bold uppercase">Cups</span>
                         </div>
@@ -646,4 +646,5 @@ function showBreweryDetail(breweryName) {
         if (backdrop) backdrop.style.opacity = '1';
     }, 10);
 }
+
 

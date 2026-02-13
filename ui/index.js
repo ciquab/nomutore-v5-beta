@@ -1018,7 +1018,7 @@ if (checkModal) {
     handleRollover: handleRollover,
     handleCheckDateChange: handleCheckDateChange,
     handleDryDayToggle: handleDryDayToggle, 
-    handleLibraryItemToggle: handleLibraryItemToggle
+    handleLibraryItemToggle: handleLibraryItemToggle,
 
     
 };
@@ -1116,6 +1116,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

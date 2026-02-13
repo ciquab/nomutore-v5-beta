@@ -181,7 +181,7 @@ export const openCheckModal = async (dateStr = null) => {
     if (hint) {
         // ★修正: classNameを直接上書きして、前の状態を完全にリセットする
         hint.textContent = '一滴も飲まなかった日はスイッチON'; 
-        hint.className = 'text-xs text-orange-600/70'; 
+        hint.className = 'text-[10px] text-orange-600/70'; 
     }
 
     // UI同期（初期状態として呼ぶ）
@@ -259,7 +259,7 @@ export const openCheckModal = async (dateStr = null) => {
             if (hint) {
                 hint.innerHTML = "<i class='ph-bold ph-beer-bottle'></i> 飲酒記録があるため、休肝日は選択できません";
                 // 赤字エラー表示
-                hint.className = 'text-xs font-bold text-red-500';
+                hint.className = 'text-[10px] font-bold text-red-500';
             }
         }
 
@@ -575,10 +575,10 @@ export const syncDryDayUI = (isDry) => {
     if (hint && !isDisabled) {
         if (isDry) {
             hint.innerHTML = "<i class='ph-fill ph-heart text-emerald-500'></i> 素晴らしい！肝臓が回復しています";
-            hint.className = "text-xs font-bold text-emerald-600";
+            hint.className = "text-[10px] font-bold text-emerald-600";
         } else {
             hint.textContent = '一滴も飲まなかった日はスイッチON';
-            hint.className = "text-xs text-orange-600/70";
+            hint.className = "text-[10px] text-orange-600/70";
         }
     }
 };
@@ -629,11 +629,3 @@ export const getCheckFormData = () => {
 
     return data;
 };
-
-
-
-
-
-
-
-

@@ -415,6 +415,9 @@ document.addEventListener('bulk-delete', async () => {
         bind('header-mode-select', 'change', (e) => {
             // 既存のロジック
             StateManager.setBeerMode(e.target.value);
+            // ★追加: モードが変わったので強制再描画（色を即座に変えるため）
+            _lastHomeRenderKey = ''; 
+            
             refreshUI();
 
             // ★追加: 表示用の文字(beer-select-display)を更新
@@ -683,6 +686,8 @@ if (checkModal) {
 
         // Service層などから 'refresh-ui' イベントが飛んできた時に、画面全体を再描画する
         document.addEventListener('refresh-ui', () => {
+            // ★追加: 設定変更などが反映されるよう、描画スキップのキーをリセットする
+            _lastHomeRenderKey = ''; 
             // データベースの更新完了と描画タイミングの衝突を防ぐため、ごくわずかに遅らせる
             setTimeout(() => {
                 // 現在ホームタブが開いている場合のみ、または全タブ更新
@@ -1094,6 +1099,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

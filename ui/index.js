@@ -136,9 +136,13 @@ export const refreshUI = async () => {
         updateActionMenuContent(); 
 
         // 2. --- アクティブなタブに応じた描画の振り分け ---
-        const activeTabEl = document.querySelector('.tab-content.active');
-        const activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
-
+        // ★修正: 引数で指定があればそれを優先、なければDOMから探す
+        let activeTabId = forcedTabId;
+        if (!activeTabId) {
+            const activeTabEl = document.querySelector('.tab-content.active');
+            activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
+        }
+        
         if (activeTabId === 'home') {
             // 1. 【軽量・即時反映】 設定やモード変更で見た目が変わるものは毎回描画する（軽いのでOK）
             renderBeerTank(balance); 
@@ -824,7 +828,7 @@ if (checkModal) {
         });
 
         // データ取得・描画は View Transition の外で実行（アニメーションをブロックしない）
-        requestAnimationFrame(() => refreshUI());
+        requestAnimationFrame(() => refreshUI(tabId));
     },
     
     switchCellarView: (mode) => {
@@ -1102,6 +1106,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

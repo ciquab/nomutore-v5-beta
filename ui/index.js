@@ -119,45 +119,52 @@ const setupEventBusListeners = () => {
 
 // Homeタブの描画スキップ用キャッシュ（データ未変更時に重い再描画を抑制）
 let _lastHomeRenderKey = '';
+// ★追加: データ変更検知用のキャッシュ（ショートカット再生成の抑制用）
+let _lastDataFingerprint = '';
 
+// ★引数 (forcedTabId) を追加
 export const refreshUI = async (forcedTabId = null) => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
-        // 1. Serviceから「調理済み」のデータ一式をもらう
+        // 1. Serviceからデータを取得
         const { logs, checks, allLogs, balance } = await Service.getAppDataSnapshot();
 
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
+      
+        // データの「指紋（Fingerprint）」を作成して、変更があるかチェック
+        // (ログ件数、カロリー収支、チェック数 のどれかが変わっていれば変更とみなす)
+        const currentFingerprint = `${allLogs.length}:${balance.toFixed(1)}:${checks.length}`;
 
-        // ★重要: タブの状態に関わらず、ショートカット類は常に裏で最新化しておく
-        // await を付けずに "投げっぱなし" にすることで、メインの描画をブロックしません
-        renderRecordTabShortcuts(); 
-        updateActionMenuContent(); 
-
+        if (currentFingerprint !== _lastDataFingerprint) {
+            _lastDataFingerprint = currentFingerprint;
+            
+            // データが変わった時だけ、裏側のボタン類を作り直す（これで無駄な処理が減る）
+            renderRecordTabShortcuts(); 
+            updateActionMenuContent(); 
+        }
+        
         // 2. --- アクティブなタブに応じた描画の振り分け ---
-        // ★修正: 引数で指定があればそれを優先、なければDOMから探す
+        // 引数で指定があればそれを優先、なければDOMから探す
         let activeTabId = forcedTabId;
         if (!activeTabId) {
             const activeTabEl = document.querySelector('.tab-content.active');
             activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
         }
-        
+
         if (activeTabId === 'home') {
-            // 1. 【軽量・即時反映】 設定やモード変更で見た目が変わるものは毎回描画する（軽いのでOK）
+            // 軽量・即時反映系
             renderBeerTank(balance); 
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
 
-            // 2. 【重量・キャッシュ】 グラフやヒートマップはデータorテーマ変更時のみ再描画
-            // ★キーに Store.getTheme() を追加して、テーマ変更時だけはグラフも書き直すようにする
+            // 重量・キャッシュ系
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
             const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
             
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;
-                
-                // ここは処理が重いので、本当に必要な時だけ実行
                 renderWeeklyAndHeatUp(allLogs, checks);
                 renderChart(allLogs, checks);
             }
@@ -1104,6 +1111,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

@@ -29,6 +29,56 @@ const ICON_KEYWORDS = {
     'book': 'ph-duotone ph-book-open',
     'work': 'ph-duotone ph-briefcase'
 };
+/* --- Action Handlers (ActionRouterから呼ばれる関数) --- */
+
+/**
+ * 日付変更時のハンドラ
+ * @param {Event} e 
+ */
+export const handleCheckDateChange = (e) => {
+    const input = /** @type {HTMLInputElement} */ (e.target);
+    openCheckModal(input.value);
+};
+
+/**
+ * 休肝日トグル変更時のハンドラ
+ * @param {Event} e 
+ */
+export const handleDryDayToggle = (e) => {
+    const input = /** @type {HTMLInputElement} */ (e.target);
+    // UI同期
+    syncDryDayUI(input.checked);
+    // 音
+    if (typeof Feedback !== 'undefined') Feedback.uiSwitch();
+};
+
+/**
+ * ライブラリ項目の選択切り替えハンドラ
+ * @param {string} id - 項目ID
+ */
+export const handleLibraryItemToggle = (id) => {
+    const checkbox = /** @type {HTMLInputElement} */ (document.getElementById(`lib-chk-${id}`));
+    if (!checkbox) return;
+
+    // 状態反転
+    checkbox.checked = !checkbox.checked;
+
+    // 親要素(ボタン)のスタイル更新
+    // ※ data-action="check:toggleLibraryItem" が付いている親要素を探す
+    const btn = checkbox.closest('[data-action="check:toggleLibraryItem"]');
+    if (btn) {
+        btn.className = checkbox.checked
+            ? 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500'
+            : 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300';
+        
+        const iconArea = btn.querySelector('.check-icon');
+        if (iconArea) {
+            iconArea.innerHTML = checkbox.checked 
+                ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' 
+                : '<i class="ph-bold ph-circle text-gray-300"></i>';
+        }
+    }
+};
 
 /* --- Check Modal Logic --- */
 
@@ -41,7 +91,16 @@ export const openCheckModal = async (dateStr = null) => {
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
-    if(dateInput) dateInput.value = dateVal;
+    if(dateInput) {
+        dateInput.value = dateVal;
+        
+        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
+        dateInput.setAttribute('data-action', 'check:changeDate');
+        
+        // 重複防止のため一度削除してから追加
+        dateInput.removeEventListener('change', handleCheckDateChange);
+        dateInput.addEventListener('change', handleCheckDateChange);
+    }
 
     // 日付表示バッジの更新
     const displayEl = document.getElementById('daily-check-date-display');
@@ -79,9 +138,13 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }
 
-    const isDryCheck = document.getElementById('check-is-dry');
+        const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        isDryCheck.onchange = (e) => syncDryDayUI(/** @type {HTMLInputElement} */(e.target).checked);
+        // ★修正: トグルも同様に、直接イベントを繋ぐ
+        isDryCheck.setAttribute('data-action', 'check:toggleDry');
+        
+        isDryCheck.removeEventListener('change', handleDryDayToggle);
+        isDryCheck.addEventListener('change', handleDryDayToggle);
     }
 
     /**
@@ -110,12 +173,23 @@ export const openCheckModal = async (dateStr = null) => {
 
     // ラベルを日本語化
     if (dryLabelText) dryLabelText.innerHTML = "休肝日 <span class='text-xs opacity-70 font-normal ml-1'>(No Alcohol)</span>";
+    
+    // ★修正: 状態を強力にリセット（前の日付の状態を完全に消す）
     if (isDryInput) isDryInput.disabled = false;
-    // 以前の状態をリセット
     if (dryLabelContainer) dryLabelContainer.classList.remove('opacity-50', 'pointer-events-none');
+    
     if (hint) {
-        hint.classList.remove('text-red-500', 'font-bold');
+        // ★修正: classNameを直接上書きして、前の状態を完全にリセットする
+        hint.textContent = '一滴も飲まなかった日はスイッチON'; 
+        hint.className = 'text-[10px] text-orange-600/70'; 
     }
+
+    // UI同期（初期状態として呼ぶ）
+    syncDryDayUI(false);
+
+
+    // UI同期（初期状態として呼ぶ）
+    syncDryDayUI(false);
 
     try {
         // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽
@@ -179,14 +253,17 @@ export const openCheckModal = async (dateStr = null) => {
 
         if (hasBeer) {
             setCheck('check-is-dry', false); 
-            syncDryDayUI(false);              
+            syncDryDayUI(false); // falseで同期
+            
+            // 強制的にUIをロック状態へ上書き
             if (isDryInput) isDryInput.disabled = true;
             if (hint) {
                 hint.innerHTML = "<i class='ph-bold ph-beer-bottle'></i> 飲酒記録があるため、休肝日は選択できません";
-                hint.classList.remove('text-orange-600/70', 'text-emerald-600');
-                hint.classList.add('text-red-500', 'font-bold');
+                // 赤字エラー表示
+                hint.className = 'text-[10px] font-bold text-red-500';
             }
         }
+
     } catch (e) { 
         console.error("Failed to fetch check data:", e); 
     }
@@ -269,29 +346,14 @@ export const renderCheckLibrary = () => {
         items.forEach(item => {
             const isActive = activeIds.has(item.id);
             const btn = document.createElement('div');
+            btn.dataset.action = 'check:toggleLibraryItem';
+            btn.dataset.args = JSON.stringify({ id: item.id });
             btn.className = `p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 ${
                 isActive 
                 ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500' 
                 : 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300'
             }`;
             
-            btn.addEventListener('click', () => {
-                const checkbox = /** @type {HTMLInputElement} */ (document.getElementById(`lib-chk-${item.id}`));
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    btn.className = checkbox.checked
-                        ? 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500'
-                        : 'p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300';
-                    
-                    const iconArea = btn.querySelector('.check-icon');
-                    if (iconArea) {
-                        iconArea.innerHTML = checkbox.checked 
-                            ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' 
-                            : '<i class="ph-bold ph-circle text-gray-300"></i>';
-                    }
-                }
-            });
-
             const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');
 
             btn.innerHTML = `
@@ -505,6 +567,21 @@ const getStoredSchema = () => {
 export const syncDryDayUI = (isDry) => {
     const items = document.querySelectorAll('.drinking-only');
     items.forEach(el => el.classList.toggle('hidden', isDry));
+
+    // メッセージと色を動的に切り替え
+    const hint = document.querySelector('#drinking-section p');
+    // 飲酒記録ありで無効化されている場合はメッセージを上書きしない
+    const isDisabled = document.getElementById('check-is-dry')?.disabled;
+
+    if (hint && !isDisabled) {
+        if (isDry) {
+            hint.innerHTML = "<i class='ph-fill ph-heart text-emerald-500'></i> 素晴らしい！肝臓が回復しています";
+            hint.className = "text-[10px] font-bold text-emerald-600";
+        } else {
+            hint.textContent = '一滴も飲まなかった日はスイッチON';
+            hint.className = "text-[10px] text-orange-600/70";
+        }
+    }
 };
 
 /**
@@ -553,6 +630,3 @@ export const getCheckFormData = () => {
 
     return data;
 };
-
-
-

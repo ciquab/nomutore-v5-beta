@@ -28,7 +28,8 @@ import {
     renderRecordTabShortcuts,
     openShareModal,
     showRolloverModal,
-    generateSettingsOptions
+    generateSettingsOptions,
+    updateActionMenuContent
 } from './modal.js';
 import {
     openBeerModal,
@@ -47,7 +48,8 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
          applyLibraryChanges,
          applyPreset,
          deleteCheckItem,
-         addNewCheckItem } from './checkForm.js';
+         addNewCheckItem,
+         handleCheckDateChange, handleDryDayToggle, handleLibraryItemToggle } from './checkForm.js';
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
@@ -95,7 +97,6 @@ const setupEventBusListeners = () => {
 
     // 4. UI 更新リクエスト (rollover.js 等から)
     EventBus.on(Events.REFRESH_UI, () => {
-        _lastHomeRenderKey = ''; // データ変更を反映するためキャッシュをリセット
         setTimeout(() => refreshUI(), 50);
     });
 
@@ -119,6 +120,9 @@ const setupEventBusListeners = () => {
 
 // Homeタブの描画スキップ用キャッシュ（データ未変更時に重い再描画を抑制）
 let _lastHomeRenderKey = '';
+// ★追加: データ変更検知用のキャッシュ（ショートカット再生成の抑制用）
+let _lastDataFingerprint = '';
+let _lastCellarRenderKey = ''; 
 
 // Cellarサブビュー切替の共通ヘルパー（DOMの表示切替のみ）
 const _applyCellarSubView = (mode) => {
@@ -140,45 +144,77 @@ const _applyCellarSubView = (mode) => {
     if (activeEl) activeEl.classList.remove('hidden');
 };
 
-export const refreshUI = async () => {
+// ★引数 (forcedTabId) を追加
+export const refreshUI = async (forcedTabId = null) => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
-        // 1. Serviceから「調理済み」のデータ一式をもらう
+        // 1. Serviceからデータを取得
         const { logs, checks, allLogs, balance } = await Service.getAppDataSnapshot();
 
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
+        UI._statsData.checks = checks;
+      
+        // データの「指紋（Fingerprint）」を作成して、変更があるかチェック
+        // (ログ件数、カロリー収支、チェック数 のどれかが変わっていれば変更とみなす)
+        const currentFingerprint = `${allLogs.length}:${balance.toFixed(1)}:${checks.length}`;
 
+        if (currentFingerprint !== _lastDataFingerprint) {
+            _lastDataFingerprint = currentFingerprint;
+            
+            // データが変わった時だけ、裏側のボタン類を作り直す（これで無駄な処理が減る）
+            renderRecordTabShortcuts(); 
+            updateActionMenuContent(); 
+        }
+        
         // 2. --- アクティブなタブに応じた描画の振り分け ---
-        const activeTabEl = document.querySelector('.tab-content.active');
-        const activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
+        // 引数で指定があればそれを優先、なければDOMから探す
+        let activeTabId = forcedTabId;
+        if (!activeTabId) {
+            const activeTabEl = document.querySelector('.tab-content.active');
+            activeTabId = activeTabEl ? activeTabEl.id.replace('tab-', '') : 'home';
+        }
 
         if (activeTabId === 'home') {
-            // データが変わっていなければ重い再描画をスキップ
-            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}`;
+            // 軽量・即時反映系
+            renderBeerTank(balance); 
+            renderLiverRank(checks, allLogs);
+            renderCheckStatus(checks, logs);
+
+            // 重量・キャッシュ系
+            const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
+            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
+            
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;
-                renderBeerTank(balance);
-                renderLiverRank(checks, allLogs);
-                renderCheckStatus(checks, logs);
                 renderWeeklyAndHeatUp(allLogs, checks);
                 renderChart(allLogs, checks);
             }
         }
+
         else if (activeTabId === 'record') {
-            await renderRecordTabShortcuts();
+            // ★修正: データ変更時に（上のフィンガープリント判定ブロックで）
+            // 既に作成されているため、ここでは何もしなくてOKです。
+            // これでタブ切り替えが一瞬になります。
         }
         else if (activeTabId === 'cellar') {
+            // ★修正: データまたは表示モードが変わった時だけ再描画する
             const cellarMode = StateManager.cellarViewMode || 'logs';
-            if (cellarMode === 'logs') {
-                await updateLogListView(false, allLogs);
-            } else if (cellarMode === 'stats') {
-                renderBeerStats(logs, allLogs);
-            } else if (cellarMode === 'collection') {
-                renderBeerCollection(logs, allLogs);
-            } else if (cellarMode === 'archives') {
-                renderArchives();
+            const cellarKey = `${currentFingerprint}:${cellarMode}`;
+
+            if (cellarKey !== _lastCellarRenderKey) {
+                _lastCellarRenderKey = cellarKey;
+
+                if (cellarMode === 'logs') {
+                    await updateLogListView(false, allLogs);
+                } else if (cellarMode === 'stats') {
+                    renderBeerStats(logs, allLogs);
+                } else if (cellarMode === 'collection') {
+                    renderBeerCollection(logs, allLogs);
+                } else if (cellarMode === 'archives') {
+                    renderArchives();
+                }
             }
         }
         else if (activeTabId === 'settings') {
@@ -245,7 +281,6 @@ export const UI = {
             let msg = "";
             if (result.isUpdate) {
                 msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
-                Feedback.tap(); // 更新時は控えめな音
             } else {
                 // 新規登録時のメッセージ構築
                 const kcalText = Math.abs(result.kcal) > 500 
@@ -308,7 +343,6 @@ document.addEventListener('save-exercise', async (e) => {
             let msg = "";
             if (result.isUpdate) {
                 msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
-                Feedback.tap();
             } else {
                 // 新規保存時の演出
                 msg = `<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(result.kcal)}kcal 返済しました！`;
@@ -431,6 +465,7 @@ document.addEventListener('bulk-delete', async () => {
         bind('header-mode-select', 'change', (e) => {
             // 既存のロジック
             StateManager.setBeerMode(e.target.value);
+            
             refreshUI();
 
             // ★追加: 表示用の文字(beer-select-display)を更新
@@ -747,10 +782,32 @@ if (checkModal) {
         // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
         setupGlobalListeners((tabId) => UI.switchTab(tabId));
 
+                // --- ★追加: チェックライブラリの開閉を監視してSaveボタンを制御 ---
+        const libModal = document.getElementById('check-library-modal');
+        if (libModal) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        const isHidden = libModal.classList.contains('hidden');
+                        const saveBtn = document.getElementById('settings-save-container');
+                        
+                        // 設定タブが開いている時だけ制御
+                        const isSettingsTab = document.getElementById('tab-settings')?.classList.contains('active');
+
+                        if (saveBtn && isSettingsTab) {
+                            // モーダルが出ている(hiddenがない)ならボタンを隠す
+                            // モーダルが隠れた(hiddenがある)ならボタンを出す
+                            toggleFabLike(saveBtn, isHidden);
+                        }
+                    }
+                });
+            });
+            observer.observe(libModal, { attributes: true });
+        }
+        
         UI.isInitialized = true;
     },
-
-// ui/index.js (333行目付近)
+    
     switchTab: (tabId, options = { silent: false }) => {
         // View Transition 内は DOM 切替のみ（軽量）。データ取得・描画は後で行う。
         DOM.withTransition(() => {
@@ -816,7 +873,7 @@ if (checkModal) {
         });
 
         // データ取得・描画は View Transition の外で実行（アニメーションをブロックしない）
-        requestAnimationFrame(() => refreshUI());
+        requestAnimationFrame(() => refreshUI(tabId));
     },
     
     switchCellarView: (mode) => {
@@ -911,6 +968,20 @@ if (checkModal) {
         showMessage('登録に失敗しました', 'error');
     }
 },
+    /**
+     * チャートの期間切り替え
+     * @param {string} range '1w', '1m', '3m'
+     */
+    handleChartPeriod: (range) => {
+        // 1. 状態を更新
+        StateManager.setChartRange(range);
+        
+        // 2. 保存しておいたデータを使ってグラフだけ再描画
+        const { allLogs, checks } = UI._statsData;
+        if (allLogs && checks) {
+            renderChart(allLogs, checks);
+        }
+    },
 
     updateBulkCount: updateBulkCount,
     
@@ -962,7 +1033,7 @@ if (checkModal) {
     get selectedDate() { return StateManager.selectedDate; },
     toggleModal: (id, show) => {
         if (show === undefined) {
-            // showが省略された場合はトグル（現在の可視状態を反転）
+            // showが省略された場合はトグル
             const el = document.getElementById(id);
             const isVisible = el && !el.classList.contains('hidden');
             toggleModal(id, !isVisible);
@@ -970,6 +1041,7 @@ if (checkModal) {
             toggleModal(id, show);
         }
     },
+
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
@@ -980,7 +1052,11 @@ if (checkModal) {
     deleteCheckItem: deleteCheckItem,
     addNewCheckItem: addNewCheckItem,
     handleRollover: handleRollover,
+    handleCheckDateChange: handleCheckDateChange,
+    handleDryDayToggle: handleDryDayToggle, 
+    handleLibraryItemToggle: handleLibraryItemToggle,
 
+    
 };
 
 export {

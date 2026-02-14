@@ -34,7 +34,11 @@ const registerActions = () => {
             if (UI && UI.openDayDetail) {
                 UI.openDayDetail(data.date);
             }
-        },       
+        },  
+        
+        // ========== Chart系 (追加) ==========
+        'chart:period': (args) => UI.handleChartPeriod(args.range),
+
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),
@@ -112,6 +116,9 @@ const registerActions = () => {
                 UI.deleteCheckItem(index);
             }
         },
+        'check:changeDate': (args, event) => UI.handleCheckDateChange(event),
+        'check:toggleDry': (args, event) => UI.handleDryDayToggle(event),
+        'check:toggleLibraryItem': (args) => UI.handleLibraryItemToggle(args.id),
         
         // ========== Onboarding系 ==========
         'onboarding:close': () => Onboarding.closeLandingPage(),
@@ -424,6 +431,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
+
+
 
 
 

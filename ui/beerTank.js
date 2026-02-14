@@ -17,22 +17,58 @@ if (!document.getElementById(styleId)) {
             -webkit-perspective: 1000px !important;
             transform-style: preserve-3d !important;
         }
+        
         .orb-container {
             transform-style: preserve-3d !important;
             -webkit-transform-style: preserve-3d !important;
             will-change: transform; 
-            position: relative; /* 子要素の基準にする */
+            position: relative;
+            
+            /* ★球体化1: 全体の内側に影と光を落として立体感を出す */
+            box-shadow: 
+                inset -10px -10px 20px rgba(0, 0, 0, 0.3), /* 右下の影 */
+                inset 5px 5px 15px rgba(255, 255, 255, 0.2); /* 左上の環境光 */
+            border-radius: 50%; /* 念のため明示 */
         }
-        /* ★追加: 泡のコンテナを水面で切り取る設定 */
+
+        /* ★球体化2: 全体を覆う曲面シャドウ（ガラスの球体感） */
+        .orb-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.4) 100%);
+            z-index: 20; /* 液体より手前 */
+            pointer-events: none;
+        }
+
+        /* ★球体化3: 左上の強いハイライト（ツヤ） */
+        .orb-container::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 18%;
+            width: 25%;
+            height: 12%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(-45deg);
+            z-index: 21; /* 一番手前 */
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        /* 泡のコンテナ（球体からはみ出ないようにマスク） */
         .bubble-container {
             position: absolute;
             left: 0;
             width: 100%;
-            overflow: hidden; /* ★これではみ出た泡をカット */
+            overflow: hidden;
             pointer-events: none;
             z-index: 5;
+            border-radius: 50%; /* ★ここも丸くする */
         }
-        /* ヒントアイコンの点滅アニメーション */
+        
         @keyframes hint-pulse {
             0%, 100% { opacity: 0.3; }
             50% { opacity: 0.6; }
@@ -344,3 +380,4 @@ export function renderBeerTank(currentBalanceKcal) {
         liquidBack.style.top = `${topVal + 2}%`; 
     });
 }
+

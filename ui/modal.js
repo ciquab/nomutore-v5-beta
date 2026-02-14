@@ -30,8 +30,7 @@ export const openActionMenu = async (dateStr = null) => {
     if(label) label.textContent = dayjs(targetDate).format('MM/DD (ddd)');
 
     // 1. ショートカットの描画 (非同期でデータを取得して表示)
-    await renderActionMenuBeerPresets();
-    await renderActionMenuExerciseShortcuts();
+    //削除
 
     // 2. モーダル表示
     toggleModal('action-menu-modal', true);
@@ -49,6 +48,16 @@ export const openActionMenu = async (dateStr = null) => {
             if (drawer) drawer.classList.remove('modal-enter');
         }
     }
+};
+
+/**
+ * ★追加: 外部（refreshUI）から呼べるようにまとめた更新関数
+ * これを ui/index.js から呼びます
+ */
+export const updateActionMenuContent = () => {
+    // await なしで非同期実行（裏側で勝手に更新させる）
+    renderActionMenuBeerPresets();
+    renderActionMenuExerciseShortcuts();
 };
 
 /**
@@ -728,6 +737,7 @@ export const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 };
+
 
 
 

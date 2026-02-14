@@ -157,7 +157,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : escapeHtml(log.name);
 
         let subText = log.type === 'exercise'
-            ? `<span class="font-bold text-gray-600 dark:text-gray-300">${log.minutes} min</span> · -${Math.round(log.kcal)} kcal`
+            ? `<span class="text-gray-600 dark:text-gray-300">${log.minutes} min</span> · +${Math.round(log.kcal)} kcal`
             : `${log.count || 1} cans <span class="opacity-60">(${(log.size || 350) * (log.count || 1)}ml)</span>${log.style ? ` · ${log.style}` : ''}`;
 
         let rightContent = log.type === 'exercise'
@@ -227,4 +227,6 @@ document.addEventListener('change', (e) => {
 
 /** @type {any} */(updateLogListView).updateBulkCount = updateBulkCount;
 export const setFetchLogsHandler = (fn) => {};
+
+
 

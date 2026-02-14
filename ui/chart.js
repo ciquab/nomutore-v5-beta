@@ -14,6 +14,11 @@ export function renderChart(logs, checks) {
     const filters = DOM.elements['chart-filters'] || document.getElementById('chart-filters');
     if(filters) {
         filters.querySelectorAll('button').forEach(btn => {
+            // ▼▼▼ 追加: ActionRouter用の設定 ▼▼▼
+            const range = btn.dataset.range;
+            btn.dataset.action = 'chart:period'; // アクション名
+            btn.dataset.args = JSON.stringify({ range }); // 引数 (1w, 1m, 3m)
+            // ▲▲▲ 追加ここまで ▲▲▲
             const isActive = btn.dataset.range === StateManager.chartRange;
             btn.className = `px-2 py-1 text-[10px] font-bold rounded-md transition-all ${
                 isActive ? "active-filter bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-300 shadow-sm" 
@@ -188,4 +193,5 @@ export function renderChart(logs, checks) {
         }
 
     } catch(e) { console.error('Chart Error', e); }
+
 }

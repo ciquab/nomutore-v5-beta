@@ -133,14 +133,14 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
                 <div class="space-y-2">
                     <div class="relative">
-                        <input type="text" id="beer-search-input" placeholder="Search brewery or brand..." class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
+                        <input type="text" id="beer-search-input" placeholder="ブルワリー名や銘柄名で検索" class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
                         <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
                         <div class="relative">
                             <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                <option value="">All Breweries</option>
+                                <option value="">ブルワリー名</option>
                                 ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
                             </select>
                             <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
@@ -148,7 +148,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
                         <div class="relative">
                             <select id="filter-style" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                <option value="">All Styles</option>
+                                <option value="">ビアスタイル</option>
                                 ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
                             </select>
                             <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
@@ -156,7 +156,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
                         <div class="relative">
                             <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
-                                <option value="0">All Ratings</option>
+                                <option value="0">評価</option>
                                 <option value="5">★ 5 Only</option>
                                 <option value="4">★ 4 & up</option>
                                 <option value="3">★ 3 & up</option>
@@ -646,5 +646,6 @@ function showBreweryDetail(breweryName) {
         if (backdrop) backdrop.style.opacity = '1';
     }, 10);
 }
+
 
 

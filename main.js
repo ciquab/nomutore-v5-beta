@@ -34,7 +34,11 @@ const registerActions = () => {
             if (UI && UI.openDayDetail) {
                 UI.openDayDetail(data.date);
             }
-        },       
+        },  
+        
+        // ========== Chart系 (追加) ==========
+        'chart:period': (args) => UI.handleChartPeriod(args.range),
+
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),
@@ -427,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
+
 
 
 

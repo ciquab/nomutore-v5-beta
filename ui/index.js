@@ -193,6 +193,7 @@ export const refreshUI = async (forcedTabId = null) => {
             } else if (StateManager.cellarViewMode === 'archives') {
                 renderArchives();
             }
+            }
         }
         else if (activeTabId === 'settings') {
             updateModeSelector();
@@ -1163,6 +1164,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

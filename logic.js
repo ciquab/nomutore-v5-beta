@@ -569,6 +569,26 @@ export const Calc = {
     },
 
     /**
+     * 体重ベースの週間アルコール上限(g)を算出
+     * Widmark因子(男性0.68/女性0.55)で補正し、60kg男性=20g/日を基準にスケーリング
+     * @param {Profile} profile
+     * @returns {number} 週あたりの純アルコール上限(g)
+     */
+    getWeeklyAlcoholLimit: (profile) => {
+        const weight = Number((profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT);
+        const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
+        const r = gender === 'male' ? 0.68 : 0.55;
+
+        const baseDailyG = 20;  // 厚労省基準: 60kg成人男性で20g/日
+        const baseWeight = 60;
+        const baseR = 0.68;     // 男性基準
+
+        const adjusted = baseDailyG * (weight / baseWeight) * (r / baseR);
+        const daily = Math.max(12, Math.min(30, Math.round(adjusted)));
+        return daily * 7;
+    },
+
+    /**
      * ビール1杯あたりの純アルコール量(g)を計算
      * 計算式: ml × (ABV / 100) × 0.789(エタノール比重)
      * @param {number} ml - 容量

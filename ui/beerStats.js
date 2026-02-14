@@ -230,7 +230,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 // Health Insights
 // =============================================
 
-const WEEKLY_LIMIT = { male: 150, female: 100 };
+// 週間アルコール上限は Calc.getWeeklyAlcoholLimit(profile) で体重ベースに算出
 
 let insightsChart = null;
 
@@ -244,8 +244,7 @@ function renderHealthInsights(allLogs, checks) {
     if (!section) return;
 
     const profile = Store.getProfile();
-    const gender = (profile && profile.gender) || 'male';
-    const limit = WEEKLY_LIMIT[gender] || WEEKLY_LIMIT.male;
+    const limit = Calc.getWeeklyAlcoholLimit(profile);
 
     // --- 1. Weekly Alcohol Meter ---
     const now = dayjs();

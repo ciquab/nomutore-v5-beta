@@ -4,15 +4,7 @@ import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
-/**
- * 厚労省ガイドライン: 男性 週140g / 女性 週70g (1日あたり 男性20g / 女性10g × 7日)
- * ただし一般的には男性週280g(40g/日)を「節度ある飲酒」の上限とする解釈もあるため、
- * ここでは男女共通で週あたりの推奨上限を使用
- */
-const WEEKLY_LIMIT = {
-    male: 150,   // 約20g/日 × 7日 ≒ 中瓶7本相当
-    female: 100  // やや厳しめ
-};
+// 週間アルコール上限は Calc.getWeeklyAlcoholLimit(profile) で体重ベースに算出
 
 /**
  * Weekly Alcohol Meter の描画
@@ -23,8 +15,7 @@ export function renderAlcoholMeter(allLogs) {
     if (!container) return;
 
     const profile = Store.getProfile();
-    const gender = (profile && profile.gender) || 'male';
-    const limit = WEEKLY_LIMIT[gender] || WEEKLY_LIMIT.male;
+    const limit = Calc.getWeeklyAlcoholLimit(profile);
 
     // 今週（月曜〜日曜）のログを抽出
     const now = dayjs();

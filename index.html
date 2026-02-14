@@ -184,7 +184,7 @@
             <section class="glass-panel p-5 rounded-2xl">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold flex items-center gap-2">
-                        <i class="ph-duotone ph-fire text-orange-500"></i> Streak
+                        <i class="ph-fill ph-fire text-orange-500"></i> Streak
                     </h3>
                     <div class="flex items-center gap-2">
                         <span id="streak-badge" class="text-[10px] font-bold px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full">x1.0</span>
@@ -194,7 +194,7 @@
                 
                 <!-- ★修正: 1週間カレンダーを追加 (ヒートマップの上) -->
                 <div class="mb-2 flex items-center justify-between px-1">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Weekly</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Weekly</span>
                     <span id="weekly-range-label" class="text-[10px] font-mono text-gray-400"></span>
                 </div>
                 <div id="weekly-calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
@@ -228,17 +228,13 @@
     </div>
 
     <section class="px-1">
-        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">
-            <i class="ph-bold ph-clock-counter-clockwise"></i> よく飲むビール
-        </h3>
+        <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">よく飲むビール</h3>
         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="record-shortcuts-beer">
             </div>
     </section>
 
     <section class="px-1">
-        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">
-            <i class="ph-bold ph-sneaker-move"></i> いつもの運動
-        </h3>
+        <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">いつもの運動</h3>
         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="record-shortcuts-exercise">
             </div>
     </section>
@@ -246,7 +242,7 @@
     <hr class="border-gray-100 dark:border-gray-800 mx-2">
 
     <section class="px-1">
-        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">手入力 (Manual)</h3>
+        <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">手入力 (Manual)</h3>
         <div class="grid grid-cols-2 gap-3">
             
             <button data-action="modal:openBeer" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
@@ -273,7 +269,7 @@
     </section>
 
     <section class="px-1">
-        <h3 class="text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">コンディション & ツール</h3>
+        <h3 class="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider ml-1">コンディション & ツール</h3>
         <div class="grid grid-cols-2 gap-3">
             
             <button data-action="modal:openCheck" class="p-4 rounded-2xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">

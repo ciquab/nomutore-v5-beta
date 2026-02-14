@@ -255,8 +255,6 @@ let lastActiveDate = Store.getLastActiveDate() || dayjs().format('YYYY-MM-DD');
    Lifecycle Management
    ========================================================================== */
 
-let isResuming = false;
-
 const setupLifecycleListeners = () => {
     document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
@@ -265,16 +263,34 @@ const setupLifecycleListeners = () => {
                 console.log('New day detected on resume. Refreshing...');
                 lastActiveDate = today;
                 Store.setLastActiveDate(today);
-                isResuming = true;
-                await initApp(); 
-                isResuming = false;
+                await handleDayChangeResume();
             } else {
-                if (Timer.checkResume) { 
-                     Timer.checkResume(); 
+                if (Timer.checkResume) {
+                     Timer.checkResume();
                 }
             }
         }
     });
+};
+
+/**
+ * 日付変更時の再初期化（initAppの軽量版）
+ * スプラッシュ・オンボーディング・UI.init等は再実行せず、
+ * データ更新に必要な処理のみ行う
+ */
+const handleDayChangeResume = async () => {
+    try {
+        await Service.ensureTodayCheckRecord();
+        const rolledOver = await Service.checkPeriodRollover();
+        if (rolledOver) {
+            UI.showRolloverModal();
+        } else {
+            await refreshUI();
+        }
+        if (Timer && Timer.init) Timer.init();
+    } catch (e) {
+        console.error('Day-change resume error:', e);
+    }
 };
 
 /* ==========================================================================
@@ -344,10 +360,8 @@ const initApp = async () => {
         UI.init();
 
         // 3. Migration & Initial Data Logic
-        let isFirstRun = false;
-        // データ移行処理（あれば実行）
         if (Store.migrateV3ToV4) {
-            isFirstRun = await Store.migrateV3ToV4();
+            await Store.migrateV3ToV4();
         }
 
         // 4. Load & Verify Data
@@ -361,31 +375,17 @@ const initApp = async () => {
         // 期間リセットの確認
         const rolledOver = await Service.checkPeriodRollover();
         if (rolledOver) {
-            // モーダルを表示するだけ
+            // モーダルを表示するだけ（refreshUI と switchTab はモーダル操作後に実行される）
             UI.showRolloverModal();
-            // refreshUI と switchTab は実行しない
-        } else {
-            // ロールオーバーがない場合のみ実行
-            await refreshUI();
-            if (Timer && Timer.init) {
-                Timer.init();
-            }
-            UI.switchTab('home', { silent: true });
         }
 
-        // 5. Initial Render
+        // 初回描画（rollover時もモーダル背景に画面を出すため常に実行）
         await refreshUI();
-
-
-        // 7. Restore Timer State
-        // ★修正: Timer.init() を呼ぶだけでOKです。
-        // （timer.js内の checkResume() が、自動的に計算復帰とモーダル表示を行います）
         if (Timer && Timer.init) {
             Timer.init();
         }
-
         UI.switchTab('home', { silent: true });
-        
+
         UI.enableInteractions();
         console.log('🚀 UI initialized and interactions enabled');
        

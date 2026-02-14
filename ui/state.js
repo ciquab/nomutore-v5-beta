@@ -14,7 +14,7 @@ const _state = {
     chart: null, 
     timerId: null,
     chartRange: '1w',
-    orbViewMode: 'cans', // 'cans' | 'kcal'
+    orbViewMode: 'cans', // 'cans' | 'kcal' | 'alcohol'
     isEditMode: false,
     heatmapOffset: 0,
     logLimit: 50,

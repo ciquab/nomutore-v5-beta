@@ -82,9 +82,21 @@ let isTankListenerAttached = false;
 let hasTeased = false; // ★追加: 初回のアニメーション実行済みフラグ
 let latestBalance = 0;
 
-export function renderBeerTank(currentBalanceKcal) {
+/** @type {number} 現在の期間の純アルコール量(g) */
+let latestPureAlcohol = 0;
+
+/**
+ * @param {number} currentBalanceKcal
+ * @param {import('../types.js').Log[]} [periodLogs] - 期間内ログ（純アルコール計算用）
+ */
+export function renderBeerTank(currentBalanceKcal, periodLogs) {
     // 1. 最新のバランスをキャッシュ
     latestBalance = currentBalanceKcal;
+
+    // 純アルコール量を計算・キャッシュ
+    if (periodLogs) {
+        latestPureAlcohol = Calc.calcTotalPureAlcohol(periodLogs);
+    }
 
     const profile = Store.getProfile();
     const settings = {
@@ -92,11 +104,11 @@ export function renderBeerTank(currentBalanceKcal) {
         baseExercise: Store.getBaseExercise()
     };
 
-    const { 
-        canCount, 
-        displayMinutes, 
+    const {
+        canCount,
+        displayMinutes,
         liquidColor,
-        isHazy 
+        isHazy
     } = Calc.getTankDisplayData(currentBalanceKcal, StateManager.beerMode, settings, profile);
 
     // 要素を取得
@@ -183,9 +195,10 @@ export function renderBeerTank(currentBalanceKcal) {
             });
 
             flipOut.onfinish = () => {
-                // 2. データ切り替え
+                // 2. データ切り替え (3モード: cans → kcal → alcohol → cans)
                 const currentMode = StateManager.orbViewMode || 'cans';
-                StateManager.setOrbViewMode(currentMode === 'cans' ? 'kcal' : 'cans');
+                const nextMode = currentMode === 'cans' ? 'kcal' : currentMode === 'kcal' ? 'alcohol' : 'cans';
+                StateManager.setOrbViewMode(nextMode);
                 
                 renderBeerTank(latestBalance);
 
@@ -270,6 +283,12 @@ export function renderBeerTank(currentBalanceKcal) {
         const currentViewMode = StateManager.orbViewMode || 'cans';
         const unitEl = cansText.parentElement.querySelector('span:last-child');
 
+        // --- 3.5. モードラベル更新 ---
+        const modeLabel = document.getElementById('tank-mode-label');
+        if (modeLabel) {
+            modeLabel.textContent = currentViewMode === 'alcohol' ? 'Alcohol' : 'Balance';
+        }
+
         // --- 4. モード別表示ロジック ---
         if (currentBalanceKcal >= 0) {
             // === Zen Mode (貯金) ===
@@ -285,25 +304,37 @@ export function renderBeerTank(currentBalanceKcal) {
                 cansText.textContent = `+${Math.round(currentBalanceKcal).toLocaleString()}`;
                 if(unitEl) unitEl.textContent = 'kcal';
                 cansText.style.fontSize = Math.round(currentBalanceKcal) > 9999 ? '2.0rem' : '2.5rem';
+            } else if (currentViewMode === 'alcohol') {
+                cansText.textContent = `${Math.round(latestPureAlcohol)}`;
+                if(unitEl) unitEl.textContent = 'g';
+                cansText.style.fontSize = '';
             } else {
                 cansText.textContent = `+${canCount.toFixed(1)}`;
                 if(unitEl) unitEl.textContent = 'cans';
                 cansText.style.fontSize = '';
             }
             
-            cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
-            minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
-            minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
-
-            if (canCount < 0.5) {
-                msgText.textContent = 'Perfect Balance!';
-                msgText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
-            } else if (canCount < 2.0) {
-                msgText.textContent = 'Great Condition!';
-                msgText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400 animate-pulse';
+            if (currentViewMode === 'alcohol') {
+                cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
+                minText.innerHTML = `<span class="text-[10px] font-normal opacity-70">Pure Alcohol (period)</span>`;
+                minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
+                msgText.textContent = latestPureAlcohol === 0 ? 'No alcohol yet' : 'Tap to switch view';
+                msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
             } else {
-                msgText.textContent = 'You are GOD!';
-                msgText.className = 'text-sm font-bold text-purple-600 dark:text-purple-400 animate-bounce';
+                cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
+                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
+                minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
+
+                if (canCount < 0.5) {
+                    msgText.textContent = 'Perfect Balance!';
+                    msgText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
+                } else if (canCount < 2.0) {
+                    msgText.textContent = 'Great Condition!';
+                    msgText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400 animate-pulse';
+                } else {
+                    msgText.textContent = 'You are GOD!';
+                    msgText.className = 'text-sm font-bold text-purple-600 dark:text-purple-400 animate-bounce';
+                }
             }
 
         } else {
@@ -352,26 +383,37 @@ export function renderBeerTank(currentBalanceKcal) {
                 cansText.textContent = Math.round(Math.abs(currentBalanceKcal)).toLocaleString();
                 if(unitEl) unitEl.textContent = 'kcal';
                 cansText.style.fontSize = Math.round(Math.abs(currentBalanceKcal)) > 9999 ? '2.0rem' : '2.5rem';
+            } else if (currentViewMode === 'alcohol') {
+                cansText.textContent = `${Math.round(latestPureAlcohol)}`;
+                if(unitEl) unitEl.textContent = 'g';
+                cansText.style.fontSize = '';
             } else {
                 cansText.textContent = Math.abs(canCount).toFixed(1);
                 if(unitEl) unitEl.textContent = 'cans';
                 cansText.style.fontSize = '';
             }
 
-            cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
-
-            minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
-            minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';
-            
-            if (debtCans > 2.5) {
-                msgText.textContent = 'Too much fun?';
-                msgText.className = 'text-sm font-bold text-orange-500 dark:text-orange-400';
-            } else if (debtCans > 1.0) {
-                msgText.textContent = `Let's walk it off.`;
-                msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
-            } else {
-                msgText.textContent = 'Enjoying beer!';
+            if (currentViewMode === 'alcohol') {
+                cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
+                minText.innerHTML = `<span class="text-[10px] font-normal opacity-70">Pure Alcohol (period)</span>`;
+                minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
+                msgText.textContent = 'Tap to switch view';
                 msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
+            } else {
+                cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
+                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
+                minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';
+
+                if (debtCans > 2.5) {
+                    msgText.textContent = 'Too much fun?';
+                    msgText.className = 'text-sm font-bold text-orange-500 dark:text-orange-400';
+                } else if (debtCans > 1.0) {
+                    msgText.textContent = `Let's walk it off.`;
+                    msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
+                } else {
+                    msgText.textContent = 'Enjoying beer!';
+                    msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
+                }
             }
         }
 

@@ -6,7 +6,7 @@
  * @typedef {import('./types.js').Check} Check
  * @typedef {import('./types.js').Profile} Profile
  */
-import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANTS } from './constants.js'; 
+import { EXERCISE, CALORIES, APP, BEER_COLORS, STYLE_COLOR_MAP, ALCOHOL_CONSTANTS, getCheckItemSpec } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 /**
@@ -569,9 +569,87 @@ export const Calc = {
     },
 
     /**
+     * 体重ベースの週間アルコール上限(g)を算出
+     * Widmark因子(男性0.68/女性0.55)で補正し、60kg男性=20g/日を基準にスケーリング
+     * @param {Profile} profile
+     * @returns {number} 週あたりの純アルコール上限(g)
+     */
+    getWeeklyAlcoholLimit: (profile) => {
+        const weight = Number((profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT);
+        const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
+        const r = gender === 'male' ? 0.68 : 0.55;
+
+        const baseDailyG = 20;  // 厚労省基準: 60kg成人男性で20g/日
+        const baseWeight = 60;
+        const baseR = 0.68;     // 男性基準
+
+        const adjusted = baseDailyG * (weight / baseWeight) * (r / baseR);
+        const daily = Math.max(12, Math.min(30, Math.round(adjusted)));
+        return daily * 7;
+    },
+
+    /**
+     * ビール1杯あたりの純アルコール量(g)を計算
+     * 計算式: ml × (ABV / 100) × 0.789(エタノール比重)
+     * @param {number} ml - 容量
+     * @param {number} abv - アルコール度数(%)
+     * @param {number} [count=1] - 杯数
+     * @returns {number} 純アルコール量(g)
+     */
+    calcPureAlcohol: (ml, abv, count = 1) => {
+        const _ml = ml || 0;
+        const _abv = abv || 0;
+        return Math.round(_ml * (_abv / 100) * ALCOHOL_CONSTANTS.ETHANOL_DENSITY * (count || 1) * 10) / 10;
+    },
+
+    /**
+     * ログ配列から純アルコール合計(g)を計算
+     * @param {Log[]} logs
+     * @returns {number}
+     */
+    calcTotalPureAlcohol: (logs) => {
+        if (!logs || !Array.isArray(logs)) return 0;
+        return logs
+            .filter(l => l.type === 'beer')
+            .reduce((sum, l) => {
+                const ml = l.ml || l.size || 350;
+                const abv = l.abv || 5.0;
+                const count = l.count || 1;
+                return sum + Calc.calcPureAlcohol(ml, abv, count);
+            }, 0);
+    },
+
+    /**
+     * デイリーチェックの体調スコアを算出（達成率ベース）
+     * drinking_only 項目は休肝日に分母から除外する
+     * @param {Check} check - チェックレコード
+     * @returns {number|null} 0.0〜1.0 のスコア、項目なしなら null
+     */
+    calcConditionScore: (check) => {
+        if (!check) return null;
+        const fixedKeys = new Set(['isDryDay', 'weight', 'isSaved', 'date', 'timestamp', 'id']);
+
+        const items = Object.entries(check)
+            .filter(([key, val]) => !fixedKeys.has(key) && typeof val === 'boolean')
+            .map(([key, val]) => {
+                const spec = getCheckItemSpec(key);
+                return { key, val, drinkingOnly: !!(spec && spec.drinking_only) };
+            });
+
+        // 休肝日なら drinking_only 項目を除外
+        const relevant = check.isDryDay
+            ? items.filter(i => !i.drinkingOnly)
+            : items;
+
+        if (relevant.length === 0) return null;
+
+        return relevant.filter(i => i.val).length / relevant.length;
+    },
+
+    /**
      * SNSシェア用のテキスト生成
-     * @param {Log} log 
-     * @param {number} [balanceKcal=0] 
+     * @param {Log} log
+     * @param {number} [balanceKcal=0]
      * @returns {string}
      */
     generateShareText: (log, balanceKcal = 0) => {

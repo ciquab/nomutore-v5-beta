@@ -1,8 +1,10 @@
 // @ts-check
 import { Calc } from '../logic.js';
+import { Store } from '../store.js';
 import { DOM, escapeHtml } from './dom.js';
 import { STYLE_METADATA } from '../constants.js';
 import { openLogDetail } from './logDetail.js';
+import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 let statsChart = null;
 
@@ -40,14 +42,20 @@ const renderRatingStars = (score) => {
  * @param {Array} periodLogs - 現在の期間（今週/今月）のログ
  * @param {Array} allLogs - DBにある全てのメインログ
  */
-export function renderBeerStats(periodLogs, allLogs) {
+/**
+ * ビール統計画面の描画
+ * @param {Array} periodLogs - 現在の期間（今週/今月）のログ
+ * @param {Array} allLogs - DBにある全てのメインログ
+ * @param {Array} [checks] - 全てのチェックデータ（Health Insights用）
+ */
+export function renderBeerStats(periodLogs, allLogs, checks) {
     const container = document.getElementById('view-cellar-stats');
     if (!container) return;
 
     // 1. 集計計算
     const periodStats = Calc.getBeerStats(periodLogs); // 現在の期間用
     const allStats = Calc.getBeerStats(allLogs);       // 全期間用
-    
+
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
 
     // モジュールスコープに保存（ブルワリー詳細表示・Collection用）
@@ -82,25 +90,15 @@ export function renderBeerStats(periodLogs, allLogs) {
                 </div>
             </div>
 
-            <div id="brewery-leaderboard-section" class="glass-panel p-4 rounded-3xl relative">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase flex items-center gap-1.5">
-                        <i class="ph-fill ph-trophy text-amber-500 text-sm"></i> Brewery Leaderboard
-                    </h3>
-                    <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
-                </div>
-                <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
-                <div id="brewery-ranking-list" class="space-y-2"></div>
-            </div>
+            <div id="health-insights-section" class="space-y-4"></div>
         </div>
-
     `;
 
     // チャート描画（全期間のスタイル傾向）
     renderStyleChart(allStats.styleCounts);
 
-    // ブルワリーランキング描画
-    renderBreweryLeaderboard(allStats.breweryStats || []);
+    // Health Insights 描画
+    renderHealthInsights(allLogs, checks || []);
 }
 
 /**
@@ -123,6 +121,17 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
+            <div id="brewery-leaderboard-section" class="glass-panel p-4 rounded-3xl relative mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase flex items-center gap-1.5">
+                        <i class="ph-fill ph-trophy text-amber-500 text-sm"></i> Brewery Leaderboard
+                    </h3>
+                    <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
+                </div>
+                <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
+                <div id="brewery-ranking-list" class="space-y-2"></div>
+            </div>
+
             <div class="sticky top-0 bg-gray-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
@@ -212,6 +221,345 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     activeFilters = { term: '', brewery: '', style: '', rating: 0 };
     applyFilters();
+
+    // ブルワリーランキング描画
+    renderBreweryLeaderboard(allStats.breweryStats || []);
+}
+
+// =============================================
+// Health Insights
+// =============================================
+
+// 週間アルコール上限は Calc.getWeeklyAlcoholLimit(profile) で体重ベースに算出
+
+let insightsChart = null;
+
+/**
+ * Health Insights セクションの描画
+ * @param {Array} allLogs - 全期間ログ
+ * @param {Array} checks - 全期間チェックデータ
+ */
+function renderHealthInsights(allLogs, checks) {
+    const section = document.getElementById('health-insights-section');
+    if (!section) return;
+
+    const profile = Store.getProfile();
+    const limit = Calc.getWeeklyAlcoholLimit(profile);
+
+    // --- 1. Weekly Alcohol Meter ---
+    const now = dayjs();
+    const currentDay = now.day() || 7;
+    const startOfWeek = now.subtract(currentDay - 1, 'day').startOf('day');
+
+    const weeklyLogs = allLogs.filter(l =>
+        l.type === 'beer' && l.timestamp >= startOfWeek.valueOf()
+    );
+    const weeklyAlcohol = Calc.calcTotalPureAlcohol(weeklyLogs);
+    const pct = Math.min(Math.round((weeklyAlcohol / limit) * 100), 100);
+
+    let barColor, meterTextColor;
+    if (pct <= 50) { barColor = 'bg-emerald-500'; meterTextColor = 'text-emerald-600 dark:text-emerald-400'; }
+    else if (pct <= 80) { barColor = 'bg-amber-500'; meterTextColor = 'text-amber-600 dark:text-amber-400'; }
+    else { barColor = 'bg-red-500'; meterTextColor = 'text-red-600 dark:text-red-400'; }
+
+    // --- 2. 飲んだ日 vs 休肝日 の体調比較 ---
+    const drinkingScores = [];
+    const restScores = [];
+
+    checks.forEach(c => {
+        if (!c.isSaved) return;
+        const score = Calc.calcConditionScore(c);
+        if (score === null) return;
+
+        const hasBeer = Calc.hasAlcoholLog(allLogs, c.timestamp);
+        if (c.isDryDay && !hasBeer) {
+            restScores.push(score);
+        } else if (hasBeer) {
+            drinkingScores.push(score);
+        }
+    });
+
+    const avgDrinking = drinkingScores.length > 0
+        ? Math.round((drinkingScores.reduce((a, b) => a + b, 0) / drinkingScores.length) * 100) : null;
+    const avgRest = restScores.length > 0
+        ? Math.round((restScores.reduce((a, b) => a + b, 0) / restScores.length) * 100) : null;
+    const hasComparison = avgDrinking !== null && avgRest !== null;
+
+    // --- 3. コンディション推移データ (直近14日) ---
+    const chartDays = 14;
+    const chartStart = now.subtract(chartDays - 1, 'day').startOf('day');
+    const chartLabels = [];
+    const alcoholData = [];
+    const conditionData = [];
+
+    for (let i = 0; i < chartDays; i++) {
+        const d = chartStart.add(i, 'day');
+        const dateStr = d.format('MM/DD');
+        const dayStart = d.startOf('day').valueOf();
+        const dayEnd = d.endOf('day').valueOf();
+
+        chartLabels.push(dateStr);
+
+        // 純アルコール量
+        const dayBeerLogs = allLogs.filter(l =>
+            l.type === 'beer' && l.timestamp >= dayStart && l.timestamp <= dayEnd
+        );
+        alcoholData.push(Math.round(Calc.calcTotalPureAlcohol(dayBeerLogs)));
+
+        // 体調スコア
+        const dayCheck = checks.find(c =>
+            c.isSaved && c.timestamp >= dayStart && c.timestamp <= dayEnd
+        );
+        const score = dayCheck ? Calc.calcConditionScore(dayCheck) : null;
+        conditionData.push(score !== null ? Math.round(score * 100) : null);
+    }
+
+    // --- 4. テキストインサイト ---
+    const insights = generateInsightText(weeklyAlcohol, limit, avgDrinking, avgRest, drinkingScores.length, restScores.length);
+
+    // --- 5. 体重トレンド (条件付き) ---
+    const weightEntries = checks.filter(c => c.isSaved && c.weight > 0).sort((a, b) => a.timestamp - b.timestamp);
+    const hasWeight = weightEntries.length >= 5;
+
+    // --- HTML 描画 ---
+    section.innerHTML = `
+        <div class="glass-panel p-4 rounded-3xl relative">
+            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-1.5">
+                <i class="ph-duotone ph-heartbeat text-rose-500 text-sm"></i> Health Insights
+            </h3>
+
+            <!-- Weekly Alcohol -->
+            <div class="mb-5">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Weekly Pure Alcohol</span>
+                    <span class="text-xs font-black ${meterTextColor}">${Math.round(weeklyAlcohol)}g / ${limit}g</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                    <div class="${barColor} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
+                </div>
+            </div>
+
+            <!-- 飲んだ日 vs 休肝日 -->
+            ${hasComparison ? `
+            <div class="mb-5">
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Condition: Drinking vs Rest Days</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
+                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">Drinking Days</p>
+                        <p class="text-2xl font-black text-red-500 dark:text-red-400">${avgDrinking}%</p>
+                        <p class="text-[9px] text-gray-400">${drinkingScores.length} days</p>
+                    </div>
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
+                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">Rest Days</p>
+                        <p class="text-2xl font-black text-emerald-500 dark:text-emerald-400">${avgRest}%</p>
+                        <p class="text-[9px] text-gray-400">${restScores.length} days</p>
+                    </div>
+                </div>
+            </div>
+            ` : `
+            <div class="mb-5 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-center">
+                <p class="text-[10px] text-gray-400 font-bold">飲んだ日・休肝日それぞれのデイリーチェックが揃うと<br>体調比較が表示されます</p>
+            </div>
+            `}
+
+            <!-- コンディション推移チャート -->
+            <div class="mb-4">
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Condition Trend (14 days)</p>
+                <div class="h-40 w-full relative">
+                    <canvas id="healthInsightsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- テキストインサイト -->
+            ${insights ? `
+            <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+                <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
+                    <i class="ph-duotone ph-lightbulb text-sm flex-shrink-0 mt-0.5"></i>
+                    <span>${insights}</span>
+                </p>
+            </div>
+            ` : ''}
+
+            <!-- 体重トレンド (条件付き) -->
+            ${hasWeight ? `
+            <div class="mt-4">
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Weight Trend</p>
+                <div class="h-32 w-full relative">
+                    <canvas id="weightTrendChart"></canvas>
+                </div>
+            </div>
+            ` : ''}
+        </div>
+    `;
+
+    // チャート描画
+    renderHealthChart(chartLabels, alcoholData, conditionData);
+
+    // 体重チャート描画
+    if (hasWeight) {
+        renderWeightChart(weightEntries);
+    }
+}
+
+/**
+ * コンディション推移チャートの描画
+ */
+function renderHealthChart(labels, alcoholData, conditionData) {
+    const ctx = document.getElementById('healthInsightsChart');
+    if (!ctx) return;
+    if (insightsChart) insightsChart.destroy();
+
+    insightsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    type: 'line',
+                    label: 'Condition %',
+                    data: conditionData,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#6366f1',
+                    tension: 0.3,
+                    yAxisID: 'y1',
+                    spanGaps: true,
+                    fill: true
+                },
+                {
+                    type: 'bar',
+                    label: 'Alcohol (g)',
+                    data: alcoholData,
+                    backgroundColor: 'rgba(239, 68, 68, 0.3)',
+                    borderColor: 'rgba(239, 68, 68, 0.6)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    yAxisID: 'y'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: { size: 11, weight: 'bold' },
+                    padding: 8,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: (ctx) => {
+                            if (ctx.dataset.yAxisID === 'y1') return `体調: ${ctx.raw ?? '-'}%`;
+                            return `アルコール: ${ctx.raw}g`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { font: { size: 9, weight: 'bold' }, maxRotation: 45 },
+                    grid: { display: false }
+                },
+                y: {
+                    position: 'right',
+                    title: { display: false },
+                    ticks: { font: { size: 9 }, callback: v => `${v}g` },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    min: 0
+                },
+                y1: {
+                    position: 'left',
+                    title: { display: false },
+                    ticks: { font: { size: 9 }, callback: v => `${v}%` },
+                    grid: { display: false },
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 体重トレンドチャートの描画 (条件付き)
+ */
+let weightChart = null;
+
+function renderWeightChart(weightEntries) {
+    const ctx = document.getElementById('weightTrendChart');
+    if (!ctx) return;
+    if (weightChart) weightChart.destroy();
+
+    const labels = weightEntries.map(c => dayjs(c.timestamp).format('MM/DD'));
+    const data = weightEntries.map(c => c.weight);
+
+    weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Weight (kg)',
+                data,
+                borderColor: '#8b5cf6',
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#8b5cf6',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: { size: 11, weight: 'bold' },
+                    padding: 8,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                x: { ticks: { font: { size: 9, weight: 'bold' }, maxRotation: 45 }, grid: { display: false } },
+                y: {
+                    ticks: { font: { size: 9 }, callback: v => `${v}kg` },
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * テキストインサイトの生成
+ */
+function generateInsightText(weeklyAlcohol, limit, avgDrinking, avgRest, drinkDays, restDays) {
+    const parts = [];
+
+    if (weeklyAlcohol > limit) {
+        parts.push(`今週の純アルコール量はガイドラインを ${Math.round(weeklyAlcohol - limit)}g 超えています。来週は休肝日を増やしてみましょう。`);
+    } else if (weeklyAlcohol > limit * 0.8) {
+        parts.push(`今週はガイドラインの ${Math.round((weeklyAlcohol / limit) * 100)}% に到達しています。残りの日はペースダウンがおすすめです。`);
+    }
+
+    if (avgDrinking !== null && avgRest !== null && avgRest > avgDrinking) {
+        const diff = avgRest - avgDrinking;
+        if (diff >= 20) {
+            parts.push(`休肝日の体調は飲んだ日より ${diff}% 高い傾向です。定期的な休肝日が効果的です。`);
+        }
+    }
+
+    if (drinkDays > 0 && restDays === 0) {
+        parts.push('まだ休肝日のデータがありません。週に2日以上の休肝日が推奨されています。');
+    }
+
+    return parts.join(' ');
 }
 
 /**

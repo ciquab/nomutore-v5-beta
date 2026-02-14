@@ -81,7 +81,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             </div>
 
             <div class="glass-panel p-5 rounded-2xl relative">
-                <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 text-center">All-Time Style Breakdown</h3>
+                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500"></i> Style Breakdown</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -123,9 +123,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
         <div id="beer-collection-section">
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase flex items-center gap-1.5">
-                        <i class="ph-fill ph-trophy text-amber-500 text-sm"></i> Brewery Leaderboard
-                    </h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> Brewery Leaderboard</h3>
                     <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
@@ -134,9 +132,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
             <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-3 px-1">
-                    <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
-                        <i class="ph-fill ph-books text-indigo-500"></i> Collection
-                    </h3>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">My Beers</h3>
                     <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length} beers</span>
                 </div>
 
@@ -324,9 +320,7 @@ function renderHealthInsights(allLogs, checks) {
     // --- HTML 描画 ---
     section.innerHTML = `
         <div class="glass-panel p-5 rounded-2xl relative">
-            <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-1.5">
-                <i class="ph-duotone ph-heartbeat text-rose-500 text-sm"></i> Health Insights
-            </h3>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500"></i> Health Insights</h3>
 
             <!-- Weekly Alcohol -->
             <div class="mb-5">

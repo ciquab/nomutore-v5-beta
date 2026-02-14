@@ -54,9 +54,7 @@ export function renderAlcoholMeter(allLogs) {
 
     container.innerHTML = `
         <div class="flex items-center justify-between mb-2">
-            <h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                <i class="ph-duotone ph-heartbeat text-rose-500 text-sm"></i> Weekly Alcohol
-            </h3>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Weekly Alcohol</h3>
             <span class="text-[10px] font-bold ${textColor}">
                 ${Math.round(totalAlcohol)}g / ${limit}g
             </span>

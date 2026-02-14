@@ -85,7 +85,7 @@ export function renderLiverRank(checks, logs) {
             <!-- Header Section -->
             <div>
                 <div class="flex items-center gap-2 mb-1.5 h-4"> <!-- 高さ固定 -->
-                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-60 ${theme.text} ${theme.darkText}">LIVER RANK</span>
+                    <span class="text-xs font-bold uppercase tracking-wider opacity-60 ${theme.text} ${theme.darkText}">LIVER RANK</span>
                 </div>
                 
                 <div class="flex flex-col items-start min-h-[3.5rem] justify-center"> <!-- 高さ確保 -->

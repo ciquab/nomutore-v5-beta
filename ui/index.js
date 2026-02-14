@@ -133,6 +133,7 @@ export const refreshUI = async (forcedTabId = null) => {
 
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
+        UI._statsData.checks = checks;
       
         // データの「指紋（Fingerprint）」を作成して、変更があるかチェック
         // (ログ件数、カロリー収支、チェック数 のどれかが変わっていれば変更とみなす)
@@ -775,8 +776,7 @@ if (checkModal) {
         
         UI.isInitialized = true;
     },
-
-// ui/index.js (333行目付近)
+    
     switchTab: (tabId, options = { silent: false }) => {
         // View Transition 内は DOM 切替のみ（軽量）。データ取得・描画は後で行う。
         DOM.withTransition(() => {
@@ -970,6 +970,20 @@ if (checkModal) {
         showMessage('登録に失敗しました', 'error');
     }
 },
+    /**
+     * チャートの期間切り替え
+     * @param {string} range '1w', '1m', '3m'
+     */
+    handleChartPeriod: (range) => {
+        // 1. 状態を更新
+        StateManager.setChartRange(range);
+        
+        // 2. 保存しておいたデータを使ってグラフだけ再描画
+        const { allLogs, checks } = UI._statsData;
+        if (allLogs && checks) {
+            renderChart(allLogs, checks);
+        }
+    },
 
     updateBulkCount: updateBulkCount,
     
@@ -1140,6 +1154,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

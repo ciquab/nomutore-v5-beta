@@ -3,7 +3,7 @@ import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
-import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification, showAppShell, toggleFabLike } from './dom.js';
+import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification, showAppShell } from './dom.js';
 import { StateManager } from './state.js';
 import { EventBus, Events } from '../eventBus.js';
 
@@ -1008,19 +1008,19 @@ if (checkModal) {
         // 2. モーダルの表示切り替え実行
         toggleModal(id, shouldShow);
 
-        // 3. ★追加: チェックライブラリの場合、Saveボタン(saveEl)と排他制御する
+        // 3. ★修正: 変数 saveEl ではなく、ここで直接要素を取得して確実に操作する
         if (id === 'check-library-modal') {
-            // 設定タブが開いているか確認
             const isSettingsTab = document.getElementById('tab-settings')?.classList.contains('active');
             
-            if (isSettingsTab && saveEl) {
+            // ★ここを修正: saveEl ではなく getElementById を使う
+            const saveBtn = document.getElementById('settings-save-container');
+            
+            if (isSettingsTab && saveBtn) {
                 // モーダルが開く(shouldShow=true)なら、ボタンは隠す(!shouldShow=false)
-                // モーダルが閉じる(shouldShow=false)なら、ボタンは出す(!shouldShow=true)
-                toggleFabLike(saveEl, !shouldShow);
+                toggleFabLike(saveBtn, !shouldShow);
             }
         }
     },
-
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
@@ -1131,3 +1131,4 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+

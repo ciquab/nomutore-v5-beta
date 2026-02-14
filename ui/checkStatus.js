@@ -92,7 +92,7 @@ export function renderCheckStatus(checks, logs) {
             <!-- Header Section -->
             <div>
                 <div class="flex items-center gap-2 mb-1.5 h-4"> <!-- 高さ固定 -->
-                    <span class="text-xs font-bold uppercase tracking-wider opacity-60 ${theme.text} ${theme.darkText}">${label}</span>
+                    <h3 class="text-sm font-bold flex items-center gap-1.5 ${theme.text} ${theme.darkText}"><i class="ph-fill ph-clipboard-text"></i> ${label}</h3>
                 </div>
                 
                 <div class="flex flex-col items-start min-h-[3.5rem] justify-center"> <!-- 高さ確保 -->

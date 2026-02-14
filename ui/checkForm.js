@@ -224,6 +224,7 @@ export const openCheckModal = async (dateStr = null) => {
                 if (anyRecord[key] === true && container) {
                     const spec = getCheckItemSpec(key);
                     const iconHtml = DOM.renderIcon(spec?.icon || 'ph-bold ph-clock-counter-clockwise', 'text-lg text-amber-500');
+                    const labelText = spec?.label || key;
 
                     const div = document.createElement('div');
                     div.className = "legacy-item-wrapper";
@@ -232,7 +233,7 @@ export const openCheckModal = async (dateStr = null) => {
                             <input type="checkbox" checked disabled class="rounded text-amber-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300">
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1">
-                                    ${iconHtml} ${spec.label}
+                                    ${iconHtml} ${labelText}
                                     <span class="text-[9px] bg-amber-200 dark:bg-amber-800 px-1 rounded text-amber-900 dark:text-amber-100 ml-1">Legacy</span>
                                 </span>
                                 <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70">現在はリストにありません</span>

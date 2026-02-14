@@ -124,6 +124,26 @@ let _lastHomeRenderKey = '';
 let _lastDataFingerprint = '';
 let _lastCellarRenderKey = ''; 
 
+// Cellarサブビュー切替の共通ヘルパー（DOMの表示切替のみ）
+const _applyCellarSubView = (mode) => {
+    ['logs', 'stats', 'collection', 'archives'].forEach(m => {
+        const el = document.getElementById(`view-cellar-${m}`);
+        const btn = document.getElementById(`btn-cellar-${m}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+            if (m === mode) {
+                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+            }
+        }
+    });
+    const activeEl = document.getElementById(`view-cellar-${mode}`);
+    if (activeEl) activeEl.classList.remove('hidden');
+};
+
 // ★引数 (forcedTabId) を追加
 export const refreshUI = async (forcedTabId = null) => {
     try {
@@ -180,19 +200,21 @@ export const refreshUI = async (forcedTabId = null) => {
         }
         else if (activeTabId === 'cellar') {
             // ★修正: データまたは表示モードが変わった時だけ再描画する
-            const cellarKey = `${currentFingerprint}:${StateManager.cellarViewMode}`;
-            
+            const cellarMode = StateManager.cellarViewMode || 'logs';
+            const cellarKey = `${currentFingerprint}:${cellarMode}`;
+
             if (cellarKey !== _lastCellarRenderKey) {
                 _lastCellarRenderKey = cellarKey;
 
-                await updateLogListView(false, allLogs);
-            if (StateManager.cellarViewMode === 'stats') {
-                renderBeerStats(logs, allLogs);
-            } else if (StateManager.cellarViewMode === 'collection') {
-                renderBeerCollection(logs, allLogs);
-            } else if (StateManager.cellarViewMode === 'archives') {
-                renderArchives();
-            }
+                if (cellarMode === 'logs') {
+                    await updateLogListView(false, allLogs);
+                } else if (cellarMode === 'stats') {
+                    renderBeerStats(logs, allLogs);
+                } else if (cellarMode === 'collection') {
+                    renderBeerCollection(logs, allLogs);
+                } else if (cellarMode === 'archives') {
+                    renderArchives();
+                }
             }
         }
         else if (activeTabId === 'settings') {
@@ -433,8 +455,8 @@ document.addEventListener('bulk-delete', async () => {
             if (Timer && Timer.init) {
                 Timer.init();
             }
-    
-            await refreshUI();
+
+            _lastHomeRenderKey = ''; // アーカイブ後のデータ変更を確実に反映
             UI.switchTab('home', { silent: true });
             showConfetti();
         });
@@ -712,10 +734,9 @@ if (checkModal) {
 
         // Service層などから 'refresh-ui' イベントが飛んできた時に、画面全体を再描画する
         document.addEventListener('refresh-ui', () => {
-            // データベースの更新完了と描画タイミングの衝突を防ぐため、ごくわずかに遅らせる
+            _lastHomeRenderKey = ''; // EventBus版と同様にキャッシュを破棄
             setTimeout(() => {
-                // 現在ホームタブが開いている場合のみ、または全タブ更新
-                refreshUI(); 
+                refreshUI();
             }, 50);
         });
 
@@ -847,22 +868,7 @@ if (checkModal) {
             if (tabId === 'cellar') {
                 const mode = StateManager.cellarViewMode || 'logs';
                 StateManager.setCellarViewMode(mode);
-                ['logs', 'stats', 'collection', 'archives'].forEach(m => {
-                    const el = document.getElementById(`view-cellar-${m}`);
-                    const btn = document.getElementById(`btn-cellar-${m}`);
-                    if (el) el.classList.add('hidden');
-                    if (btn) {
-                        if (m === mode) {
-                            btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
-                            btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
-                        } else {
-                            btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
-                            btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
-                        }
-                    }
-                });
-                const activeEl = document.getElementById(`view-cellar-${mode}`);
-                if (activeEl) activeEl.classList.remove('hidden');
+                _applyCellarSubView(mode);
             }
         });
 
@@ -875,27 +881,9 @@ if (checkModal) {
             Feedback.uiSwitch();
         }
         StateManager.setCellarViewMode(mode);
-        ['logs', 'stats', 'collection', 'archives'].forEach(m => {
-            const el = document.getElementById(`view-cellar-${m}`);
-            const btn = document.getElementById(`btn-cellar-${m}`);
-            if (el) el.classList.add('hidden');
-            if (btn) {
-                if (m === mode) {
-                    btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
-                    btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
-                } else {
-                    btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
-                    btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
-                }
-            }
-        });
-
-        const activeEl = document.getElementById(`view-cellar-${mode}`);
-        if (activeEl) {
-            activeEl.classList.remove('hidden');
-            // DOM切替を先に描画してからデータ取得・描画を実行
-            requestAnimationFrame(() => refreshUI());
-        }
+        _applyCellarSubView(mode);
+        // DOM切替を先に描画してからデータ取得・描画を実行
+        requestAnimationFrame(() => refreshUI());
     },
 
     toggleTheme: () => {

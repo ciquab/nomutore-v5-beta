@@ -437,25 +437,32 @@ recalcImpactedHistory: async (changedTimestamp) => {
         }
 
         const now = dayjs();
-        let nextStart = null;
 
         // --- A. Weekly / Monthly (自動更新) ---
         if (mode === 'weekly') {
             const currentWeekStart = getStartOfWeek(now);
             const startDate = dayjs(storedStart);
             if (!currentWeekStart.isSame(startDate, 'day')) {
-                // 週が変わっている -> 自動アーカイブ実行
-                nextStart = currentWeekStart.valueOf();
-                await Service.archiveAndReset(storedStart, nextStart, mode);
+                // 複数週が経過している可能性があるため、週ごとにアーカイブを作成
+                let weekStart = dayjs(storedStart);
+                while (weekStart.isBefore(currentWeekStart, 'day')) {
+                    const nextWeekStart = weekStart.add(7, 'day');
+                    await Service.archiveAndReset(weekStart.valueOf(), nextWeekStart.valueOf(), mode);
+                    weekStart = nextWeekStart;
+                }
                 return true; // -> UI側で「Weekly Report」モーダルを表示
             }
         } else if (mode === 'monthly') {
             const currentMonthStart = now.startOf('month');
             const startDate = dayjs(storedStart);
             if (!currentMonthStart.isSame(startDate, 'day')) {
-                // 月が変わっている -> 自動アーカイブ実行
-                nextStart = currentMonthStart.valueOf();
-                await Service.archiveAndReset(storedStart, nextStart, mode);
+                // 複数月が経過している可能性があるため、月ごとにアーカイブを作成
+                let monthStart = dayjs(storedStart);
+                while (monthStart.isBefore(currentMonthStart, 'day')) {
+                    const nextMonthStart = monthStart.add(1, 'month').startOf('month');
+                    await Service.archiveAndReset(monthStart.valueOf(), nextMonthStart.valueOf(), mode);
+                    monthStart = nextMonthStart;
+                }
                 return true; // -> UI側で「Monthly Report」モーダルを表示
             }
         } 
@@ -478,29 +485,27 @@ recalcImpactedHistory: async (changedTimestamp) => {
     // checkPeriodRollover から切り出しました
     archiveAndReset: async (currentStart, nextStart, mode) => {
         return db.transaction('rw', db.logs, db.period_archives, async () => {
-            // 次の期間開始日より前のログを全て取得
-            const logsToArchive = await LogService.getBefore(nextStart);
-            
-            if (logsToArchive.length > 0) {
-                // 既に同じ開始日のアーカイブが存在しないかチェック
-                const existingArchive = await db.period_archives
-                    .where('startDate').equals(currentStart)
-                    .first();
+            // 該当期間内のログのみ取得（ログはDB上に残り続ける設計のため範囲指定が必要）
+            const logsToArchive = await LogService.getByTimestampRangeAsc(currentStart, nextStart - 1);
 
-                if (!existingArchive) {
-                    const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
-                    
-                    await db.period_archives.add({
-                        startDate: currentStart,
-                        endDate: nextStart - 1,
-                        mode: mode,
-                        totalBalance: totalBalance,
-                        logs: logsToArchive, 
-                        createdAt: Date.now()
-                    });
-                } else {
-                    console.warn('[Service] Archive for this period already exists. Skipping creation.');
-                }
+            // 既に同じ開始日のアーカイブが存在しないかチェック
+            const existingArchive = await db.period_archives
+                .where('startDate').equals(currentStart)
+                .first();
+
+            if (!existingArchive) {
+                const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
+
+                await db.period_archives.add({
+                    startDate: currentStart,
+                    endDate: nextStart - 1,
+                    mode: mode,
+                    totalBalance: totalBalance,
+                    logs: logsToArchive,
+                    createdAt: Date.now()
+                });
+            } else {
+                console.warn('[Service] Archive for this period already exists. Skipping creation.');
             }
 
             // 期間開始日を更新

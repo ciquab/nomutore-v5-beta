@@ -335,28 +335,30 @@ export const handleSaveSettings = async () => {
     const originalText = btn?.textContent ?? '';
 
     // 1. UIの状態制御 (楽観的UIアップデート準備)
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+    }
 
     try {
         // 2. 入力データの収集 (DOMアクセスはここで行う)
         const periodMode = document.getElementById('setting-period-mode')?.value || 'weekly';
-        
+
         // プロフィールデータ
         const profileData = {
-            weight: document.getElementById('weight-input').value,
-            height: document.getElementById('height-input').value,
-            age: document.getElementById('age-input').value,
-            gender: document.getElementById('gender-input').value,
+            weight: document.getElementById('weight-input')?.value ?? '',
+            height: document.getElementById('height-input')?.value ?? '',
+            age: document.getElementById('age-input')?.value ?? '',
+            gender: document.getElementById('gender-input')?.value ?? '',
         };
 
         // アプリ設定データ
         const appSettings = {
-            mode1: document.getElementById('setting-mode-1').value,
-            mode2: document.getElementById('setting-mode-2').value,
-            baseExercise: document.getElementById('setting-base-exercise').value,
-            defaultRecordExercise: document.getElementById('setting-default-record-exercise').value,
-            theme: document.getElementById('theme-input').value,
+            mode1: document.getElementById('setting-mode-1')?.value ?? '',
+            mode2: document.getElementById('setting-mode-2')?.value ?? '',
+            baseExercise: document.getElementById('setting-base-exercise')?.value ?? '',
+            defaultRecordExercise: document.getElementById('setting-default-record-exercise')?.value ?? '',
+            theme: document.getElementById('theme-input')?.value ?? '',
         };
 
         // カスタム期間用データ (存在する場合のみ)
@@ -401,8 +403,10 @@ export const handleSaveSettings = async () => {
         showMessage(e.message || '設定保存中にエラーが発生しました', 'error');
     } finally {
         // UI状態の復帰
-        btn.disabled = false;
-        btn.textContent = originalText;
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 };
 

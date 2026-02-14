@@ -3,7 +3,7 @@ import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { Service } from '../service.js';
 import { APP, CHECK_SCHEMA } from '../constants.js';
-import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification, showAppShell } from './dom.js';
+import { DOM, AudioEngine, toggleModal, showConfetti, showToastAnimation, showMessage, applyTheme, toggleDryDay, initTheme, Feedback, showUpdateNotification, showAppShell, toggleFabLike } from './dom.js';
 import { StateManager } from './state.js';
 import { EventBus, Events } from '../eventBus.js';
 
@@ -1131,20 +1131,3 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1020,30 +1020,16 @@ if (checkModal) {
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
     toggleModal: (id, show) => {
-        // 1. 開くのか閉じるのかを確定させる
-        let shouldShow = show;
-        if (shouldShow === undefined) {
+        if (show === undefined) {
+            // showが省略された場合はトグル
             const el = document.getElementById(id);
             const isVisible = el && !el.classList.contains('hidden');
-            shouldShow = !isVisible;
-        }
-
-        // 2. モーダルの表示切り替え実行
-        toggleModal(id, shouldShow);
-
-        // 3. ★修正: 変数 saveEl ではなく、ここで直接要素を取得して確実に操作する
-        if (id === 'check-library-modal') {
-            const isSettingsTab = document.getElementById('tab-settings')?.classList.contains('active');
-            
-            // ★ここを修正: saveEl ではなく getElementById を使う
-            const saveBtn = document.getElementById('settings-save-container');
-            
-            if (isSettingsTab && saveBtn) {
-                // モーダルが開く(shouldShow=true)なら、ボタンは隠す(!shouldShow=false)
-                toggleFabLike(saveBtn, !shouldShow);
-            }
+            toggleModal(id, !isVisible);
+        } else {
+            toggleModal(id, show);
         }
     },
+
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
@@ -1154,5 +1140,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 

@@ -122,6 +122,7 @@ const setupEventBusListeners = () => {
 let _lastHomeRenderKey = '';
 // ★追加: データ変更検知用のキャッシュ（ショートカット再生成の抑制用）
 let _lastDataFingerprint = '';
+let _lastCellarRenderKey = ''; 
 
 // ★引数 (forcedTabId) を追加
 export const refreshUI = async (forcedTabId = null) => {
@@ -1154,6 +1155,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

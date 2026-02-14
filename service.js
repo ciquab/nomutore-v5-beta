@@ -487,27 +487,25 @@ recalcImpactedHistory: async (changedTimestamp) => {
         return db.transaction('rw', db.logs, db.period_archives, async () => {
             // 該当期間内のログのみ取得（ログはDB上に残り続ける設計のため範囲指定が必要）
             const logsToArchive = await LogService.getByTimestampRangeAsc(currentStart, nextStart - 1);
-            
-            if (logsToArchive.length > 0) {
-                // 既に同じ開始日のアーカイブが存在しないかチェック
-                const existingArchive = await db.period_archives
-                    .where('startDate').equals(currentStart)
-                    .first();
 
-                if (!existingArchive) {
-                    const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
-                    
-                    await db.period_archives.add({
-                        startDate: currentStart,
-                        endDate: nextStart - 1,
-                        mode: mode,
-                        totalBalance: totalBalance,
-                        logs: logsToArchive, 
-                        createdAt: Date.now()
-                    });
-                } else {
-                    console.warn('[Service] Archive for this period already exists. Skipping creation.');
-                }
+            // 既に同じ開始日のアーカイブが存在しないかチェック
+            const existingArchive = await db.period_archives
+                .where('startDate').equals(currentStart)
+                .first();
+
+            if (!existingArchive) {
+                const totalBalance = logsToArchive.reduce((sum, l) => sum + (l.kcal || 0), 0);
+
+                await db.period_archives.add({
+                    startDate: currentStart,
+                    endDate: nextStart - 1,
+                    mode: mode,
+                    totalBalance: totalBalance,
+                    logs: logsToArchive,
+                    createdAt: Date.now()
+                });
+            } else {
+                console.warn('[Service] Archive for this period already exists. Skipping creation.');
             }
 
             // 期間開始日を更新

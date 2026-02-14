@@ -750,6 +750,29 @@ if (checkModal) {
         // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
         setupGlobalListeners((tabId) => UI.switchTab(tabId));
 
+                // --- ★追加: チェックライブラリの開閉を監視してSaveボタンを制御 ---
+        const libModal = document.getElementById('check-library-modal');
+        if (libModal) {
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class') {
+                        const isHidden = libModal.classList.contains('hidden');
+                        const saveBtn = document.getElementById('settings-save-container');
+                        
+                        // 設定タブが開いている時だけ制御
+                        const isSettingsTab = document.getElementById('tab-settings')?.classList.contains('active');
+
+                        if (saveBtn && isSettingsTab) {
+                            // モーダルが出ている(hiddenがない)ならボタンを隠す
+                            // モーダルが隠れた(hiddenがある)ならボタンを出す
+                            toggleFabLike(saveBtn, isHidden);
+                        }
+                    }
+                });
+            });
+            observer.observe(libModal, { attributes: true });
+        }
+        
         UI.isInitialized = true;
     },
 
@@ -1131,4 +1154,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 

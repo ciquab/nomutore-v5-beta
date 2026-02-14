@@ -174,10 +174,18 @@ export const refreshUI = async (forcedTabId = null) => {
         }
 
         else if (activeTabId === 'record') {
-            await renderRecordTabShortcuts();
+            // ★修正: データ変更時に（上のフィンガープリント判定ブロックで）
+            // 既に作成されているため、ここでは何もしなくてOKです。
+            // これでタブ切り替えが一瞬になります。
         }
         else if (activeTabId === 'cellar') {
-            await updateLogListView(false, allLogs);
+            // ★修正: データまたは表示モードが変わった時だけ再描画する
+            const cellarKey = `${currentFingerprint}:${StateManager.cellarViewMode}`;
+            
+            if (cellarKey !== _lastCellarRenderKey) {
+                _lastCellarRenderKey = cellarKey;
+
+                await updateLogListView(false, allLogs);
             if (StateManager.cellarViewMode === 'stats') {
                 renderBeerStats(logs, allLogs);
             } else if (StateManager.cellarViewMode === 'collection') {
@@ -1155,6 +1163,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

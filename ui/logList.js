@@ -140,7 +140,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         }
 
         const li = document.createElement('li');
-        li.className = "log-item relative group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
+        li.className = "log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         li.dataset.logId = log.id;
         
@@ -157,7 +157,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : escapeHtml(log.name);
 
         let subText = log.type === 'exercise'
-            ? `<span class="text-gray-600 dark:text-gray-300">${log.minutes} min</span> · +${Math.round(log.kcal)} kcal`
+            ? `<span class="text-gray-500 dark:text-gray-400">${log.minutes} min</span> · +${Math.round(log.kcal)} kcal`
             : `${log.count || 1} cans <span class="opacity-60">(${(log.size || 350) * (log.count || 1)}ml)</span>${log.style ? ` · ${log.style}` : ''}`;
 
         let rightContent = log.type === 'exercise'
@@ -178,11 +178,11 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             </div>
             <div class="flex-1 min-w-0" data-log-id="${log.id}">
                 <div class="flex justify-between items-start">
-                    <div class="text-base font-bold text-gray-900 dark:text-gray-50 leading-snug">${mainText}</div>
+                    <div class="text-base font-bold text-base-900 dark:text-white leading-snug">${mainText}</div>
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-medium opacity-90">${subText}</div>
-                ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70"></i>${escapeHtml(log.memo)}</div>` : ''}
+                ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-base-50 dark:bg-base-800/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70"></i>${escapeHtml(log.memo)}</div>` : ''}
             </div>
         `;
         

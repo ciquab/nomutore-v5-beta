@@ -80,12 +80,12 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
             </div>
 
-            <div class="glass-panel p-4 rounded-3xl relative">
+            <div class="glass-panel p-5 rounded-2xl relative">
                 <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 text-center">All-Time Style Breakdown</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <i class="ph-duotone ph-beer-bottle text-5xl text-gray-900 dark:text-white opacity-10"></i>
+                        <i class="ph-duotone ph-beer-bottle text-5xl text-base-900 dark:text-white opacity-10"></i>
                     </div>
                 </div>
             </div>
@@ -121,7 +121,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
-            <div id="brewery-leaderboard-section" class="glass-panel p-4 rounded-3xl relative mb-4">
+            <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xs font-bold text-gray-400 uppercase flex items-center gap-1.5">
                         <i class="ph-fill ph-trophy text-amber-500 text-sm"></i> Brewery Leaderboard
@@ -132,7 +132,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                 <div id="brewery-ranking-list" class="space-y-2"></div>
             </div>
 
-            <div class="sticky top-0 bg-gray-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
+            <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
                         <i class="ph-fill ph-books text-indigo-500"></i> Collection
@@ -142,13 +142,13 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
                 <div class="space-y-2">
                     <div class="relative">
-                        <input type="text" id="beer-search-input" placeholder="ブルワリー名や銘柄名で検索" class="w-full bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
+                        <input type="text" id="beer-search-input" placeholder="ブルワリー名や銘柄名で検索" class="w-full bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
                         <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
                         <div class="relative">
-                            <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="">ブルワリー名</option>
                                 ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
                             </select>
@@ -156,7 +156,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                         </div>
 
                         <div class="relative">
-                            <select id="filter-style" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-style" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="">ビアスタイル</option>
                                 ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
                             </select>
@@ -164,7 +164,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                         </div>
 
                         <div class="relative">
-                            <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-black border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="0">評価</option>
                                 <option value="5">★ 5 Only</option>
                                 <option value="4">★ 4 & up</option>
@@ -323,7 +323,7 @@ function renderHealthInsights(allLogs, checks) {
 
     // --- HTML 描画 ---
     section.innerHTML = `
-        <div class="glass-panel p-4 rounded-3xl relative">
+        <div class="glass-panel p-5 rounded-2xl relative">
             <h3 class="text-xs font-bold text-gray-400 uppercase mb-4 flex items-center gap-1.5">
                 <i class="ph-duotone ph-heartbeat text-rose-500 text-sm"></i> Health Insights
             </h3>
@@ -648,7 +648,7 @@ function renderBeerList(beers) {
         const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
-            <div class="flex items-center bg-white dark:bg-base-800 p-3 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
+            <div class="flex items-center bg-white dark:bg-base-900 p-4 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
                 <div class="flex-shrink-0 w-8 text-center mr-1">${rankBadge}</div>
 
                 <div class="flex-grow min-w-0">
@@ -780,7 +780,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const subInfo = buildBrewerySubInfo(b, axis.key);
 
         return `
-            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                 <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                 <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -833,7 +833,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     const rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
                     const subInfo = buildBrewerySubInfo(b, axis.key);
                     return `
-                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                             <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                             <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -891,12 +891,12 @@ function showBreweryDetail(breweryName) {
         
         overlay.innerHTML = `
             <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300" id="brewery-detail-backdrop"></div>
-            <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 translate-y-full" id="brewery-detail-sheet">
+            <div class="absolute bottom-0 left-0 right-0 max-h-[80vh] bg-white dark:bg-base-900 rounded-t-2xl shadow-2xl overflow-hidden flex flex-col transform transition-transform duration-300 translate-y-full" id="brewery-detail-sheet">
                 <div class="sticky top-0 bg-white dark:bg-base-900 z-10 px-5 pt-4 pb-3 border-b border-gray-100 dark:border-gray-800">
                     <div class="w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-3"></div>
                     <div class="flex items-center justify-between">
                         <h3 id="brewery-detail-title" class="text-lg font-black text-base-900 dark:text-white truncate"></h3>
-                        <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500">
+                        <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-base-800 text-gray-500">
                             <i class="ph-bold ph-x text-sm"></i>
                         </button>
                     </div>
@@ -963,7 +963,7 @@ function showBreweryDetail(breweryName) {
             if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700"></i>`;
 
             return `
-                <div class="flex items-center bg-gray-50 dark:bg-base-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center bg-white dark:bg-base-900 p-3 rounded-2xl border border-gray-100 dark:border-gray-700">
                     <div class="flex-shrink-0 w-7 text-center mr-2">${rankBadge}</div>
                     <div class="flex-grow min-w-0">
                         <h4 class="text-sm font-black text-base-900 dark:text-white truncate leading-tight">${escapeHtml(beer.name)}</h4>

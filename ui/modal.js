@@ -120,7 +120,7 @@ const renderActionMenuBeerPresets = async () => {
                         <div class="flex items-center gap-1 mb-0.5">
                             <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
-                        <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${mainLabel}</div>
+                        <div class="text-xs font-bold text-base-900 dark:text-white truncate">${mainLabel}</div>
                         <div class="text-[9px] text-gray-500 truncate">
                             ${subLabel} <span class="opacity-50 mx-1">/</span> ${beer.size || '350'}ml <span class="opacity-50 mx-1">/</span> ${kcal}kcal
                         </div>
@@ -190,7 +190,7 @@ const renderActionMenuExerciseShortcuts = async () => {
                     <div class="flex items-center gap-1 mb-0.5">
                         <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                     </div>
-                    <div class="text-xs font-bold text-gray-900 dark:text-white truncate">${safeName}</div>
+                    <div class="text-xs font-bold text-base-900 dark:text-white truncate">${safeName}</div>
                     <div class="text-[9px] text-gray-500 truncate">
                         ${log.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(log.kcal)} kcal
                     </div>

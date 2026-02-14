@@ -997,15 +997,30 @@ if (checkModal) {
     share: Share.generateAndShare,
     get selectedDate() { return StateManager.selectedDate; },
     toggleModal: (id, show) => {
-        if (show === undefined) {
-            // showが省略された場合はトグル（現在の可視状態を反転）
+        // 1. 開くのか閉じるのかを確定させる
+        let shouldShow = show;
+        if (shouldShow === undefined) {
             const el = document.getElementById(id);
             const isVisible = el && !el.classList.contains('hidden');
-            toggleModal(id, !isVisible);
-        } else {
-            toggleModal(id, show);
+            shouldShow = !isVisible;
+        }
+
+        // 2. モーダルの表示切り替え実行
+        toggleModal(id, shouldShow);
+
+        // 3. ★追加: チェックライブラリの場合、Saveボタン(saveEl)と排他制御する
+        if (id === 'check-library-modal') {
+            // 設定タブが開いているか確認
+            const isSettingsTab = document.getElementById('tab-settings')?.classList.contains('active');
+            
+            if (isSettingsTab && saveEl) {
+                // モーダルが開く(shouldShow=true)なら、ボタンは隠す(!shouldShow=false)
+                // モーダルが閉じる(shouldShow=false)なら、ボタンは出す(!shouldShow=true)
+                toggleFabLike(saveEl, !shouldShow);
+            }
         }
     },
+
     deleteSelectedLogs: deleteSelectedLogs,
     showRolloverModal: showRolloverModal,
     showUpdateNotification: showUpdateNotification,
@@ -1116,6 +1131,7 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
+
 
 
 

@@ -113,25 +113,22 @@ export function renderCheckStatus(checks, logs) {
 
 function analyzeCondition(check, logs) {
     const drank = Calc.hasAlcoholLog(logs, check.timestamp);
-    let score = 0;
-    if (check.waistEase) score++; 
-    if (check.footLightness) score++; 
-    if (check.fiberOk) score++; 
-    if (check.waterOk) score++;
+
+    // 達成率ベースのスコア (drinking_only 項目を休肝日で除外)
+    const ratio = Calc.calcConditionScore(check);
+    // ratio を旧スコア互換の 0-4 スケールに変換
+    const score = ratio !== null ? Math.round(ratio * 4) : 0;
 
     if (!drank && check.isDryDay) {
-        if (check.waistEase && check.footLightness) {
-            return { short: "Perfect", desc: "休肝日・絶好調", score: 4 }; // ✨削除
+        if (ratio !== null && ratio >= 0.8) {
+            return { short: "Perfect", desc: "休肝日・絶好調", score: 4 };
         }
-        return { short: "Rest Day", desc: "休肝日", score: 3 }; // 🍵削除
+        return { short: "Rest Day", desc: "休肝日", score: 3 };
     }
 
-    // 2. それ以外（飲酒日 or 休肝設定なし）の判定
-    // 元のロジック通り、シンプルにスコアだけで判定します
-    if (score >= 3) return { short: "Good", desc: "対策バッチリ", score: 3 }; // 👍削除
-    if (score >= 1) return { short: "Average", desc: "まずまず", score: 1 }; // 🙂削除
-    
-    // スコア0の場合
-    return { short: "Warning", desc: "不調気味", score: 0 }; // 😰削除
+    // 飲酒日 or 休肝設定なしの判定
+    if (score >= 3) return { short: "Good", desc: "対策バッチリ", score: 3 };
+    if (score >= 1) return { short: "Average", desc: "まずまず", score: 1 };
 
+    return { short: "Warning", desc: "不調気味", score: 0 };
 }

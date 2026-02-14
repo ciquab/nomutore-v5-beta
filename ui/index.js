@@ -10,6 +10,7 @@ import { EventBus, Events } from '../eventBus.js';
 import { renderBeerTank } from './beerTank.js';
 import { renderLiverRank } from './liverRank.js';
 import { renderCheckStatus } from './checkStatus.js';
+import { renderAlcoholMeter } from './alcoholMeter.js';
 import { renderWeeklyAndHeatUp, renderHeatmap } from './weekly.js';
 import { renderChart } from './chart.js';
 import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs } from './logList.js';
@@ -178,9 +179,10 @@ export const refreshUI = async (forcedTabId = null) => {
 
         if (activeTabId === 'home') {
             // 軽量・即時反映系
-            renderBeerTank(balance); 
+            renderBeerTank(balance, logs);
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
+            renderAlcoholMeter(allLogs);
 
             // 重量・キャッシュ系
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
@@ -209,7 +211,7 @@ export const refreshUI = async (forcedTabId = null) => {
                 if (cellarMode === 'logs') {
                     await updateLogListView(false, allLogs);
                 } else if (cellarMode === 'stats') {
-                    renderBeerStats(logs, allLogs);
+                    renderBeerStats(logs, allLogs, checks);
                 } else if (cellarMode === 'collection') {
                     renderBeerCollection(logs, allLogs);
                 } else if (cellarMode === 'archives') {

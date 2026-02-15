@@ -264,7 +264,7 @@ export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': {
  */
 export const FLAVOR_AXES = [
     { key: 'bitterness', label: '苦味',         shortLabel: '苦',   icon: 'ph-duotone ph-fire' },
-    { key: 'sweetness',  label: '甘味⇔ドライ', shortLabel: '甘/D', icon: 'ph-duotone ph-drop' },
+    { key: 'sweetness',  label: '甘味',         shortLabel: '甘',   icon: 'ph-duotone ph-drop' },
     { key: 'fruity',     label: 'フルーティー', shortLabel: '果実', icon: 'ph-duotone ph-orange-slice' },
     { key: 'body',       label: 'ボディ',       shortLabel: 'ボディ', icon: 'ph-duotone ph-circle-half' },
 ];

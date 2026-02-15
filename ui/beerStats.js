@@ -58,9 +58,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
 
-    // モジュールスコープに保存（ブルワリー詳細表示・Collection用）
-    _allBeers = allBeers;
-    _breweryStats = allStats.breweryStats || [];
+    // モジュールスコープに保存（ブルワリー詳細表示・Collection用）— 防御コピー
+    _allBeers = [...allBeers];
+    _breweryStats = [...(allStats.breweryStats || [])];
 
     // 2. HTML構造生成
     container.innerHTML = `
@@ -110,11 +110,11 @@ export function renderBeerCollection(periodLogs, allLogs) {
     const container = document.getElementById('view-cellar-collection');
     if (!container) return;
 
-    _allLogs = allLogs;
+    _allLogs = [...allLogs];
     const allStats = Calc.getBeerStats(allLogs);
     const allBeers = allStats.beerStats || [];
-    _allBeers = allBeers;
-    _breweryStats = allStats.breweryStats || [];
+    _allBeers = [...allBeers];
+    _breweryStats = [...(allStats.breweryStats || [])];
 
     const uniqueBreweries = [...new Set(allBeers.map(b => b.brewery).filter(b => b && b !== 'Unknown'))].sort();
     const uniqueStyles = [...new Set(allBeers.map(b => b.style).filter(s => s && s !== 'Unknown'))].sort();

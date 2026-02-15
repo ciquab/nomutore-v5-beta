@@ -71,7 +71,8 @@ export const Store = {
     },
     
     getCachedData: () => {
-        return Store._cachedData;
+        const d = Store._cachedData;
+        return { logs: [...d.logs], checks: [...d.checks], periodLogs: [...d.periodLogs] };
     },
 
     migrateV3ToV4: async () => {

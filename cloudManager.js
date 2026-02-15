@@ -182,7 +182,7 @@ export const CloudManager = {
             spaces: 'drive'
         });
 
-        const files = response.result.files;
+        const files = response?.result?.files;
         if (files && files.length > 0) {
             return files[0].id;
         }

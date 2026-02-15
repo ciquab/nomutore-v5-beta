@@ -199,7 +199,7 @@ export const Service = {
  * 履歴の再計算（最終安定版）
  */
 recalcImpactedHistory: async (changedTimestamp) => {
-    Service._recalcQueue = Service._recalcQueue.then(async () => {
+    Service._recalcQueue = Service._recalcQueue.catch(() => {}).then(async () => {
             try {
                 return db.transaction('rw', db.logs, db.checks, db.period_archives, async () => {
                     const allLogs = await LogService.getAll();
@@ -386,10 +386,10 @@ recalcImpactedHistory: async (changedTimestamp) => {
      */
     updateProfile: async (data) => {
         const keys = APP.STORAGE_KEYS;
-        if (data.weight) localStorage.setItem(keys.WEIGHT, data.weight);
-        if (data.height) localStorage.setItem(keys.HEIGHT, data.height);
-        if (data.age)    localStorage.setItem(keys.AGE, data.age);
-        if (data.gender) localStorage.setItem(keys.GENDER, data.gender);
+        if (data.weight != null) localStorage.setItem(keys.WEIGHT, data.weight);
+        if (data.height != null) localStorage.setItem(keys.HEIGHT, data.height);
+        if (data.age != null)    localStorage.setItem(keys.AGE, data.age);
+        if (data.gender != null) localStorage.setItem(keys.GENDER, data.gender);
         return { success: true };
     },
 
@@ -399,11 +399,11 @@ recalcImpactedHistory: async (changedTimestamp) => {
      */
     updateAppSettings: async (data) => {
         const keys = APP.STORAGE_KEYS;
-        if (data.mode1) localStorage.setItem(keys.MODE1, data.mode1);
-        if (data.mode2) localStorage.setItem(keys.MODE2, data.mode2);
-        if (data.baseExercise) localStorage.setItem(keys.BASE_EXERCISE, data.baseExercise);
-        if (data.defaultRecordExercise) localStorage.setItem(keys.DEFAULT_RECORD_EXERCISE, data.defaultRecordExercise);
-        if (data.theme) localStorage.setItem(keys.THEME, data.theme);
+        if (data.mode1 != null) localStorage.setItem(keys.MODE1, data.mode1);
+        if (data.mode2 != null) localStorage.setItem(keys.MODE2, data.mode2);
+        if (data.baseExercise != null) localStorage.setItem(keys.BASE_EXERCISE, data.baseExercise);
+        if (data.defaultRecordExercise != null) localStorage.setItem(keys.DEFAULT_RECORD_EXERCISE, data.defaultRecordExercise);
+        if (data.theme != null) localStorage.setItem(keys.THEME, data.theme);
         return { success: true };
     },
 

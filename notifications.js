@@ -11,6 +11,7 @@ const PUSH = APP.PUSH;
 let _dailyTimerId = null;
 /** @type {number|null} */
 let _periodEveTimerId = null;
+let _notifInitialized = false;
 
 /**
  * 通知マネージャー
@@ -30,11 +31,14 @@ export const NotificationManager = {
         NotificationManager.scheduleAll();
 
         // visibilitychange時に再スケジュール（日付跨ぎ対応）
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') {
-                NotificationManager.scheduleAll();
-            }
-        });
+        if (!_notifInitialized) {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    NotificationManager.scheduleAll();
+                }
+            });
+            _notifInitialized = true;
+        }
     },
 
     /**

@@ -105,7 +105,12 @@ export const APP = {
         NOTIF_PERIOD_EVE_ENABLED: 'nomutore_notif_period_eve_enabled',
         NOTIF_PERIOD_EVE_TIME: 'nomutore_notif_period_eve_time',
         NOTIF_DAILY_LAST_SHOWN: 'nomutore_notif_daily_last_shown',
-        NOTIF_PERIOD_EVE_LAST_SHOWN: 'nomutore_notif_period_eve_last_shown'
+        NOTIF_PERIOD_EVE_LAST_SHOWN: 'nomutore_notif_period_eve_last_shown',
+        PUSH_SUBSCRIBED: 'nomutore_push_subscribed'
+    },
+    PUSH: {
+        VAPID_PUBLIC_KEY: 'BNU-pp-d12uQeWQkqsmyv3zlGRHNJkaR9n2aSm5FE4w1mBrWOwtItlGGfuW6BpNvzCkDHQeAKrD7LqiKUjdD0FE',
+        API_BASE: 'https://asia-northeast1-nomutore-backup.cloudfunctions.net',
     },
     DEFAULTS: { 
         WEIGHT: 60, HEIGHT: 160, AGE: 30, GENDER: 'female', 

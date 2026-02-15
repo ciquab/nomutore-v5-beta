@@ -399,6 +399,13 @@ const initApp = async () => {
 
         // 7. 通知スケジュールの初期化
         NotificationManager.init();
+
+        // 8. サーバーサイド Push 購読の再同期（既存購読者のみ）
+        if (localStorage.getItem('nomutore_push_subscribed') === 'true') {
+            NotificationManager.syncPushSubscription().catch(e =>
+                console.warn('[Push] Re-sync failed:', e)
+            );
+        }
        
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する

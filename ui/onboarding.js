@@ -14,7 +14,7 @@ let currentStepIndex = 0;
 const WIZARD_STEPS = [
     {
         id: 'step-welcome',
-        title: 'Welcome back?',
+        title: 'ようこそ',
         desc: '開始方法を選択してください。',
         render: () => `
             <div class="space-y-4">
@@ -60,31 +60,31 @@ const WIZARD_STEPS = [
     },
     {
         id: 'step-profile',
-        title: 'Profile Settings',
+        title: 'プロフィール設定',
         desc: '正確な消費カロリー計算のために、体重と身長を設定します。<br>※基礎代謝の概算に使用されます。',
         render: () => `
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">Weight (kg)</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">体重 (kg)</label>
                         <input type="number" id="wiz-weight" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="60">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">Height (cm)</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">身長 (cm)</label>
                         <input type="number" id="wiz-height" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="170">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">Age</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">年齢</label>
                         <input type="number" id="wiz-age" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="30">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">Gender</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">性別</label>
                         <div class="relative">
                             <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
+                                <option value="male">男性</option>
+                                <option value="female">女性</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -111,14 +111,14 @@ const WIZARD_STEPS = [
     },
     {
         id: 'step-beer',
-        title: 'Favorite Beer',
+        title: 'お気に入りビール',
         desc: 'よく飲むスタイルを設定してください。<br>ホーム画面の「本数換算」が、ここで選んだビールのカロリーを基準に表示されるようになります。',
         render: () => {
             const options = Object.keys(CALORIES.STYLES).map(k => `<option value="${k}">${k}</option>`).join('');
             return `
             <div class="space-y-4">
                 <div>
-                    <label class="text-xs font-bold text-gray-500 mb-1 block">Favorite Beer 1 (Main)</label>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">メインビール</label>
                     <div class="relative">
                         <select id="wiz-mode1" class="appearance-none w-full h-[50px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
                             ${options}
@@ -129,7 +129,7 @@ const WIZARD_STEPS = [
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs font-bold text-gray-500 mb-1 block">Favorite Beer 2 (Sub)</label>
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">サブビール</label>
                     <div class="relative">
                         <select id="wiz-mode2" class="appearance-none w-full h-[50px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-sm">
                             ${options}
@@ -155,21 +155,21 @@ const WIZARD_STEPS = [
 
     {
         id: 'step-period',
-        title: 'Reset Cycle',
+        title: 'リセット周期',
         desc: '借金（カロリー）をリセットする間隔を選んでください。<br>オススメは「1週間」です。',
         render: () => `
             <div class="space-y-3">
                 <button data-action="onboarding:setPeriod" data-mode="weekly" 
                         class="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-500 rounded-2xl text-left relative shadow-lg transform transition active:scale-95 group">
                     <div class="absolute -top-3 -right-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce">
-                        RECOMMENDED
+                        おすすめ
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xl">
                             <i class="ph-bold ph-arrows-clockwise"></i>
                         </div>
                         <div>
-                            <h4 class="font-black text-sm text-gray-900 dark:text-white">Weekly Reset</h4>
+                            <h4 class="font-black text-sm text-gray-900 dark:text-white">週次リセット</h4>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                                 毎週月曜日に<span class="font-bold text-red-500">借金をゼロ</span>にリセット。<br>
                                 <span class="text-indigo-600 dark:text-indigo-400 font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
@@ -186,7 +186,7 @@ const WIZARD_STEPS = [
                             <i class="ph-bold ph-calendar"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Monthly Reset</h4>
+                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">月次リセット</h4>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                                 毎月1日にリセット。<br>1ヶ月単位でじっくり管理したい方に。
                             </p>
@@ -201,7 +201,7 @@ const WIZARD_STEPS = [
                             <i class="ph-bold ph-infinity"></i>
                         </div>
                         <div>
-                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">Permanent (Endless)</h4>
+                            <h4 class="font-bold text-sm text-gray-900 dark:text-white">リセットなし（永久）</h4>
                             <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
                                 リセットなし。<br>過去の全記録を積み上げたいマニア向け。
                             </p>
@@ -213,7 +213,7 @@ const WIZARD_STEPS = [
     },
     {
         id: 'step-data-safety',
-        title: 'Important',
+        title: '重要',
         desc: 'データの保護について（必ずお読みください）',
         render: () => `
             <div class="space-y-4">
@@ -382,11 +382,11 @@ export const Onboarding = {
         
         if (index === WIZARD_STEPS.length - 1) {
             // 最後のステップ
-            btnNext.textContent = "Start";
+            btnNext.textContent = "はじめる";
             btnNext.className = "px-6 py-3 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95";
         } else {
             // 中間のステップ
-            btnNext.textContent = "Next";
+            btnNext.textContent = "次へ";
             btnNext.className = "px-6 py-3 bg-base-900 dark:bg-white text-white dark:text-base-900 rounded-xl font-black hover:opacity-90 transition active:scale-95";
         }
     }
@@ -444,15 +444,15 @@ export const Onboarding = {
             showProgress: true,
             animate: true,
             allowClose: false,
-            doneBtnText: 'Finish',
-            nextBtnText: 'Next',
-            prevBtnText: 'Back',
+            doneBtnText: '完了',
+            nextBtnText: '次へ',
+            prevBtnText: '戻る',
             steps: [
                 {
                     element: '#beer-select-display', 
                     popover: {
-                        title: 'Select Beer Style',
-                        description: 'タップでFavorite Beerを切り替えます。<br>選択中のビールのカロリーを基準に、借金の換算本数が再計算されます。',
+                        title: 'ビアスタイルの選択',
+                        description: 'タップでお気に入りビールを切り替えます。<br>選択中のビールのカロリーを基準に、借金の換算本数が再計算されます。',
                         side: 'bottom', 
                         align: 'center'
                     }
@@ -460,8 +460,8 @@ export const Onboarding = {
                 { 
                     element: '.orb-container', 
                     popover: { 
-                        title: 'Balance', 
-                        description: 'カロリー収支（Balance）を表示します。<br>飲んで溜まった借金を、運動で返済しましょう。',
+                        title: 'カロリー収支',
+                        description: 'カロリー収支を表示します。<br>飲んで溜まった借金を、運動で返済しましょう。',
                         side: 'bottom',
                         align: 'center'
                     } 
@@ -469,7 +469,7 @@ export const Onboarding = {
                 { 
                     element: '#nav-tab-record', 
                     popover: { 
-                        title: 'Record', 
+                        title: 'Recordタブ',
                         description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
                         side: 'top',
                         align: 'center'
@@ -485,7 +485,7 @@ export const Onboarding = {
                 { 
                     element: '#btn-fab-fixed', 
                     popover: { 
-                        title: 'Action Menu',
+                        title: 'アクションメニュー',
                         description: '前回登録したビールや運動は、ここからワンタップでもう一度記録できます。',
                         side: 'top',
                         align: 'center'
@@ -494,7 +494,7 @@ export const Onboarding = {
                 {
                     element: '#btn-help', 
                     popover: {
-                        title: 'Need Help?',
+                        title: 'ヘルプ',
                         description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
                         side: 'bottom',
                         align: 'end'
@@ -644,7 +644,7 @@ Onboarding.playSplash = () => {
     const msg = document.createElement('div');
     msg.id = 'splash-welcome-msg';
     msg.className = 'mt-8 text-sm font-bold text-indigo-200 animate-pulse tracking-widest uppercase';
-    msg.textContent = 'Welcome Back';
+    msg.textContent = 'おかえりなさい';
     
     // ボタンがあった場所（content内）に追加
     if (content) {

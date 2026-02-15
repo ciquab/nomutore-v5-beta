@@ -111,7 +111,7 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
     
     const saveBtn = document.getElementById('btn-save-beer');
     if (saveBtn) {
-        saveBtn.textContent = log ? 'Update Drink' : 'Log Drink';
+        saveBtn.textContent = log ? '更新する' : '記録する';
     }
 
     updateBeerKcalPreview();

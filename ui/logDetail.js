@@ -26,8 +26,8 @@ export const openLogDetail = (log) => {
 
     const isBeer = log.type === 'beer';
     const displayName = isBeer 
-        ? (log.brand?.trim() || log.name || 'Unknown Beer') 
-        : (log.name || 'Exercise');
+        ? (log.brand?.trim() || log.name || '不明なビール')
+        : (log.name || '運動');
     
     // デザインの分岐
     let iconClass = 'ph-beer-bottle';
@@ -47,19 +47,19 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Style</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">スタイル</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.style || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Brewery</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">ブルワリー</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.brewery || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Amount</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">分量</span>
                     <p class="font-bold text-base-900 dark:text-base-100">${amount}ml <span class="text-xs opacity-50">(${log.count} cans)</span></p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Rating</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">評価</span>
                     <div class="flex text-amber-400 text-sm">
                         ${'★'.repeat(log.rating || 0)}${'<span class="opacity-30">★</span>'.repeat(5 - (log.rating || 0))}
                     </div>
@@ -68,7 +68,7 @@ export const openLogDetail = (log) => {
             
             ${log.memo ? `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
-                <span class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">Note</span>
+                <span class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">メモ</span>
                 <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(log.memo)}</p>
             </div>` : ''}
         `;
@@ -77,11 +77,11 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6 flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Duration</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">時間</span>
                     <p class="text-2xl font-black text-base-900 dark:text-base-100">${log.minutes} <span class="text-sm font-bold text-gray-500">min</span></p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">Earned</span>
+                    <span class="text-[10px] font-bold text-gray-500 uppercase">返済カロリー</span>
                     <p class="text-2xl font-black text-emerald-500">+${Math.round(Math.abs(log.kcal))} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
                 </div>
             </div>
@@ -111,7 +111,7 @@ export const openLogDetail = (log) => {
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-xs font-bold text-gray-400">${dateDisplay}</span>
                     <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
-                        ${isBeer ? 'Beer Log' : 'Exercise'}
+                        ${isBeer ? 'ビール記録' : '運動記録'}
                     </span>
                 </div>
 
@@ -128,12 +128,12 @@ export const openLogDetail = (log) => {
                 
                 ${isBeer ? `
                 <button id="btn-detail-share" class="flex-1 py-3.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95 border border-indigo-100 dark:border-indigo-800/50">
-                    <i class="ph-bold ph-share-network text-lg"></i> Share
+                    <i class="ph-bold ph-share-network text-lg"></i> シェア
                 </button>
                 ` : ''}
 
                 <button id="btn-detail-edit" class="flex-1 py-3.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-300 dark:hover:bg-gray-600 transition active:scale-95">
-                    <i class="ph-bold ph-pencil-simple text-lg"></i> Edit
+                    <i class="ph-bold ph-pencil-simple text-lg"></i> 編集
                 </button>
                 
                 <button id="btn-detail-delete" class="w-14 py-3.5 bg-red-50 dark:bg-red-900/20 text-red-500 font-bold rounded-xl flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 transition active:scale-95 border border-red-100 dark:border-red-900/50">
@@ -247,7 +247,7 @@ export const openDayDetail = async (dateStr) => {
         listContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center h-40 text-gray-400 opacity-60">
                 <i class="ph-duotone ph-notebook text-4xl mb-2"></i>
-                <span class="text-xs font-bold">No logs for this day</span>
+                <span class="text-xs font-bold">この日の記録はありません</span>
             </div>
         `;
     } else {

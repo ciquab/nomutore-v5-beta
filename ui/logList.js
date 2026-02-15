@@ -45,7 +45,7 @@ const updateBulkActionUI = () => {
     const deleteBtn = /** @type {HTMLButtonElement} */(document.getElementById('btn-delete-selected'));
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
-        deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> Delete (${count})`;
+        deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> 削除 (${count})`;
         if(StateManager.isEditMode) {
              deleteBtn.classList.remove('translate-y-20', 'opacity-0');
         } else {
@@ -121,7 +121,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>No logs yet.</li>`;
+        listEl.innerHTML = `<li class="text-center text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>まだ記録がありません</li>`;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
         return;
     }
@@ -195,7 +195,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     if (loadMoreBtn) {
         loadMoreBtn.classList.toggle('hidden', totalCount <= currentLimit);
         if (totalCount > currentLimit) {
-            loadMoreBtn.textContent = `Load More (${totalCount - currentLimit} remaining)`;
+            loadMoreBtn.textContent = `もっと見る（残り ${totalCount - currentLimit} 件）`;
             loadMoreBtn.onclick = () => updateLogListView(true, sortedLogs);
         }
     }

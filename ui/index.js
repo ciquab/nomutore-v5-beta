@@ -273,7 +273,7 @@ export const UI = {
 
         if (btn) {
             btn.disabled = true; // 処理開始時にロック
-            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Saving...';
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> 保存中...';
         }
         // 1. Serviceに保存を依頼し、結果を受け取る
         const result = await Service.saveBeerLog(data, existingId);
@@ -321,7 +321,7 @@ export const UI = {
         // 【重要】成功しても失敗しても必ずボタンを復帰させる
         if (btn) {
             btn.disabled = false;
-            btn.textContent = 'Save Record';
+            btn.textContent = '記録を保存';
         }
     }
 });
@@ -335,7 +335,7 @@ document.addEventListener('save-exercise', async (e) => {
     try {
          if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Saving...';
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> 保存中...';
         }
         // 1. Serviceの実行結果を待つ
         const result = await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
@@ -374,7 +374,7 @@ document.addEventListener('save-exercise', async (e) => {
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.textContent = 'Save Record';
+            btn.textContent = '記録を保存';
         }
     }
 });

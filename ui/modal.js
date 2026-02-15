@@ -630,14 +630,15 @@ export const showRolloverModal = () => {
     if (mode === 'weekly' || mode === 'monthly') {
         const label = mode === 'weekly' ? 'Weekly' : 'Monthly';
         
-        if (titleEl) titleEl.textContent = `${label} Report Ready!`;
+        const labelJa = mode === 'weekly' ? '週次' : '月次';
+        if (titleEl) titleEl.textContent = `${labelJa}レポート準備完了！`;
         if (descEl) descEl.innerHTML = `期間が終了し、新しい${mode === 'weekly' ? '週' : '月'}が始まりました。<br>心機一転、頑張りましょう！`;
         if (iconEl) iconEl.className = "ph-fill ph-calendar-check";
 
         // 「次へ進む」ボタン
         const btn = document.createElement('button');
         btn.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2";
-        btn.innerHTML = `<span>Start New ${label}</span>`;
+        btn.innerHTML = `<span>新しい${labelJa}を開始</span>`;
         btn.addEventListener('click', async () => {
             await Service.updatePeriodSettings(mode); // 期間を更新（次週へ）
             toggleModal('rollover-modal', false);
@@ -650,27 +651,27 @@ export const showRolloverModal = () => {
     else {
         const label = localStorage.getItem(APP.STORAGE_KEYS.CUSTOM_LABEL) || 'Project';
         
-        if (titleEl) titleEl.textContent = `${label} Finished!`;
+        if (titleEl) titleEl.textContent = `${label} 完了！`;
         if (descEl) descEl.innerHTML = "プロジェクト期間が終了しました。<br>アーカイブして通常モードに戻りますか？";
         if (iconEl) iconEl.className = "ph-fill ph-flag-checkered";
 
         // 1. Weeklyに戻る
         const btnWeekly = document.createElement('button');
         btnWeekly.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
-        btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise"></i><span>Switch to Weekly</span>`;
+        btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise"></i><span>週次モードに切替</span>`;
         // UIがグローバルにある前提、またはimportが必要ですが、安全策としてonclick属性を使うか、window.UI経由で呼びます
         btnWeekly.dataset.action = 'rollover:weekly';
 
         // 2. 新規プロジェクト
         const btnNew = document.createElement('button');
         btnNew.className = "w-full py-3.5 px-4 bg-white dark:bg-base-800 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-indigo-900 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
-        btnNew.innerHTML = `<i class="ph-bold ph-plus"></i><span>New Project</span>`;
+        btnNew.innerHTML = `<i class="ph-bold ph-plus"></i><span>新規プロジェクト</span>`;
         btnNew.dataset.action = 'rollover:new_custom';
 
         // 3. 延長
         const btnExtend = document.createElement('button');
         btnExtend.className = "w-full py-2 px-4 text-xs font-bold text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 active:scale-95 transition-all";
-        btnExtend.textContent = "Extend this period";
+        btnExtend.textContent = "この期間を延長";
         btnExtend.dataset.action = 'rollover:extend';
 
         actionsContainer.appendChild(btnWeekly);

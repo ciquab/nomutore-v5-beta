@@ -12,6 +12,7 @@ let lastBurnedKcal = 0;
 let accumulatedTime = 0;
 let currentBeerStyleName = null; 
 let lastTickSec = 0;
+let _visibilityListenerAttached = false;
 
 // ▼ 追加: タイムトラベラー対策（最大3時間）
 const MAX_ALLOWED_DURATION_MS = 3 * 60 * 60 * 1000;
@@ -39,11 +40,14 @@ export const Timer = {
         Timer.checkResume();
 
         // ▼ 追加: アプリがバックグラウンドから復帰した際の即時同期
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && isRunning) {
-                Timer.sync();
-            }
-        });
+        if (!_visibilityListenerAttached) {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && isRunning) {
+                    Timer.sync();
+                }
+            });
+            _visibilityListenerAttached = true;
+        }
     },
 
     checkResume: () => {

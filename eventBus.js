@@ -41,7 +41,9 @@ export const EventBus = {
      */
     emit(event, data) {
         if (this.listeners[event]) {
-            this.listeners[event].forEach(cb => cb(data));
+            this.listeners[event].forEach(cb => {
+                try { cb(data); } catch (e) { console.error(`[EventBus] Error in listener for "${event}":`, e); }
+            });
         }
     }
 };

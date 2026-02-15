@@ -112,7 +112,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         // セラー画面（履歴一覧）では「全履歴」を見せたい場合は snapshot.allLogs を、
         // 設定された期間内だけを見せたい場合は snapshot.logs を使います。
         // 元のロジックに合わせて snapshot.allLogs を採用します。
-        sortedLogs = snapshot.allLogs.sort((a, b) => b.timestamp - a.timestamp);
+        sortedLogs = [...snapshot.allLogs].sort((a, b) => b.timestamp - a.timestamp);
     }
     
     const totalCount = sortedLogs.length;
@@ -201,29 +201,34 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     }
 };
 
-document.addEventListener('click', async (e) => { 
-    const listEl = document.getElementById('log-list');
-    if (!listEl || !listEl.contains(/** @type {Node} */(e.target))) return;
-    if (StateManager.isEditMode) return;
+// リスナー二重登録防止ガード（モジュール再評価対策）
+let _logListListenersAttached = false;
+if (!_logListListenersAttached) {
+    document.addEventListener('click', async (e) => {
+        const listEl = document.getElementById('log-list');
+        if (!listEl || !listEl.contains(/** @type {Node} */(e.target))) return;
+        if (StateManager.isEditMode) return;
 
-    const clickableArea = /** @type {HTMLElement} */(e.target).closest('[data-log-id]');
-    if (clickableArea) {
-        const logId = parseInt(clickableArea.dataset.logId || '0');
-        
-        // ✅ 修正: 直接 db を見ず、LogService 経由で取得
-        const log = await LogService.getById(logId);
-        
-        if (log) {
-            openLogDetail(log);
+        const clickableArea = /** @type {HTMLElement} */(e.target).closest('[data-log-id]');
+        if (clickableArea) {
+            const logId = parseInt(clickableArea.dataset.logId || '0');
+
+            // ✅ 修正: 直接 db を見ず、LogService 経由で取得
+            const log = await LogService.getById(logId);
+
+            if (log) {
+                openLogDetail(log);
+            }
         }
-    }
-});
+    });
 
-document.addEventListener('change', (e) => {
-    if (/** @type {HTMLElement} */(e.target).classList.contains('log-checkbox')) {
-        updateBulkCount();
-    }
-});
+    document.addEventListener('change', (e) => {
+        if (/** @type {HTMLElement} */(e.target).classList.contains('log-checkbox')) {
+            updateBulkCount();
+        }
+    });
+    _logListListenersAttached = true;
+}
 
 /** @type {any} */(updateLogListView).updateBulkCount = updateBulkCount;
 export const setFetchLogsHandler = (fn) => {};

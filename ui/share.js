@@ -71,6 +71,9 @@ const startBeerPhotoFlow = (logData) => {
 };
 
 const openPhotoComposer = (imgSrc, log) => {
+    // 前回セッションの状態をリセット（stale state防止）
+    editState = { scale: 1.0, x: 0, y: 0, isDragging: false, startX: 0, startY: 0, aspectRatio: '1 / 1', fontClass: 'font-sans' };
+
     const existing = document.getElementById('share-composer-modal');
     if (existing) existing.remove();
 
@@ -301,10 +304,17 @@ const openPhotoComposer = (imgSrc, log) => {
         return Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
     };
 
+    // AbortController でモーダル内全リスナーの一括解除を可能にする
+    const ac = new AbortController();
+    const cleanupModal = () => {
+        ac.abort();
+        modal.remove();
+    };
+
     if(touchArea) {
-        touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY));
-        window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
-        window.addEventListener('mouseup', handleEnd);
+        touchArea.addEventListener('mousedown', (e) => handleStart(e.clientX, e.clientY), { signal: ac.signal });
+        window.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY), { signal: ac.signal });
+        window.addEventListener('mouseup', handleEnd, { signal: ac.signal });
 
         touchArea.addEventListener('touchstart', (e) => {
             if (e.touches.length === 1) {
@@ -314,7 +324,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 initialPinchDist = getDistance(e.touches[0], e.touches[1]);
                 startScale = editState.scale;
             }
-        }, { passive: false });
+        }, { passive: false, signal: ac.signal });
 
         touchArea.addEventListener('touchmove', (e) => {
             e.preventDefault();
@@ -329,24 +339,24 @@ const openPhotoComposer = (imgSrc, log) => {
                     updateTransform();
                 }
             }
-        }, { passive: false });
+        }, { passive: false, signal: ac.signal });
 
         touchArea.addEventListener('touchend', (e) => {
             handleEnd();
             if (e.touches.length < 2) {
                 initialPinchDist = 0;
             }
-        });
+        }, { signal: ac.signal });
     }
 
     if(toggleKcal) {
         toggleKcal.addEventListener('change', (e) => {
             if(statsEl) statsEl.classList.toggle('opacity-0', !e.target.checked);
             Feedback.tap();
-        });
+        }, { signal: ac.signal });
     }
 
-    if(btnCancel) btnCancel.addEventListener('click', () => modal.remove());
+    if(btnCancel) btnCancel.addEventListener('click', cleanupModal);
 
     if(btnGenerate) {
         btnGenerate.addEventListener('click', async () => {

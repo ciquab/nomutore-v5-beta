@@ -130,9 +130,9 @@ const openPhotoComposer = (imgSrc, log) => {
         </style>
 
         <div class="px-4 py-2 flex justify-between items-center bg-base-900 text-white z-20 border-b border-white/10 shrink-0">
-            <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">Cancel</button>
-            <h3 class="font-black text-xs tracking-widest">EDIT PHOTO</h3>
-            <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">Next</button>
+            <button id="btn-cancel-composer" class="text-xs font-bold text-gray-300 hover:text-white py-2">キャンセル</button>
+            <h3 class="font-black text-xs tracking-widest">写真を編集</h3>
+            <button id="btn-generate-share" class="text-xs font-bold text-indigo-400 hover:text-indigo-300 py-2">次へ</button>
         </div>
 
         <div id="composer-touch-area" class="flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden relative cursor-move touch-none p-1">
@@ -154,7 +154,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 <div id="composer-stats" class="absolute top-4 right-5 z-20 drop-shadow-md text-right transition-opacity duration-300">
                     <div class="flex flex-col items-end">
                         <span class="text-3xl font-black text-white leading-none tracking-tighter">-${kcal}</span>
-                        <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider mt-0.5">DEBT CREATED (kcal)</span>
+                        <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider mt-0.5">借金 (kcal)</span>
                     </div>
                 </div>
 
@@ -198,11 +198,11 @@ const openPhotoComposer = (imgSrc, log) => {
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
                             <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[9px] font-bold text-gray-400">Calories</span>
+                        <span class="text-[9px] font-bold text-gray-400">カロリー</span>
                     </label>
-                    
+
                     <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
-                        <i class="ph-bold ph-hand-pointing"></i> Drag & Pinch
+                        <i class="ph-bold ph-hand-pointing"></i> ドラッグ＆ピンチ
                     </span>
                 </div>
             </div>
@@ -423,7 +423,7 @@ const showPreviewModal = (dataUrl, file) => {
     modal.innerHTML = `
         <div class="bg-base-50 dark:bg-base-900 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center bg-white dark:bg-base-900">
-                <h3 class="font-black text-lg text-base-900 dark:text-white">Ready to Share</h3>
+                <h3 class="font-black text-lg text-base-900 dark:text-white">シェアする準備ができました</h3>
                 <button id="btn-close-preview" class="w-8 h-8 rounded-full bg-base-200 dark:bg-base-800 flex items-center justify-center text-gray-500">✕</button>
             </div>
             
@@ -433,11 +433,11 @@ const showPreviewModal = (dataUrl, file) => {
 
             <div class="p-4 bg-white dark:bg-base-900 border-t border-base-200 dark:border-base-800 flex gap-3">
                 <button id="btn-download-img" class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                    <i class="ph-bold ph-download-simple text-lg"></i> Save
+                    <i class="ph-bold ph-download-simple text-lg"></i> 保存
                 </button>
                 ${canShare ? `
                 <button id="btn-share-native" class="flex-[2] py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
-                    <i class="ph-bold ph-share-network text-lg"></i> Share Now
+                    <i class="ph-bold ph-share-network text-lg"></i> シェアする
                 </button>
                 ` : ''}
             </div>

@@ -34,7 +34,7 @@ export const openManualInput = (dateStr = null, log = null) => {
             const isValidKey = log.exerciseKey && EXERCISE[log.exerciseKey];
             typeSel.value = isValidKey ? log.exerciseKey : (APP.DEFAULTS.BASE_EXERCISE || '');
         }
-        if (saveBtn) saveBtn.textContent = 'Update Workout';
+        if (saveBtn) saveBtn.textContent = '更新する';
         if (deleteBtn) deleteBtn.classList.remove('hidden');
         
         if (bonusCheck) {
@@ -45,7 +45,7 @@ export const openManualInput = (dateStr = null, log = null) => {
         // 【新規作成モード】
         if(idField) idField.value = '';
         if(minField) minField.value = '';
-        if (saveBtn) saveBtn.textContent = 'Log Workout';
+        if (saveBtn) saveBtn.textContent = '記録する';
         if (typeSel) typeSel.value = localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE;
         if (deleteBtn) deleteBtn.classList.add('hidden');
         if (bonusCheck) bonusCheck.checked = true;

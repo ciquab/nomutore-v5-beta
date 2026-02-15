@@ -164,7 +164,7 @@ export const openCheckModal = async (dateStr = null) => {
     if(wEl) wEl.value = '';
 
     const saveBtn = document.getElementById('btn-save-check');
-    if (saveBtn) saveBtn.textContent = 'Log Check';
+    if (saveBtn) saveBtn.textContent = '記録する';
 
     const isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
@@ -172,7 +172,7 @@ export const openCheckModal = async (dateStr = null) => {
     const hint = document.querySelector('#drinking-section p');
 
     // ラベルを日本語化
-    if (dryLabelText) dryLabelText.innerHTML = "休肝日 <span class='text-xs opacity-70 font-normal ml-1'>(No Alcohol)</span>";
+    if (dryLabelText) dryLabelText.innerHTML = "休肝日";
     
     // ★修正: 状態を強力にリセット（前の日付の状態を完全に消す）
     if (isDryInput) isDryInput.disabled = false;
@@ -247,7 +247,7 @@ export const openCheckModal = async (dateStr = null) => {
             if(wEl) wEl.value = String(anyRecord.weight || '');
 
             if (saveBtn) {
-                saveBtn.textContent = anyRecord.isSaved ? 'Update Check' : 'Log Check';
+                saveBtn.textContent = anyRecord.isSaved ? '更新する' : '記録する';
             }
         }
 

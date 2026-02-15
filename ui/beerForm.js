@@ -6,7 +6,7 @@
  * @typedef {import('../types.js').Log} Log
  */
 
-import { STYLE_SPECS, SIZE_DATA, CALORIES, STYLE_METADATA, APP } from '../constants.js';
+import { STYLE_SPECS, SIZE_DATA, CALORIES, STYLE_METADATA, APP, FLAVOR_AXES } from '../constants.js';
 import { Calc, getVirtualDate } from '../logic.js';
 import { LogService } from '../logService.js'; // ✅ LogServiceを利用
 import { showMessage, Feedback, toggleModal } from './dom.js';
@@ -102,6 +102,9 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
         const initialSpec = STYLE_SPECS[styleSel.value];
         if (initialSpec) abvInput.placeholder = String(initialSpec.abv);
     }
+
+    // 味わいセクションの初期化
+    initFlavorSection(log);
 
     const delBtn = document.getElementById('btn-delete-beer');
     if (delBtn) {
@@ -228,6 +231,9 @@ export const getBeerFormData = (existingLog = null) => {
         return null;
     }
 
+    // 味わいプロファイルの収集
+    const flavorProfile = getFlavorProfileData();
+
     return {
         timestamp: ts,
         brewery, brand, rating, memo,
@@ -238,7 +244,8 @@ export const getBeerFormData = (existingLog = null) => {
         ml: finalMl,
         carb: carb,
         customType: type,
-        useUntappd
+        useUntappd,
+        flavorProfile
     };
 };
 
@@ -372,7 +379,10 @@ export const resetBeerForm = (keepDate = false) => {
     
     const untappdCheck = /** @type {HTMLInputElement} */(document.getElementById('untappd-check'));
     if(untappdCheck) untappdCheck.checked = false;
-    
+
+    // 味わいセクションのリセット
+    resetFlavorSection();
+
     switchBeerInputTab('preset');
 };
 
@@ -419,6 +429,139 @@ export const updateBeerSelectOptions = () => {
  * 入力候補の更新
  * ✅ LogService経由で全ログを取得し、ビールログを抽出してリスト化する
  */
+// ===========================================
+// 味わいセクション (Flavor Profile)
+// ===========================================
+
+const FLAVOR_OPENED_KEY = 'nomutore_flavor_opened';
+
+/**
+ * 味わいセクションの初期化
+ * @param {Log|null} log - 編集時のログデータ
+ */
+const initFlavorSection = (log = null) => {
+    const toggle = document.getElementById('flavor-toggle');
+    const inputs = document.getElementById('flavor-inputs');
+    const icon = document.getElementById('flavor-toggle-icon');
+    if (!toggle || !inputs || !icon) return;
+
+    // セグメントボタンのクリックイベント登録
+    FLAVOR_AXES.forEach(axis => {
+        const container = document.getElementById(`flavor-${axis.key}`);
+        if (!container) return;
+        container.querySelectorAll('.flavor-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 同じボタンを再タップしたら解除（null に戻す）
+                if (btn.classList.contains('bg-orange-500')) {
+                    btn.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
+                    return;
+                }
+                // 同軸の他ボタンをリセット
+                container.querySelectorAll('.flavor-btn').forEach(b => {
+                    b.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
+                    b.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
+                });
+                // 選択状態に
+                btn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
+                btn.classList.add('bg-orange-500', 'text-white', 'shadow-sm');
+            });
+        });
+    });
+
+    // 折りたたみトグル
+    toggle.addEventListener('click', () => {
+        const isHidden = inputs.classList.contains('hidden');
+        inputs.classList.toggle('hidden');
+        icon.style.transform = isHidden ? 'rotate(180deg)' : '';
+        if (isHidden) {
+            localStorage.setItem(FLAVOR_OPENED_KEY, 'true');
+        }
+    });
+
+    // 編集時：既存データの復元
+    if (log && log.flavorProfile) {
+        const fp = log.flavorProfile;
+        let hasAnyValue = false;
+
+        FLAVOR_AXES.forEach(axis => {
+            const val = fp[axis.key];
+            if (val !== null && val !== undefined) {
+                hasAnyValue = true;
+                const container = document.getElementById(`flavor-${axis.key}`);
+                if (!container) return;
+                const btn = container.querySelector(`[data-val="${val}"]`);
+                if (btn) {
+                    btn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
+                    btn.classList.add('bg-orange-500', 'text-white', 'shadow-sm');
+                }
+            }
+        });
+
+        // 既存データがあれば自動展開
+        if (hasAnyValue) {
+            inputs.classList.remove('hidden');
+            icon.style.transform = 'rotate(180deg)';
+        }
+    } else if (localStorage.getItem(FLAVOR_OPENED_KEY)) {
+        // 過去に一度でも開いたことがあれば自動展開
+        inputs.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    }
+};
+
+/**
+ * 味わいセクションのリセット
+ */
+const resetFlavorSection = () => {
+    FLAVOR_AXES.forEach(axis => {
+        const container = document.getElementById(`flavor-${axis.key}`);
+        if (!container) return;
+        container.querySelectorAll('.flavor-btn').forEach(btn => {
+            btn.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
+            btn.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
+        });
+    });
+
+    // 折りたたみ状態のリセット（ただし過去に開いた場合は開いたまま）
+    const inputs = document.getElementById('flavor-inputs');
+    const icon = document.getElementById('flavor-toggle-icon');
+    if (inputs && icon) {
+        if (!localStorage.getItem(FLAVOR_OPENED_KEY)) {
+            inputs.classList.add('hidden');
+            icon.style.transform = '';
+        }
+    }
+};
+
+/**
+ * 味わいプロファイルデータを収集
+ * @returns {import('../types.js').FlavorProfile|null} 全軸nullならnullを返す
+ */
+const getFlavorProfileData = () => {
+    /** @type {Record<string, number|null>} */
+    const profile = {};
+    let hasAnyValue = false;
+
+    FLAVOR_AXES.forEach(axis => {
+        const container = document.getElementById(`flavor-${axis.key}`);
+        if (!container) {
+            profile[axis.key] = null;
+            return;
+        }
+        const selected = container.querySelector('.flavor-btn.bg-orange-500');
+        if (selected) {
+            profile[axis.key] = parseInt(selected.dataset.val);
+            hasAnyValue = true;
+        } else {
+            profile[axis.key] = null;
+        }
+    });
+
+    // 全軸未入力なら null（保存スペース節約）
+    return hasAnyValue ? /** @type {import('../types.js').FlavorProfile} */ (profile) : null;
+};
+
 export const updateInputSuggestions = async () => {
     try {
         // 1. LogServiceから全ログを取得

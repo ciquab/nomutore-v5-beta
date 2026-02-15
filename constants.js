@@ -255,7 +255,25 @@ export const EXERCISE = {
 export const SIZE_DATA = { '350': { label: '350ml (缶)', ratio: 1.0 }, '500': { label: '500ml (ロング缶)', ratio: 1.43 }, '473': { label: '473ml (USパイント)', ratio: 1.35 }, '568': { label: '568ml (UKパイント)', ratio: 1.62 }, '250': { label: '250ml (小グラス)', ratio: 0.71 }, '1000': { label: '1L (マース)', ratio: 2.86 } };
 
 // ==========================================================================
-// 3. Check Item Master Definitions (Safe Lookup)
+// 3. Flavor Profile Axes (味わいレーダーチャート)
+// ==========================================================================
+
+/**
+ * コア4軸の定義
+ * Phase 2 で上級者軸を追加する場合は FLAVOR_AXES_ADVANCED を別途定義
+ */
+export const FLAVOR_AXES = [
+    { key: 'bitterness', label: '苦味',         shortLabel: '苦',   icon: 'ph-duotone ph-fire' },
+    { key: 'sweetness',  label: '甘味⇔ドライ', shortLabel: '甘/D', icon: 'ph-duotone ph-drop' },
+    { key: 'fruity',     label: 'フルーティー', shortLabel: '果実', icon: 'ph-duotone ph-orange-slice' },
+    { key: 'body',       label: 'ボディ',       shortLabel: 'ボディ', icon: 'ph-duotone ph-circle-half' },
+];
+
+/** スケール: 0-5 の整数 */
+export const FLAVOR_SCALE_MAX = 5;
+
+// ==========================================================================
+// 4. Check Item Master Definitions (Safe Lookup)
 // ==========================================================================
 
 // ★ 1. 廃止された項目（ライブラリからは消したが、過去ログ表示用に定義を残す場所）

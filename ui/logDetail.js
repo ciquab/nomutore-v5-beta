@@ -1,5 +1,5 @@
 // @ts-check
-import { EXERCISE } from '../constants.js';
+import { EXERCISE, FLAVOR_AXES, FLAVOR_SCALE_MAX } from '../constants.js';
 import { Service } from '../service.js';
 import { StateManager } from './state.js';
 import { DOM, toggleModal, escapeHtml, showMessage, Feedback } from './dom.js';
@@ -70,6 +70,14 @@ export const openLogDetail = (log) => {
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
                 <span class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">メモ</span>
                 <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(log.memo)}</p>
+            </div>` : ''}
+
+            ${log.flavorProfile ? `
+            <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
+                <span class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">味わいプロファイル</span>
+                <div class="h-48 w-full relative">
+                    <canvas id="log-detail-radar"></canvas>
+                </div>
             </div>` : ''}
         `;
     } else {
@@ -196,8 +204,72 @@ export const openLogDetail = (log) => {
 
     // 表示開始
     toggleModal(modalId, true);
+
+    // レーダーチャート描画（モーダル表示後に実行）
+    if (log.flavorProfile) {
+        requestAnimationFrame(() => {
+            renderFlavorRadar('log-detail-radar', log.flavorProfile);
+        });
+    }
 };
 
+/**
+ * 味わいレーダーチャートの描画
+ * @param {string} canvasId - canvas要素のID
+ * @param {import('../types.js').FlavorProfile} fp - 味わいプロファイル
+ */
+const renderFlavorRadar = (canvasId, fp) => {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+
+    const labels = FLAVOR_AXES.map(a => a.label);
+    const data = FLAVOR_AXES.map(a => fp[a.key] ?? 0);
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels,
+            datasets: [{
+                label: '味わい',
+                data,
+                backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                borderColor: 'rgba(249, 115, 22, 0.8)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(249, 115, 22, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                r: {
+                    min: 0,
+                    max: FLAVOR_SCALE_MAX,
+                    ticks: {
+                        stepSize: 1,
+                        display: false
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.08)'
+                    },
+                    angleLines: {
+                        color: 'rgba(0, 0, 0, 0.08)'
+                    },
+                    pointLabels: {
+                        font: { size: 11, weight: 'bold' },
+                        color: '#6b7280'
+                    }
+                }
+            }
+        }
+    });
+};
 
 /**
  * 指定した日付の詳細モーダルを開く

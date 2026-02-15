@@ -41,6 +41,18 @@
  * @property {number} [rawMinutes] - ボーナス計算前の元の運動時間 (exerciseのみ)
  * * // --- Common ---
  * @property {string} [memo] - 任意のメモ
+ * * // --- Flavor Profile (v5) ---
+ * @property {FlavorProfile} [flavorProfile] - 味わいプロファイル (beerのみ)
+ */
+
+/**
+ * 味わいプロファイル（レーダーチャート用）
+ * 各軸は 0-5 の整数、未入力は null
+ * @typedef {Object} FlavorProfile
+ * @property {number|null} bitterness - 苦味 (0=なし, 5=非常に強い)
+ * @property {number|null} sweetness - 甘味⇔ドライ (0=ドライ, 5=甘い)
+ * @property {number|null} fruity - フルーティー (0=なし, 5=非常にフルーティー)
+ * @property {number|null} body - ボディ (0=ライト, 5=フル)
  */
 
 /**

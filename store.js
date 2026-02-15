@@ -32,6 +32,15 @@ db.version(4).stores({
     // 今回は全削除前提ならスキーマ定義だけでOKですが、念のため構造を整えます
 });
 
+// ★追加: v5用定義 (味わいレーダーチャート機能: flavorProfile フィールド追加)
+// flavorProfile はJSONオブジェクトとして格納（インデックス不要、Phase 1では検索対象外）
+// スキーマのインデックス定義は v4 と同一（flavorProfile はインデックス不要のため列挙しない）
+db.version(5).stores({
+    logs: '++id, timestamp, type, name, kcal, memo, untappd_query, isCustom, exerciseKey',
+    checks: '++id, timestamp, isDryDay',
+    period_archives: '++id, startDate, endDate, mode, totalDays, dryDays'
+});
+
 const LAST_ACTIVE_KEY = 'nomutore_last_active_date';
 
 export const Store = {

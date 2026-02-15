@@ -675,10 +675,10 @@ extendPeriod: async (days = 7) => {
         timestamp: data.timestamp,
         type: 'beer',
         name: name,
-        kcal: kcal, 
+        kcal: kcal,
         style: data.isCustom ? 'Custom' : data.style,
         size: data.isCustom ? null : data.size, // UI用
-        rawAmount: ml,   
+        rawAmount: ml,
         count,
         abv: abv,
         brewery: data.brewery,
@@ -686,7 +686,8 @@ extendPeriod: async (days = 7) => {
         rating: data.rating,
         memo: data.memo,
         isCustom: data.isCustom,
-        customType: data.isCustom ? data.type : null
+        customType: data.isCustom ? data.type : null,
+        flavorProfile: data.flavorProfile || null
     };
 
         // --- ログ保存（新規 or 更新） ---

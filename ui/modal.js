@@ -14,6 +14,7 @@ import {
 import { openManualInput } from './exerciseForm.js';
 import { renderCheckEditor, openCheckModal, openCheckLibrary } from './checkForm.js';
 import { openLogDetail, openDayDetail } from './logDetail.js';
+import { NotificationManager } from '../notifications.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -324,8 +325,67 @@ export const renderSettings = () => {
     if(defRecExSel) defRecExSel.value = localStorage.getItem(APP.STORAGE_KEYS.DEFAULT_RECORD_EXERCISE) || APP.DEFAULTS.DEFAULT_RECORD_EXERCISE;
 
     renderCheckEditor();
+
+    // ─── 通知設定の反映 ───
+    _renderNotificationSettings();
 };
 
+
+/**
+ * 通知設定UIの描画・初期化
+ */
+const _renderNotificationSettings = () => {
+    const settings = NotificationManager.getSettings();
+
+    const dailyToggle = document.getElementById('notif-daily-enabled');
+    const dailyTimeRow = document.getElementById('notif-daily-time-row');
+    const dailyTimeInput = document.getElementById('notif-daily-time');
+    const periodEveToggle = document.getElementById('notif-period-eve-enabled');
+    const periodEveTimeRow = document.getElementById('notif-period-eve-time-row');
+    const periodEveTimeInput = document.getElementById('notif-period-eve-time');
+    const permBanner = document.getElementById('notif-permission-banner');
+    const permBtn = document.getElementById('btn-notif-permission');
+
+    // 権限バナーの表示制御
+    if (permBanner) {
+        const needsPermission = 'Notification' in window && Notification.permission === 'default';
+        permBanner.classList.toggle('hidden', !needsPermission);
+    }
+    if (permBtn) {
+        permBtn.onclick = async () => {
+            const granted = await NotificationManager.requestPermission();
+            if (permBanner) permBanner.classList.add('hidden');
+            if (granted) {
+                showMessage('通知が許可されました', 'success');
+            } else {
+                showMessage('通知が拒否されました。ブラウザの設定から変更できます。', 'error');
+            }
+        };
+    }
+
+    // トグル状態の反映
+    if (dailyToggle) {
+        dailyToggle.checked = settings.dailyEnabled;
+        if (dailyTimeRow) dailyTimeRow.classList.toggle('hidden', !settings.dailyEnabled);
+        dailyToggle.onchange = () => {
+            if (dailyTimeRow) dailyTimeRow.classList.toggle('hidden', !dailyToggle.checked);
+        };
+    }
+    if (dailyTimeInput) {
+        dailyTimeInput.value = settings.dailyTime;
+    }
+
+    if (periodEveToggle) {
+        periodEveToggle.checked = settings.periodEveEnabled;
+        if (periodEveTimeRow) periodEveTimeRow.classList.toggle('hidden', !settings.periodEveEnabled);
+        periodEveToggle.onchange = () => {
+            if (periodEveTimeRow) periodEveTimeRow.classList.toggle('hidden', !periodEveToggle.checked);
+        };
+    }
+    if (periodEveTimeInput) {
+        periodEveTimeInput.value = settings.periodEveTime;
+    }
+};
 
 /**
  * 設定保存ボタンのハンドラー
@@ -383,6 +443,20 @@ export const handleSaveSettings = async () => {
         const periodResult = await Service.updatePeriodSettings(periodMode, customPeriod);
         await Service.updateProfile(profileData);
         await Service.updateAppSettings(appSettings);
+
+        // 4b. 通知設定の保存
+        const dailyEnabled = document.getElementById('notif-daily-enabled')?.checked ?? false;
+        const dailyTime = document.getElementById('notif-daily-time')?.value || '21:00';
+        const periodEveEnabled = document.getElementById('notif-period-eve-enabled')?.checked ?? false;
+        const periodEveTime = document.getElementById('notif-period-eve-time')?.value || '20:00';
+
+        // 通知がONの場合、権限を要求
+        if (dailyEnabled || periodEveEnabled) {
+            await NotificationManager.requestPermission();
+        }
+
+        NotificationManager.saveSettings({ dailyEnabled, dailyTime, periodEveEnabled, periodEveTime });
+        NotificationManager.scheduleAll();
 
         // 5. 成功時のUIフィードバック
         if (typeof Feedback !== 'undefined' && Feedback.save) Feedback.save();

@@ -13,8 +13,8 @@ export async function renderArchives() {
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center h-64 text-gray-400">
                 <i class="ph-duotone ph-archive text-4xl mb-2"></i>
-                <p class="text-sm font-bold">No archives yet.</p>
-                <p class="text-xs opacity-60">Complete a period to see it here.</p>
+                <p class="text-sm font-bold">アーカイブはまだありません</p>
+                <p class="text-xs opacity-60">期間が完了するとここに表示されます</p>
             </div>
         `;
         return;
@@ -43,7 +43,7 @@ export async function renderArchives() {
                         ${sign}${Math.round(balance)} <span class="text-xs font-bold text-gray-400">kcal</span>
                     </span>
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${statusColor}">
-                        ${isPositive ? 'Success' : 'Debt'}
+                        ${isPositive ? '黒字' : '赤字'}
                     </span>
                 </div>
             </div>

@@ -67,21 +67,21 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
         <div class="space-y-6 pb-24">
             <div class="grid grid-cols-3 gap-3 text-center">
                 <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-2xl border border-amber-100 dark:border-amber-800/50">
-                    <p class="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">Period Total</p>
+                    <p class="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">期間合計</p>
                     <p class="text-xl font-black text-amber-600 dark:text-amber-400">${periodStats.totalCount}<span class="text-xs ml-1">杯</span></p>
                 </div>
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[10px] font-bold text-indigo-800 dark:text-indigo-200 uppercase">Period Vol.</p>
+                    <p class="text-[10px] font-bold text-indigo-800 dark:text-indigo-200 uppercase">期間容量</p>
                     <p class="text-xl font-black text-indigo-600 dark:text-indigo-400">${(periodStats.totalMl / 1000).toFixed(1)}<span class="text-xs ml-1">L</span></p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
-                    <p class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">All Unique</p>
+                    <p class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">全銘柄数</p>
                     <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${allStats.uniqueBeersCount}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
 
             <div class="glass-panel p-5 rounded-2xl relative">
-                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500"></i> Style Breakdown</h3>
+                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500"></i> スタイル内訳</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -123,7 +123,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
         <div id="beer-collection-section">
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> Brewery Leaderboard</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> ブルワリーランキング</h3>
                     <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
@@ -132,8 +132,8 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
             <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-3 px-1">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">My Beers</h3>
-                    <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length} beers</span>
+                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">マイビール</h3>
+                    <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
 
                 <div class="space-y-2">
@@ -162,10 +162,10 @@ export function renderBeerCollection(periodLogs, allLogs) {
                         <div class="relative">
                             <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="0">評価</option>
-                                <option value="5">★ 5 Only</option>
-                                <option value="4">★ 4 & up</option>
-                                <option value="3">★ 3 & up</option>
-                                <option value="2">★ 2 & up</option>
+                                <option value="5">★ 5 のみ</option>
+                                <option value="4">★ 4 以上</option>
+                                <option value="3">★ 3 以上</option>
+                                <option value="2">★ 2 以上</option>
                             </select>
                             <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
                         </div>
@@ -194,7 +194,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
         });
 
         const countLabel = document.getElementById('beer-list-count');
-        if(countLabel) countLabel.textContent = `${filtered.length} beers`;
+        if(countLabel) countLabel.textContent = `${filtered.length}銘柄`;
 
         renderBeerList(filtered);
     };
@@ -320,12 +320,12 @@ function renderHealthInsights(allLogs, checks) {
     // --- HTML 描画 ---
     section.innerHTML = `
         <div class="glass-panel p-5 rounded-2xl relative">
-            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500"></i> Health Insights</h3>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500"></i> ヘルスインサイト</h3>
 
             <!-- Weekly Alcohol -->
             <div class="mb-5">
                 <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">Weekly Pure Alcohol</span>
+                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">今週の純アルコール量</span>
                     <span class="text-xs font-black ${meterTextColor}">${Math.round(weeklyAlcohol)}g / ${limit}g</span>
                 </div>
                 <div class="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
@@ -336,17 +336,17 @@ function renderHealthInsights(allLogs, checks) {
             <!-- 飲んだ日 vs 休肝日 -->
             ${hasComparison ? `
             <div class="mb-5">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Condition: Drinking vs Rest Days</p>
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体調比較：飲んだ日 vs 休肝日</p>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
-                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">Drinking Days</p>
+                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">飲んだ日</p>
                         <p class="text-2xl font-black text-red-500 dark:text-red-400">${avgDrinking}%</p>
-                        <p class="text-[9px] text-gray-400">${drinkingScores.length} days</p>
+                        <p class="text-[9px] text-gray-400">${drinkingScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
-                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">Rest Days</p>
+                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">休肝日</p>
                         <p class="text-2xl font-black text-emerald-500 dark:text-emerald-400">${avgRest}%</p>
-                        <p class="text-[9px] text-gray-400">${restScores.length} days</p>
+                        <p class="text-[9px] text-gray-400">${restScores.length}日</p>
                     </div>
                 </div>
             </div>
@@ -358,7 +358,7 @@ function renderHealthInsights(allLogs, checks) {
 
             <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Condition Trend (14 days)</p>
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体調推移（14日間）</p>
                 <div class="h-40 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
@@ -377,7 +377,7 @@ function renderHealthInsights(allLogs, checks) {
             <!-- 体重トレンド (条件付き) -->
             ${hasWeight ? `
             <div class="mt-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">Weight Trend</p>
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
                 <div class="h-32 w-full relative">
                     <canvas id="weightTrendChart"></canvas>
                 </div>
@@ -410,7 +410,7 @@ function renderHealthChart(labels, alcoholData, conditionData) {
             datasets: [
                 {
                     type: 'line',
-                    label: 'Condition %',
+                    label: '体調 %',
                     data: conditionData,
                     borderColor: '#6366f1',
                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -424,7 +424,7 @@ function renderHealthChart(labels, alcoholData, conditionData) {
                 },
                 {
                     type: 'bar',
-                    label: 'Alcohol (g)',
+                    label: 'アルコール (g)',
                     data: alcoholData,
                     backgroundColor: 'rgba(239, 68, 68, 0.3)',
                     borderColor: 'rgba(239, 68, 68, 0.6)',
@@ -496,7 +496,7 @@ function renderWeightChart(weightEntries) {
         data: {
             labels,
             datasets: [{
-                label: 'Weight (kg)',
+                label: '体重 (kg)',
                 data,
                 borderColor: '#8b5cf6',
                 backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -617,7 +617,7 @@ function renderBeerList(beers) {
         listEl.innerHTML = `
             <div class="text-center py-10 opacity-50">
                 <i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>
-                <p class="text-xs font-bold">No matching beers.</p>
+                <p class="text-xs font-bold">該当するビールがありません</p>
             </div>`;
         return;
     }
@@ -648,19 +648,19 @@ function renderBeerList(beers) {
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || 'Unknown')}</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
                             <h4 class="text-sm font-black text-base-900 dark:text-white leading-tight">${escapeHtml(beer.name)}</h4>
                         </div>
                         <div class="text-right ml-2 flex-shrink-0">
                             <span class="block text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
-                            <span class="text-[9px] text-gray-400 font-bold uppercase">Cups</span>
+                            <span class="text-[9px] text-gray-400 font-bold uppercase">杯</span>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
-                        <span class="ml-auto text-[10px] font-mono text-gray-400">Total: ${(beer.totalMl/1000).toFixed(1)}L</span>
+                        <span class="ml-auto text-[10px] font-mono text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
             </div>
@@ -740,15 +740,15 @@ function renderBreweryLeaderboard(breweryStats) {
     entries.sort((a, b) => b[axis.key] - a[axis.key]);
 
     // 空のブルワリーを除外
-    entries = entries.filter(b => b.brewery && b.brewery !== 'Unknown');
+    entries = entries.filter(b => b.brewery && b.brewery !== 'Unknown' && b.brewery !== '不明');
 
-    if (countLabel) countLabel.textContent = `${entries.length} breweries`;
+    if (countLabel) countLabel.textContent = `${entries.length}件`;
 
     if (entries.length === 0) {
         listEl.innerHTML = `
             <div class="text-center py-8 opacity-50">
                 <i class="ph-duotone ph-warehouse text-3xl mb-2"></i>
-                <p class="text-xs font-bold">No brewery data yet.</p>
+                <p class="text-xs font-bold">ブルワリーデータがまだありません</p>
             </div>`;
         return;
     }

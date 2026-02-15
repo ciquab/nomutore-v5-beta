@@ -113,8 +113,8 @@ export function renderChart(logs, checks) {
             data: {
                 labels: dataArray.map(d => d.date),
                 datasets: [
-                    { 
-                        label: 'Earned', 
+                    {
+                        label: '返済',
                         // ★修正3: 純粋な稼ぎ分を表示
                         data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.earned, baseEx, profile))), 
                         backgroundColor: '#10B981', 
@@ -123,8 +123,8 @@ export function renderChart(logs, checks) {
                         order: 2,
                         yAxisID: 'y'
                     },
-                    { 
-                        label: 'Consumed', 
+                    {
+                        label: '借金',
                         // ★修正4: 純粋な消費（飲酒）分を表示。負の値なのでグラフは下向きに伸びます
                         data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.consumed, baseEx, profile))), 
                         backgroundColor: '#EF4444', 
@@ -135,7 +135,7 @@ export function renderChart(logs, checks) {
                     },
                     {
                         type: 'line',
-                        label: 'Weight',
+                        label: '体重',
                         data: dataArray.map(d => d.weight),
                         borderColor: '#6366F1',
                         backgroundColor: '#6366F1',

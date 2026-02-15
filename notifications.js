@@ -196,10 +196,10 @@ export const NotificationManager = {
         if (!settings.dailyEnabled) return;
         if (Notification.permission !== 'granted') return;
 
-        // 今日既に表示済みか確認
+        // 今日既に表示済みか確認（仮想日付ベース）
         const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
-        const today = dayjs().format('YYYY-MM-DD');
-        if (lastShown === today) return;
+        const virtualDate = getVirtualDate();
+        if (lastShown === virtualDate) return;
 
         const msUntil = _getMsUntilTime(settings.dailyTime);
 
@@ -225,12 +225,10 @@ export const NotificationManager = {
     showDailyReminder: async () => {
         if (Notification.permission !== 'granted') return;
 
-        const today = dayjs().format('YYYY-MM-DD');
-        const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
-        if (lastShown === today) return;
-
-        // 今日のデータ状態を確認
+        // 仮想日付ベースで重複チェック（深夜0-4時は前日扱い）
         const virtualDate = getVirtualDate();
+        const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
+        if (lastShown === virtualDate) return;
 
         let hasLog = false;
         let hasCheck = false;
@@ -244,7 +242,7 @@ export const NotificationManager = {
 
             const allChecks = await db.checks.toArray();
             hasCheck = allChecks.some(c => {
-                const checkDate = dayjs(c.timestamp).format('YYYY-MM-DD');
+                const checkDate = getVirtualDate(c.timestamp);
                 return checkDate === virtualDate && c.isSaved;
             });
         } catch (e) {
@@ -253,7 +251,7 @@ export const NotificationManager = {
 
         // 両方記録済みなら通知不要
         if (hasLog && hasCheck) {
-            localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, today);
+            localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, virtualDate);
             return;
         }
 
@@ -273,7 +271,7 @@ export const NotificationManager = {
             icon: './icon-192_2.png',
         });
 
-        localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, today);
+        localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, virtualDate);
     },
 
     // ─────────────────────────────────────────────
@@ -296,10 +294,10 @@ export const NotificationManager = {
         // リセット前日かどうか判定
         if (!_isTomorrowPeriodReset()) return;
 
-        // 今日既に表示済みか確認
+        // 今日既に表示済みか確認（仮想日付ベース）
         const lastShown = localStorage.getItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN);
-        const today = dayjs().format('YYYY-MM-DD');
-        if (lastShown === today) return;
+        const virtualDate = getVirtualDate();
+        if (lastShown === virtualDate) return;
 
         const msUntil = _getMsUntilTime(settings.periodEveTime);
 
@@ -324,9 +322,10 @@ export const NotificationManager = {
     showPeriodEveReminder: async () => {
         if (Notification.permission !== 'granted') return;
 
-        const today = dayjs().format('YYYY-MM-DD');
+        // 仮想日付ベースで重複チェック（深夜0-4時は前日扱い）
+        const virtualDate = getVirtualDate();
         const lastShown = localStorage.getItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN);
-        if (lastShown === today) return;
+        if (lastShown === virtualDate) return;
 
         if (!_isTomorrowPeriodReset()) return;
 
@@ -372,7 +371,7 @@ export const NotificationManager = {
             icon: './icon-192_2.png',
         });
 
-        localStorage.setItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN, today);
+        localStorage.setItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN, virtualDate);
     },
 };
 

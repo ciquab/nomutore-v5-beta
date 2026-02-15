@@ -445,12 +445,12 @@ const initFlavorSection = (log = null) => {
     const icon = document.getElementById('flavor-toggle-icon');
     if (!toggle || !inputs || !icon) return;
 
-    // セグメントボタンのクリックイベント登録
+    // セグメントボタンのクリックイベント登録（onclick で重複防止）
     FLAVOR_AXES.forEach(axis => {
         const container = document.getElementById(`flavor-${axis.key}`);
         if (!container) return;
         container.querySelectorAll('.flavor-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.onclick = () => {
                 // 同じボタンを再タップしたら解除（null に戻す）
                 if (btn.classList.contains('bg-orange-500')) {
                     btn.classList.remove('bg-orange-500', 'text-white', 'shadow-sm');
@@ -465,19 +465,19 @@ const initFlavorSection = (log = null) => {
                 // 選択状態に
                 btn.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500');
                 btn.classList.add('bg-orange-500', 'text-white', 'shadow-sm');
-            });
+            };
         });
     });
 
-    // 折りたたみトグル
-    toggle.addEventListener('click', () => {
+    // 折りたたみトグル（onclick で重複防止）
+    toggle.onclick = () => {
         const isHidden = inputs.classList.contains('hidden');
         inputs.classList.toggle('hidden');
         icon.style.transform = isHidden ? 'rotate(180deg)' : '';
         if (isHidden) {
             localStorage.setItem(FLAVOR_OPENED_KEY, 'true');
         }
-    });
+    };
 
     // 編集時：既存データの復元
     if (log && log.flavorProfile) {

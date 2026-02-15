@@ -455,7 +455,7 @@ export const handleSaveSettings = async () => {
             await NotificationManager.requestPermission();
         }
 
-        NotificationManager.saveSettings({ dailyEnabled, dailyTime, periodEveEnabled, periodEveTime });
+        await NotificationManager.saveSettings({ dailyEnabled, dailyTime, periodEveEnabled, periodEveTime });
         NotificationManager.scheduleAll();
 
         // 5. 成功時のUIフィードバック

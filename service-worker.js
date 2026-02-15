@@ -1,5 +1,5 @@
 // @ts-check
-const CACHE_NAME = 'nomutore-v0.4.0';
+const CACHE_NAME = 'nomutore-v0.5.0';
 const APP_SHELL = [
     './',
     './index.html',
@@ -135,6 +135,29 @@ self.addEventListener('notificationclick', (event) => {
             }
         })
     );
+});
+
+// Push 受信: サーバーからの通知を表示
+self.addEventListener('push', (event) => {
+    if (!event.data) return;
+
+    let data;
+    try {
+        data = event.data.json();
+    } catch (e) {
+        data = { title: 'NOMUTORE', body: event.data.text() };
+    }
+
+    const title = data.title || 'NOMUTORE リマインダー';
+    const options = {
+        body: data.body || '',
+        icon: './icon-192_2.png',
+        badge: './icon-192_2.png',
+        tag: data.type === 'period-eve' ? 'nomutore-period-eve' : 'nomutore-daily',
+        data: { type: data.type },
+    };
+
+    event.waitUntil(self.registration.showNotification(title, options));
 });
 
 // メッセージ受信: SKIP_WAITING

@@ -5,6 +5,7 @@ import { Store, db } from './store.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 const KEYS = APP.STORAGE_KEYS;
+const PUSH = APP.PUSH;
 
 /** @type {number|null} */
 let _dailyTimerId = null;
@@ -69,10 +70,10 @@ export const NotificationManager = {
     }),
 
     /**
-     * 通知設定を保存する
+     * 通知設定を保存する（ローカル + サーバー同期）
      * @param {Object} settings
      */
-    saveSettings: (settings) => {
+    saveSettings: async (settings) => {
         if (settings.dailyEnabled !== undefined) {
             localStorage.setItem(KEYS.NOTIF_DAILY_ENABLED, String(settings.dailyEnabled));
         }
@@ -84,6 +85,97 @@ export const NotificationManager = {
         }
         if (settings.periodEveTime !== undefined) {
             localStorage.setItem(KEYS.NOTIF_PERIOD_EVE_TIME, settings.periodEveTime);
+        }
+
+        // サーバーサイド Push の同期
+        const s = NotificationManager.getSettings();
+        const anyEnabled = s.dailyEnabled || s.periodEveEnabled;
+
+        if (anyEnabled && Notification.permission === 'granted') {
+            await NotificationManager.syncPushSubscription();
+        } else if (!anyEnabled) {
+            await NotificationManager.unsubscribePush();
+        }
+    },
+
+    // ─────────────────────────────────────────────
+    // サーバーサイド Push 購読管理
+    // ─────────────────────────────────────────────
+
+    /**
+     * Push 購読を作成/更新してサーバーに送信
+     */
+    syncPushSubscription: async () => {
+        try {
+            if (!('PushManager' in window)) {
+                console.log('[Push] PushManager not supported');
+                return;
+            }
+
+            const reg = await navigator.serviceWorker.ready;
+            let subscription = await reg.pushManager.getSubscription();
+
+            // 未購読なら新規作成
+            if (!subscription) {
+                const vapidKey = _urlBase64ToUint8Array(PUSH.VAPID_PUBLIC_KEY);
+                subscription = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: vapidKey,
+                });
+                console.log('[Push] New subscription created');
+            }
+
+            // サーバーに送信
+            const settings = NotificationManager.getSettings();
+            const res = await fetch(`${PUSH.API_BASE}/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subscription: subscription.toJSON(),
+                    dailyTime: settings.dailyTime,
+                    dailyEnabled: settings.dailyEnabled,
+                    periodEveTime: settings.periodEveTime,
+                    periodEveEnabled: settings.periodEveEnabled,
+                }),
+            });
+
+            if (res.ok) {
+                localStorage.setItem(KEYS.PUSH_SUBSCRIBED, 'true');
+                console.log('[Push] Subscription synced to server');
+            } else {
+                console.error('[Push] Server sync failed:', res.status);
+            }
+        } catch (err) {
+            console.error('[Push] Subscription error:', err);
+        }
+    },
+
+    /**
+     * Push 購読を解除（ブラウザ + サーバー）
+     */
+    unsubscribePush: async () => {
+        try {
+            if (!('PushManager' in window)) return;
+
+            const reg = await navigator.serviceWorker.ready;
+            const subscription = await reg.pushManager.getSubscription();
+
+            if (subscription) {
+                // サーバーに解除通知
+                await fetch(`${PUSH.API_BASE}/unsubscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                }).catch(() => {});
+
+                // ブラウザ側の購読を解除
+                await subscription.unsubscribe();
+                console.log('[Push] Unsubscribed');
+            }
+
+            localStorage.removeItem(KEYS.PUSH_SUBSCRIBED);
+        } catch (err) {
+            console.error('[Push] Unsubscribe error:', err);
         }
     },
 
@@ -350,4 +442,20 @@ function _showNotification(title, options) {
     } catch (e) {
         console.error('[Notif] Show notification error:', e);
     }
+}
+
+/**
+ * VAPID公開鍵(Base64URL)をUint8Arrayに変換する
+ * @param {string} base64String
+ * @returns {Uint8Array}
+ */
+function _urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
 }

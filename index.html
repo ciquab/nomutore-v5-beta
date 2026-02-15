@@ -968,18 +968,18 @@
             <!-- ★修正: Footer統一 (Cancel / Next / Save) -->
             <div class="relative z-10 p-4 border-base-100 dark:border-base-800 flex gap-2 bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <button id="btn-delete-beer" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 transition">
-                    <i class="ph-bold ph-trash text-xl"></i>
+                    <i class="ph-bold ph-trash text-lg"></i>
                 </button>
-                
-                <button data-action="modal:close" data-args='["beer-modal"]' class="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition">
+
+                <button data-action="modal:close" data-args='["beer-modal"]' class="flex-1 py-3 text-xs font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition active:scale-95">
                     キャンセル
                 </button>
 
                 <button id="btn-save-beer-next" class="flex-1 py-3 text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95">
-                    記録して次へ
+                    次へ
                 </button>
 
-                <button id="btn-save-beer" class="flex-[2] py-3 text-sm font-bold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
+                <button id="btn-save-beer" class="flex-[1.5] py-3 text-xs font-bold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
                     記録する
                 </button>
             </div>

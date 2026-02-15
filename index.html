@@ -874,6 +874,75 @@
                         </div>
                         <textarea id="beer-memo" rows="2" placeholder="テイスティングメモ..." class="w-full p-2.5 bg-white dark:bg-gray-800 border border-yellow-200 dark:border-yellow-800 rounded-lg focus:ring-2 focus:ring-yellow-500 outline-none text-xs resize-none dark:text-white placeholder-gray-400"></textarea>
                     </div>
+                    <!-- 味わい記録セクション (折りたたみ) -->
+                    <div id="flavor-section" class="border border-orange-100 dark:border-orange-900/30 rounded-xl overflow-hidden">
+                        <button type="button" id="flavor-toggle" class="w-full flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">
+                            <span class="flex items-center gap-2 text-xs font-bold">
+                                <i class="ph-duotone ph-chart-polar text-lg"></i>
+                                味わいを記録する
+                            </span>
+                            <i class="ph-bold ph-caret-down text-sm transition-transform duration-200" id="flavor-toggle-icon"></i>
+                        </button>
+                        <div id="flavor-inputs" class="hidden p-3 space-y-3 bg-white dark:bg-base-900">
+                            <div class="flavor-axis" data-axis="bitterness">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">苦味</span>
+                                    <span class="text-[9px] text-gray-400">0=なし ← → 5=強い</span>
+                                </div>
+                                <div class="flex gap-1.5" id="flavor-bitterness">
+                                    <button type="button" data-val="0" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">0</button>
+                                    <button type="button" data-val="1" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">1</button>
+                                    <button type="button" data-val="2" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">2</button>
+                                    <button type="button" data-val="3" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">3</button>
+                                    <button type="button" data-val="4" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">4</button>
+                                    <button type="button" data-val="5" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">5</button>
+                                </div>
+                            </div>
+                            <div class="flavor-axis" data-axis="sweetness">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">甘味⇔ドライ</span>
+                                    <span class="text-[9px] text-gray-400">0=ドライ ← → 5=甘い</span>
+                                </div>
+                                <div class="flex gap-1.5" id="flavor-sweetness">
+                                    <button type="button" data-val="0" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">0</button>
+                                    <button type="button" data-val="1" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">1</button>
+                                    <button type="button" data-val="2" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">2</button>
+                                    <button type="button" data-val="3" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">3</button>
+                                    <button type="button" data-val="4" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">4</button>
+                                    <button type="button" data-val="5" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">5</button>
+                                </div>
+                            </div>
+                            <div class="flavor-axis" data-axis="fruity">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">フルーティー</span>
+                                    <span class="text-[9px] text-gray-400">0=なし ← → 5=強い</span>
+                                </div>
+                                <div class="flex gap-1.5" id="flavor-fruity">
+                                    <button type="button" data-val="0" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">0</button>
+                                    <button type="button" data-val="1" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">1</button>
+                                    <button type="button" data-val="2" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">2</button>
+                                    <button type="button" data-val="3" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">3</button>
+                                    <button type="button" data-val="4" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">4</button>
+                                    <button type="button" data-val="5" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">5</button>
+                                </div>
+                            </div>
+                            <div class="flavor-axis" data-axis="body">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ボディ</span>
+                                    <span class="text-[9px] text-gray-400">0=ライト ← → 5=フル</span>
+                                </div>
+                                <div class="flex gap-1.5" id="flavor-body">
+                                    <button type="button" data-val="0" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">0</button>
+                                    <button type="button" data-val="1" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">1</button>
+                                    <button type="button" data-val="2" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">2</button>
+                                    <button type="button" data-val="3" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">3</button>
+                                    <button type="button" data-val="4" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">4</button>
+                                    <button type="button" data-val="5" class="flavor-btn flex-1 py-2 text-xs font-bold rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition">5</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 transition">
                         <div class="flex items-center gap-2">
                             <i class="ph-duotone ph-beer-bottle text-2xl text-amber-500"></i>

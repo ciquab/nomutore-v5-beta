@@ -2,7 +2,7 @@
 import { Calc } from '../logic.js';
 import { Store } from '../store.js';
 import { DOM, escapeHtml } from './dom.js';
-import { STYLE_METADATA } from '../constants.js';
+import { STYLE_METADATA, FLAVOR_AXES, FLAVOR_SCALE_MAX } from '../constants.js';
 import { openLogDetail } from './logDetail.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -660,6 +660,7 @@ function renderBeerList(beers) {
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
+                        ${hasFlavorProfile(beer) ? '<span class="text-[10px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[9px]"></i></span>' : ''}
                         <span class="ml-auto text-[10px] font-mono text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
@@ -987,7 +988,147 @@ function showBreweryDetail(breweryName) {
         if (sheet) sheet.style.transform = 'translateY(0)';
         if (backdrop) backdrop.style.opacity = '1';
     }, 10);
+
+    // ブルワリー平均レーダーチャートの描画
+    requestAnimationFrame(() => {
+        const avgProfile = calcBreweryAvgFlavor(breweryName);
+        if (avgProfile) {
+            renderBreweryFlavorRadar(avgProfile);
+        }
+    });
 }
 
+// =============================================
+// Flavor Profile Helpers
+// =============================================
 
+/**
+ * ビールに味わいプロファイルがあるか判定
+ * _allLogs から該当ビールの最新ログを探して判定
+ */
+function hasFlavorProfile(beer) {
+    const log = _allLogs.find(l =>
+        l.type === 'beer' &&
+        (l.brewery || '').trim() === (beer.brewery || '') &&
+        (l.brand || l.name || '').trim() === beer.name &&
+        l.flavorProfile
+    );
+    return !!log;
+}
 
+/**
+ * ブルワリーの味わい平均を計算
+ * @param {string} breweryName
+ * @returns {Record<string, number>|null}
+ */
+function calcBreweryAvgFlavor(breweryName) {
+    const logs = _allLogs.filter(l =>
+        l.type === 'beer' &&
+        (l.brewery || '').trim() === breweryName &&
+        l.flavorProfile
+    );
+    if (logs.length === 0) return null;
+
+    const sums = {};
+    const counts = {};
+
+    FLAVOR_AXES.forEach(a => {
+        sums[a.key] = 0;
+        counts[a.key] = 0;
+    });
+
+    logs.forEach(l => {
+        const fp = l.flavorProfile;
+        FLAVOR_AXES.forEach(a => {
+            if (fp[a.key] !== null && fp[a.key] !== undefined) {
+                sums[a.key] += fp[a.key];
+                counts[a.key]++;
+            }
+        });
+    });
+
+    const result = {};
+    let hasData = false;
+    FLAVOR_AXES.forEach(a => {
+        if (counts[a.key] > 0) {
+            result[a.key] = Math.round((sums[a.key] / counts[a.key]) * 10) / 10;
+            hasData = true;
+        } else {
+            result[a.key] = 0;
+        }
+    });
+
+    return hasData ? result : null;
+}
+
+/**
+ * ブルワリー詳細ボトムシートにレーダーチャートを描画
+ */
+let breweryRadarChart = null;
+
+function renderBreweryFlavorRadar(avgProfile) {
+    // キャンバス要素を探す or 作成
+    const listEl = document.getElementById('brewery-detail-list');
+    if (!listEl) return;
+
+    // 既存のレーダーコンテナを探す
+    let container = document.getElementById('brewery-flavor-radar-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'brewery-flavor-radar-container';
+        container.className = 'bg-white dark:bg-base-900 p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 mb-3';
+        container.innerHTML = `
+            <span class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">味わい傾向（平均）</span>
+            <div class="h-44 w-full relative">
+                <canvas id="brewery-flavor-radar"></canvas>
+            </div>
+        `;
+        listEl.insertBefore(container, listEl.firstChild);
+    }
+
+    const ctx = document.getElementById('brewery-flavor-radar');
+    if (!ctx) return;
+
+    if (breweryRadarChart) breweryRadarChart.destroy();
+
+    const labels = FLAVOR_AXES.map(a => a.label);
+    const data = FLAVOR_AXES.map(a => avgProfile[a.key] ?? 0);
+
+    breweryRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels,
+            datasets: [{
+                label: '平均',
+                data,
+                backgroundColor: 'rgba(249, 115, 22, 0.15)',
+                borderColor: 'rgba(249, 115, 22, 0.8)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(249, 115, 22, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 1,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                r: {
+                    min: 0,
+                    max: FLAVOR_SCALE_MAX,
+                    ticks: { stepSize: 1, display: false },
+                    grid: { color: 'rgba(0, 0, 0, 0.08)' },
+                    angleLines: { color: 'rgba(0, 0, 0, 0.08)' },
+                    pointLabels: {
+                        font: { size: 11, weight: 'bold' },
+                        color: '#6b7280'
+                    }
+                }
+            }
+        }
+    });
+}

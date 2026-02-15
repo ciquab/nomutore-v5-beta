@@ -109,7 +109,7 @@ export const APP = {
         PUSH_SUBSCRIBED: 'nomutore_push_subscribed'
     },
     PUSH: {
-        VAPID_PUBLIC_KEY: 'YOUR_VAPID_PUBLIC_KEY_HERE',  // ← 要設定
+        VAPID_PUBLIC_KEY: 'BNU-pp-d12uQeWQkqsmyv3zlGRHNJkaR9n2aSm5FE4w1mBrWOwtItlGGfuW6BpNvzCkDHQeAKrD7LqiKUjdD0FE',
         API_BASE: 'https://asia-northeast1-nomutore-backup.cloudfunctions.net',
     },
     DEFAULTS: { 

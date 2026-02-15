@@ -104,13 +104,20 @@ export const NotificationManager = {
         if (!settings.dailyEnabled) return;
         if (Notification.permission !== 'granted') return;
 
-        const msUntil = _getMsUntilTime(settings.dailyTime);
-        if (msUntil === null) return; // 今日の通知は既に過去
-
         // 今日既に表示済みか確認
         const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
         const today = dayjs().format('YYYY-MM-DD');
         if (lastShown === today) return;
+
+        const msUntil = _getMsUntilTime(settings.dailyTime);
+
+        if (msUntil === null) {
+            // 時刻は過ぎたが未表示 → 即座に表示
+            // （バックグラウンドで setTimeout が失われた場合の救済）
+            console.log('[Notif] Daily reminder time passed but not shown — firing now');
+            NotificationManager.showDailyReminder();
+            return;
+        }
 
         _dailyTimerId = setTimeout(async () => {
             _dailyTimerId = null;
@@ -197,13 +204,19 @@ export const NotificationManager = {
         // リセット前日かどうか判定
         if (!_isTomorrowPeriodReset()) return;
 
-        const msUntil = _getMsUntilTime(settings.periodEveTime);
-        if (msUntil === null) return;
-
         // 今日既に表示済みか確認
         const lastShown = localStorage.getItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN);
         const today = dayjs().format('YYYY-MM-DD');
         if (lastShown === today) return;
+
+        const msUntil = _getMsUntilTime(settings.periodEveTime);
+
+        if (msUntil === null) {
+            // 時刻は過ぎたが未表示 → 即座に表示
+            console.log('[Notif] Period eve reminder time passed but not shown — firing now');
+            NotificationManager.showPeriodEveReminder();
+            return;
+        }
 
         _periodEveTimerId = setTimeout(async () => {
             _periodEveTimerId = null;

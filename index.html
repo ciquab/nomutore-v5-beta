@@ -858,8 +858,11 @@
                         </button>
                     </div>
                     <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl border border-base-200 dark:border-base-700 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <label class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase">評価</label>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <i class="ph-duotone ph-star text-sm text-amber-500"></i>
+                                評価
+                            </span>
                             <div class="relative">
                                 <select id="beer-rating" class="appearance-none pl-2 pr-8 py-1 bg-white dark:bg-base-900 border border-base-200 dark:border-base-700 rounded text-sm font-bold text-amber-600 dark:text-amber-400 outline-none cursor-pointer focus:ring-2 focus:ring-indigo-400">
                                     <option value="0">評価なし</option>
@@ -876,9 +879,9 @@
                     </div>
                     <!-- 味わい記録セクション (折りたたみ) -->
                     <div id="flavor-section" class="border border-base-200 dark:border-base-700 rounded-xl overflow-hidden">
-                        <button type="button" id="flavor-toggle" class="w-full flex items-center justify-between p-3 bg-base-50 dark:bg-base-800 text-gray-600 dark:text-gray-300 hover:bg-base-100 dark:hover:bg-base-700 transition">
-                            <span class="flex items-center gap-2 text-xs font-bold">
-                                <i class="ph-duotone ph-chart-polar text-lg text-orange-500"></i>
+                        <button type="button" id="flavor-toggle" class="w-full flex items-center justify-between p-3 bg-base-50 dark:bg-base-800 hover:bg-base-100 dark:hover:bg-base-700 transition">
+                            <span class="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <i class="ph-duotone ph-chart-polar text-sm text-orange-500"></i>
                                 味わいを記録する
                             </span>
                             <i class="ph-bold ph-caret-down text-sm transition-transform duration-200" id="flavor-toggle-icon"></i>
@@ -944,10 +947,10 @@
                     </div>
 
                     <label class="flex items-center justify-between p-3 bg-base-50 dark:bg-base-800 rounded-xl cursor-pointer border border-base-200 dark:border-base-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
-                        <div class="flex items-center gap-2">
-                            <i class="ph-duotone ph-beer-bottle text-2xl text-amber-500"></i>
-                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300">保存後にUntappdを開く</span>
-                        </div>
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <i class="ph-duotone ph-arrow-square-out text-sm text-amber-500"></i>
+                            保存後にUntappdを開く
+                        </span>
                         <div class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="untappd-check" class="sr-only peer">
                             
@@ -956,7 +959,10 @@
                     </label>
                     <div id="beer-kcal-preview-container" class="mt-4 p-4 bg-base-50 dark:bg-base-800 rounded-xl border border-base-200 dark:border-base-700">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-black text-indigo-400 dark:text-indigo-500 uppercase tracking-widest">推定カロリー借金</span>
+                            <span class="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                <i class="ph-duotone ph-calculator text-sm text-indigo-500"></i>
+                                推定カロリー借金
+                            </span>
                             <div id="beer-kcal-preview" class="text-2xl font-black text-indigo-600 dark:text-indigo-400">
                                 0 <span class="text-xs font-bold ml-1 text-gray-400">kcal</span>
                             </div>

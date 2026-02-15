@@ -463,29 +463,54 @@ select:disabled {
    モーダル階層とリストアニメーションの強化
 */
 
-/* Z-Index Hierarchy Management */
-/* Action Menu: Level 2 */
+/* =============================================
+   Z-Index Hierarchy Management (単一の情報源)
+   =============================================
+   Level 1:  Nav / FAB / Save       50 - 90
+   Level 2:  Action menu            100
+   Level 3:  Day-add selector       110
+   Level 4:  Input modals           200
+   Level 5:  Check library          250
+   Level 6:  Timer                  300
+   Level 7:  Rollover               350
+   Level 8:  Onboarding             500
+   Level 9:  Help (全画面ガイド)     600
+   Level 10: Message box            9999
+   Level 11: Error overlay          10000
+   Level 12: Toast animation        10001
+   ============================================= */
+
+/* Level 2: Action Menu */
 #action-menu-modal { z-index: 100 !important; }
 
-/* Input Modals: Level 3 */
-#beer-modal, 
-#check-modal, 
-#exercise-modal, 
-#settings-modal, 
-#help-modal { 
-    z-index: 200 !important; 
+/* Level 3: Day-add selector */
+#day-add-selector { z-index: 110 !important; }
+
+/* Level 4: Input Modals */
+#beer-modal,
+#check-modal,
+#exercise-modal,
+#settings-modal {
+    z-index: 200 !important;
 }
 
-/* Immersive/Critical Modals: Level 4 */
+/* Level 5: Check Library */
+#check-library-modal { z-index: 250 !important; }
+
+/* Level 6-7: Immersive / Critical */
 #timer-modal { z-index: 300 !important; }
 #rollover-modal { z-index: 350 !important; }
 
-/* Toast/Animation Overlay: Level 6 (New) */
-#toast-animation-layer { z-index: 10001 !important; }
+/* Level 8: Onboarding */
+#onboarding-modal { z-index: 500 !important; }
 
-/* Notifications/Overlays: Level 5 */
+/* Level 9: Help (設定の保存ボタンより上) */
+#help-modal { z-index: 600 !important; }
+
+/* Level 10-12: System overlays */
 #message-box { z-index: 9999 !important; }
 #global-error-overlay { z-index: 10000 !important; }
+#toast-animation-layer { z-index: 10001 !important; }
 
 /* List Item Entry Animation */
 @keyframes slideInUp {
@@ -802,26 +827,7 @@ select:disabled {
     transition: none !important;
 }
 
+/* Level 1: Settings Save Button (Nav=50 より上、モーダル=100 より下) */
 #settings-save-container {
-    isolation: isolate;
-    /* 3Dレンダリングを強制し、他の要素より手前に配置 */
-    transform: translateZ(100px); 
-    -webkit-transform: translateZ(100px);
-    /* アニメーション中もこの「高度」を維持させる */
-    backface-visibility: hidden;
-    z-index: 9998 !important;
-}
-
-#tab-settings {
-    position: relative;
-    z-index: 0;
-    /* ボタンより確実に低い位置であることをブラウザに教える */
-    transform: translateZ(-1px);
-    -webkit-transform: translateZ(-1px);
-}
-
-/* プルダウンメニュー（select）自体にも設定 */
-#tab-settings select {
-    position: relative;
-    z-index: 1;
+    z-index: 90 !important;
 }

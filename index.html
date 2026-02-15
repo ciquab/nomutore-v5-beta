@@ -669,8 +669,8 @@
 <!-- ========================================
    Save Changes ボタンコンテナ
    ======================================== -->
-<div id="settings-save-container" 
-    class="hidden fixed bottom-24 left-0 right-0 px-6 z-[9998] transition-all duration-300 ease-out">
+<div id="settings-save-container"
+    class="hidden fixed bottom-24 left-0 right-0 px-6 transition-all duration-300 ease-out">
     <div class="max-w-md mx-auto relative z-10">
         <button id="btn-save-settings" 
             class="relative z-10 w-full py-4 rounded-2xl bg-indigo-600 text-white font-bold shadow-[0_10px_30px_rgba(79,70,229,0.4)] hover:bg-indigo-700 transition transform active:scale-95">
@@ -686,9 +686,9 @@
     class="hidden fixed bottom-24 right-6 z-40 w-14 h-14 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 ease-out">    <i class="ph-bold ph-plus text-2xl"></i>
 </button>
 
-    <div id="message-box" class="fixed top-6 left-1/2 transform -translate-x-1/2 translate-y-[-150%] opacity-0 z-[9999] transition-all duration-300"></div>
+    <div id="message-box" class="fixed top-6 left-1/2 transform -translate-x-1/2 translate-y-[-150%] opacity-0 transition-all duration-300"></div>
     
-    <div id="global-error-overlay" class="fixed inset-0 bg-black/90 z-[10000] hidden flex flex-col items-center justify-center p-6 text-white">
+    <div id="global-error-overlay" class="fixed inset-0 bg-black/90 hidden flex flex-col items-center justify-center p-6 text-white">
         <h2 class="text-2xl font-bold mb-4 text-red-500">システムエラー</h2>
         <pre id="error-details" class="bg-gray-800 p-4 rounded text-xs w-full overflow-auto mb-4 max-h-[50vh]"></pre>
         <div class="flex gap-4">
@@ -698,7 +698,7 @@
     </div>
 
 <!-- Check Library Modal (Phase 1.5 New) -->
-    <div id="check-library-modal" class="fixed inset-0 z-[250] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="check-library-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-base-50 dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
             <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center bg-white dark:bg-base-900 z-20">
                 <div>
@@ -741,7 +741,7 @@
         </div>
     </div>
 
-<div id="action-menu-modal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
+<div id="action-menu-modal" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
     
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto" data-action="modal:close" data-args='["action-menu-modal"]'></div>
     
@@ -771,7 +771,7 @@
 </div>
 
     <!-- Beer Modal -->
-    <div id="beer-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="beer-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 class="font-bold text-lg">ビールを追加</h3>
@@ -918,7 +918,7 @@
     </div>
 
     <!-- Check Modal (Updated: UI Consistency) -->
-    <div id="check-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="check-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 class="font-bold text-lg">デイリーチェック</h3>
@@ -969,7 +969,7 @@
         </div>
     </div>
 
-    <div id="timer-modal" class="fixed inset-0 z-[200] hidden items-center justify-center bg-base-900 text-white transition-opacity duration-300">
+    <div id="timer-modal" class="fixed inset-0 hidden items-center justify-center bg-base-900 text-white transition-opacity duration-300">
         <div id="timer-bubbles-container" class="absolute inset-0 overflow-hidden pointer-events-none opacity-40 z-0"></div>
         
         <div class="relative z-10 w-full max-w-md h-full flex flex-col justify-center p-8 text-center">
@@ -1043,7 +1043,7 @@
         </div>
     </div>
 
-    <div id="rollover-modal" class="fixed inset-0 z-[350] hidden flex items-center justify-center p-4 transition-opacity duration-300">
+    <div id="rollover-modal" class="fixed inset-0 hidden flex items-center justify-center p-4 transition-opacity duration-300">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
     
     <div class="bg-white dark:bg-base-900 w-full max-w-sm rounded-3xl p-6 relative z-10 shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all scale-100 animate-bounce-in">
@@ -1068,7 +1068,7 @@
 </div>
 
         <!-- Exercise Modal -->
-    <div id="exercise-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="exercise-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         
         <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
@@ -1185,7 +1185,7 @@
     </div>
 </div>
 
-<div id="day-add-selector" class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
+<div id="day-add-selector" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto" data-action="modal:toggle" data-args='["day-add-selector"]'></div>
     <div class="relative w-full sm:max-w-md bg-white dark:bg-base-900 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-10 transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto shadow-2xl overflow-hidden">    
         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden"></div>
@@ -1234,7 +1234,7 @@
 </div>
 
     
-<div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden z-[10000] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+<div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-white dark:bg-base-900 w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
         
         <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur">
@@ -1873,7 +1873,7 @@
     </div>
 </div>
 
-<div id="onboarding-modal" class="fixed inset-0 z-[500] hidden flex items-center justify-center bg-base-50/90 dark:bg-base-900/90 backdrop-blur-xl transition-all duration-300 opacity-0 scale-95">
+<div id="onboarding-modal" class="fixed inset-0 hidden flex items-center justify-center bg-base-50/90 dark:bg-base-900/90 backdrop-blur-xl transition-all duration-300 opacity-0 scale-95">
         <div class="w-full max-w-md p-6 relative">
             
             <div class="flex justify-center mb-6">

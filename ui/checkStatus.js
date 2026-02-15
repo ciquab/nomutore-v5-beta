@@ -32,7 +32,7 @@ export function renderCheckStatus(checks, logs) {
         accent: "bg-gray-200"
     };
     
-    let label = "DAILY CHECK";
+    let label = "Daily Check";
     let mainStatus = "No Record";
     let subStatus = "記録がありません";
     let bottomContent = `<span class="text-[10px] font-bold opacity-60">Tap to record</span>`;
@@ -41,7 +41,7 @@ export function renderCheckStatus(checks, logs) {
         const { short, desc, score } = analyzeCondition(targetCheck, logs);
         
         if (type === 'today') {
-            label = "TODAY'S COND.";
+            label = "Today's Cond.";
             if (score >= 3) { 
                 theme = { 
                     bg: "bg-emerald-50", darkBg: "dark:bg-emerald-900/20",
@@ -62,7 +62,7 @@ export function renderCheckStatus(checks, logs) {
                 };
             }
         } else {
-            label = "YESTERDAY";
+            label = "Yesterday";
             theme = { 
                 bg: "bg-white", darkBg: "dark:bg-gray-800",
                 text: "text-gray-600", darkText: "dark:text-gray-300",

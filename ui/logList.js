@@ -157,8 +157,8 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : escapeHtml(log.name);
 
         let subText = log.type === 'exercise'
-            ? `<span class="text-gray-500 dark:text-gray-400">${log.minutes} min</span> · +${Math.round(log.kcal)} kcal`
-            : `${log.count || 1} cans <span class="opacity-60">(${(log.size || 350) * (log.count || 1)}ml)</span>${log.style ? ` · ${log.style}` : ''}`;
+            ? `<span class="text-gray-500 dark:text-gray-400">${log.minutes}分</span> · +${Math.round(log.kcal)} kcal`
+            : `${log.count || 1}本 <span class="opacity-60">(${(log.size || 350) * (log.count || 1)}ml)</span>${log.style ? ` · ${log.style}` : ''}`;
 
         let rightContent = log.type === 'exercise'
             ? `<span class="text-sm font-black text-indigo-500">+${Math.round(log.kcal)}</span>`

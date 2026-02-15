@@ -97,7 +97,15 @@ export const APP = {
         CHECK_SCHEMA: 'nomutore_check_schema',
         ORB_STYLE: 'nomutore_orb_style',
         UNIT_MODE: 'nomutore_unit_mode',
-        PROFILE: 'nomutore_profile'
+        PROFILE: 'nomutore_profile',
+
+        // 通知設定
+        NOTIF_DAILY_ENABLED: 'nomutore_notif_daily_enabled',
+        NOTIF_DAILY_TIME: 'nomutore_notif_daily_time',
+        NOTIF_PERIOD_EVE_ENABLED: 'nomutore_notif_period_eve_enabled',
+        NOTIF_PERIOD_EVE_TIME: 'nomutore_notif_period_eve_time',
+        NOTIF_DAILY_LAST_SHOWN: 'nomutore_notif_daily_last_shown',
+        NOTIF_PERIOD_EVE_LAST_SHOWN: 'nomutore_notif_period_eve_last_shown'
     },
     DEFAULTS: { 
         WEIGHT: 60, HEIGHT: 160, AGE: 30, GENDER: 'female', 

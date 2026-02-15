@@ -10,6 +10,7 @@ import { initErrorHandler } from './errorHandler.js';
 import { CloudManager } from './cloudManager.js';
 import { Onboarding } from './ui/onboarding.js';
 import { actionRouter, initActionRouter } from './ui/actionRouter.js';
+import { NotificationManager } from './notifications.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -395,6 +396,9 @@ const initApp = async () => {
 
         UI.enableInteractions();
         console.log('🚀 UI initialized and interactions enabled');
+
+        // 7. 通知スケジュールの初期化
+        NotificationManager.init();
        
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する

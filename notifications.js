@@ -1,52 +1,27 @@
 // @ts-check
-import { APP, EXERCISE } from './constants.js';
-import { Calc, getVirtualDate } from './logic.js';
-import { Store, db } from './store.js';
-import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
+import { APP } from './constants.js';
 
 const KEYS = APP.STORAGE_KEYS;
 const PUSH = APP.PUSH;
 
-/** @type {number|null} */
-let _dailyTimerId = null;
-/** @type {number|null} */
-let _periodEveTimerId = null;
-let _notifInitialized = false;
-
 /**
- * 通知マネージャー
- * PWAローカル通知のスケジューリングと表示を管理する
+ * 通知マネージャー (Client Side)
+ * 役割:
+ * 1. 通知権限のリクエスト
+ * 2. 通知設定の保存
+ * 3. サーバー(Firebase)への設定・データ同期
+ * ※ ローカルでのタイマー監視(setTimeout)は廃止し、サーバー管理に移行しました。
  */
 export const NotificationManager = {
 
     /**
-     * 初期化: 権限確認とスケジューリング開始
+     * 初期化: APIサポート確認のみ
      */
     init: () => {
         if (!('Notification' in window)) {
             console.log('[Notif] Notification API not supported');
-            return;
         }
-
-        NotificationManager.scheduleAll();
-
-        // visibilitychange時に再スケジュール（日付跨ぎ対応）
-        if (!_notifInitialized) {
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') {
-                    NotificationManager.scheduleAll();
-                }
-            });
-            _notifInitialized = true;
-        }
-    },
-
-    /**
-     * 全通知のスケジュールを設定/リセットする
-     */
-    scheduleAll: () => {
-        NotificationManager.scheduleDailyReminder();
-        NotificationManager.schedulePeriodEve();
+        // ローカルスケジューリングは不要になったため何もしない
     },
 
     /**
@@ -60,6 +35,10 @@ export const NotificationManager = {
         if (Notification.permission === 'denied') return false;
 
         const result = await Notification.requestPermission();
+        if (result === 'granted') {
+            // 許可されたら即座にサーバーへ購読情報を送る
+            await NotificationManager.syncPushSubscription();
+        }
         return result === 'granted';
     },
 
@@ -74,10 +53,11 @@ export const NotificationManager = {
     }),
 
     /**
-     * 通知設定を保存する（ローカル + サーバー同期）
+     * 通知設定を保存し、サーバーへ同期する
      * @param {Object} settings
      */
     saveSettings: async (settings) => {
+        // LocalStorageへ保存
         if (settings.dailyEnabled !== undefined) {
             localStorage.setItem(KEYS.NOTIF_DAILY_ENABLED, String(settings.dailyEnabled));
         }
@@ -91,23 +71,24 @@ export const NotificationManager = {
             localStorage.setItem(KEYS.NOTIF_PERIOD_EVE_TIME, settings.periodEveTime);
         }
 
-        // サーバーサイド Push の同期
+        // サーバーサイド Push の同期処理
         const s = NotificationManager.getSettings();
         const anyEnabled = s.dailyEnabled || s.periodEveEnabled;
 
         if (anyEnabled && Notification.permission === 'granted') {
             await NotificationManager.syncPushSubscription();
         } else if (!anyEnabled) {
+            // 全てオフにされた場合は購読解除
             await NotificationManager.unsubscribePush();
         }
     },
 
     // ─────────────────────────────────────────────
-    // サーバーサイド Push 購読管理
+    // サーバーサイド Push 購読管理 & データ同期
     // ─────────────────────────────────────────────
 
     /**
-     * Push 購読を作成/更新してサーバーに送信
+     * Push 購読を作成/更新して設定と共にサーバーに送信
      */
     syncPushSubscription: async () => {
         try {
@@ -129,7 +110,7 @@ export const NotificationManager = {
                 console.log('[Push] New subscription created');
             }
 
-            // ★追加: 現在の期間設定を取得
+            // 現在の期間設定を取得
             const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
             const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0');
             const periodEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE) || '0');
@@ -145,11 +126,11 @@ export const NotificationManager = {
                     dailyEnabled: settings.dailyEnabled,
                     periodEveTime: settings.periodEveTime,
                     periodEveEnabled: settings.periodEveEnabled,
-                    // ★追加: サーバーが曜日判定するための情報を送る
+                    // サーバー側で日付判定するために必要な設定
                     periodConfig: {
-                        mode: periodMode,   // 'weekly', 'monthly', 'custom'
-                        start: periodStart, // timestamp
-                        end: periodEnd      // timestamp (custom用)
+                        mode: periodMode,   
+                        start: periodStart, 
+                        end: periodEnd      
                     }
                 }),
             });
@@ -162,6 +143,55 @@ export const NotificationManager = {
             }
         } catch (err) {
             console.error('[Push] Subscription error:', err);
+        }
+    },
+
+    /**
+     * 最新の状態（収支・記録日）をサーバーへ同期
+     * ※ ログ保存時やチェック完了時にServiceから呼ばれる
+     * * @param {Object} status 
+     * @param {number} [status.balance] - 現在の収支
+     * @param {string|null} [status.lastCheckDate] - 最終チェック日(YYYY-MM-DD)
+     * @param {string|null} [status.lastLogDate] - 最終ログ日(YYYY-MM-DD)
+     */
+    updateServerStatus: async ({ balance, lastCheckDate, lastLogDate }) => {
+        // 購読中でなければ送信しない
+        if (localStorage.getItem(APP.STORAGE_KEYS.PUSH_SUBSCRIBED) !== 'true') return;
+
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const subscription = await reg.pushManager.getSubscription();
+            if (!subscription) return;
+
+            const settings = NotificationManager.getSettings();
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
+            const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0');
+            const periodEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE) || '0');
+
+            // 送信データ構築
+            const payload = {
+                subscription: subscription.toJSON(),
+                dailyTime: settings.dailyTime,
+                dailyEnabled: settings.dailyEnabled,
+                periodEveTime: settings.periodEveTime,
+                periodEveEnabled: settings.periodEveEnabled,
+                periodConfig: { mode: periodMode, start: periodStart, end: periodEnd }
+            };
+
+            // 値がある場合のみペイロードに追加（undefinedを送らない）
+            if (balance !== undefined) payload.currentBalance = Math.round(balance);
+            if (lastCheckDate) payload.lastCheckDate = lastCheckDate;
+            if (lastLogDate) payload.lastLogDate = lastLogDate;
+
+            // 送信 (fire-and-forget)
+            fetch(`${PUSH.API_BASE}/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }).catch(e => console.error('[Push] Sync background error:', e));
+
+        } catch (e) {
+            console.error('[Push] Sync failed:', e);
         }
     },
 
@@ -193,317 +223,11 @@ export const NotificationManager = {
             console.error('[Push] Unsubscribe error:', err);
         }
     },
-
-    // ─────────────────────────────────────────────
-    // デイリーリマインダー（チェック + ログ促進）
-    // ─────────────────────────────────────────────
-
-    /**
-     * デイリーリマインダーをスケジュールする
-     */
-    scheduleDailyReminder: () => {
-        if (_dailyTimerId !== null) {
-            clearTimeout(_dailyTimerId);
-            _dailyTimerId = null;
-        }
-
-        const settings = NotificationManager.getSettings();
-        if (!settings.dailyEnabled) return;
-        if (Notification.permission !== 'granted') return;
-
-        // 今日既に表示済みか確認（仮想日付ベース）
-        const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
-        const virtualDate = getVirtualDate();
-        if (lastShown === virtualDate) return;
-
-        const msUntil = _getMsUntilTime(settings.dailyTime);
-
-        if (msUntil === null) {
-            // 時刻は過ぎたが未表示 → 即座に表示
-            // （バックグラウンドで setTimeout が失われた場合の救済）
-            console.log('[Notif] Daily reminder time passed but not shown — firing now');
-            NotificationManager.showDailyReminder();
-            return;
-        }
-
-        _dailyTimerId = setTimeout(async () => {
-            _dailyTimerId = null;
-            await NotificationManager.showDailyReminder();
-        }, msUntil);
-
-        console.log(`[Notif] Daily reminder scheduled in ${Math.round(msUntil / 60000)}min`);
-    },
-
-    /**
-     * デイリーリマインダーを表示する
-     */
-    showDailyReminder: async () => {
-        if (Notification.permission !== 'granted') return;
-
-        // 仮想日付ベースで重複チェック（深夜0-4時は前日扱い）
-        const virtualDate = getVirtualDate();
-        const lastShown = localStorage.getItem(KEYS.NOTIF_DAILY_LAST_SHOWN);
-        if (lastShown === virtualDate) return;
-
-        let hasLog = false;
-        let hasCheck = false;
-
-        try {
-            const allLogs = await db.logs.toArray();
-            hasLog = allLogs.some(l => {
-                const logDate = getVirtualDate(l.timestamp);
-                return logDate === virtualDate;
-            });
-
-            const allChecks = await db.checks.toArray();
-            hasCheck = allChecks.some(c => {
-                const checkDate = getVirtualDate(c.timestamp);
-                return checkDate === virtualDate && c.isSaved;
-            });
-        } catch (e) {
-            console.error('[Notif] Data check error:', e);
-        }
-
-        // 両方記録済みなら通知不要
-        if (hasLog && hasCheck) {
-            localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, virtualDate);
-            return;
-        }
-
-        // メッセージ構築
-        let body = '';
-        if (!hasLog && !hasCheck) {
-            body = '今日の記録がまだです。休肝日ですか？コンディションチェックもお忘れなく。';
-        } else if (!hasCheck) {
-            body = '今日のコンディションチェックがまだです。体調を記録しましょう。';
-        } else {
-            body = '今日の飲食・運動を記録しましょう。休肝日なら休肝マークをつけましょう。';
-        }
-
-        _showNotification('NOMUTORE リマインダー', {
-            body,
-            tag: 'nomutore-daily',
-            icon: './icon-192_2.png',
-        });
-
-        localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, virtualDate);
-    },
-
-    /**
-     * ★追加: 最新の状態（収支・記録日）をサーバーへ同期
-     * @param {Object} status 
-     * @param {number} status.balance - 現在の収支
-     * @param {string|null} status.lastCheckDate - 最終チェック日(YYYY-MM-DD)
-     * @param {string|null} status.lastLogDate - 最終ログ日(YYYY-MM-DD)
-     */
-    updateServerStatus: async ({ balance, lastCheckDate, lastLogDate }) => {
-        if (localStorage.getItem(APP.STORAGE_KEYS.PUSH_SUBSCRIBED) !== 'true') return;
-
-        try {
-            const reg = await navigator.serviceWorker.ready;
-            const subscription = await reg.pushManager.getSubscription();
-            if (!subscription) return;
-
-            const settings = NotificationManager.getSettings();
-            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
-            const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0');
-            const periodEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE) || '0');
-
-            // 送信データ構築
-            const payload = {
-                subscription: subscription.toJSON(),
-                dailyTime: settings.dailyTime,
-                dailyEnabled: settings.dailyEnabled,
-                periodEveTime: settings.periodEveTime,
-                periodEveEnabled: settings.periodEveEnabled,
-                periodConfig: { mode: periodMode, start: periodStart, end: periodEnd }
-            };
-
-            // 値がある場合のみペイロードに追加
-            if (balance !== undefined) payload.currentBalance = Math.round(balance);
-            if (lastCheckDate) payload.lastCheckDate = lastCheckDate;
-            if (lastLogDate) payload.lastLogDate = lastLogDate;
-
-            // 送信 (fire-and-forgetで待機しない)
-            fetch(`${APP.PUSH.API_BASE}/subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            }).catch(e => console.error('[Push] Sync background error:', e));
-
-        } catch (e) {
-            console.error('[Push] Sync failed:', e);
-        }
-    },　
-
-    // ─────────────────────────────────────────────
-    // 期間リセット前日の借金サマリー
-    // ─────────────────────────────────────────────
-
-    /**
-     * 期間リセット前日通知をスケジュールする
-     */
-    schedulePeriodEve: () => {
-        if (_periodEveTimerId !== null) {
-            clearTimeout(_periodEveTimerId);
-            _periodEveTimerId = null;
-        }
-
-        const settings = NotificationManager.getSettings();
-        if (!settings.periodEveEnabled) return;
-        if (Notification.permission !== 'granted') return;
-
-        // リセット前日かどうか判定
-        if (!_isTomorrowPeriodReset()) return;
-
-        // 今日既に表示済みか確認（仮想日付ベース）
-        const lastShown = localStorage.getItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN);
-        const virtualDate = getVirtualDate();
-        if (lastShown === virtualDate) return;
-
-        const msUntil = _getMsUntilTime(settings.periodEveTime);
-
-        if (msUntil === null) {
-            // 時刻は過ぎたが未表示 → 即座に表示
-            console.log('[Notif] Period eve reminder time passed but not shown — firing now');
-            NotificationManager.showPeriodEveReminder();
-            return;
-        }
-
-        _periodEveTimerId = setTimeout(async () => {
-            _periodEveTimerId = null;
-            await NotificationManager.showPeriodEveReminder();
-        }, msUntil);
-
-        console.log(`[Notif] Period eve reminder scheduled in ${Math.round(msUntil / 60000)}min`);
-    },
-
-    /**
-     * 期間リセット前日の借金サマリー通知を表示する
-     */
-    showPeriodEveReminder: async () => {
-        if (Notification.permission !== 'granted') return;
-
-        // 仮想日付ベースで重複チェック（深夜0-4時は前日扱い）
-        const virtualDate = getVirtualDate();
-        const lastShown = localStorage.getItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN);
-        if (lastShown === virtualDate) return;
-
-        if (!_isTomorrowPeriodReset()) return;
-
-        // 現在のバランスを計算
-        let balance = 0;
-        try {
-            const mode = localStorage.getItem(KEYS.PERIOD_MODE) || 'weekly';
-            const startStr = localStorage.getItem(KEYS.PERIOD_START);
-            const start = startStr ? parseInt(startStr) : 0;
-
-            const allLogs = await db.logs.toArray();
-            const targetLogs = mode !== 'permanent'
-                ? allLogs.filter(l => l.timestamp >= start)
-                : allLogs;
-
-            balance = targetLogs.reduce((sum, l) => sum + (l.kcal || 0), 0);
-        } catch (e) {
-            console.error('[Notif] Balance calc error:', e);
-        }
-
-        // メッセージ構築
-        const mode = localStorage.getItem(KEYS.PERIOD_MODE) || 'weekly';
-        const modeLabel = mode === 'weekly' ? '今週' : mode === 'monthly' ? '今月' : '今期間';
-        let body = '';
-
-        if (balance >= 0) {
-            // 借金なし
-            body = `明日リセットです。${modeLabel}の収支はプラスです！素晴らしい。`;
-        } else {
-            // 借金あり → 運動時間を計算
-            const debt = Math.abs(balance);
-            const profile = Store.getProfile();
-            const baseExKey = Store.getBaseExercise();
-            const minutes = Calc.convertKcalToMinutes(debt, baseExKey, profile);
-            const exData = EXERCISE[baseExKey] || EXERCISE['walking'];
-
-            body = `明日リセット。現在の借金: ${Math.round(debt)}kcal。${exData.label}${minutes}分で完済できます。`;
-        }
-
-        _showNotification('NOMUTORE 期間サマリー', {
-            body,
-            tag: 'nomutore-period-eve',
-            icon: './icon-192_2.png',
-        });
-
-        localStorage.setItem(KEYS.NOTIF_PERIOD_EVE_LAST_SHOWN, virtualDate);
-    },
 };
 
 // ─────────────────────────────────────────────
 // 内部ヘルパー
 // ─────────────────────────────────────────────
-
-/**
- * 指定時刻(HH:mm)までのミリ秒を返す。既に過ぎていたら null
- * @param {string} timeStr "HH:mm"
- * @returns {number|null}
- */
-function _getMsUntilTime(timeStr) {
-    const [h, m] = timeStr.split(':').map(Number);
-    const now = dayjs();
-    const target = now.startOf('day').add(h, 'hour').add(m, 'minute');
-    const diff = target.diff(now);
-    return diff > 0 ? diff : null;
-}
-
-/**
- * 明日が期間リセット日かどうかを判定する
- * @returns {boolean}
- */
-function _isTomorrowPeriodReset() {
-    const mode = localStorage.getItem(KEYS.PERIOD_MODE) || 'weekly';
-
-    if (mode === 'permanent') return false;
-
-    const tomorrow = dayjs().add(1, 'day');
-
-    if (mode === 'weekly') {
-        // 月曜リセット → 日曜日が前日
-        return tomorrow.day() === 1; // 1 = Monday
-    }
-    if (mode === 'monthly') {
-        // 1日リセット → 月末が前日
-        return tomorrow.date() === 1;
-    }
-    if (mode === 'custom') {
-        const endDateTs = parseInt(localStorage.getItem(KEYS.PERIOD_END_DATE) || '0');
-        if (!endDateTs) return false;
-        const endDate = dayjs(endDateTs);
-        // 終了日の翌日がリセット日 → 終了日当日が前日
-        return tomorrow.isAfter(endDate.endOf('day'));
-    }
-
-    return false;
-}
-
-/**
- * 通知を表示する（SW経由 or Notification API直接）
- * @param {string} title
- * @param {NotificationOptions} options
- */
-function _showNotification(title, options) {
-    try {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            // SW経由で表示（バックグラウンドでも確実に表示）
-            navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(title, options);
-            });
-        } else {
-            // フォールバック: Notification API直接
-            new Notification(title, options);
-        }
-    } catch (e) {
-        console.error('[Notif] Show notification error:', e);
-    }
-}
 
 /**
  * VAPID公開鍵(Base64URL)をUint8Arrayに変換する
@@ -520,6 +244,3 @@ function _urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
 }
-
-
-

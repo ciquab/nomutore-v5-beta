@@ -944,3 +944,36 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
+
+/**
+ * サーバー同期用のヘルパー
+ * DBから最新データを取得して送信する
+ */
+const _syncStatusToServer = async () => {
+    try {
+        // 1. バランスの取得（既存メソッド活用）
+        const { balance } = await Service.getAppDataSnapshot();
+
+        // 2. 最新ログ日付の取得 (LogService経由)
+        // 最新1件を取得＝タイムスタンプ順で最も未来（または現在）のもの
+        const latestLogs = await LogService.getRecent(1);
+        const lastLogDate = latestLogs.length > 0 
+            ? getVirtualDate(latestLogs[0].timestamp) 
+            : null;
+
+        // 3. 最新チェック日付の取得
+        const latestCheck = await db.checks.orderBy('timestamp').reverse().first();
+        const lastCheckDate = latestCheck 
+            ? getVirtualDate(latestCheck.timestamp) 
+            : null;
+
+        // 4. 送信
+        NotificationManager.updateServerStatus({
+            balance,
+            lastCheckDate,
+            lastLogDate
+        });
+    } catch (e) {
+        console.warn('[Service] Sync status warning:', e);
+    }
+};

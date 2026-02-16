@@ -742,6 +742,9 @@ extendPeriod: async (days = 7) => {
     // 4. 履歴再計算（これでストリークも最新ログを反映して計算されます）
     await Service.recalcImpactedHistory(data.timestamp);
 
+    // ★追加: サーバーへ状態同期
+    _syncStatusToServer();   
+
     return {
         success: true,
         isUpdate: !!id,
@@ -816,6 +819,9 @@ extendPeriod: async (days = 7) => {
     // データの整合性維持（これはServiceの仕事）
     await Service.recalcImpactedHistory(ts);
 
+    // ★追加: サーバーへ状態同期
+    _syncStatusToServer();    
+
     // ★重要: UI層への「報告書」を返却
     return {
         success: true,
@@ -840,6 +846,7 @@ deleteLog: async (id) => {
 
     // 履歴の再計算（データ整合性の維持はServiceの責務）
     await Service.recalcImpactedHistory(ts);
+    _syncStatusToServer(); // ★追加
 
     // 削除したデータの情報を返却する
     return { success: true, timestamp: ts };
@@ -864,6 +871,7 @@ bulkDeleteLogs: async (ids) => {
     
     // 履歴の再計算
     await Service.recalcImpactedHistory(oldestTs);
+    _syncStatusToServer(); // ★追加
 
     return { 
         success: true, 
@@ -928,6 +936,9 @@ saveDailyCheck: async (formData) => {
     // 4. 履歴の再計算
     await Service.recalcImpactedHistory(ts);
 
+    // ★追加: サーバーへ状態同期
+    _syncStatusToServer();
+
     // 5. UI側での演出に必要なアクションを構築
     let shareAction = null;
     if (formData.isDryDay) {
@@ -977,3 +988,4 @@ const _syncStatusToServer = async () => {
         console.warn('[Service] Sync status warning:', e);
     }
 };
+

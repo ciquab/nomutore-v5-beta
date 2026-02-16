@@ -456,7 +456,6 @@ export const handleSaveSettings = async () => {
         }
 
         await NotificationManager.saveSettings({ dailyEnabled, dailyTime, periodEveEnabled, periodEveTime });
-        NotificationManager.scheduleAll();
 
         // 5. 成功時のUIフィードバック
         if (typeof Feedback !== 'undefined' && Feedback.save) Feedback.save();
@@ -812,6 +811,7 @@ export const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 };
+
 
 
 

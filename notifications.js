@@ -289,6 +289,53 @@ export const NotificationManager = {
         localStorage.setItem(KEYS.NOTIF_DAILY_LAST_SHOWN, virtualDate);
     },
 
+    /**
+     * ★追加: 最新の状態（収支・記録日）をサーバーへ同期
+     * @param {Object} status 
+     * @param {number} status.balance - 現在の収支
+     * @param {string|null} status.lastCheckDate - 最終チェック日(YYYY-MM-DD)
+     * @param {string|null} status.lastLogDate - 最終ログ日(YYYY-MM-DD)
+     */
+    updateServerStatus: async ({ balance, lastCheckDate, lastLogDate }) => {
+        if (localStorage.getItem(APP.STORAGE_KEYS.PUSH_SUBSCRIBED) !== 'true') return;
+
+        try {
+            const reg = await navigator.serviceWorker.ready;
+            const subscription = await reg.pushManager.getSubscription();
+            if (!subscription) return;
+
+            const settings = NotificationManager.getSettings();
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
+            const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0');
+            const periodEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE) || '0');
+
+            // 送信データ構築
+            const payload = {
+                subscription: subscription.toJSON(),
+                dailyTime: settings.dailyTime,
+                dailyEnabled: settings.dailyEnabled,
+                periodEveTime: settings.periodEveTime,
+                periodEveEnabled: settings.periodEveEnabled,
+                periodConfig: { mode: periodMode, start: periodStart, end: periodEnd }
+            };
+
+            // 値がある場合のみペイロードに追加
+            if (balance !== undefined) payload.currentBalance = Math.round(balance);
+            if (lastCheckDate) payload.lastCheckDate = lastCheckDate;
+            if (lastLogDate) payload.lastLogDate = lastLogDate;
+
+            // 送信 (fire-and-forgetで待機しない)
+            fetch(`${APP.PUSH.API_BASE}/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }).catch(e => console.error('[Push] Sync background error:', e));
+
+        } catch (e) {
+            console.error('[Push] Sync failed:', e);
+        }
+    },　
+
     // ─────────────────────────────────────────────
     // 期間リセット前日の借金サマリー
     // ─────────────────────────────────────────────
@@ -473,4 +520,6 @@ function _urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
 }
+
+
 

@@ -129,6 +129,11 @@ export const NotificationManager = {
                 console.log('[Push] New subscription created');
             }
 
+            // ★追加: 現在の期間設定を取得
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
+            const periodStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0');
+            const periodEnd = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE) || '0');
+
             // サーバーに送信
             const settings = NotificationManager.getSettings();
             const res = await fetch(`${PUSH.API_BASE}/subscribe`, {
@@ -140,6 +145,12 @@ export const NotificationManager = {
                     dailyEnabled: settings.dailyEnabled,
                     periodEveTime: settings.periodEveTime,
                     periodEveEnabled: settings.periodEveEnabled,
+                    // ★追加: サーバーが曜日判定するための情報を送る
+                    periodConfig: {
+                        mode: periodMode,   // 'weekly', 'monthly', 'custom'
+                        start: periodStart, // timestamp
+                        end: periodEnd      // timestamp (custom用)
+                    }
                 }),
             });
 
@@ -462,3 +473,4 @@ function _urlBase64ToUint8Array(base64String) {
     }
     return outputArray;
 }
+

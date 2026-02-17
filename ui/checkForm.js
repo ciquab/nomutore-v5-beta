@@ -29,6 +29,31 @@ const ICON_KEYWORDS = {
     'book': 'ph-duotone ph-book-open',
     'work': 'ph-duotone ph-briefcase'
 };
+
+
+const METRIC_BADGE = {
+    state: { label: '状態', className: 'bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/35 dark:text-indigo-300 dark:border-indigo-700/60' },
+    action: { label: '行動', className: 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/60' },
+    training: { label: '反応', className: 'bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/35 dark:text-amber-300 dark:border-amber-700/60' }
+};
+
+let libraryMetricFilter = 'all';
+
+/**
+ * @param {string | undefined} metricType
+ */
+const getMetricMeta = (metricType) => {
+    const key = (metricType === 'state' || metricType === 'training') ? metricType : 'action';
+    return METRIC_BADGE[key];
+};
+
+/**
+ * @param {string | undefined} metricType
+ */
+const renderMetricBadge = (metricType) => {
+    const meta = getMetricMeta(metricType);
+    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${meta.className}">${meta.label}</span>`;
+};
 /* --- Action Handlers (ActionRouterから呼ばれる関数) --- */
 
 /**
@@ -332,35 +357,68 @@ export const renderCheckLibrary = () => {
         'muscle': '筋トレ・運動'
     };
 
+    const filterWrap = document.createElement('div');
+    filterWrap.className = 'mb-3 flex flex-wrap gap-2';
+    const metricFilters = [
+        { key: 'all', label: 'すべて' },
+        { key: 'state', label: '状態' },
+        { key: 'action', label: '行動' },
+        { key: 'training', label: '反応' }
+    ];
+
+    metricFilters.forEach(f => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = libraryMetricFilter === f.key;
+        btn.className = isActive
+            ? 'px-2.5 py-1 rounded-full text-[10px] font-bold border border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+            : 'px-2.5 py-1 rounded-full text-[10px] font-bold border border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-300';
+        btn.textContent = f.label;
+        btn.addEventListener('click', () => {
+            libraryMetricFilter = f.key;
+            renderCheckLibrary();
+        });
+        filterWrap.appendChild(btn);
+    });
+
+    container.appendChild(filterWrap);
+
     Object.entries(categories).forEach(([key, label]) => {
         const items = CHECK_LIBRARY[key];
         if (!items) return;
 
-        const section = document.createElement('div');
-        section.className = "mb-4";
-        section.innerHTML = `<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
-        
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-2";
+        const filteredItems = items.filter(item => libraryMetricFilter === 'all' || (item.metricType || 'action') === libraryMetricFilter);
+        if (filteredItems.length === 0) return;
 
-        items.forEach(item => {
+        const section = document.createElement('div');
+        section.className = 'mb-4';
+        section.innerHTML = `<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
+
+        filteredItems.forEach(item => {
             const isActive = activeIds.has(item.id);
             const btn = document.createElement('div');
             btn.dataset.action = 'check:toggleLibraryItem';
             btn.dataset.args = JSON.stringify({ id: item.id });
             btn.className = `p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 ${
-                isActive 
-                ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500' 
+                isActive
+                ? 'bg-indigo-50 border-indigo-500 dark:bg-indigo-900/30 dark:border-indigo-500'
                 : 'bg-white border-gray-100 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300'
             }`;
-            
+
             const iconHtml = DOM.renderIcon(item.icon, 'text-2xl text-gray-600 dark:text-gray-300');
+            const badgeHtml = renderMetricBadge(item.metricType);
 
             btn.innerHTML = `
                 <input type="checkbox" id="lib-chk-${item.id}" class="hidden" ${isActive ? 'checked' : ''} value="${item.id}">
                 ${iconHtml}
                 <div class="flex-1 min-w-0">
-                    <p class="text-xs font-bold text-base-900 dark:text-white truncate">${item.label}</p>
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                        <p class="text-xs font-bold text-base-900 dark:text-white truncate">${item.label}</p>
+                        ${badgeHtml}
+                    </div>
                     <p class="text-[9px] text-gray-400 truncate">${item.desc}</p>
                 </div>
                 <div class="check-icon">
@@ -374,6 +432,7 @@ export const renderCheckLibrary = () => {
         container.appendChild(section);
     });
 };
+
 
 /**
  * ライブラリ変更を適用
@@ -469,11 +528,16 @@ export const renderCheckEditor = () => {
 
         const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-gray-500');
 
+        const badgeHtml = renderMetricBadge(item.metricType);
+
         div.innerHTML = `
             <div class="flex items-center gap-3">
                 ${iconHtml}
                 <div>
-                    <p class="text-xs font-bold text-gray-800 dark:text-gray-200">${item.label}</p>
+                    <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-bold text-gray-800 dark:text-gray-200">${item.label}</p>
+                        ${badgeHtml}
+                    </div>
                     <p class="text-[10px] text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
                 </div>
             </div>
@@ -524,6 +588,20 @@ export const addNewCheckItem = () => {
     const descInput = prompt('説明を入力してください (例: 30分以上やった)', '');
     const desc = descInput || ''; 
 
+    const metricTypeInput = prompt(
+        '分析カテゴリを入力してください\n\n' +
+        'state: 状態（体調・結果）\n' +
+        'action: 行動（実施したこと）\n' +
+        'training: トレーニング反応\n\n' +
+        '※ 未入力や不正値は action になります',
+        'action'
+    );
+
+    const metricTypeRaw = (metricTypeInput || 'action').toLowerCase().trim();
+    const allowedMetricTypes = new Set(['state', 'action', 'training']);
+    const metricType = allowedMetricTypes.has(metricTypeRaw) ? metricTypeRaw : 'action';
+
+
     const drinkingOnly = confirm('「お酒を飲んだ日」だけ表示しますか？\n(OK=はい / キャンセル=いいえ[毎日表示])');
 
     const id = `custom_${Date.now()}`;
@@ -533,7 +611,8 @@ export const addNewCheckItem = () => {
         label, 
         icon: iconClass,
         type: 'boolean', 
-        desc, 
+        desc,
+        metricType,
         drinking_only: drinkingOnly
     };
 

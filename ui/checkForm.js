@@ -32,9 +32,9 @@ const ICON_KEYWORDS = {
 
 
 const METRIC_BADGE = {
-    state: { label: '状態', className: 'bg-indigo-100 text-indigo-700 border dark:bg-indigo-900/35 dark:text-indigo-300', borderColor: '#c7d2fe' },
-    action: { label: '行動', className: 'bg-emerald-100 text-emerald-700 border dark:bg-emerald-900/30 dark:text-emerald-300', borderColor: '#a7f3d0' },
-    training: { label: '反応', className: 'bg-amber-100 text-amber-700 border dark:bg-amber-900/35 dark:text-amber-300', borderColor: '#fde68a' }
+    state: { label: '状態', className: 'bg-indigo-100 border dark:bg-indigo-900/35', borderColor: '#c7d2fe', textColor: '#4338ca' },
+    action: { label: '行動', className: 'bg-emerald-100 border dark:bg-emerald-900/30', borderColor: '#a7f3d0', textColor: '#047857' },
+    training: { label: '反応', className: 'bg-amber-100 border dark:bg-amber-900/35', borderColor: '#fde68a', textColor: '#b45309' }
 };
 
 let libraryMetricFilter = 'all';
@@ -52,7 +52,7 @@ const getMetricMeta = (metricType) => {
  */
 const renderMetricBadge = (metricType) => {
     const meta = getMetricMeta(metricType);
-    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${meta.className}" style="border-color:${meta.borderColor};">${meta.label}</span>`;
+    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${meta.className}" style="border-color:${meta.borderColor};color:${meta.textColor};">${meta.label}</span>`;
 };
 /* --- Action Handlers (ActionRouterから呼ばれる関数) --- */
 

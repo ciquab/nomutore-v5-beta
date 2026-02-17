@@ -1420,7 +1420,7 @@
                         </ul>
                     </div>
                     
-                    <div class="grid grid-cols-3 gap-3">
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
                             <div class="flex items-center gap-2 mb-2">
                                 <div class="shrink-0 w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
@@ -1451,20 +1451,21 @@
                             </p>
                         </div>
 
-                        <div class="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="shrink-0 w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
-                                    <i class="ph-fill ph-wine text-rose-600 dark:text-rose-400 text-lg"></i>
-                                </div>
-                                <div class="flex flex-col leading-none">
-                                    <span class="text-[11px] font-bold text-base-900 dark:text-white">週間<br>アルコール</span>
-                                    <span class="text-[9px] font-black text-rose-500 uppercase tracking-tighter mt-0.5">WEEKLY ALCOHOL</span>
-                                </div>
+                    </div>
+
+                    <div class="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                        <div class="flex items-center gap-2 mb-2">
+                            <div class="shrink-0 w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                                <i class="ph-fill ph-wine text-rose-600 dark:text-rose-400 text-lg"></i>
                             </div>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                                今週の純アルコール摂取量とガイドライン上限をバーで表示。
-                            </p>
+                            <div class="flex flex-col leading-none">
+                                <span class="text-[11px] font-bold text-base-900 dark:text-white">週間アルコール</span>
+                                <span class="text-[9px] font-black text-rose-500 uppercase tracking-tighter mt-0.5">WEEKLY ALCOHOL</span>
+                            </div>
                         </div>
+                        <p class="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                            デイリーチェックの下に表示。今週の純アルコール摂取量とガイドライン上限をバーで表示します。
+                        </p>
                     </div>
 
                     <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
@@ -1581,6 +1582,18 @@
         
         <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
             <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                <i class="ph-duotone ph-chart-pie-slice text-indigo-600 dark:text-indigo-400"></i>
+            </div>
+            <div>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                    期間内の総飲酒量や銘柄数を集計。スタイル傾向のチャートに加え、<strong>ヘルスインサイト</strong>（週間アルコール摂取量ゲージ、飲んだ日 vs 休肝日の体調比較、直近14日間の推移）を確認できます。
+                </p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
                 <i class="ph-duotone ph-list-dashes text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
@@ -1593,24 +1606,12 @@
 
         <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
             <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-duotone ph-chart-pie-slice text-indigo-600 dark:text-indigo-400"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    期間内の総飲酒量や銘柄数を集計。スタイル傾向のチャートと<strong>ブルワリーランキング</strong>を表示。ブルワリーをタップすると飲んだビールの詳細が見られます。
-                </p>
-            </div>
-        </div>
-
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
                 <i class="ph-duotone ph-books text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
                 <h5 class="font-bold text-sm text-base-900 dark:text-white">コレクション (Collections)</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    飲んだ頻度順のランキング表示。銘柄・ブルワリー・スタイル・評価での<strong>絞り込み検索</strong>に対応。
+                    飲んだ頻度順のランキング表示。銘柄・ブルワリー・スタイル・評価での<strong>絞り込み検索</strong>に対応。<strong>ブルワリーランキング</strong>もこのビューで確認できます。
                 </p>
             </div>
         </div>
@@ -1627,17 +1628,6 @@
             </div>
         </div>
 
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-fill ph-heartbeat text-rose-600 dark:text-rose-400"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">ヘルスインサイト</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    分析ビュー内に表示。週間アルコール摂取量のゲージ、飲んだ日 vs 休肝日の体調比較、直近14日間のアルコール量とコンディション推移チャートを確認できます。
-                </p>
-            </div>
-        </div>
     </div>
 </section>
 

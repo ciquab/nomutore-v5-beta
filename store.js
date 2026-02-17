@@ -75,6 +75,10 @@ export const Store = {
         return { logs: [...d.logs], checks: [...d.checks], periodLogs: [...d.periodLogs] };
     },
 
+    clearCachedData: () => {
+        Store._cachedData = { logs: [], checks: [], periodLogs: [] };
+    },
+
     migrateV3ToV4: async () => {
         if (localStorage.getItem('v4_migration_complete')) {
             return false; 

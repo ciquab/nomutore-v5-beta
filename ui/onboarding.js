@@ -588,7 +588,11 @@ Onboarding.handleCloudRestore = async () => {
     try {
             // インポートしていれば window. は不要で、存在チェックも不要になります
             showMessage('Google Driveを確認中...', 'info');
-            const success = await DataManager.restoreFromCloud();
+            const success = await DataManager.restoreFromCloud({
+                confirmRestore: ({ logsCount, checksCount }) =>
+                    confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
+(既存データと重複するものはスキップされます)`)
+            });
             if (success) {
                 showMessage('☁️ ドライブから復元しました', 'success');
                 Onboarding.completeAfterRestore();
@@ -602,7 +606,11 @@ Onboarding.handleCloudRestore = async () => {
 // JSON ファイル復元処理
 Onboarding.handleJsonRestore = async (input) => {
     try {
-            const success = await DataManager.importJSON(input);
+            const success = await DataManager.importJSON(input, {
+                confirmRestore: ({ logsCount, checksCount }) =>
+                    confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
+(既存データと重複するものはスキップされます)`)
+            });
             if (success) Onboarding.completeAfterRestore();
         } catch (e) { 
             console.error(e);

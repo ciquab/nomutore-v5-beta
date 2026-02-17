@@ -183,12 +183,16 @@ export const NotificationManager = {
             if (lastCheckDate) payload.lastCheckDate = lastCheckDate;
             if (lastLogDate) payload.lastLogDate = lastLogDate;
 
-            // 送信 (fire-and-forget)
-            fetch(`${PUSH.API_BASE}/subscribe`, {
+            // 送信（順序保証のため await）
+            const res = await fetch(`${PUSH.API_BASE}/subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
-            }).catch(e => console.error('[Push] Sync background error:', e));
+            });
+
+            if (!res.ok) {
+                console.error('[Push] Sync failed with status:', res.status);
+            }
 
         } catch (e) {
             console.error('[Push] Sync failed:', e);

@@ -60,6 +60,31 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 let fabEl = null;
 let saveEl = null;
 
+
+const buildShareAction = async (kind, logData = null) => {
+    if (kind === 'beer' && logData) {
+        const { balance } = await Service.getAppDataSnapshot();
+        return {
+            type: 'share',
+            text: Calc.generateShareText(logData, balance),
+            shareMode: 'image',
+            imageType: 'beer',
+            imageData: logData
+        };
+    }
+
+    if (kind === 'exercise' && logData) {
+        const { balance } = await Service.getAppDataSnapshot();
+        return { type: 'share', text: Calc.generateShareText(logData, balance) };
+    }
+
+    if (kind === 'check-dryday') {
+        return { type: 'share', text: Calc.generateShareText({ type: 'check', isDryDay: true }) };
+    }
+
+    return null;
+};
+
 /**
  * EventBus リスナーの一括登録
  * データ層・サービス層からの通知を受け取り、UI を更新する。
@@ -82,13 +107,15 @@ const setupEventBusListeners = () => {
         const overlay = document.getElementById('global-error-overlay');
         const details = document.getElementById('error-details');
         if (overlay && details) {
-            details.textContent = errText;
+            _latestErrorText = errText || '';
+            details.textContent = _latestErrorText;
             overlay.classList.remove('hidden');
 
             const copyBtn = document.getElementById('btn-copy-error');
-            if (copyBtn) {
+            if (copyBtn && !_isErrorCopyHandlerBound) {
+                _isErrorCopyHandlerBound = true;
                 copyBtn.addEventListener('click', () => {
-                    navigator.clipboard.writeText(errText)
+                    navigator.clipboard.writeText(_latestErrorText)
                         .then(() => alert('エラーログをコピーしました'))
                         .catch(() => alert('コピーに失敗しました'));
                 });
@@ -124,6 +151,15 @@ let _lastHomeRenderKey = '';
 // ★追加: データ変更検知用のキャッシュ（ショートカット再生成の抑制用）
 let _lastDataFingerprint = '';
 let _lastCellarRenderKey = ''; 
+let _latestErrorText = '';
+let _isErrorCopyHandlerBound = false;
+
+
+const resetRenderCaches = () => {
+    _lastHomeRenderKey = '';
+    _lastDataFingerprint = '';
+    _lastCellarRenderKey = '';
+};
 
 // Cellarサブビュー切替の共通ヘルパー（DOMの表示切替のみ）
 const _applyCellarSubView = (mode) => {
@@ -237,11 +273,15 @@ export const UI = {
     setFetchLogsHandler: (fn) => { setFetchLogsHandler(fn); },
     _fetchAllDataHandler: null,
     setFetchAllDataHandler: (fn) => { UI._fetchAllDataHandler = fn; },
+    resetRuntimeState: () => {
+        resetRenderCaches();
+    },
 
     init: () => {
         // ★追加: 二重初期化（イベントの二重登録）を防ぐガード
         if (UI.isInitialized) return;
-        
+
+        resetRenderCaches();
         DOM.init();
 
         // ───── EventBus リスナー登録（単方向データフロー: Data層 → UI層） ─────
@@ -302,8 +342,8 @@ export const UI = {
             }
 
             // 3. メッセージを表示（シェアボタン等のアクションを添えて）
-            // Serviceから返ってきた shareAction をそのまま渡します
-            showMessage(msg, 'success', result.shareAction);
+            const shareAction = await buildShareAction('beer', result.savedLog);
+            showMessage(msg, 'success', shareAction);
 
             // 4. Untappd連携（Serviceが生成したURLがあれば開く）
             if (result.untappdUrl) {
@@ -359,7 +399,10 @@ document.addEventListener('save-exercise', async (e) => {
             }
 
             // 3. UIへのフィードバック
-            showMessage(msg, 'success', result.shareAction);
+            const shareAction = !result.isUpdate
+                ? await buildShareAction('exercise', result.savedLog)
+                : null;
+            showMessage(msg, 'success', shareAction);
 
             // 4. クリーンアップ処理
             toggleModal('exercise-modal', false);
@@ -392,7 +435,8 @@ document.addEventListener('save-check', async (e) => {
 
             // 演出の実行
             Feedback.success();
-            showMessage(msg, 'success', result.shareAction);
+            const shareAction = result.isDryDay ? await buildShareAction('check-dryday') : null;
+            showMessage(msg, 'success', shareAction);
 
             // 画面更新
             await refreshUI();
@@ -777,7 +821,11 @@ if (checkModal) {
         const importFileInput = document.getElementById('import-file');
         if (importFileInput) {
             importFileInput.addEventListener('change', function() {
-                DataManager.importJSON(this);
+                DataManager.importJSON(this, {
+                    confirmRestore: ({ logsCount, checksCount }) =>
+                        confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
+(既存データと重複するものはスキップされます)`)
+                });
             });
         }
 

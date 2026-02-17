@@ -131,10 +131,10 @@ export const APP = {
 
 // 【重要】初期状態のスキーマ定義
 export const CHECK_SCHEMA = [
-    { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', type: 'boolean', desc: 'ベルトやズボンがきつくない' },
-    { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', type: 'boolean', desc: 'むくみや重さを感じない' },
-    { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', type: 'boolean', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
-    { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', type: 'boolean', desc: '飲む前に食物繊維をとった', drinking_only: true }
+    { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', type: 'boolean', desc: 'ベルトやズボンがきつくない', metricType: 'state' },
+    { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', type: 'boolean', desc: 'むくみや重さを感じない', metricType: 'state' },
+    { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', type: 'boolean', desc: 'お酒と同量の水を飲んだ', metricType: 'action', drinking_only: true },
+    { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', type: 'boolean', desc: '飲む前に食物繊維をとった', metricType: 'action', drinking_only: true }
 ];
 
 // 項目ライブラリから初期選択されるID（内部ロジック用）
@@ -144,27 +144,27 @@ export const CHECK_DEFAULT_IDS = ['waistEase', 'footLightness', 'waterOk', 'fibe
 // 🍺, 👖 などの絵文字をすべて ph-duotone クラスに置換
 export const CHECK_LIBRARY = {
     general: [
-        { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', desc: 'ベルトやズボンがきつくない' },
-        { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', desc: 'むくみや重さを感じない' },
-        { id: 'sleepQuality', label: '睡眠の質', icon: 'ph-duotone ph-moon-stars', desc: '朝スッキリ起きられた' },
-        { id: 'mood', label: '気分が良い', icon: 'ph-duotone ph-smiley', desc: 'ストレスを感じていない' }
+        { id: 'waistEase', label: '腹周りの余裕', icon: 'ph-duotone ph-pants', desc: 'ベルトやズボンがきつくない', metricType: 'state' },
+        { id: 'footLightness', label: '足取りが軽い', icon: 'ph-duotone ph-footprints', desc: 'むくみや重さを感じない', metricType: 'state' },
+        { id: 'sleepQuality', label: '睡眠の質', icon: 'ph-duotone ph-moon-stars', desc: '朝スッキリ起きられた', metricType: 'state' },
+        { id: 'mood', label: '気分が良い', icon: 'ph-duotone ph-smiley', desc: 'ストレスを感じていない', metricType: 'state' }
     ],
     diet: [
-        { id: 'noSnack', label: '間食抜き', icon: 'ph-duotone ph-cookie', desc: 'お菓子・つまみを我慢した' },
-        { id: 'vegeFirst', label: 'ベジファースト', icon: 'ph-duotone ph-bowl-food', desc: '野菜から先に食べた' },
-        { id: 'proteinOk', label: 'タンパク質', icon: 'ph-duotone ph-egg', desc: '体重x1g以上摂取した' },
-        { id: 'calorieLimit', label: '腹八分目', icon: 'ph-duotone ph-fork-knife', desc: '食べ過ぎなかった' }
+        { id: 'noSnack', label: '間食抜き', icon: 'ph-duotone ph-cookie', desc: 'お菓子・つまみを我慢した', metricType: 'action' },
+        { id: 'vegeFirst', label: 'ベジファースト', icon: 'ph-duotone ph-bowl-food', desc: '野菜から先に食べた', metricType: 'action' },
+        { id: 'proteinOk', label: 'タンパク質', icon: 'ph-duotone ph-egg', desc: '体重x1g以上摂取した', metricType: 'action' },
+        { id: 'calorieLimit', label: '腹八分目', icon: 'ph-duotone ph-fork-knife', desc: '食べ過ぎなかった', metricType: 'action' }
     ],
     alcohol: [
-        { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', desc: 'お酒と同量の水を飲んだ', drinking_only: true },
-        { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', desc: '飲む前に食物繊維をとった', drinking_only: true },
-        { id: 'supplement', label: 'サプリ摂取', icon: 'ph-duotone ph-pill', desc: 'ウコン/ヘパリーゼ等を飲んだ', drinking_only: true },
-        { id: 'finishTime', label: '早めの切り上げ', icon: 'ph-duotone ph-clock', desc: '寝る2時間前に飲み終えた', drinking_only: true }
+        { id: 'waterOk', label: 'チェイサー', icon: 'ph-duotone ph-drop-half-bottom', desc: 'お酒と同量の水を飲んだ', metricType: 'action', drinking_only: true },
+        { id: 'fiberOk', label: '飲酒前繊維', icon: 'ph-duotone ph-carrot', desc: '飲む前に食物繊維をとった', metricType: 'action', drinking_only: true },
+        { id: 'supplement', label: 'サプリ摂取', icon: 'ph-duotone ph-pill', desc: 'ウコン/ヘパリーゼ等を飲んだ', metricType: 'action', drinking_only: true },
+        { id: 'finishTime', label: '早めの切り上げ', icon: 'ph-duotone ph-clock', desc: '寝る2時間前に飲み終えた', metricType: 'action', drinking_only: true }
     ],
     muscle: [
-        { id: 'musclePain', label: '筋肉痛あり', icon: 'ph-duotone ph-lightning', desc: '良いトレーニングができた' },
-        { id: 'stretch', label: 'ストレッチ', icon: 'ph-duotone ph-person-simple-tai-chi', desc: '運動前後のケアをした' },
-        { id: 'stepsGoal', label: '歩数達成', icon: 'ph-duotone ph-sneaker', desc: '目標歩数を超えた' }
+        { id: 'musclePain', label: '筋肉痛あり', icon: 'ph-duotone ph-lightning', desc: '良いトレーニングができた', metricType: 'training' },
+        { id: 'stretch', label: 'ストレッチ', icon: 'ph-duotone ph-person-simple-tai-chi', desc: '運動前後のケアをした', metricType: 'action' },
+        { id: 'stepsGoal', label: '歩数達成', icon: 'ph-duotone ph-sneaker', desc: '目標歩数を超えた', metricType: 'action' }
     ]
 };
 

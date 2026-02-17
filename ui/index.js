@@ -239,7 +239,7 @@ export const refreshUI = async (forcedTabId = null) => {
         }
         else if (activeTabId === 'cellar') {
             // ★修正: データまたは表示モードが変わった時だけ再描画する
-            const cellarMode = StateManager.cellarViewMode || 'logs';
+            const cellarMode = StateManager.cellarViewMode || 'stats';
             const cellarKey = `${currentFingerprint}:${cellarMode}`;
 
             if (cellarKey !== _lastCellarRenderKey) {
@@ -924,9 +924,8 @@ if (checkModal) {
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
             if (tabId === 'cellar') {
-                const mode = StateManager.cellarViewMode || 'logs';
-                StateManager.setCellarViewMode(mode);
-                _applyCellarSubView(mode);
+                StateManager.setCellarViewMode('stats');
+                _applyCellarSubView('stats');
             }
         });
 
@@ -1210,7 +1209,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 
 

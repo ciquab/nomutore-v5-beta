@@ -18,7 +18,7 @@ const _state = {
     heatmapOffset: 0,
     logLimit: 50,
     isLoadingLogs: false,
-    cellarViewMode: 'logs',
+    cellarViewMode: 'stats',
     selectedDate: null
 };
 

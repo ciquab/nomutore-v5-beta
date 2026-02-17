@@ -314,10 +314,10 @@
             </button>
         </div>
                 <div class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                    <button id="btn-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all">Logs</button>
-                    <button id="btn-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Stats</button>
+                    <button id="btn-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all">Stats</button>
+                    <button id="btn-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Logs</button>
+                    <button id="btn-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Collections</button>
                     <button id="btn-cellar-archives" data-action="ui:switchCellarView" data-args='["archives"]'  class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Archives</button>
-                    <button id="btn-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-3 py-1.5 text-[10px] font-bold rounded-md transition-all text-gray-500">Collection</button>                    
                 </div>
              </div>
 
@@ -981,8 +981,8 @@
                     キャンセル
                 </button>
 
-                <button id="btn-save-beer-next" class="flex-1 py-3 text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95">
-                    記録して次へ
+                <button id="btn-save-beer-next" class="flex-1 py-3 text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95 leading-tight">
+                    <span class="inline-block text-center">記録して<wbr>次へ</span>
                 </button>
 
                 <button id="btn-save-beer" class="flex-[2] py-3 text-sm font-bold bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
@@ -1608,7 +1608,7 @@
                 <i class="ph-duotone ph-books text-indigo-600 dark:text-indigo-400"></i>
             </div>
             <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">コレクション (Collection)</h5>
+                <h5 class="font-bold text-sm text-base-900 dark:text-white">コレクション (Collections)</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                     飲んだ頻度順のランキング表示。銘柄・ブルワリー・スタイル・評価での<strong>絞り込み検索</strong>に対応。
                 </p>

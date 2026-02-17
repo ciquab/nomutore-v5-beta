@@ -32,9 +32,9 @@ const ICON_KEYWORDS = {
 
 
 const METRIC_BADGE = {
-    state: { label: '状態', className: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300' },
-    action: { label: '行動', className: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300' },
-    training: { label: '反応', className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300' }
+    state: { label: '状態', className: 'bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/35 dark:text-indigo-300 dark:border-indigo-700/60' },
+    action: { label: '行動', className: 'bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700/60' },
+    training: { label: '反応', className: 'bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/35 dark:text-amber-300 dark:border-amber-700/60' }
 };
 
 let libraryMetricFilter = 'all';

@@ -153,6 +153,7 @@ let _lastDataFingerprint = '';
 let _lastCellarRenderKey = ''; 
 let _latestErrorText = '';
 let _isErrorCopyHandlerBound = false;
+let _isSavingCheck = false;
 
 
 const resetRenderCaches = () => {
@@ -426,6 +427,9 @@ document.addEventListener('save-exercise', async (e) => {
 
         // ✅ デイリーチェック保存リスナー
 document.addEventListener('save-check', async (e) => {
+    if (_isSavingCheck) return;
+    _isSavingCheck = true;
+
     try {
         const result = await Service.saveDailyCheck(e.detail);
         
@@ -446,6 +450,8 @@ document.addEventListener('save-check', async (e) => {
     } catch (err) {
         console.error('Save Check Error:', err);
         showMessage('チェックの記録に失敗しました', 'error');
+    } finally {
+        _isSavingCheck = false;
     }
 });
 
@@ -1204,7 +1210,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 
 

@@ -620,12 +620,12 @@ export const Calc = {
     },
 
     /**
-     * デイリーチェックの体調スコアを算出（達成率ベース）
-     * drinking_only 項目は休肝日に分母から除外する
+     * デイリーチェックの達成率スコアを算出（カテゴリ別）
      * @param {Check} check - チェックレコード
-     * @returns {number|null} 0.0〜1.0 のスコア、項目なしなら null
+     * @param {'all'|'state'|'action'|'training'} metric - 集計カテゴリ
+     * @returns {number|null} 0.0〜1.0 のスコア、対象項目なしなら null
      */
-    calcConditionScore: (check) => {
+    calcCheckScoreByMetric: (check, metric = 'all') => {
         if (!check) return null;
         const fixedKeys = new Set(['isDryDay', 'weight', 'isSaved', 'date', 'timestamp', 'id']);
 
@@ -633,17 +633,49 @@ export const Calc = {
             .filter(([key, val]) => !fixedKeys.has(key) && typeof val === 'boolean')
             .map(([key, val]) => {
                 const spec = getCheckItemSpec(key);
-                return { key, val, drinkingOnly: !!(spec && spec.drinking_only) };
+                const metricType = (spec && spec.metricType) ? spec.metricType : 'action';
+                return { key, val, metricType, drinkingOnly: !!(spec && spec.drinking_only) };
             });
+
+        const filteredByMetric = metric === 'all'
+            ? items
+            : items.filter(i => i.metricType === metric);
 
         // 休肝日なら drinking_only 項目を除外
         const relevant = check.isDryDay
-            ? items.filter(i => !i.drinkingOnly)
-            : items;
+            ? filteredByMetric.filter(i => !i.drinkingOnly)
+            : filteredByMetric;
 
         if (relevant.length === 0) return null;
 
         return relevant.filter(i => i.val).length / relevant.length;
+    },
+
+    /**
+     * デイリーチェックの体調スコア（後方互換）
+     * @param {Check} check
+     * @returns {number|null}
+     */
+    calcConditionScore: (check) => {
+        return Calc.calcCheckScoreByMetric(check, 'all');
+    },
+
+    /**
+     * 状態スコア（state）
+     * @param {Check} check
+     * @returns {number|null}
+     */
+    calcStateScore: (check) => {
+        return Calc.calcCheckScoreByMetric(check, 'state');
+    },
+
+    /**
+     * セルフケア実行率（action）
+     * @param {Check} check
+     * @returns {number|null}
+     */
+    calcActionScore: (check) => {
+        return Calc.calcCheckScoreByMetric(check, 'action');
     },
 
     /**

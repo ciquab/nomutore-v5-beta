@@ -350,7 +350,7 @@ function renderHealthInsights(allLogs, checks) {
                         <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${drinkingActionScores.length}日</p>
                     </div>
-                    <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border border-cyan-200 dark:border-cyan-700/60">
+                    <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border" style="border-color:#7dd3fc;">
                         <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
                         <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${restActionScores.length}日</p>

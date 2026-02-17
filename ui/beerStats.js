@@ -85,9 +85,12 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <i class="ph-duotone ph-beer-bottle text-5xl text-base-900 dark:text-white opacity-10"></i>
+                        <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10"></i>
+                        <p id="style-chart-total-label" class="text-[10px] font-bold text-gray-400 mt-1">スタイル数</p>
+                        <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
                     </div>
                 </div>
+                <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
             </div>
 
             <div id="health-insights-section" class="space-y-4"></div>
@@ -609,6 +612,27 @@ function generateInsightText({
     };
 }
 
+
+/**
+ * HEXカラーを少し暗くする
+ * @param {string} hex
+ * @param {number} ratio
+ * @returns {string}
+ */
+function darkenHex(hex, ratio = 0.25) {
+    const safeHex = (hex || '#cbd5e1').replace('#', '');
+    const v = safeHex.length === 3
+        ? safeHex.split('').map(c => c + c).join('')
+        : safeHex;
+
+    const n = parseInt(v, 16);
+    const r = Math.max(0, Math.floor(((n >> 16) & 255) * (1 - ratio)));
+    const g = Math.max(0, Math.floor(((n >> 8) & 255) * (1 - ratio)));
+    const b = Math.max(0, Math.floor((n & 255) * (1 - ratio)));
+
+    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`;
+}
+
 /**
  * ドーナツチャートの描画 (Chart.js)
  */
@@ -617,12 +641,16 @@ function renderStyleChart(styleCounts) {
     if (!ctx) return;
     if (statsChart) statsChart.destroy();
 
-    const labels = Object.keys(styleCounts);
-    const data = Object.values(styleCounts);
-    
+    const entries = Object.entries(styleCounts || {}).filter(([, count]) => count > 0);
+    if (entries.length === 0) return;
+
+    const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
+    const labels = sortedEntries.map(([style]) => style);
+    const data = sortedEntries.map(([, count]) => count);
+
     const colorMap = {
-        'gold': '#fbbf24', 'amber': '#f59e0b', 'black': '#1f2937', 
-        'hazy': '#facc15', 'white': '#fcd34d', 'red': '#ef4444', 
+        'gold': '#fbbf24', 'amber': '#f59e0b', 'black': '#1f2937',
+        'hazy': '#facc15', 'white': '#fcd34d', 'red': '#ef4444',
         'pale': '#fef08a', 'copper': '#d97706', 'green': '#10b981'
     };
 
@@ -631,33 +659,73 @@ function renderStyleChart(styleCounts) {
         return colorMap[meta ? meta.color : 'gold'] || '#cbd5e1';
     });
 
+    const borderColors = bgColors.map(c => darkenHex(c, 0.35));
+
+    // 非タップ時でも情報が読めるように補足リストを描画
+    const total = data.reduce((a, b) => a + b, 0);
+    const totalValueEl = document.getElementById('style-chart-total-value');
+    if (totalValueEl) totalValueEl.textContent = String(labels.length);
+
+    const listEl = document.getElementById('style-breakdown-list');
+    if (listEl) {
+        const topRows = sortedEntries.slice(0, 5).map(([style, count], idx) => {
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            const color = bgColors[idx] || '#cbd5e1';
+            return `
+                <div class="flex items-center justify-between text-[11px]">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2.5 h-2.5 rounded-full border border-black/10" style="background:${color}"></span>
+                        <span class="font-bold text-gray-700 dark:text-gray-200 truncate max-w-[150px]">${escapeHtml(style)}</span>
+                    </div>
+                    <div class="text-gray-500 dark:text-gray-400 font-bold">${count}杯 <span class="text-[10px]">(${pct}%)</span></div>
+                </div>
+            `;
+        }).join('');
+
+        const othersCount = sortedEntries.slice(5).reduce((sum, [, c]) => sum + c, 0);
+        const othersHtml = othersCount > 0
+            ? `<p class="text-[10px] text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
+            : '';
+
+        listEl.innerHTML = topRows + othersHtml;
+    }
+
     statsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                data: data,
+                data,
                 backgroundColor: bgColors,
-                borderWidth: 0,
+                borderColor: borderColors,
+                borderWidth: 2,
                 hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%',
+            cutout: '68%',
             plugins: {
                 legend: { display: false },
-                tooltip: { 
-                    backgroundColor: 'rgba(0,0,0,0.8)', 
-                    bodyFont: { size: 12, weight: 'bold' }, 
-                    padding: 10, 
-                    cornerRadius: 8 
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: { size: 12, weight: 'bold' },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: (ctx) => {
+                            const val = ctx.raw || 0;
+                            const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                            return `${ctx.label}: ${val}杯 (${pct}%)`;
+                        }
+                    }
                 }
             }
         }
     });
 }
+
 
 /**
  * 銘柄リストの生成

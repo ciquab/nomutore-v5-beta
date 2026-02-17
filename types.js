@@ -82,6 +82,7 @@
  * @property {string} icon - アイコンクラスまたは絵文字
  * @property {string} [desc] - 説明文
  * @property {boolean} [drinking_only] - 飲酒日のみ表示するか
+ * @property {'state' | 'action' | 'training'} [metricType] - 分析カテゴリ
  * @property {string} [type] - データ型 ('boolean' 等)
  */
 

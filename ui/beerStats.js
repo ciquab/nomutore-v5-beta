@@ -296,7 +296,7 @@ function renderHealthInsights(allLogs, checks) {
         );
         alcoholData.push(Math.round(Calc.calcTotalPureAlcohol(dayBeerLogs)));
 
-        // 状態スコア / 行動実行率
+        // 状態達成率 / 行動達成率
         const dayCheck = checks.find(c =>
             c.isSaved && c.timestamp >= dayStart && c.timestamp <= dayEnd
         );
@@ -333,12 +333,12 @@ function renderHealthInsights(allLogs, checks) {
                 <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
                 <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
-                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">状態スコア（飲酒日）</p>
+                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
                         <p class="${avgDrinkingState !== null ? 'text-2xl font-black text-red-500 dark:text-red-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${drinkingStateScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
-                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">状態スコア（休肝日）</p>
+                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">状態達成率（休肝日）</p>
                         <p class="${avgRestState !== null ? 'text-2xl font-black text-emerald-500 dark:text-emerald-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${restStateScores.length}日</p>
                     </div>
@@ -346,24 +346,24 @@ function renderHealthInsights(allLogs, checks) {
                 ${!hasStateMetricData ? '<p class="text-[10px] text-gray-500 font-bold mb-2 text-center">ライブラリで状態項目を1つ追加してください</p>' : ''}
                 <div class="grid grid-cols-2 gap-3 ${hasActionMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-center border border-amber-100 dark:border-amber-800/50">
-                        <p class="text-[9px] font-bold text-amber-500 uppercase mb-1">行動実行率（飲酒日）</p>
+                        <p class="text-[9px] font-bold text-amber-500 uppercase mb-1">行動達成率（飲酒日）</p>
                         <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${drinkingActionScores.length}日</p>
                     </div>
-                    <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border border-cyan-100 dark:border-cyan-800/50">
-                        <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動実行率（休肝日）</p>
+                    <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border border-cyan-200 dark:border-cyan-700/60">
+                        <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
                         <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${restActionScores.length}日</p>
                     </div>
                 </div>
                 ${!hasActionMetricData ? '<p class="text-[10px] text-gray-500 font-bold mt-2 text-center">ライブラリで行動項目を1つ追加してください</p>' : ''}
-                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-2 text-center">状態スコア比較は各3日以上で安定します</p>' : ''}
-                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-1 text-center">行動実行率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
             </div>
 
             <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動推移（14日間）</p>
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
                 <div class="h-40 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
@@ -427,7 +427,7 @@ function renderHealthChart(labels, alcoholData, stateData, actionData) {
             datasets: [
                 {
                     type: 'line',
-                    label: '状態スコア %',
+                    label: '状態達成率 %',
                     data: stateData,
                     borderColor: '#6366f1',
                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
@@ -441,7 +441,7 @@ function renderHealthChart(labels, alcoholData, stateData, actionData) {
                 },
                 {
                     type: 'line',
-                    label: '行動実行率 %',
+                    label: '行動達成率 %',
                     data: actionData,
                     borderColor: '#06b6d4',
                     backgroundColor: 'rgba(6, 182, 212, 0.08)',
@@ -580,9 +580,9 @@ function generateInsightText({
     if (avgDrinkingState !== null && avgRestState !== null) {
         const diff = avgRestState - avgDrinkingState;
         if (diff >= 10) {
-            stateParts.push(`状態スコアは休肝日のほうが ${diff}% 高い傾向です。`);
+            stateParts.push(`状態達成率は休肝日のほうが ${diff}% 高い傾向です。`);
         } else if (diff <= -10) {
-            stateParts.push(`状態スコアは飲酒日のほうが ${Math.abs(diff)}% 高い結果です。チェック項目の内容も見直してみましょう。`);
+            stateParts.push(`状態達成率は飲酒日のほうが ${Math.abs(diff)}% 高い結果です。チェック項目の内容も見直してみましょう。`);
         }
     }
 
@@ -593,9 +593,9 @@ function generateInsightText({
     if (avgDrinkingAction !== null && avgRestAction !== null) {
         const actionDiff = avgDrinkingAction - avgRestAction;
         if (actionDiff >= 10) {
-            actionParts.push(`行動実行率は飲酒日のほうが ${actionDiff}% 高い傾向です。休肝日にもセルフケア行動を残すと比較が安定します。`);
+            actionParts.push(`行動達成率は飲酒日のほうが ${actionDiff}% 高い傾向です。休肝日にもセルフケア行動を残すと比較が安定します。`);
         } else if (actionDiff <= -10) {
-            actionParts.push(`行動実行率は休肝日のほうが ${Math.abs(actionDiff)}% 高い傾向です。飲酒日のセルフケア強化余地があります。`);
+            actionParts.push(`行動達成率は休肝日のほうが ${Math.abs(actionDiff)}% 高い傾向です。飲酒日のセルフケア強化余地があります。`);
         }
     }
 

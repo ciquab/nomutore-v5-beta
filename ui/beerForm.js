@@ -122,6 +122,11 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
 
     updateBeerKcalPreview();
     toggleModal('beer-modal', true);
+
+    const container = document.querySelector('#beer-modal .overflow-y-auto');
+    if (container) {
+        container.scrollTop = 0;
+    }
 };
 
 /**
@@ -383,6 +388,15 @@ export const resetBeerForm = (keepDate = false) => {
     const untappdCheck = /** @type {HTMLInputElement} */(document.getElementById('untappd-check'));
     if(untappdCheck) untappdCheck.checked = false;
 
+    const styleSel = /** @type {HTMLSelectElement} */ (document.getElementById('beer-select'));
+    if (styleSel) {
+        const mainBeerStyle = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+        styleSel.value = mainBeerStyle;
+    }
+
+    const sizeSel = /** @type {HTMLSelectElement} */ (document.getElementById('beer-size'));
+    if (sizeSel) sizeSel.value = '350';
+
     // 味わいセクションのリセット
     resetFlavorSection();
 
@@ -403,6 +417,7 @@ export const searchUntappd = () => {
 export const updateBeerSelectOptions = () => {
     const styleSel = /** @type {HTMLSelectElement} */ (document.getElementById('beer-select'));
     const sizeSel = /** @type {HTMLSelectElement} */ (document.getElementById('beer-size'));
+    const mainBeerStyle = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
     
     if (styleSel && styleSel.children.length === 0) {
         const source = (typeof STYLE_METADATA !== 'undefined') ? STYLE_METADATA : CALORIES.STYLES;
@@ -414,7 +429,9 @@ export const updateBeerSelectOptions = () => {
             opt.textContent = key;
             styleSel.appendChild(opt);
         });
-        if (APP.DEFAULTS.MODE1) styleSel.value = APP.DEFAULTS.MODE1;
+        if (mainBeerStyle) styleSel.value = mainBeerStyle;
+    } else if (styleSel && mainBeerStyle) {
+        styleSel.value = mainBeerStyle;
     }
 
     if (sizeSel && sizeSel.children.length === 0) {
@@ -526,14 +543,12 @@ const resetFlavorSection = () => {
         });
     });
 
-    // 折りたたみ状態のリセット（ただし過去に開いた場合は開いたまま）
+    // 折りたたみ状態のリセット（ビール追加時は常に閉じて開始）
     const inputs = document.getElementById('flavor-inputs');
     const icon = document.getElementById('flavor-toggle-icon');
     if (inputs && icon) {
-        if (!localStorage.getItem(FLAVOR_OPENED_KEY)) {
-            inputs.classList.add('hidden');
-            icon.style.transform = '';
-        }
+        inputs.classList.add('hidden');
+        icon.style.transform = '';
     }
 };
 

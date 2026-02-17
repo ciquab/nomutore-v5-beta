@@ -334,12 +334,12 @@ function renderHealthInsights(allLogs, checks) {
                 <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
                         <p class="text-[9px] font-bold text-red-400 uppercase mb-1">状態スコア（飲酒日）</p>
-                        <p class="text-2xl font-black text-red-500 dark:text-red-400">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
+                        <p class="${avgDrinkingState !== null ? 'text-2xl font-black text-red-500 dark:text-red-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${drinkingStateScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
                         <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">状態スコア（休肝日）</p>
-                        <p class="text-2xl font-black text-emerald-500 dark:text-emerald-400">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
+                        <p class="${avgRestState !== null ? 'text-2xl font-black text-emerald-500 dark:text-emerald-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${restStateScores.length}日</p>
                     </div>
                 </div>
@@ -347,12 +347,12 @@ function renderHealthInsights(allLogs, checks) {
                 <div class="grid grid-cols-2 gap-3 ${hasActionMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-center border border-amber-100 dark:border-amber-800/50">
                         <p class="text-[9px] font-bold text-amber-500 uppercase mb-1">行動実行率（飲酒日）</p>
-                        <p class="text-2xl font-black text-amber-500 dark:text-amber-400">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
+                        <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${drinkingActionScores.length}日</p>
                     </div>
                     <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border border-cyan-100 dark:border-cyan-800/50">
                         <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動実行率（休肝日）</p>
-                        <p class="text-2xl font-black text-cyan-600 dark:text-cyan-400">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
+                        <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
                         <p class="text-[9px] text-gray-400">${restActionScores.length}日</p>
                     </div>
                 </div>
@@ -381,9 +381,9 @@ function renderHealthInsights(allLogs, checks) {
                 </div>
                 ` : ''}
                 ${insights.actionText ? `
-                <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl border border-cyan-100 dark:border-cyan-800/50">
-                    <p class="text-[10px] font-bold text-cyan-700 dark:text-cyan-300 flex items-start gap-1.5">
-                        <i class="ph-duotone ph-check-circle text-sm flex-shrink-0 mt-0.5"></i>
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                        <i class="ph-duotone ph-check-circle text-sm flex-shrink-0"></i>
                         <span><span class="mr-1">行動:</span>${insights.actionText}</span>
                     </p>
                 </div>

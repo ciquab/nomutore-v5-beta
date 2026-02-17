@@ -39,16 +39,21 @@ export const DataManager = {
     /**
      * オブジェクトデータからDBを復元する
      */
-    restoreFromObject: async (d) => {
+    restoreFromObject: async (d, options = {}) => {
         // バージョン判定
         const isV4 = d.version && d.version >= 4.0;
         const logs = isV4 ? d.data.logs : (d.logs || []);
         const checks = isV4 ? d.data.checks : (d.checks || []);
         const archives = isV4 ? (d.data.archives || []) : [];
 
-        // 確認
-        if (!confirm(`ログ ${logs.length}件、チェック ${checks.length}件を復元しますか？\n(既存データと重複するものはスキップされます)`)) {
-            return false;
+        // 確認はUI層から注入されたコールバックで行う（B1対応）
+        if (typeof options.confirmRestore === 'function') {
+            const shouldProceed = await options.confirmRestore({
+                logsCount: logs.length,
+                checksCount: checks.length,
+                archivesCount: archives.length
+            });
+            if (!shouldProceed) return false;
         }
 
         try {
@@ -142,7 +147,7 @@ export const DataManager = {
         }
     },
 
-    restoreFromCloud: async () => {
+    restoreFromCloud: async (options = {}) => {
         try {
             EventBus.emit(Events.CLOUD_STATUS, { message: 'Connecting to Google Drive...' });
 
@@ -156,7 +161,7 @@ export const DataManager = {
 
             // 2. 復元処理
             EventBus.emit(Events.CLOUD_STATUS, { message: 'Restoring data...' });
-            const success = await DataManager.restoreFromObject(data);
+            const success = await DataManager.restoreFromObject(data, options);
 
             if (success) {
                 EventBus.emit(Events.NOTIFY, { message: 'ドライブから復元しました', type: 'success' });
@@ -224,7 +229,7 @@ export const DataManager = {
      * JSONインポート (v4対応)
      * onboarding.js から await できるように Promise 化
      */
-    importJSON: (inputElement) => { 
+    importJSON: (inputElement, options = {}) => { 
         return new Promise((resolve, reject) => {
             if (!inputElement.files.length) return resolve(false); 
             
@@ -241,7 +246,7 @@ export const DataManager = {
                     const d = JSON.parse(jsonString); 
                     
                     // 1. 復元処理を実行（確認ダイアログが出ます）
-                    const success = await DataManager.restoreFromObject(d);
+                    const success = await DataManager.restoreFromObject(d, options);
                     
                     // 2. メッセージ通知（EventBus経由でUI層が処理）
                     if (success) {

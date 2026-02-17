@@ -1,121 +1,109 @@
 // @ts-check
-const CACHE_NAME = 'nomutore-v0.5.0';
-const APP_SHELL = [
+const CACHE_VERSION = 'v0.5.1-a4';
+const CACHE_NAME = `nomutore-${CACHE_VERSION}`;
+
+// A4対策: 手動で巨大なAPP_SHELLを維持せず、
+// 初回オフラインに必要な最小コアのみ事前キャッシュする。
+const CORE_ASSETS = [
     './',
     './index.html',
-    './style.css',
     './main.js',
-    './ui/index.js',
-    './ui/dom.js',
-    './ui/modal.js',
-    './ui/logList.js',
-    './ui/beerTank.js',
-    './ui/liverRank.js',
-    './ui/checkStatus.js',
-    './ui/weekly.js',
-    './ui/chart.js',
-    './ui/beerStats.js',
-    './ui/archiveManager.js',
-    './ui/timer.js',
-    './ui/share.js',
-    './ui/beerForm.js',
-    './ui/exerciseForm.js',   
-    './ui/checkForm.js',   
-    './ui/state.js',
-    './ui/actionRouter.js',   
-    './store.js',
-    './service.js',
-    './logic.js',
-    './constants.js',
-    './notifications.js',
-    './cloudManager.js',
-    './ui/onboarding.js',
+    './style.css',
+    './tailwind-output.css',
     './manifest.json',
     './icon-192_2.png',
     './icon-512_2.png',
-    './logo-header.png',
-    './tailwind-output.css'
+    './logo-header.png'
 ];
 
-// インストール時: 基本ファイルをキャッシュ
+const cachePut = async (request, response) => {
+    const cache = await caches.open(CACHE_NAME);
+    await cache.put(request, response);
+};
+
+const staleWhileRevalidate = async (request) => {
+    const cached = await caches.match(request);
+
+    const networkPromise = fetch(request)
+        .then((networkResponse) => {
+            if (networkResponse && networkResponse.ok) {
+                return cachePut(request, networkResponse.clone()).then(() => networkResponse);
+            }
+            return networkResponse;
+        })
+        .catch(() => null);
+
+    if (cached) {
+        return cached;
+    }
+
+    const networkResponse = await networkPromise;
+    if (networkResponse) return networkResponse;
+
+    throw new Error('Network and cache both unavailable');
+};
+
+const networkFirst = async (request) => {
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse && networkResponse.ok) {
+            await cachePut(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        throw new Error('Network failed and no cache fallback');
+    }
+};
+
+// インストール時: コアのみキャッシュ
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+        caches.open(CACHE_NAME)
+            .then((cache) => cache.addAll(CORE_ASSETS))
+            .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then((names) => {
-            return Promise.all(
-                names.map((name) => {
-                    if (name !== CACHE_NAME) return caches.delete(name);
-                })
-            );
-        }).then(() => self.clients.claim())
+        caches.keys().then((names) => Promise.all(
+            names
+                .filter((name) => name !== CACHE_NAME)
+                .map((name) => caches.delete(name))
+        )).then(() => self.clients.claim())
     );
 });
 
-// フェッチ処理 (Safe Clone Version)
 self.addEventListener('fetch', (event) => {
-    // 1. http/https 以外のリクエストは無視
     if (!event.request.url.startsWith('http')) return;
-
-    // 2. GETメソッド以外は無視
     if (event.request.method !== 'GET') return;
 
-    // 3. 外部ドメイン(CDN)はSWで扱わず、ブラウザ標準の通信に任せる
     const url = new URL(event.request.url);
-    if (url.origin !== location.origin) {
-        return;
-    }
+    if (url.origin !== location.origin) return;
 
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // A. キャッシュがある場合: 即座にキャッシュを返し、裏で更新(SWR)
-            if (cachedResponse) {
-                event.waitUntil(
-                    fetch(event.request).then((networkResponse) => {
-                        if (networkResponse && networkResponse.ok) {
-                            const responseToCache = networkResponse.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(event.request, responseToCache);
-                            });
-                        }
-                    }).catch(() => {})
-                );
-                return cachedResponse;
+    event.respondWith((async () => {
+        // HTML遷移は network-first（最新整合を優先）
+        if (event.request.mode === 'navigate') {
+            try {
+                return await networkFirst(event.request);
+            } catch {
+                const fallback = await caches.match('./index.html');
+                if (fallback) return fallback;
+                throw new Error('No offline fallback for navigation');
             }
+        }
 
-            // B. キャッシュがない場合: ネットワークから取得
-            return fetch(event.request).then((networkResponse) => {
-                // 取得成功時はキャッシュに保存して返す
-                if (networkResponse && networkResponse.ok) {
-                    const responseToCache = networkResponse.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
-                    });
-                }
-                return networkResponse;
-            });
-        }).catch((error) => {
-            // ★ オフライン時やネットワーク通信エラー時のフォールバック処理
-            console.warn('[Service Worker] Fetch failed (offline or network error):', event.request.url);
+        // 静的アセットは SWR（体感速度と更新追従のバランス）
+        const destination = event.request.destination;
+        if (['script', 'style', 'image', 'font', 'worker', 'manifest'].includes(destination)) {
+            return staleWhileRevalidate(event.request);
+        }
 
-            // 要求が「画面遷移」または「HTML」の場合、index.html を返す
-            if (event.request.mode === 'navigate' || 
-               (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))) {
-                
-                return caches.match('./index.html').then(fallback => {
-                    if (fallback) {
-                        return fallback;
-                    }
-                    throw error; 
-                });
-            }
-            throw error;
-        })
-    );
+        // それ以外は network-first
+        return networkFirst(event.request);
+    })());
 });
 
 // 通知クリック: アプリを開く
@@ -123,13 +111,11 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-            // 既に開いているウインドウがあればフォーカス
             for (const client of clientList) {
                 if (client.url.includes(self.registration.scope) && 'focus' in client) {
                     return client.focus();
                 }
             }
-            // なければ新しいウインドウを開く
             if (clients.openWindow) {
                 return clients.openWindow('./');
             }
@@ -166,31 +152,3 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

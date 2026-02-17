@@ -85,9 +85,12 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <i class="ph-duotone ph-beer-bottle text-5xl text-base-900 dark:text-white opacity-10"></i>
+                        <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10"></i>
+                        <p id="style-chart-total-label" class="text-[10px] font-bold text-gray-400 mt-1">スタイル数</p>
+                        <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
                     </div>
                 </div>
+                <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
             </div>
 
             <div id="health-insights-section" class="space-y-4"></div>
@@ -239,54 +242,48 @@ function renderHealthInsights(allLogs, checks) {
     const section = document.getElementById('health-insights-section');
     if (!section) return;
 
-    const profile = Store.getProfile();
-    const limit = Calc.getWeeklyAlcoholLimit(profile);
-
-    // --- 1. Weekly Alcohol Meter ---
+    // --- 1. 飲酒日 vs 休肝日 の状態/行動比較 ---
     const now = dayjs();
-    const currentDay = now.day() || 7;
-    const startOfWeek = now.subtract(currentDay - 1, 'day').startOf('day');
-
-    const weeklyLogs = allLogs.filter(l =>
-        l.type === 'beer' && l.timestamp >= startOfWeek.valueOf()
-    );
-    const weeklyAlcohol = Calc.calcTotalPureAlcohol(weeklyLogs);
-    const pct = Math.min(Math.round((weeklyAlcohol / limit) * 100), 100);
-
-    let barColor, meterTextColor;
-    if (pct <= 50) { barColor = 'bg-emerald-500'; meterTextColor = 'text-emerald-600 dark:text-emerald-400'; }
-    else if (pct <= 80) { barColor = 'bg-amber-500'; meterTextColor = 'text-amber-600 dark:text-amber-400'; }
-    else { barColor = 'bg-red-500'; meterTextColor = 'text-red-600 dark:text-red-400'; }
-
-    // --- 2. 飲んだ日 vs 休肝日 の体調比較 ---
-    const drinkingScores = [];
-    const restScores = [];
+    const drinkingStateScores = [];
+    const restStateScores = [];
+    const drinkingActionScores = [];
+    const restActionScores = [];
 
     checks.forEach(c => {
         if (!c.isSaved) return;
-        const score = Calc.calcConditionScore(c);
-        if (score === null) return;
+        const stateScore = Calc.calcStateScore(c);
+        const actionScore = Calc.calcActionScore(c);
 
         const hasBeer = Calc.hasAlcoholLog(allLogs, c.timestamp);
         if (c.isDryDay && !hasBeer) {
-            restScores.push(score);
+            if (stateScore !== null) restStateScores.push(stateScore);
+            if (actionScore !== null) restActionScores.push(actionScore);
         } else if (hasBeer) {
-            drinkingScores.push(score);
+            if (stateScore !== null) drinkingStateScores.push(stateScore);
+            if (actionScore !== null) drinkingActionScores.push(actionScore);
         }
     });
 
-    const avgDrinking = drinkingScores.length > 0
-        ? Math.round((drinkingScores.reduce((a, b) => a + b, 0) / drinkingScores.length) * 100) : null;
-    const avgRest = restScores.length > 0
-        ? Math.round((restScores.reduce((a, b) => a + b, 0) / restScores.length) * 100) : null;
-    const hasComparison = avgDrinking !== null && avgRest !== null;
+    const avgDrinkingState = drinkingStateScores.length > 0
+        ? Math.round((drinkingStateScores.reduce((a, b) => a + b, 0) / drinkingStateScores.length) * 100) : null;
+    const avgRestState = restStateScores.length > 0
+        ? Math.round((restStateScores.reduce((a, b) => a + b, 0) / restStateScores.length) * 100) : null;
+    const avgDrinkingAction = drinkingActionScores.length > 0
+        ? Math.round((drinkingActionScores.reduce((a, b) => a + b, 0) / drinkingActionScores.length) * 100) : null;
+    const avgRestAction = restActionScores.length > 0
+        ? Math.round((restActionScores.reduce((a, b) => a + b, 0) / restActionScores.length) * 100) : null;
+    const hasStateComparison = avgDrinkingState !== null && avgRestState !== null;
+    const hasActionComparison = avgDrinkingAction !== null && avgRestAction !== null;
+    const hasStateMetricData = drinkingStateScores.length > 0 || restStateScores.length > 0;
+    const hasActionMetricData = drinkingActionScores.length > 0 || restActionScores.length > 0;
 
-    // --- 3. コンディション推移データ (直近14日) ---
+    // --- 2. 状態/行動推移データ (直近14日) ---
     const chartDays = 14;
     const chartStart = now.subtract(chartDays - 1, 'day').startOf('day');
     const chartLabels = [];
     const alcoholData = [];
-    const conditionData = [];
+    const stateData = [];
+    const actionData = [];
 
     for (let i = 0; i < chartDays; i++) {
         const d = chartStart.add(i, 'day');
@@ -302,18 +299,29 @@ function renderHealthInsights(allLogs, checks) {
         );
         alcoholData.push(Math.round(Calc.calcTotalPureAlcohol(dayBeerLogs)));
 
-        // 体調スコア
+        // 状態達成率 / 行動達成率
         const dayCheck = checks.find(c =>
             c.isSaved && c.timestamp >= dayStart && c.timestamp <= dayEnd
         );
-        const score = dayCheck ? Calc.calcConditionScore(dayCheck) : null;
-        conditionData.push(score !== null ? Math.round(score * 100) : null);
+        const stateScore = dayCheck ? Calc.calcStateScore(dayCheck) : null;
+        const actionScore = dayCheck ? Calc.calcActionScore(dayCheck) : null;
+        stateData.push(stateScore !== null ? Math.round(stateScore * 100) : null);
+        actionData.push(actionScore !== null ? Math.round(actionScore * 100) : null);
     }
 
-    // --- 4. テキストインサイト ---
-    const insights = generateInsightText(weeklyAlcohol, limit, avgDrinking, avgRest, drinkingScores.length, restScores.length);
+    // --- 3. テキストインサイト ---
+    const insights = generateInsightText({
+        avgDrinkingState,
+        avgRestState,
+        avgDrinkingAction,
+        avgRestAction,
+        stateDrinkDays: drinkingStateScores.length,
+        stateRestDays: restStateScores.length,
+        actionDrinkDays: drinkingActionScores.length,
+        actionRestDays: restActionScores.length
+    });
 
-    // --- 5. 体重トレンド (条件付き) ---
+    // --- 4. 体重トレンド (条件付き) ---
     const weightEntries = checks.filter(c => c.isSaved && c.weight > 0).sort((a, b) => a.timestamp - b.timestamp);
     const hasWeight = weightEntries.length >= 5;
 
@@ -322,55 +330,67 @@ function renderHealthInsights(allLogs, checks) {
         <div class="glass-panel p-5 rounded-2xl relative">
             <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500"></i> ヘルスインサイト</h3>
 
-            <!-- Weekly Alcohol -->
-            <div class="mb-5">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400">今週の純アルコール量</span>
-                    <span class="text-xs font-black ${meterTextColor}">${Math.round(weeklyAlcohol)}g / ${limit}g</span>
-                </div>
-                <div class="w-full h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                    <div class="${barColor} h-full rounded-full transition-all duration-500" style="width:${pct}%"></div>
-                </div>
-            </div>
 
             <!-- 飲んだ日 vs 休肝日 -->
-            ${hasComparison ? `
             <div class="mb-5">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体調比較：飲んだ日 vs 休肝日</p>
-                <div class="grid grid-cols-2 gap-3">
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
+                <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
-                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">飲んだ日</p>
-                        <p class="text-2xl font-black text-red-500 dark:text-red-400">${avgDrinking}%</p>
-                        <p class="text-[9px] text-gray-400">${drinkingScores.length}日</p>
+                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
+                        <p class="${avgDrinkingState !== null ? 'text-2xl font-black text-red-500 dark:text-red-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
+                        <p class="text-[9px] text-gray-400">${drinkingStateScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
-                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">休肝日</p>
-                        <p class="text-2xl font-black text-emerald-500 dark:text-emerald-400">${avgRest}%</p>
-                        <p class="text-[9px] text-gray-400">${restScores.length}日</p>
+                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">状態達成率（休肝日）</p>
+                        <p class="${avgRestState !== null ? 'text-2xl font-black text-emerald-500 dark:text-emerald-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
+                        <p class="text-[9px] text-gray-400">${restStateScores.length}日</p>
                     </div>
                 </div>
+                ${!hasStateMetricData ? '<p class="text-[10px] text-gray-500 font-bold mb-2 text-center">ライブラリで状態項目を1つ追加してください</p>' : ''}
+                <div class="grid grid-cols-2 gap-3 ${hasActionMetricData ? '' : 'opacity-60 grayscale'}">
+                    <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-center border border-amber-100 dark:border-amber-800/50">
+                        <p class="text-[9px] font-bold text-amber-500 uppercase mb-1">行動達成率（飲酒日）</p>
+                        <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
+                        <p class="text-[9px] text-gray-400">${drinkingActionScores.length}日</p>
+                    </div>
+                    <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border" style="border-color:#7dd3fc;">
+                        <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
+                        <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
+                        <p class="text-[9px] text-gray-400">${restActionScores.length}日</p>
+                    </div>
+                </div>
+                ${!hasActionMetricData ? '<p class="text-[10px] text-gray-500 font-bold mt-2 text-center">ライブラリで行動項目を1つ追加してください</p>' : ''}
+                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
             </div>
-            ` : `
-            <div class="mb-5 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl text-center">
-                <p class="text-[10px] text-gray-400 font-bold">飲んだ日・休肝日それぞれのデイリーチェックが揃うと<br>体調比較が表示されます</p>
-            </div>
-            `}
 
             <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体調推移（14日間）</p>
+                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
                 <div class="h-40 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
             </div>
 
             <!-- テキストインサイト -->
-            ${insights ? `
-            <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
-                    <i class="ph-duotone ph-lightbulb text-sm flex-shrink-0 mt-0.5"></i>
-                    <span>${insights}</span>
-                </p>
+            ${(insights.stateText || insights.actionText) ? `
+            <div class="space-y-2">
+                ${insights.stateText ? `
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
+                        <i class="ph-duotone ph-heart text-sm flex-shrink-0 mt-0.5"></i>
+                        <span><span class="mr-1">状態:</span>${insights.stateText}</span>
+                    </p>
+                </div>
+                ` : ''}
+                ${insights.actionText ? `
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
+                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                        <i class="ph-duotone ph-check-circle text-sm flex-shrink-0"></i>
+                        <span><span class="mr-1">行動:</span>${insights.actionText}</span>
+                    </p>
+                </div>
+                ` : ''}
             </div>
             ` : ''}
 
@@ -387,7 +407,7 @@ function renderHealthInsights(allLogs, checks) {
     `;
 
     // チャート描画
-    renderHealthChart(chartLabels, alcoholData, conditionData);
+    renderHealthChart(chartLabels, alcoholData, stateData, actionData);
 
     // 体重チャート描画
     if (hasWeight) {
@@ -398,7 +418,7 @@ function renderHealthInsights(allLogs, checks) {
 /**
  * コンディション推移チャートの描画
  */
-function renderHealthChart(labels, alcoholData, conditionData) {
+function renderHealthChart(labels, alcoholData, stateData, actionData) {
     const ctx = document.getElementById('healthInsightsChart');
     if (!ctx) return;
     if (insightsChart) insightsChart.destroy();
@@ -410,8 +430,8 @@ function renderHealthChart(labels, alcoholData, conditionData) {
             datasets: [
                 {
                     type: 'line',
-                    label: '体調 %',
-                    data: conditionData,
+                    label: '状態達成率 %',
+                    data: stateData,
                     borderColor: '#6366f1',
                     backgroundColor: 'rgba(99, 102, 241, 0.1)',
                     borderWidth: 2,
@@ -421,6 +441,20 @@ function renderHealthChart(labels, alcoholData, conditionData) {
                     yAxisID: 'y1',
                     spanGaps: true,
                     fill: true
+                },
+                {
+                    type: 'line',
+                    label: '行動達成率 %',
+                    data: actionData,
+                    borderColor: '#06b6d4',
+                    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    pointBackgroundColor: '#06b6d4',
+                    tension: 0.3,
+                    yAxisID: 'y1',
+                    spanGaps: true,
+                    fill: false
                 },
                 {
                     type: 'bar',
@@ -447,7 +481,7 @@ function renderHealthChart(labels, alcoholData, conditionData) {
                     cornerRadius: 8,
                     callbacks: {
                         label: (ctx) => {
-                            if (ctx.dataset.yAxisID === 'y1') return `体調: ${ctx.raw ?? '-'}%`;
+                            if (ctx.dataset.yAxisID === 'y1') return `${ctx.dataset.label?.replace(' %', '')}: ${ctx.raw ?? '-'}%`;
                             return `アルコール: ${ctx.raw}g`;
                         }
                     }
@@ -533,27 +567,70 @@ function renderWeightChart(weightEntries) {
 /**
  * テキストインサイトの生成
  */
-function generateInsightText(weeklyAlcohol, limit, avgDrinking, avgRest, drinkDays, restDays) {
-    const parts = [];
+function generateInsightText({
+    avgDrinkingState,
+    avgRestState,
+    avgDrinkingAction,
+    avgRestAction,
+    stateDrinkDays,
+    stateRestDays,
+    actionDrinkDays,
+    actionRestDays
+}) {
+    const stateParts = [];
+    const actionParts = [];
 
-    if (weeklyAlcohol > limit) {
-        parts.push(`今週の純アルコール量はガイドラインを ${Math.round(weeklyAlcohol - limit)}g 超えています。来週は休肝日を増やしてみましょう。`);
-    } else if (weeklyAlcohol > limit * 0.8) {
-        parts.push(`今週はガイドラインの ${Math.round((weeklyAlcohol / limit) * 100)}% に到達しています。残りの日はペースダウンがおすすめです。`);
-    }
-
-    if (avgDrinking !== null && avgRest !== null && avgRest > avgDrinking) {
-        const diff = avgRest - avgDrinking;
-        if (diff >= 20) {
-            parts.push(`休肝日の体調は飲んだ日より ${diff}% 高い傾向です。定期的な休肝日が効果的です。`);
+    if (avgDrinkingState !== null && avgRestState !== null) {
+        const diff = avgRestState - avgDrinkingState;
+        if (diff >= 10) {
+            stateParts.push(`状態達成率は休肝日のほうが ${diff}% 高い傾向です。`);
+        } else if (diff <= -10) {
+            stateParts.push(`状態達成率は飲酒日のほうが ${Math.abs(diff)}% 高い結果です。チェック項目の内容も見直してみましょう。`);
         }
     }
 
-    if (drinkDays > 0 && restDays === 0) {
-        parts.push('まだ休肝日のデータがありません。週に2日以上の休肝日が推奨されています。');
+    if (stateDrinkDays > 0 && stateRestDays === 0) {
+        stateParts.push('休肝日の状態データがまだ不足しています。比較精度を上げるには休肝日の記録がおすすめです。');
     }
 
-    return parts.join(' ');
+    if (avgDrinkingAction !== null && avgRestAction !== null) {
+        const actionDiff = avgDrinkingAction - avgRestAction;
+        if (actionDiff >= 10) {
+            actionParts.push(`行動達成率は飲酒日のほうが ${actionDiff}% 高い傾向です。休肝日にもセルフケア行動を残すと比較が安定します。`);
+        } else if (actionDiff <= -10) {
+            actionParts.push(`行動達成率は休肝日のほうが ${Math.abs(actionDiff)}% 高い傾向です。飲酒日のセルフケア強化余地があります。`);
+        }
+    }
+
+    if (actionDrinkDays > 0 && actionRestDays === 0) {
+        actionParts.push('休肝日の行動データがまだ不足しています。');
+    }
+
+    return {
+        stateText: stateParts.join(' '),
+        actionText: actionParts.join(' ')
+    };
+}
+
+
+/**
+ * HEXカラーを少し暗くする
+ * @param {string} hex
+ * @param {number} ratio
+ * @returns {string}
+ */
+function darkenHex(hex, ratio = 0.25) {
+    const safeHex = (hex || '#cbd5e1').replace('#', '');
+    const v = safeHex.length === 3
+        ? safeHex.split('').map(c => c + c).join('')
+        : safeHex;
+
+    const n = parseInt(v, 16);
+    const r = Math.max(0, Math.floor(((n >> 16) & 255) * (1 - ratio)));
+    const g = Math.max(0, Math.floor(((n >> 8) & 255) * (1 - ratio)));
+    const b = Math.max(0, Math.floor((n & 255) * (1 - ratio)));
+
+    return `#${[r, g, b].map(x => x.toString(16).padStart(2, '0')).join('')}`;
 }
 
 /**
@@ -564,12 +641,16 @@ function renderStyleChart(styleCounts) {
     if (!ctx) return;
     if (statsChart) statsChart.destroy();
 
-    const labels = Object.keys(styleCounts);
-    const data = Object.values(styleCounts);
-    
+    const entries = Object.entries(styleCounts || {}).filter(([, count]) => count > 0);
+    if (entries.length === 0) return;
+
+    const sortedEntries = entries.sort((a, b) => b[1] - a[1]);
+    const labels = sortedEntries.map(([style]) => style);
+    const data = sortedEntries.map(([, count]) => count);
+
     const colorMap = {
-        'gold': '#fbbf24', 'amber': '#f59e0b', 'black': '#1f2937', 
-        'hazy': '#facc15', 'white': '#fcd34d', 'red': '#ef4444', 
+        'gold': '#fbbf24', 'amber': '#f59e0b', 'black': '#1f2937',
+        'hazy': '#facc15', 'white': '#fcd34d', 'red': '#ef4444',
         'pale': '#fef08a', 'copper': '#d97706', 'green': '#10b981'
     };
 
@@ -578,33 +659,73 @@ function renderStyleChart(styleCounts) {
         return colorMap[meta ? meta.color : 'gold'] || '#cbd5e1';
     });
 
+    const borderColors = bgColors.map(c => darkenHex(c, 0.35));
+
+    // 非タップ時でも情報が読めるように補足リストを描画
+    const total = data.reduce((a, b) => a + b, 0);
+    const totalValueEl = document.getElementById('style-chart-total-value');
+    if (totalValueEl) totalValueEl.textContent = String(labels.length);
+
+    const listEl = document.getElementById('style-breakdown-list');
+    if (listEl) {
+        const topRows = sortedEntries.slice(0, 5).map(([style, count], idx) => {
+            const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+            const color = bgColors[idx] || '#cbd5e1';
+            return `
+                <div class="flex items-center justify-between text-[11px]">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-2.5 h-2.5 rounded-full border border-black/10" style="background:${color}"></span>
+                        <span class="font-bold text-gray-700 dark:text-gray-200 truncate max-w-[150px]">${escapeHtml(style)}</span>
+                    </div>
+                    <div class="text-gray-500 dark:text-gray-400 font-bold">${count}杯 <span class="text-[10px]">(${pct}%)</span></div>
+                </div>
+            `;
+        }).join('');
+
+        const othersCount = sortedEntries.slice(5).reduce((sum, [, c]) => sum + c, 0);
+        const othersHtml = othersCount > 0
+            ? `<p class="text-[10px] text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
+            : '';
+
+        listEl.innerHTML = topRows + othersHtml;
+    }
+
     statsChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: labels,
+            labels,
             datasets: [{
-                data: data,
+                data,
                 backgroundColor: bgColors,
-                borderWidth: 0,
+                borderColor: borderColors,
+                borderWidth: 2,
                 hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%',
+            cutout: '68%',
             plugins: {
                 legend: { display: false },
-                tooltip: { 
-                    backgroundColor: 'rgba(0,0,0,0.8)', 
-                    bodyFont: { size: 12, weight: 'bold' }, 
-                    padding: 10, 
-                    cornerRadius: 8 
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    bodyFont: { size: 12, weight: 'bold' },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: (ctx) => {
+                            const val = ctx.raw || 0;
+                            const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                            return `${ctx.label}: ${val}杯 (${pct}%)`;
+                        }
+                    }
                 }
             }
         }
     });
 }
+
 
 /**
  * 銘柄リストの生成

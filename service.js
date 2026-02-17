@@ -675,7 +675,7 @@ extendPeriod: async (days = 7) => {
     let name, kcal, abv, carb;
     // ★追加: 戻り値で使う変数をあらかじめ初期化しておく
     let dryDayCanceled = false;
-    let untappdUrl = null;
+    let untappdSearchTerm = null;
 
     // beerForm で確定済みの値をそのまま信頼する
     const count = data.count ?? 1; 
@@ -717,8 +717,7 @@ extendPeriod: async (days = 7) => {
 
         // --- Untappd導線の生成（保存後に実行） ---
             if (data.useUntappd && data.brewery && data.brand) {
-            const query = encodeURIComponent(`${data.brewery} ${data.brand}`);
-            untappdUrl = `https://untappd.com/search?q=${query}`;
+            untappdSearchTerm = `${data.brewery} ${data.brand}`;
             }
 
         // --- ★ここを修正：仮想日付（Virtual Date）に基づいてチェックを探す ---
@@ -758,7 +757,7 @@ extendPeriod: async (days = 7) => {
         isUpdate: !!id,
         kcal: kcal,
         dryDayCanceled: dryDayCanceled,
-        untappdUrl: untappdUrl,
+        untappdSearchTerm: untappdSearchTerm,
         savedLog: logData
     };
 },

@@ -346,8 +346,10 @@ export const UI = {
             showMessage(msg, 'success', shareAction);
 
             // 4. Untappd連携（Serviceが生成したURLがあれば開く）
-            if (result.untappdUrl) {
-                setTimeout(() => window.open(result.untappdUrl, '_blank'), 100);
+            if (result.untappdSearchTerm) {
+                const query = encodeURIComponent(result.untappdSearchTerm);
+                const untappdUrl = `https://untappd.com/search?q=${query}`;
+                setTimeout(() => window.open(untappdUrl, '_blank'), 100);
             }
 
             // 5. 画面の更新

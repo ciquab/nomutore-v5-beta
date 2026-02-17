@@ -161,8 +161,10 @@ export const Service = {
      */
     getCheckStatusForDate: async (dateVal) => {
         const d = dayjs(dateVal);
-        const start = d.startOf('day').valueOf();
-        const end = d.endOf('day').valueOf();
+        const virtualDate = getVirtualDate(d.valueOf());
+        const v = dayjs(virtualDate);
+        const start = v.startOf('day').valueOf();
+        const end = v.endOf('day').valueOf();
 
         // Snapshotから最新データを取得
         // NOTE: getAppDataSnapshot は内部でキャッシュ(Store)と連携しており、
@@ -899,13 +901,15 @@ saveDailyCheck: async (formData) => {
     const data = {
         timestamp: ts,
         isDryDay: formData.isDryDay,
-        weight: formData.weight,
+        weight: (formData.weight === '' || formData.weight === null || formData.weight === undefined)
+            ? null
+            : Number(formData.weight),
         isSaved: true
     };
 
     // カスタム項目をマージ
     Object.keys(formData).forEach(key => {
-        if (key !== 'date') data[key] = formData[key];
+        if (key !== 'date' && key !== 'weight') data[key] = formData[key];
     });
 
     const isUpdate = existingRecords.length > 0;
@@ -945,4 +949,3 @@ saveDailyCheck: async (formData) => {
     };
 },
 };
-

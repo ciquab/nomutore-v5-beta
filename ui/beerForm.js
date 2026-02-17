@@ -56,7 +56,10 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
         if (log.isCustom) {
             switchBeerInputTab('custom');
             /** @type {HTMLInputElement} */(document.getElementById('custom-abv')).value = String(log.abv || 5.0);
-            const mlVal = (Number.isFinite(log.ml) && (log.ml || 0) > 0) ? log.ml : 350;
+            const storedAmount = Number.isFinite(log.rawAmount) && (log.rawAmount || 0) > 0
+                ? log.rawAmount
+                : log.ml;
+            const mlVal = (Number.isFinite(storedAmount) && (storedAmount || 0) > 0) ? storedAmount : 350;
             /** @type {HTMLInputElement} */(document.getElementById('custom-amount')).value = String(mlVal);
             
             if (log.customType) {

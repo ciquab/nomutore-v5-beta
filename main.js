@@ -61,7 +61,11 @@ const registerActions = () => {
         'data:exportJSON': () => DataManager.exportJSON(),
         'data:importJSON': () => DataManager.importJSON(),
         'data:backupToCloud': () => DataManager.backupToCloud(),
-        'data:restoreFromCloud': () => DataManager.restoreFromCloud(),
+        'data:restoreFromCloud': () => DataManager.restoreFromCloud({
+            confirmRestore: ({ logsCount, checksCount }) =>
+                confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
+(既存データと重複するものはスキップされます)`)
+        }),
         'data:triggerImportFile': () => UI.triggerFileInput('import-file'),
         
         // ========== Log系 ==========
@@ -258,6 +262,8 @@ if ('serviceWorker' in navigator) {
 }
 
 let lastActiveDate = Store.getLastActiveDate() || dayjs().format('YYYY-MM-DD');
+const APP_INIT_STATES = { IDLE: 'idle', INITIALIZING: 'initializing', READY: 'ready' };
+window.__appInitState = window.__appInitState || APP_INIT_STATES.IDLE;
 
 /* ==========================================================================
    Lifecycle Management
@@ -288,6 +294,9 @@ const setupLifecycleListeners = () => {
  */
 const handleDayChangeResume = async () => {
     try {
+        if (Store.clearCachedData) Store.clearCachedData();
+        if (UI && UI.resetRuntimeState) UI.resetRuntimeState();
+
         await Service.ensureTodayCheckRecord();
         const rolledOver = await Service.checkPeriodRollover();
         if (rolledOver) {
@@ -308,11 +317,15 @@ const handleDayChangeResume = async () => {
 // ★修正: 初期化ロジックを分離し、エラーハンドリングを強化
 const initApp = async () => {
     // 二重起動防止ガード（念のため）
-    if (window._isAppInitialized) {
+    if (window.__appInitState === APP_INIT_STATES.INITIALIZING) {
+        console.warn('App is initializing. Skipping duplicate init call.');
+        return;
+    }
+    if (window.__appInitState === APP_INIT_STATES.READY) {
         console.warn('App already initialized. Skipping.');
         return;
     }
-    window._isAppInitialized = true;
+    window.__appInitState = APP_INIT_STATES.INITIALIZING;
 
     try {
         console.log('App Initializing...');
@@ -365,6 +378,9 @@ const initApp = async () => {
             console.warn('CloudManager init failed:', err);
         });
 
+        if (Store.clearCachedData) Store.clearCachedData();
+        if (UI && UI.resetRuntimeState) UI.resetRuntimeState();
+
         UI.init();
 
         // 3. Migration & Initial Data Logic
@@ -406,7 +422,9 @@ const initApp = async () => {
                 console.warn('[Push] Re-sync failed:', e)
             );
         }
-       
+
+        window.__appInitState = APP_INIT_STATES.READY;
+
     } catch (e) {
         // 致命的なエラーが発生した場合、エラー画面を表示する
         console.error('Critical Initialization Error:', e);
@@ -415,6 +433,9 @@ const initApp = async () => {
             'main.js (initApp)', 
             0
         ));
+
+        // 次回再試行を可能にする
+        window.__appInitState = APP_INIT_STATES.IDLE;
     }
 };
 

@@ -1,7 +1,6 @@
 // @ts-check
 import { APP } from '../constants.js';
 import { EventBus, Events } from '../eventBus.js';
-import { refreshUI } from './index.js';
 
 // ■ 1. イベントバス (Pub/Sub) — eventBus.js から再エクスポート
 // ---------------------------------------------------------
@@ -50,10 +49,10 @@ export const StateManager = {
         //    (これにより、各所での `document.dispatchEvent` や `refreshUI` 呼び出しを削減できます)
         const AUTO_REFRESH_KEYS = ['beerMode', 'chartRange', 'selectedDate', 'heatmapOffset'];
         
-        // EventBus を使用（循環依存を避ける）
+        // EventBus経由でUIに更新要求を通知（循環依存を避ける）
         if (AUTO_REFRESH_KEYS.includes(key)) {
             console.log(`[State] Auto-refreshing UI due to change in: ${key}`);
-            refreshUI();
+            EventBus.emit(Events.REFRESH_UI);
         }
     },
 

@@ -4,6 +4,7 @@ import { LogService } from './logService.js';
 import { Calc, getVirtualDate } from './logic.js';
 import { APP, EXERCISE, STYLE_SPECS } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
+import { StatusSyncService } from './statusSyncService.js';
 
 // ヘルパー: 月曜始まりの週頭を取得
 const getStartOfWeek = (date = undefined) => {
@@ -24,6 +25,37 @@ const _deduplicateChecks = (rawChecks) => {
         }
         return acc;
     }, {}));
+};
+
+
+/**
+ * 運動ログのkcal/memoを一元計算する（B4対応）
+ * @param {string} exerciseKey
+ * @param {number} minutes
+ * @param {{ weight: number, height: number, age: number, gender: string }} profile
+ * @param {number} streak
+ * @param {string} [baseMemo='']
+ */
+const _calculateExerciseLogOutcome = (exerciseKey, minutes, profile, streak, baseMemo = '') => {
+    const mets = EXERCISE[exerciseKey]?.mets || 6.0;
+    const baseBurn = Calc.calculateExerciseBurn(mets, minutes, profile);
+    const creditInfo = Calc.calculateExerciseCredit(baseBurn, streak);
+
+    const kcal = Math.round(creditInfo.kcal * 10) / 10;
+
+    const normalizedMemo = (baseMemo || '').replace(/Streak Bonus x[0-9.]+/g, '').trim();
+    const bonusTag = creditInfo.bonusMultiplier > 1.0
+        ? `Streak Bonus x${creditInfo.bonusMultiplier.toFixed(1)}`
+        : '';
+    const memo = bonusTag
+        ? (normalizedMemo ? `${normalizedMemo} ${bonusTag}` : bonusTag)
+        : normalizedMemo;
+
+    return {
+        kcal,
+        memo,
+        bonusMultiplier: creditInfo.bonusMultiplier
+    };
 };
 
 export const Service = {
@@ -263,43 +295,29 @@ recalcImpactedHistory: async (changedTimestamp) => {
             const daysExerciseLogs = exerciseLogsByDate.get(dateStr) || [];
             
             for (const log of daysExerciseLogs) {
-                // デフォルト値を 6.0 (またはマスター定義) に統一
-                const mets = EXERCISE[log.exerciseKey]?.mets || 6.0;
-                
                 // 元の運動時間 (rawMinutes) があればそれを使用、なければ minutes を使用
                 const targetMins = log.rawMinutes || log.minutes || 0;
-                const baseBurn = Calc.calculateExerciseBurn(mets, targetMins, profile);
-                const updatedCredit = Calc.calculateExerciseCredit(baseBurn, streak);
+                const outcome = _calculateExerciseLogOutcome(log.exerciseKey, targetMins, profile, streak, log.memo || '');
 
-                // ★追加: 保存・比較前に値を小数点第1位で丸める
-                const roundedKcal = Math.round(updatedCredit.kcal * 10) / 10;
-                
-                let newMemo = (log.memo || '').replace(/Streak Bonus x[0-9.]+/g, '').trim();
-                if (updatedCredit.bonusMultiplier > 1.0) {
-                    const bonusTag = `Streak Bonus x${updatedCredit.bonusMultiplier.toFixed(1)}`;
-                    newMemo = newMemo ? `${newMemo} ${bonusTag}` : bonusTag;
-                }
-
-                // ★修正: updatedCredit.kcal ではなく roundedKcal を比較と保存に使う
-                if (Math.abs((log.kcal || 0) - roundedKcal) > 0.1 || log.memo !== newMemo) {
+                if (Math.abs((log.kcal || 0) - outcome.kcal) > 0.1 || log.memo !== outcome.memo) {
                     const oldKcal = log.kcal || 0;
-                    
+
                     // DB更新
                     await LogService.update(log.id, {
-                        kcal: roundedKcal, // 修正
-                        memo: newMemo
+                        kcal: outcome.kcal,
+                        memo: outcome.memo
                     });
-                    
+
                     // Map上の残高も更新（連鎖判定用）
                     const entry = logMap.get(dateStr);
                     if (entry) {
-                        entry.balance += (roundedKcal - oldKcal); // 修正
+                        entry.balance += (outcome.kcal - oldKcal);
                     }
-                    
+
                     // メモリ上のログオブジェクトも更新
-                    log.kcal = roundedKcal; // 修正
-                    log.memo = newMemo;
-                    
+                    log.kcal = outcome.kcal;
+                    log.memo = outcome.memo;
+
                     updateCount++;
                 }
             }
@@ -728,40 +746,26 @@ extendPeriod: async (days = 7) => {
         }
     }
 
-    // 3. スナップショットから最新バランスを取得してシェア文言作成
-    const { balance } = await Service.getAppDataSnapshot();
-    const shareText = Calc.generateShareText(logData, balance);
-    const shareAction = { 
-        type: 'share', 
-        text: shareText, 
-        shareMode: 'image', 
-        imageType: 'beer', 
-        imageData: logData 
-    };
-
-    // 4. 履歴再計算（これでストリークも最新ログを反映して計算されます）
+    // 3. 履歴再計算（これでストリークも最新ログを反映して計算されます）
     await Service.recalcImpactedHistory(data.timestamp);
 
     // ★追加: サーバーへ状態同期
-    _syncStatusToServer();   
+    const { balance } = await Service.getAppDataSnapshot();
+    await StatusSyncService.syncLatestStatus(balance);
 
     return {
         success: true,
         isUpdate: !!id,
         kcal: kcal,
         dryDayCanceled: dryDayCanceled,
-        shareAction: shareAction,
-        untappdUrl: untappdUrl
+        untappdUrl: untappdUrl,
+        savedLog: logData
     };
 },
 
     saveExerciseLog: async (exerciseKey, minutes, dateVal, applyBonus, id = null) => {
     const profile = Store.getProfile();
-    const mets = EXERCISE[exerciseKey] ? EXERCISE[exerciseKey].mets : 3.0;
-    
-    // 1. 基礎燃焼カロリー計算
-    const baseBurnKcal = Calc.calculateExerciseBurn(mets, minutes, profile);
-    let finalKcal = baseBurnKcal;
+    let finalKcal = 0;
     let memo = '';
     let bonusMultiplier = 1.0;
 
@@ -773,20 +777,17 @@ extendPeriod: async (days = 7) => {
     }
     
     // 2. ストリークボーナスの計算
+    let streak = 0;
     if (applyBonus) {
         const logs = await LogService.getAll();
         const checks = await db.checks.toArray();
-        const streak = Calc.getCurrentStreak(logs, checks, profile, dayjs(ts));
-        
-        const creditInfo = Calc.calculateExerciseCredit(baseBurnKcal, streak);
-        finalKcal = creditInfo.kcal;
-        bonusMultiplier = creditInfo.bonusMultiplier;
-        
-        if (bonusMultiplier > 1.0) {
-            memo = `Streak Bonus x${bonusMultiplier.toFixed(1)}`;
-        }
+        streak = Calc.getCurrentStreak(logs, checks, profile, dayjs(ts));
     }
-    finalKcal = Math.round(finalKcal * 10) / 10;    
+
+    const outcome = _calculateExerciseLogOutcome(exerciseKey, minutes, profile, streak);
+    finalKcal = outcome.kcal;
+    memo = outcome.memo;
+    bonusMultiplier = outcome.bonusMultiplier;
 
     const label = EXERCISE[exerciseKey] ? EXERCISE[exerciseKey].label : '運動';
 
@@ -801,8 +802,6 @@ extendPeriod: async (days = 7) => {
         memo: memo
     };
     
-    let shareAction = null;
-
     if (id) {
         // 更新
         await LogService.update(parseInt(id), logData);
@@ -810,17 +809,14 @@ extendPeriod: async (days = 7) => {
         // 新規登録
         await LogService.add(logData);
 
-        // シェア文言の生成
-        const { balance } = await Service.getAppDataSnapshot();
-        const shareText = Calc.generateShareText(logData, balance);
-        shareAction = { type: 'share', text: shareText };
     }
 
     // データの整合性維持（これはServiceの仕事）
     await Service.recalcImpactedHistory(ts);
 
     // ★追加: サーバーへ状態同期
-    _syncStatusToServer();    
+    const { balance } = await Service.getAppDataSnapshot();
+    await StatusSyncService.syncLatestStatus(balance);
 
     // ★重要: UI層への「報告書」を返却
     return {
@@ -828,7 +824,7 @@ extendPeriod: async (days = 7) => {
         isUpdate: !!id,
         kcal: finalKcal,
         bonusMultiplier: bonusMultiplier,
-        shareAction: shareAction
+        savedLog: logData
     };
 },
 
@@ -846,7 +842,8 @@ deleteLog: async (id) => {
 
     // 履歴の再計算（データ整合性の維持はServiceの責務）
     await Service.recalcImpactedHistory(ts);
-    _syncStatusToServer(); // ★追加
+    const { balance } = await Service.getAppDataSnapshot();
+    await StatusSyncService.syncLatestStatus(balance); // ★追加
 
     // 削除したデータの情報を返却する
     return { success: true, timestamp: ts };
@@ -871,7 +868,8 @@ bulkDeleteLogs: async (ids) => {
     
     // 履歴の再計算
     await Service.recalcImpactedHistory(oldestTs);
-    _syncStatusToServer(); // ★追加
+    const { balance } = await Service.getAppDataSnapshot();
+    await StatusSyncService.syncLatestStatus(balance); // ★追加
 
     return { 
         success: true, 
@@ -937,55 +935,15 @@ saveDailyCheck: async (formData) => {
     await Service.recalcImpactedHistory(ts);
 
     // ★追加: サーバーへ状態同期
-    _syncStatusToServer();
-
-    // 5. UI側での演出に必要なアクションを構築
-    let shareAction = null;
-    if (formData.isDryDay) {
-        const shareText = Calc.generateShareText({ type: 'check', isDryDay: true });
-        shareAction = { type: 'share', text: shareText };
-    }
+    const { balance } = await Service.getAppDataSnapshot();
+    await StatusSyncService.syncLatestStatus(balance);
 
     // 「報告書」を返す
     return {
         success: true,
         isUpdate: isUpdate,
-        isDryDay: formData.isDryDay,
-        shareAction: shareAction
+        isDryDay: formData.isDryDay
     };
 },
-};
-
-/**
- * サーバー同期用のヘルパー
- * DBから最新データを取得して送信する
- */
-const _syncStatusToServer = async () => {
-    try {
-        // 1. バランスの取得（既存メソッド活用）
-        const { balance } = await Service.getAppDataSnapshot();
-
-        // 2. 最新ログ日付の取得 (LogService経由)
-        // 最新1件を取得＝タイムスタンプ順で最も未来（または現在）のもの
-        const latestLogs = await LogService.getRecent(1);
-        const lastLogDate = latestLogs.length > 0 
-            ? getVirtualDate(latestLogs[0].timestamp) 
-            : null;
-
-        // 3. 最新チェック日付の取得
-        const latestCheck = await db.checks.orderBy('timestamp').reverse().first();
-        const lastCheckDate = latestCheck 
-            ? getVirtualDate(latestCheck.timestamp) 
-            : null;
-
-        // 4. 送信
-        NotificationManager.updateServerStatus({
-            balance,
-            lastCheckDate,
-            lastLogDate
-        });
-    } catch (e) {
-        console.warn('[Service] Sync status warning:', e);
-    }
 };
 

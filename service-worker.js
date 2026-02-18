@@ -1,9 +1,30 @@
 // @ts-check
-const CACHE_VERSION = 'v0.5.1-a4';
+const CACHE_VERSION = 'v0.5.2-b1';
 const CACHE_NAME = `nomutore-${CACHE_VERSION}`;
 
-// A4対策: 手動で巨大なAPP_SHELLを維持せず、
-// 初回オフラインに必要な最小コアのみ事前キャッシュする。
+// B1対策: CDNリソースもプリキャッシュしてオフライン動作を保証する。
+// dayjs/Dexie が読めないとESMインポートチェーンが崩壊し白画面になるため必須。
+const CDN_ASSETS = [
+    // dayjs — ほぼ全モジュールが依存。オフラインで最も致命的。
+    'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm',
+    // Dexie — IndexedDB基盤
+    'https://unpkg.com/dexie@3.2.4/dist/dexie.js',
+    // Chart.js — Statsタブ
+    'https://cdn.jsdelivr.net/npm/chart.js',
+    // canvas-confetti — 達成演出
+    'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm',
+    // driver.js — オンボーディング
+    'https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css',
+];
+
+// オフラインで必須だが初回アクセス時キャッシュで十分なCDN（フォント・アイコン等）
+const CDN_RUNTIME_ORIGINS = [
+    'https://fonts.googleapis.com',
+    'https://fonts.gstatic.com',
+    'https://unpkg.com',
+    'https://cdn.jsdelivr.net',
+];
+
 const CORE_ASSETS = [
     './',
     './index.html',
@@ -96,11 +117,11 @@ const networkFirst = async (request) => {
     }
 };
 
-// インストール時: コアのみキャッシュ
+// インストール時: コア + クリティカルCDNをキャッシュ
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(CORE_ASSETS))
+            .then((cache) => cache.addAll([...CORE_ASSETS, ...CDN_ASSETS]))
             .then(() => self.skipWaiting())
     );
 });
@@ -120,9 +141,19 @@ self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
     const url = new URL(event.request.url);
-    if (url.origin !== location.origin) return;
+    const isSameOrigin = url.origin === location.origin;
+    const isTrustedCDN = CDN_RUNTIME_ORIGINS.some(origin => url.href.startsWith(origin));
+
+    // 信頼できるCDNとsame-origin以外は関与しない
+    if (!isSameOrigin && !isTrustedCDN) return;
 
     event.respondWith((async () => {
+        // CDNリソース: バージョン固定URLなのでSWRが最適
+        // プリキャッシュ済みならキャッシュから即返し、バックグラウンドで更新確認
+        if (isTrustedCDN) {
+            return staleWhileRevalidate(event.request);
+        }
+
         // HTML遷移は network-first（最新整合を優先）
         if (event.request.mode === 'navigate') {
             try {

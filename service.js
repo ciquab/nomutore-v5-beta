@@ -63,6 +63,17 @@ export const Service = {
     _recalcQueue: Promise.resolve(),
 
     /**
+     * 保存パイプライン直列化キュー
+     * DB書き込み → recalc → snapshot → sync の全体を排他実行し、
+     * 連続保存時のバランス不整合を防止する
+     */
+    _saveQueue: Promise.resolve(),
+    _enqueueSave(fn) {
+        Service._saveQueue = Service._saveQueue.catch(() => {}).then(fn);
+        return Service._saveQueue;
+    },
+
+    /**
      * 指定日のログ一覧を取得する（新しい順）
      * @param {number} start
      * @param {number} end
@@ -673,14 +684,14 @@ extendPeriod: async (days = 7) => {
 
     // --- 以下、シェア機能追加のために修正されたメソッド ---
 
-   saveBeerLog: async (data, id = null) => {
+   saveBeerLog: (data, id = null) => Service._enqueueSave(async () => {
     let name, kcal, abv, carb;
     // ★追加: 戻り値で使う変数をあらかじめ初期化しておく
     let dryDayCanceled = false;
     let untappdSearchTerm = null;
 
     // beerForm で確定済みの値をそのまま信頼する
-    const count = data.count ?? 1; 
+    const count = data.count ?? 1;
     abv = data.abv;
     const ml = data.ml;
     carb = data.carb ?? (data.isCustom ? (data.type === 'dry' ? 0.0 : 3.0) : (STYLE_SPECS[data.style]?.carb ?? 3.0));
@@ -727,7 +738,7 @@ extendPeriod: async (days = 7) => {
     const vDay = dayjs(vDateStr);
     const start = vDay.startOf('day').valueOf();
     const end = vDay.endOf('day').valueOf();
-    
+
     // 物理的な timestamp ではなく、その「仮想日」の範囲で検索
     const existingChecks = await db.checks.where('timestamp').between(start, end, true, true).toArray();
 
@@ -762,9 +773,9 @@ extendPeriod: async (days = 7) => {
         untappdSearchTerm: untappdSearchTerm,
         savedLog: logData
     };
-},
+}),
 
-    saveExerciseLog: async (exerciseKey, minutes, dateVal, applyBonus, id = null) => {
+    saveExerciseLog: (exerciseKey, minutes, dateVal, applyBonus, id = null) => Service._enqueueSave(async () => {
     const profile = Store.getProfile();
     let finalKcal = 0;
     let memo = '';
@@ -776,7 +787,7 @@ extendPeriod: async (days = 7) => {
     } else {
         ts = dayjs(dateVal).startOf('day').add(12, 'hour').valueOf();
     }
-    
+
     // 2. ストリークボーナスの計算
     let streak = 0;
     if (applyBonus) {
@@ -802,14 +813,13 @@ extendPeriod: async (days = 7) => {
         rawMinutes: minutes,
         memo: memo
     };
-    
+
     if (id) {
         // 更新
         await LogService.update(parseInt(id), logData);
     } else {
         // 新規登録
         await LogService.add(logData);
-
     }
 
     // データの整合性維持（これはServiceの仕事）
@@ -827,13 +837,13 @@ extendPeriod: async (days = 7) => {
         bonusMultiplier: bonusMultiplier,
         savedLog: logData
     };
-},
+}),
 
 /**
  * ログを1件削除する
  * @returns {Promise<{success: boolean, timestamp: number}>}
  */
-deleteLog: async (id) => {
+deleteLog: (id) => Service._enqueueSave(async () => {
     const logId = parseInt(id);
     const log = await LogService.getById(logId);
     if (!log) throw new Error('削除対象のログが見つかりませんでした');
@@ -844,18 +854,18 @@ deleteLog: async (id) => {
     // 履歴の再計算（データ整合性の維持はServiceの責務）
     await Service.recalcImpactedHistory(ts);
     const { balance } = await Service.getAppDataSnapshot();
-    await StatusSyncService.syncLatestStatus(balance); // ★追加
+    await StatusSyncService.syncLatestStatus(balance);
 
     // 削除したデータの情報を返却する
     return { success: true, timestamp: ts };
-},
+}),
 
 /**
  * ログをまとめて削除する
  * @param {Array<number>} ids
  * @returns {Promise<{success: boolean, count: number, oldestTs: number}>}
  */
-bulkDeleteLogs: async (ids) => {
+bulkDeleteLogs: (ids) => Service._enqueueSave(async () => {
     if (!ids || ids.length === 0) return { success: false, count: 0 };
 
     // 再計算のために最も古い日付を取得
@@ -866,31 +876,31 @@ bulkDeleteLogs: async (ids) => {
     }
 
     await LogService.bulkDelete(ids);
-    
+
     // 履歴の再計算
     await Service.recalcImpactedHistory(oldestTs);
     const { balance } = await Service.getAppDataSnapshot();
-    await StatusSyncService.syncLatestStatus(balance); // ★追加
+    await StatusSyncService.syncLatestStatus(balance);
 
-    return { 
-        success: true, 
-        count: ids.length, 
-        oldestTs: oldestTs 
+    return {
+        success: true,
+        count: ids.length,
+        oldestTs: oldestTs
     };
-},
+}),
 
     /**
  * デイリーチェックの保存
  * @param {Object} formData
  * @returns {Promise<Object>} 処理結果報告
  */
-saveDailyCheck: async (formData) => {
+saveDailyCheck: (formData) => Service._enqueueSave(async () => {
     // 1. 日付の正規化
     const targetDay = dayjs(formData.date);
     const ts = targetDay.startOf('day').add(12, 'hour').valueOf();
     const start = targetDay.startOf('day').valueOf();
     const end = targetDay.endOf('day').valueOf();
-    
+
     // 2. 既存レコードの確認（重複対策ロジックはServiceの責務として維持）
     const existingRecords = await db.checks
         .where('timestamp')
@@ -928,7 +938,7 @@ saveDailyCheck: async (formData) => {
         // 新規登録
         await db.checks.add(data);
     }
-    
+
     // 体重をプロフィール設定に反映（データの同期もServiceの責務）
     if (formData.weight) {
         localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, formData.weight);
@@ -947,5 +957,5 @@ saveDailyCheck: async (formData) => {
         isUpdate: isUpdate,
         isDryDay: formData.isDryDay
     };
-},
+}),
 };

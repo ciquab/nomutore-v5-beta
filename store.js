@@ -117,6 +117,6 @@ export const ExternalApp = {
     searchUntappd: (term) => {
         const query = encodeURIComponent(term);
         const webUrl = `https://untappd.com/search?q=${query}`;
-        window.open(webUrl, '_blank');
+        window.open(webUrl, '_blank', 'noopener,noreferrer');
     }
 };

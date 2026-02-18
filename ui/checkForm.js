@@ -52,7 +52,7 @@ const getMetricMeta = (metricType) => {
  */
 const renderMetricBadge = (metricType) => {
     const meta = getMetricMeta(metricType);
-    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${meta.className}" style="border-color:${meta.borderColor};color:${meta.textColor};">${meta.label}</span>`;
+    return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-bold ${meta.className}" style="border-color:${meta.borderColor};color:${meta.textColor};">${meta.label}</span>`;
 };
 /* --- Action Handlers (ActionRouterから呼ばれる関数) --- */
 
@@ -155,7 +155,7 @@ export const openCheckModal = async (dateStr = null) => {
                         <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                             ${iconHtml} ${item.label}
                         </span>
-                        ${item.desc ? `<span class="text-[9px] text-gray-400">${item.desc}</span>` : ''}
+                        ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
                     </div>
                 </label>
             `;
@@ -206,7 +206,7 @@ export const openCheckModal = async (dateStr = null) => {
     if (hint) {
         // ★修正: classNameを直接上書きして、前の状態を完全にリセットする
         hint.textContent = '一滴も飲まなかった日はスイッチON'; 
-        hint.className = 'text-[10px] text-orange-600/70'; 
+        hint.className = 'text-[11px] text-orange-600/70'; 
     }
 
     // UI同期（初期状態として呼ぶ）
@@ -259,9 +259,9 @@ export const openCheckModal = async (dateStr = null) => {
                             <div class="flex flex-col">
                                 <span class="text-xs font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1">
                                     ${iconHtml} ${labelText}
-                                    <span class="text-[9px] bg-amber-200 dark:bg-amber-800 px-1 rounded text-amber-900 dark:text-amber-100 ml-1">Legacy</span>
+                                    <span class="text-[11px] bg-amber-200 dark:bg-amber-800 px-1 rounded text-amber-900 dark:text-amber-100 ml-1">Legacy</span>
                                 </span>
-                                <span class="text-[9px] text-amber-600/70 dark:text-amber-400/70">現在はリストにありません</span>
+                                <span class="text-[11px] text-amber-600/70 dark:text-amber-400/70">現在はリストにありません</span>
                             </div>
                         </label>
                     `;
@@ -285,7 +285,7 @@ export const openCheckModal = async (dateStr = null) => {
             if (hint) {
                 hint.innerHTML = "<i class='ph-bold ph-beer-bottle'></i> 飲酒記録があるため、休肝日は選択できません";
                 // 赤字エラー表示
-                hint.className = 'text-[10px] font-bold text-red-500';
+                hint.className = 'text-[11px] font-bold text-red-500';
             }
         }
 
@@ -371,8 +371,8 @@ export const renderCheckLibrary = () => {
         btn.type = 'button';
         const isActive = libraryMetricFilter === f.key;
         btn.className = isActive
-            ? 'px-2.5 py-1 rounded-full text-[10px] font-bold border border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-            : 'px-2.5 py-1 rounded-full text-[10px] font-bold border border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-300';
+            ? 'px-2.5 py-1 rounded-full text-[11px] font-bold border border-indigo-400 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+            : 'px-2.5 py-1 rounded-full text-[11px] font-bold border border-gray-200 text-gray-500 dark:border-gray-700 dark:text-gray-300';
         btn.textContent = f.label;
         btn.addEventListener('click', () => {
             libraryMetricFilter = f.key;
@@ -392,7 +392,7 @@ export const renderCheckLibrary = () => {
 
         const section = document.createElement('div');
         section.className = 'mb-4';
-        section.innerHTML = `<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
+        section.innerHTML = `<h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
 
         const grid = document.createElement('div');
         grid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
@@ -419,7 +419,7 @@ export const renderCheckLibrary = () => {
                         <p class="text-xs font-bold text-base-900 dark:text-white truncate">${item.label}</p>
                         ${badgeHtml}
                     </div>
-                    <p class="text-[9px] text-gray-400 truncate">${item.desc}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${item.desc}</p>
                 </div>
                 <div class="check-icon">
                     ${isActive ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' : '<i class="ph-bold ph-circle text-gray-300"></i>'}
@@ -538,7 +538,7 @@ export const renderCheckEditor = () => {
                         <p class="text-xs font-bold text-gray-800 dark:text-gray-200">${item.label}</p>
                         ${badgeHtml}
                     </div>
-                    <p class="text-[10px] text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
                 </div>
             </div>
             ${deleteBtn}
@@ -655,10 +655,10 @@ export const syncDryDayUI = (isDry) => {
     if (hint && !isDisabled) {
         if (isDry) {
             hint.innerHTML = "<i class='ph-fill ph-heart text-emerald-500'></i> 素晴らしい！肝臓が回復しています";
-            hint.className = "text-[10px] font-bold text-emerald-600";
+            hint.className = "text-[11px] font-bold text-emerald-600";
         } else {
             hint.textContent = '一滴も飲まなかった日はスイッチON';
-            hint.className = "text-[10px] text-orange-600/70";
+            hint.className = "text-[11px] text-orange-600/70";
         }
     }
 };

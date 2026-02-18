@@ -29,10 +29,10 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
     if (badge) {
         if (multiplier > 1.0) {
             badge.innerHTML = `<i class="ph-fill ph-fire-simple mr-1"></i>x${multiplier.toFixed(1)} Bonus`;
-            badge.className = "inline-flex items-center px-2 py-0.5 bg-orange-500 text-white text-[10px] font-bold rounded-full shadow-sm animate-pulse";
+            badge.className = "inline-flex items-center px-2 py-0.5 bg-orange-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse";
         } else {
             badge.innerHTML = `<i class="ph-bold ph-trend-flat mr-1"></i>x1.0 Normal`;
-            badge.className = "inline-flex items-center px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-bold rounded-full border border-gray-200 dark:border-gray-600";
+            badge.className = "inline-flex items-center px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[11px] font-bold rounded-full border border-gray-200 dark:border-gray-600";
         }
     }
 
@@ -54,7 +54,7 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
             const status = Calc.getDayStatus(d, allLogsForDisplay, checks, profile);
             
             let bgClass = "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700";
-            let textClass = "text-gray-400";
+            let textClass = "text-gray-500 dark:text-gray-400";
             let borderClass = "border";
             let iconHtml = '';
 
@@ -75,7 +75,7 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
                 case 'exercise': 
                     bgClass = "bg-cyan-50 dark:bg-cyan-900/20 border-gray-300 dark:border-gray-500 border";
                     textClass = "text-cyan-600 dark:text-cyan-400";
-                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-400 dark:text-gray-300"></i>`;
+                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-500 dark:text-gray-400 dark:text-gray-300"></i>`;
                     break;
 
                 case 'rest': 
@@ -106,7 +106,7 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
                     break;
                     
                 default:
-                    iconHtml = `<span class="text-[10px] font-bold opacity-30 font-mono">${d.format('D')}</span>`;
+                    iconHtml = `<span class="text-[11px] font-bold opacity-30 font-mono">${d.format('D')}</span>`;
                     break;
             }
 
@@ -214,7 +214,7 @@ export function renderHeatmap(checks, allLogs, profile) {
             bgClass += ' ring-2 ring-indigo-500 dark:ring-indigo-400 z-10';
         }
 
-        const content = iconHtml ? iconHtml : `<span class="text-[10px] opacity-40 font-mono">${d.format('D')}</span>`;
+        const content = iconHtml ? iconHtml : `<span class="text-[11px] opacity-40 font-mono">${d.format('D')}</span>`;
 
         html += `
             <div class="heatmap-cell aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 ${bgClass} ${textClass} relative"

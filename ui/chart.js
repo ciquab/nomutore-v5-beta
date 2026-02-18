@@ -20,9 +20,9 @@ export function renderChart(logs, checks) {
             btn.dataset.args = JSON.stringify({ range }); // 引数 (1w, 1m, 3m)
             // ▲▲▲ 追加ここまで ▲▲▲
             const isActive = btn.dataset.range === StateManager.chartRange;
-            btn.className = `px-2 py-1 text-[10px] font-bold rounded-md transition-all ${
+            btn.className = `px-2 py-1 text-[11px] font-bold rounded-md transition-all ${
                 isActive ? "active-filter bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-300 shadow-sm" 
-                         : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                         : "text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             }`;
         });
     }

@@ -14,7 +14,7 @@ body {
 }
 
 .dark body {
-    background-color: #0f172a; /* base-950 */
+    background-color: #0f172a; /* base-900 */
     color: #f1f5f9; /* base-100 */
 }
 
@@ -794,12 +794,6 @@ select:disabled {
     scrollbar-width: none;  /* Firefox */
 }
 
-/* 運動カード等の「光る」演出の強化（もし未定義なら） */
-.shadow-glow-indigo {
-    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4);
-
-}
-
 /* --- 3D Flip Animation Utilities --- */
 
 /* 遠近感を出すためのラッパー用クラス */
@@ -830,4 +824,121 @@ select:disabled {
 /* Level 1: Settings Save Button (Nav=50 より上、モーダル=100 より下) */
 #settings-save-container {
     z-index: 90 !important;
+}
+
+/* =========================================
+   Accessibility: Focus Visible
+   ========================================= */
+
+/* キーボードフォーカス時のみリングを表示（マウスクリック時は非表示） */
+:focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 2px;
+}
+
+/* ダークモード用 */
+.dark :focus-visible {
+    outline-color: #818cf8;
+}
+
+/* 丸いボタンのフォーカスリング */
+.rounded-full:focus-visible {
+    outline-offset: 2px;
+}
+
+/* フォーム要素のフォーカスリング */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #4f46e5;
+    outline-offset: 0;
+}
+
+.dark input:focus-visible,
+.dark select:focus-visible,
+.dark textarea:focus-visible {
+    outline-color: #818cf8;
+}
+
+/* skip-nav: 通常時は画面外、フォーカス時に表示 */
+.skip-nav {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 0.75rem 1.5rem;
+    background: #4f46e5;
+    color: white;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border-radius: 0 0 0.75rem 0.75rem;
+    text-decoration: none;
+    transition: top 0.2s;
+}
+.skip-nav:focus {
+    top: 0;
+}
+
+/* =========================================
+   Accessibility: prefers-reduced-motion
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+    /* すべてのアニメーションを即時完了させる */
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* オーブ液体: 波の回転を停止 */
+    #orb-liquid-front, #orb-liquid-back,
+    .liquid-layer, .liquid-front, .liquid-back {
+        animation: none !important;
+    }
+
+    /* ネオンフリッカー: 静的表示 */
+    .animate-neon-flicker, .neon-power-on {
+        animation: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    /* 泡: 非表示 */
+    .bubble-particle, .lp-bubble {
+        display: none !important;
+    }
+
+    /* コンセプトアイコン浮遊: 停止 */
+    .concept-icon-float, .concept-icon-float-delay {
+        animation: none !important;
+    }
+
+    /* リストアイテム: 即時表示 */
+    .log-item {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    /* Zen/Tipsyモード: アニメーション停止 */
+    .orb-container.zen-mode,
+    .orb-container.tipsy-mode {
+        animation: none !important;
+    }
+
+    /* 乾杯アニメーション: 即時完了 */
+    .animate-clink-left, .animate-clink-right, .animate-toast-text {
+        animation: none !important;
+    }
+
+    /* タイマー泡: 非表示 */
+    .animate-float-up {
+        animation: none !important;
+    }
+
+    /* 3Dフリップ: 即時切替 */
+    .flip-card-inner {
+        transition: none !important;
+    }
 }

@@ -47,19 +47,19 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">スタイル</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">スタイル</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.style || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">ブルワリー</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">ブルワリー</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.brewery || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">分量</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">分量</span>
                     <p class="font-bold text-base-900 dark:text-base-100">${amount}ml <span class="text-xs opacity-50">(${log.count} cans)</span></p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">評価</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">評価</span>
                     <div class="flex text-amber-400 text-sm">
                         ${'★'.repeat(log.rating || 0)}${'<span class="opacity-30">★</span>'.repeat(5 - (log.rating || 0))}
                     </div>
@@ -68,13 +68,13 @@ export const openLogDetail = (log) => {
             
             ${log.memo ? `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
-                <span class="text-[10px] font-bold text-gray-500 uppercase mb-1 block">メモ</span>
+                <span class="text-[11px] font-bold text-gray-500 uppercase mb-1 block">メモ</span>
                 <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(log.memo)}</p>
             </div>` : ''}
 
             ${log.flavorProfile ? `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
-                <span class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">味わいプロファイル</span>
+                <span class="text-[11px] font-bold text-gray-500 uppercase mb-2 block">味わいプロファイル</span>
                 <div class="h-48 w-full relative">
                     <canvas id="log-detail-radar"></canvas>
                 </div>
@@ -85,11 +85,11 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6 flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">時間</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">時間</span>
                     <p class="text-2xl font-black text-base-900 dark:text-base-100">${log.minutes} <span class="text-sm font-bold text-gray-500">min</span></p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[10px] font-bold text-gray-500 uppercase">返済カロリー</span>
+                    <span class="text-[11px] font-bold text-gray-500 uppercase">返済カロリー</span>
                     <p class="text-2xl font-black text-emerald-500">+${Math.round(Math.abs(log.kcal))} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
                 </div>
             </div>
@@ -117,8 +117,8 @@ export const openLogDetail = (log) => {
 
             <div class="p-6 overflow-y-auto flex-1">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-gray-400">${dateDisplay}</span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">${dateDisplay}</span>
+                    <span class="px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
                         ${isBeer ? 'ビール記録' : '運動記録'}
                     </span>
                 </div>
@@ -127,7 +127,7 @@ export const openLogDetail = (log) => {
                     ${escapeHtml(displayName)}
                 </h2>
                 
-                ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.round(Math.abs(log.kcal))}<span class="text-sm font-bold text-gray-400">kcal</span></div>` : ''}
+                ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.round(Math.abs(log.kcal))}<span class="text-sm font-bold text-gray-500 dark:text-gray-400">kcal</span></div>` : ''}
 
                 ${detailsHtml}
             </div>
@@ -317,7 +317,7 @@ export const openDayDetail = async (dateStr) => {
     
     if (logs.length === 0) {
         listContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-40 text-gray-400 opacity-60">
+            <div class="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 opacity-60">
                 <i class="ph-duotone ph-notebook text-4xl mb-2"></i>
                 <span class="text-xs font-bold">この日の記録はありません</span>
             </div>
@@ -372,14 +372,14 @@ export const openDayDetail = async (dateStr) => {
                 <span class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
                     ${mainText}
                 </span>
-                <span class="text-[10px] text-gray-400 font-bold truncate">
+                <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">
                     ${subText}
                 </span>
             </div>
         </div>
         <div class="text-right shrink-0 ml-2">
             <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
-                ${log.kcal > 0 ? '+' : ''}${Math.round(log.kcal)} <span class="text-[10px]">kcal</span>
+                ${log.kcal > 0 ? '+' : ''}${Math.round(log.kcal)} <span class="text-[11px]">kcal</span>
             </span>
         </div>
     `;

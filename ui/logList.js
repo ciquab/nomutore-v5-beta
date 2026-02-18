@@ -121,7 +121,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>まだ記録がありません</li>`;
+        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>まだ記録がありません</li>`;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
         return;
     }
@@ -133,7 +133,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         
         if (dateStr !== currentDateStr) {
             const header = document.createElement('li');
-            header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
+            header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
             header.innerHTML = `<span>${dateStr}</span>`;
             fragment.appendChild(header);
             currentDateStr = dateStr;
@@ -153,7 +153,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
 
         let mainText = log.type === 'beer' && log.brand 
-            ? (log.brewery ? `<span class="text-[10px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand))
+            ? (log.brewery ? `<span class="text-[11px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand))
             : escapeHtml(log.name);
 
         let subText = log.type === 'exercise'

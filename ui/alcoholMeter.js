@@ -55,7 +55,7 @@ export function renderAlcoholMeter(allLogs) {
     container.innerHTML = `
         <div class="flex items-center justify-between mb-2">
             <h3 class="text-sm font-bold flex items-center gap-1.5 text-gray-500 dark:text-gray-400"><i class="ph-fill ph-wine"></i> Weekly Alcohol</h3>
-            <span class="text-[10px] font-bold ${textColor}">
+            <span class="text-[11px] font-bold ${textColor}">
                 ${Math.round(totalAlcohol)}g / ${limit}g
             </span>
         </div>
@@ -66,8 +66,8 @@ export function renderAlcoholMeter(allLogs) {
         </div>
 
         <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold text-gray-400">${statusText}</span>
-            ${overLimit ? `<span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${bgColor} ${textColor}">Over</span>` : ''}
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400">${statusText}</span>
+            ${overLimit ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${bgColor} ${textColor}">Over</span>` : ''}
         </div>
     `;
 }

@@ -423,7 +423,7 @@ document.addEventListener('save-exercise', async (e) => {
                 
                 // ボーナス適用時の追記
                 if (result.bonusMultiplier > 1.0) {
-                    msg += `<br><span class="text-[10px] font-bold opacity-80">Streak Bonus x${result.bonusMultiplier.toFixed(1)} 適用済み</span>`;
+                    msg += `<br><span class="text-[11px] font-bold opacity-80">Streak Bonus x${result.bonusMultiplier.toFixed(1)} 適用済み</span>`;
                 }
 
                 Feedback.success();
@@ -936,7 +936,7 @@ if (checkModal) {
             }
 
             document.querySelectorAll('.nav-item').forEach(el => {
-                el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
+                el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400';
                 const icon = el.querySelector('i');
                 if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold');
             });

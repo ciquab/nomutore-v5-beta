@@ -414,11 +414,14 @@ export const escapeHtml = (str) => {
     });
 };
 
+// Escape キーでモーダルを閉じるためのスタック管理
+const _openModalStack = [];
+
 export const toggleModal = (modalId, show = true) => {
     // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
     const el = document.getElementById(modalId) || DOM.elements[modalId];
     if (!el) return;
-    
+
     if (show) Feedback.uiSwitch();
 
     // 背景とコンテンツを特定
@@ -429,9 +432,18 @@ export const toggleModal = (modalId, show = true) => {
         // --- 【表示処理】 ---
         el.classList.remove('hidden');
         el.classList.add('flex');
-        
+
+        // Escapeキーで閉じられるようスタックに追加
+        _openModalStack.push(modalId);
+
         // ブラウザに「今この瞬間」の状態を強制認識させる（リフロー）
-        el.offsetHeight; 
+        el.offsetHeight;
+
+        // フォーカスをモーダル内の最初のフォーカス可能要素に移す
+        setTimeout(() => {
+            const focusable = el.querySelector('button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusable) focusable.focus();
+        }, 50);
 
         setTimeout(() => {
             if (bg) {
@@ -447,6 +459,11 @@ export const toggleModal = (modalId, show = true) => {
 
     } else {
         // --- 閉じる処理 ---
+
+        // Escapeスタックから除去
+        const idx = _openModalStack.indexOf(modalId);
+        if (idx !== -1) _openModalStack.splice(idx, 1);
+
         if (bg) {
             bg.classList.remove('opacity-100');
             bg.classList.add('opacity-0');
@@ -460,10 +477,10 @@ export const toggleModal = (modalId, show = true) => {
             const slideDownModals = ['day-detail-modal', 'action-menu-modal', 'day-add-selector', 'log-detail-modal'];
             if (slideDownModals.includes(modalId)) {
                 // ★ sm:translate-y-10 をここからも削除。確実に画面外(full)へ！
-                content.classList.add('translate-y-full'); 
+                content.classList.add('translate-y-full');
             }
         }
-        
+
         // ★重要：350ms（duration-300 + 50msの余裕）待ってから削除
         setTimeout(() => {
             if (el.dataset.destroy === 'true') {
@@ -475,6 +492,15 @@ export const toggleModal = (modalId, show = true) => {
         }, 350);
     }
 };
+
+// グローバル Escape キーハンドラ: 最前面のモーダルを閉じる
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && _openModalStack.length > 0) {
+        e.preventDefault();
+        const topModalId = _openModalStack[_openModalStack.length - 1];
+        toggleModal(topModalId, false);
+    }
+});
 
 export const showConfetti = () => {
     confetti({
@@ -694,7 +720,7 @@ export const showUpdateNotification = (waitingWorker) => {
                 </div>
                 <div>
                     <p class="text-sm font-bold">Update Available</p>
-                    <p class="text-[10px] text-gray-300">新しいバージョンが利用可能です</p>
+                    <p class="text-[11px] text-gray-300">新しいバージョンが利用可能です</p>
                 </div>
             </div>
             <button id="btn-sw-update" class="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">

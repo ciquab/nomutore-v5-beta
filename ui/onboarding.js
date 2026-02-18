@@ -26,7 +26,7 @@ const WIZARD_STEPS = [
                         </div>
                         <div>
                             <div class="font-black text-base-900 dark:text-white">新規ではじめる</div>
-                            <div class="text-[10px] text-gray-500">新しく記録を開始します</div>
+                            <div class="text-[11px] text-gray-500">新しく記録を開始します</div>
                         </div>
                     </div>
                 </button>
@@ -39,7 +39,7 @@ const WIZARD_STEPS = [
                         </div>
                         <div>
                             <div class="font-black text-base-900 dark:text-white">データを復元する</div>
-                            <div class="text-[10px] text-gray-500">以前のバックアップから引き継ぎます</div>
+                            <div class="text-[11px] text-gray-500">以前のバックアップから引き継ぎます</div>
                         </div>
                     </div>
                 </button>
@@ -139,7 +139,7 @@ const WIZARD_STEPS = [
                         </div>
                     </div>
                 </div>
-                <p class="text-[10px] text-gray-400 text-center">※Settingsタブからいつでも変更できます。</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center">※Settingsタブからいつでも変更できます。</p>
             </div>
             `;
         },
@@ -161,7 +161,7 @@ const WIZARD_STEPS = [
             <div class="space-y-3">
                 <button data-action="onboarding:setPeriod" data-mode="weekly" 
                         class="w-full p-4 bg-white dark:bg-gray-800 border-2 border-indigo-500 rounded-2xl text-left relative shadow-lg transform transition active:scale-95 group">
-                    <div class="absolute -top-3 -right-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-1 rounded-full animate-bounce">
+                    <div class="absolute -top-3 -right-2 bg-indigo-500 text-white text-[11px] font-bold px-2 py-1 rounded-full animate-bounce">
                         おすすめ
                     </div>
                     <div class="flex items-center gap-4">
@@ -170,7 +170,7 @@ const WIZARD_STEPS = [
                         </div>
                         <div>
                             <h4 class="font-black text-sm text-gray-900 dark:text-white">週次リセット</h4>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                                 毎週月曜日に<span class="font-bold text-red-500">借金をゼロ</span>にリセット。<br>
                                 <span class="text-indigo-600 dark:text-indigo-400 font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
                                 と気持ちを切り替えられます。
@@ -187,7 +187,7 @@ const WIZARD_STEPS = [
                         </div>
                         <div>
                             <h4 class="font-bold text-sm text-gray-900 dark:text-white">月次リセット</h4>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                                 毎月1日にリセット。<br>1ヶ月単位でじっくり管理したい方に。
                             </p>
                         </div>
@@ -202,7 +202,7 @@ const WIZARD_STEPS = [
                         </div>
                         <div>
                             <h4 class="font-bold text-sm text-gray-900 dark:text-white">リセットなし（永久）</h4>
-                            <p class="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
                                 リセットなし。<br>過去の全記録を積み上げたいマニア向け。
                             </p>
                         </div>
@@ -243,7 +243,7 @@ const WIZARD_STEPS = [
 
                 <div class="flex items-center justify-center gap-2 mt-2 opacity-60">
                     <i class="ph-bold ph-check-circle text-emerald-500"></i>
-                    <span class="text-[10px] font-bold">上記を理解して次へ進む</span>
+                    <span class="text-[11px] font-bold">上記を理解して次へ進む</span>
                 </div>
             </div>
         `

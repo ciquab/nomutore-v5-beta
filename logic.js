@@ -243,7 +243,7 @@ export const Calc = {
             if (l.kcal !== undefined) {
                 entry.balance += l.kcal;
             } else if (l.type === 'exercise') {
-                const mets = EXERCISE[l.exerciseKey] ? EXERCISE[l.exerciseKey].mets : 3.0;
+                const mets = EXERCISE[l.exerciseKey]?.mets || 6.0;
                 const burn = Calc.calculateExerciseBurn(mets, l.minutes, profile);
                 entry.balance += burn;
             } else if (l.type === 'beer') {

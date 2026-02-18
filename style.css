@@ -27,7 +27,7 @@ body {
 .tab-content { 
     display: none; 
     animation: fadeIn 0.3s ease-out; 
-    padding-bottom: 8rem !important; 
+    padding-bottom: 8rem;
 }
 .tab-content.active { display: block; }
 
@@ -390,7 +390,7 @@ body {
 /* Nav Pill Active State */
 .nav-pill-active {
     background-color: #4f46e5; /* indigo-600 */
-    color: white !important;
+    color: white;
     border-radius: 9999px;
     padding: 0.5rem 1.25rem;
     display: flex;
@@ -401,7 +401,7 @@ body {
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .nav-pill-active span.label {
-    display: inline-block !important;
+    display: inline-block;
     font-size: 0.75rem;
     font-weight: 700;
 }
@@ -480,37 +480,40 @@ select:disabled {
    Level 12: Toast animation        10001
    ============================================= */
 
+/* z-index はIDセレクタの高い詳細度 (0,1,0,0) で管理。
+   Tailwindのクラス (0,0,1,0) より常に優先されるため !important は不要。 */
+
 /* Level 2: Action Menu */
-#action-menu-modal { z-index: 100 !important; }
+#action-menu-modal { z-index: 100; }
 
 /* Level 3: Day-add selector */
-#day-add-selector { z-index: 110 !important; }
+#day-add-selector { z-index: 110; }
 
 /* Level 4: Input Modals */
 #beer-modal,
 #check-modal,
 #exercise-modal,
 #settings-modal {
-    z-index: 200 !important;
+    z-index: 200;
 }
 
 /* Level 5: Check Library */
-#check-library-modal { z-index: 250 !important; }
+#check-library-modal { z-index: 250; }
 
 /* Level 6-7: Immersive / Critical */
-#timer-modal { z-index: 300 !important; }
-#rollover-modal { z-index: 350 !important; }
+#timer-modal { z-index: 300; }
+#rollover-modal { z-index: 350; }
 
 /* Level 8: Onboarding */
-#onboarding-modal { z-index: 500 !important; }
+#onboarding-modal { z-index: 500; }
 
 /* Level 9: Help (設定の保存ボタンより上) */
-#help-modal { z-index: 600 !important; }
+#help-modal { z-index: 600; }
 
 /* Level 10-12: System overlays */
-#message-box { z-index: 9999 !important; }
-#global-error-overlay { z-index: 10000 !important; }
-#toast-animation-layer { z-index: 10001 !important; }
+#message-box { z-index: 9999; }
+#global-error-overlay { z-index: 10000; }
+#toast-animation-layer { z-index: 10001; }
 
 /* List Item Entry Animation */
 @keyframes slideInUp {
@@ -666,7 +669,7 @@ select:disabled {
 #landing-page .bubble-container {
     position: absolute;
     inset: 0;
-    background-image: none !important; /* 格子ドットを無効化 */
+    background-image: none; /* 格子ドットを無効化 */
     background-color: transparent;
     z-index: 0;
 }
@@ -758,10 +761,10 @@ select:disabled {
 
 /* Glow Shadows - 濁りのない影 */
 .shadow-glow-indigo {
-    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4) !important;
+    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4);
 }
 .dark .shadow-glow-indigo {
-    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2) !important;
+    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2);
 }
 
 /* Floating Nav専用の浮遊感 */
@@ -823,7 +826,7 @@ select:disabled {
 
 /* Level 1: Settings Save Button (Nav=50 より上、モーダル=100 より下) */
 #settings-save-container {
-    z-index: 90 !important;
+    z-index: 90;
 }
 
 /* =========================================

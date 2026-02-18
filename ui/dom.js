@@ -250,7 +250,7 @@ export const showToastAnimation = () => {
     // オーバーレイ作成
     const overlay = document.createElement('div');
     overlay.id = 'toast-animation-layer';
-    overlay.className = "fixed inset-0 pointer-events-none flex items-center justify-center z-[10001] overflow-hidden";
+    overlay.className = "fixed inset-0 pointer-events-none flex items-center justify-center overflow-hidden";
     
     // アイコン定義 (OS絵文字 🍺 ではなく、発光するSVGアイコンを使用)
     // text-9xl (約128px) で大きく表示し、ドロップシャドウでネオン感を出す

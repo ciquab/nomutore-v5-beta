@@ -15,46 +15,47 @@ export function renderLiverRank(checks, logs) {
     let theme = {
         bg: "", darkBg: "",
         text: "text-gray-800", darkText: "dark:text-white",
-        icon: "text-gray-500 dark:text-gray-400",
+        iconName: "ph-trophy", iconColor: "text-gray-500 dark:text-gray-400",
         bar: "bg-gray-500"
     };
 
     // ▼▼▼ 修正: 判定順序を変更（Rookieを最優先） ▼▼▼
     if (gradeData.isRookie) {
         // Rookie / Beginner 用のテーマ
-        if (gradeData.rank.includes('S')) theme.icon = 'ph-star';      // 新星
-        else if (gradeData.rank.includes('A')) theme.icon = 'ph-fire'; // 期待の星
-        else theme.icon = 'ph-egg';                                    // 駆け出し/たまご
-        
+        if (gradeData.rank.includes('S')) theme.iconName = 'ph-star';      // 新星
+        else if (gradeData.rank.includes('A')) theme.iconName = 'ph-fire'; // 期待の星
+        else theme.iconName = 'ph-egg';                                    // 駆け出し/たまご
+
         // logic.js で定義された色（オレンジやグレー等）を優先適用
-        theme.bg = gradeData.bg || "bg-orange-50"; 
+        theme.bg = gradeData.bg || "bg-orange-50";
         theme.text = gradeData.color || "text-orange-900";
+        theme.iconColor = "text-orange-500";
         theme.bar = "bg-orange-500"; // プログレスバーもオレンジに
 
     } else if (gradeData.rank.includes('S')) {
-        theme = { 
+        theme = {
             bg: "bg-purple-50", darkBg: "dark:bg-purple-900/20",
             text: "text-purple-900", darkText: "dark:text-purple-100",
-            icon: "ph-crown", bar: "bg-purple-500"
+            iconName: "ph-crown", iconColor: "text-purple-500", bar: "bg-purple-500"
         };
     } else if (gradeData.rank.includes('A')) {
-        theme = { 
+        theme = {
             bg: "bg-indigo-50", darkBg: "dark:bg-indigo-900/20",
             text: "text-indigo-900", darkText: "dark:text-indigo-100",
-            icon: "ph-shield-check", bar: "bg-indigo-500"
+            iconName: "ph-shield-check", iconColor: "text-indigo-500", bar: "bg-indigo-500"
         };
     } else if (gradeData.rank.includes('B')) {
-        theme = { 
+        theme = {
             bg: "bg-emerald-50", darkBg: "dark:bg-emerald-900/20",
             text: "text-emerald-900", darkText: "dark:text-emerald-100",
-            icon: "ph-leaf", bar: "bg-emerald-500"
+            iconName: "ph-leaf", iconColor: "text-emerald-500", bar: "bg-emerald-500"
         };
     } else {
         // Cランク または その他
-        theme = { 
+        theme = {
             bg: "bg-red-50", darkBg: "dark:bg-red-900/20",
             text: "text-red-900", darkText: "dark:text-red-100",
-            icon: "ph-warning", bar: "bg-red-500"
+            iconName: "ph-warning", iconColor: "text-red-500", bar: "bg-red-500"
         };
     }
 
@@ -78,7 +79,7 @@ export function renderLiverRank(checks, logs) {
     
     card.innerHTML = `
         <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 duration-500">
-            <i class="ph-fill ph-trophy text-5xl ${theme.icon}" aria-hidden="true"></i>
+            <i class="ph-fill ${theme.iconName} text-5xl ${theme.iconColor}" aria-hidden="true"></i>
         </div>
         
         <div class="relative z-10 flex flex-col h-full justify-between">

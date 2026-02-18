@@ -174,10 +174,10 @@ const _applyCellarSubView = (mode) => {
             // ARIA tab: 選択状態を更新
             btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow');
                 btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
             } else {
-                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
+                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow');
                 btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
             }
         }

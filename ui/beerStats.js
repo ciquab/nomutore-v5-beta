@@ -30,7 +30,7 @@ const renderRatingStars = (score) => {
             starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[11px]" aria-hidden="true"></i>';
         } else {
             // 空の星（オプション: 表示しないなら省略可）
-            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[11px]" aria-hidden="true"></i>';
+            starsHtml += '<i class="ph-bold ph-star text-gray-300 dark:text-gray-600 text-[11px]" aria-hidden="true"></i>';
         }
     }
     starsHtml += '</div>';

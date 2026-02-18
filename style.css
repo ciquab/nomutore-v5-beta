@@ -372,20 +372,22 @@ body {
         0 8px 32px -8px rgba(0, 0, 0, 0.4);
 }
 
-/* Floating Nav */
+/* Floating Nav — single source of truth for visual properties */
 .floating-nav {
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05),
+                0 0 0 1px rgba(255, 255, 255, 0.5) inset;
     /* Z-Index Hierarchy: Level 1 */
-    z-index: 50; 
+    z-index: 50;
 }
 .dark .floating-nav {
     background: rgba(15, 23, 42, 0.9);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 /* Nav Pill Active State */
@@ -766,16 +768,6 @@ select:disabled {
 }
 .dark .shadow-glow-indigo {
     box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.2);
-}
-
-/* Floating Nav専用の浮遊感 */
-.shadow-float {
-    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05), 
-                0 0 0 1px rgba(255,255,255,0.5) inset;
-}
-.dark .shadow-float {
-    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.3),
-                0 0 0 1px rgba(255,255,255,0.1) inset;
 }
 
 /* 数字を美しく見せるための調整 */

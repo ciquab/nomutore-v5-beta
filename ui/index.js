@@ -171,6 +171,8 @@ const _applyCellarSubView = (mode) => {
         const btn = document.getElementById(`btn-cellar-${m}`);
         if (el) el.classList.add('hidden');
         if (btn) {
+            // ARIA tab: 選択状態を更新
+            btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
                 btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-indigo-600', 'dark:text-indigo-300', 'shadow-sm');
                 btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
@@ -341,7 +343,7 @@ export const UI = {
 
         if (btn) {
             btn.disabled = true; // 処理開始時にロック
-            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> 保存中...';
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin" aria-hidden="true"></i> 保存中...';
         }
         // 1. Serviceに保存を依頼し、結果を受け取る
         const result = await Service.saveBeerLog(data, existingId);
@@ -350,13 +352,13 @@ export const UI = {
             // 2. メッセージの組み立て
             let msg = "";
             if (result.isUpdate) {
-                msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
+                msg = '<i class="ph-bold ph-pencil-simple" aria-hidden="true"></i> 記録を更新しました';
             } else {
                 // 新規登録時のメッセージ構築
                 const kcalText = Math.abs(result.kcal) > 500 
                     ? `${Math.round(Math.abs(result.kcal))}kcalの借金です` 
                     : '記録しました！';
-                msg = `<i class="ph-fill ph-beer-bottle text-lg"></i> ${kcalText}`;
+                msg = `<i class="ph-fill ph-beer-bottle text-lg" aria-hidden="true"></i> ${kcalText}`;
                 
                 // 休肝日解除の追記
                 if (result.dryDayCanceled) {
@@ -407,7 +409,7 @@ document.addEventListener('save-exercise', async (e) => {
     try {
          if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> 保存中...';
+            btn.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin" aria-hidden="true"></i> 保存中...';
         }
         // 1. Serviceの実行結果を待つ
         const result = await Service.saveExerciseLog(exerciseKey, minutes, date, applyBonus, id);
@@ -416,10 +418,10 @@ document.addEventListener('save-exercise', async (e) => {
             // 2. メッセージの動的な組み立て
             let msg = "";
             if (result.isUpdate) {
-                msg = '<i class="ph-bold ph-pencil-simple"></i> 記録を更新しました';
+                msg = '<i class="ph-bold ph-pencil-simple" aria-hidden="true"></i> 記録を更新しました';
             } else {
                 // 新規保存時の演出
-                msg = `<i class="ph-fill ph-sneaker-move text-lg"></i> ${Math.round(result.kcal)}kcal 返済しました！`;
+                msg = `<i class="ph-fill ph-sneaker-move text-lg" aria-hidden="true"></i> ${Math.round(result.kcal)}kcal 返済しました！`;
                 
                 // ボーナス適用時の追記
                 if (result.bonusMultiplier > 1.0) {

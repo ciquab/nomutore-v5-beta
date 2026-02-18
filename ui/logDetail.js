@@ -108,10 +108,10 @@ export const openLogDetail = (log) => {
             <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/30 rounded-full sm:hidden z-10"></div>
 
             <div class="relative h-36 bg-gradient-to-br ${bgGradient} shrink-0 overflow-hidden flex items-center justify-center">
-                <i class="ph-fill ${iconClass} text-7xl ${iconColor} drop-shadow-md opacity-80 scale-110"></i>
+                <i class="ph-fill ${iconClass} text-7xl ${iconColor} drop-shadow-md opacity-80 scale-110" aria-hidden="true"></i>
                 
                 <button id="${modalId}-close" class="absolute top-4 right-4 w-9 h-9 bg-black/10 hover:bg-black/20 backdrop-blur-md rounded-full text-white/80 flex items-center justify-center transition active:scale-90">
-                    <i class="ph-bold ph-x text-lg"></i>
+                    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
                 </button>
             </div>
 
@@ -136,16 +136,16 @@ export const openLogDetail = (log) => {
                 
                 ${isBeer ? `
                 <button id="btn-detail-share" class="flex-1 py-3.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95 border border-indigo-100 dark:border-indigo-800/50">
-                    <i class="ph-bold ph-share-network text-lg"></i> シェア
+                    <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i> シェア
                 </button>
                 ` : ''}
 
                 <button id="btn-detail-edit" class="flex-1 py-3.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-300 dark:hover:bg-gray-600 transition active:scale-95">
-                    <i class="ph-bold ph-pencil-simple text-lg"></i> 編集
+                    <i class="ph-bold ph-pencil-simple text-lg" aria-hidden="true"></i> 編集
                 </button>
                 
                 <button id="btn-detail-delete" class="w-14 py-3.5 bg-red-50 dark:bg-red-900/20 text-red-500 font-bold rounded-xl flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/40 transition active:scale-95 border border-red-100 dark:border-red-900/50">
-                    <i class="ph-bold ph-trash text-lg"></i>
+                    <i class="ph-bold ph-trash text-lg" aria-hidden="true"></i>
                 </button>
             </div>
         </div>
@@ -318,7 +318,7 @@ export const openDayDetail = async (dateStr) => {
     if (logs.length === 0) {
         listContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 opacity-60">
-                <i class="ph-duotone ph-notebook text-4xl mb-2"></i>
+                <i class="ph-duotone ph-notebook text-4xl mb-2" aria-hidden="true"></i>
                 <span class="text-xs font-bold">この日の記録はありません</span>
             </div>
         `;
@@ -366,7 +366,7 @@ export const openDayDetail = async (dateStr) => {
             el.innerHTML = `
         <div class="flex items-center gap-3 overflow-hidden">
             <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
-                <i class="ph-fill ${iconClass} text-xl"></i>
+                <i class="ph-fill ${iconClass} text-xl" aria-hidden="true"></i>
             </div>
             <div class="flex flex-col overflow-hidden">
                 <span class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">

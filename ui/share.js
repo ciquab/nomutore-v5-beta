@@ -100,7 +100,7 @@ const openPhotoComposer = (imgSrc, log) => {
     const ratioButtonsHtml = ratios.map(r => `
         <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
-            <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}"></i>
+            <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}" aria-hidden="true"></i>
             <span class="text-[11px] font-bold scale-90 origin-top">${r.label}</span>
         </button>
     `).join('');
@@ -190,9 +190,9 @@ const openPhotoComposer = (imgSrc, log) => {
 
             <div class="px-4 py-2 flex flex-col gap-2">
                 <div class="flex items-center gap-3">
-                    <i class="ph-bold ph-minus text-gray-500 text-xs"></i>
+                    <i class="ph-bold ph-minus text-gray-500 text-xs" aria-hidden="true"></i>
                     <input type="range" id="zoom-slider" min="0.5" max="3.0" step="0.01" value="1.0" class="flex-1 accent-indigo-500 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
-                    <i class="ph-bold ph-plus text-gray-500 text-xs"></i>
+                    <i class="ph-bold ph-plus text-gray-500 text-xs" aria-hidden="true"></i>
                 </div>
 
                 <div class="flex items-center justify-between">
@@ -205,7 +205,7 @@ const openPhotoComposer = (imgSrc, log) => {
                     </label>
 
                     <span class="text-[11px] text-gray-600 font-bold flex items-center gap-1">
-                        <i class="ph-bold ph-hand-pointing"></i> ドラッグ＆ピンチ
+                        <i class="ph-bold ph-hand-pointing" aria-hidden="true"></i> ドラッグ＆ピンチ
                     </span>
                 </div>
             </div>
@@ -443,11 +443,11 @@ const showPreviewModal = (dataUrl, file) => {
 
             <div class="p-4 bg-white dark:bg-base-900 border-t border-base-200 dark:border-base-800 flex gap-3">
                 <button id="btn-download-img" class="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-bold rounded-xl text-xs flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                    <i class="ph-bold ph-download-simple text-lg"></i> 保存
+                    <i class="ph-bold ph-download-simple text-lg" aria-hidden="true"></i> 保存
                 </button>
                 ${canShare ? `
                 <button id="btn-share-native" class="flex-[2] py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
-                    <i class="ph-bold ph-share-network text-lg"></i> シェアする
+                    <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i> シェアする
                 </button>
                 ` : ''}
             </div>
@@ -541,7 +541,7 @@ const showLoadingOverlay = (text) => {
     el.id = id;
     el.className = "fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity duration-300";
     el.innerHTML = `<div class="mb-4 animate-bounce">
-        <i class="ph-duotone ph-camera text-5xl text-white"></i>
+        <i class="ph-duotone ph-camera text-5xl text-white" aria-hidden="true"></i>
     </div><p class="text-white font-bold text-lg animate-pulse">${text}</p><div role="status" aria-live="polite" class="sr-only">${text}</div>`;
     document.body.appendChild(el);
     return id;

@@ -22,7 +22,7 @@ const WIZARD_STEPS = [
                         class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-fill ph-sparkle"></i>
+                            <i class="ph-fill ph-sparkle" aria-hidden="true"></i>
                         </div>
                         <div>
                             <div class="font-black text-base-900 dark:text-white">新規ではじめる</div>
@@ -35,7 +35,7 @@ const WIZARD_STEPS = [
                         class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left hover:border-indigo-300 transition-all">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-fill ph-cloud-arrow-down"></i>
+                            <i class="ph-fill ph-cloud-arrow-down" aria-hidden="true"></i>
                         </div>
                         <div>
                             <div class="font-black text-base-900 dark:text-white">データを復元する</div>
@@ -46,10 +46,10 @@ const WIZARD_STEPS = [
 
                 <div id="restore-options" class="hidden space-y-2 p-2 bg-gray-50 dark:bg-black/20 rounded-xl animate-fadeIn">
                     <button data-action="onboarding:handleCloudRestore" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
-                        <i class="ph-fill ph-google-logo text-indigo-500"></i> Google Driveから復元
+                        <i class="ph-fill ph-google-logo text-indigo-500" aria-hidden="true"></i> Google Driveから復元
                     </button>
                     <button data-action="onboarding:triggerJson" class="w-full py-3 bg-white dark:bg-gray-800 rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-2">
-                        <i class="ph-fill ph-file-js text-amber-500"></i> JSONファイルを選択
+                        <i class="ph-fill ph-file-js text-amber-500" aria-hidden="true"></i> JSONファイルを選択
                     </button>
                     <input type="file" id="wizard-import-file" class="hidden">
                 </div>
@@ -166,7 +166,7 @@ const WIZARD_STEPS = [
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-bold ph-arrows-clockwise"></i>
+                            <i class="ph-bold ph-arrows-clockwise" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h4 class="font-black text-sm text-gray-900 dark:text-white">週次リセット</h4>
@@ -183,7 +183,7 @@ const WIZARD_STEPS = [
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-bold ph-calendar"></i>
+                            <i class="ph-bold ph-calendar" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h4 class="font-bold text-sm text-gray-900 dark:text-white">月次リセット</h4>
@@ -198,7 +198,7 @@ const WIZARD_STEPS = [
                         class="w-full p-3 bg-gray-50 dark:bg-gray-800/50 border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 rounded-2xl text-left transition active:scale-95">
                     <div class="flex items-center gap-4">
                         <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 text-gray-500 rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-bold ph-infinity"></i>
+                            <i class="ph-bold ph-infinity" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h4 class="font-bold text-sm text-gray-900 dark:text-white">リセットなし（永久）</h4>
@@ -219,7 +219,7 @@ const WIZARD_STEPS = [
             <div class="space-y-4">
                 <div class="bg-red-50 dark:bg-red-900/10 border-2 border-red-100 dark:border-red-900/30 rounded-2xl p-4">
                     <div class="flex items-center gap-3 mb-3">
-                        <i class="ph-fill ph-warning-circle text-3xl text-red-500"></i>
+                        <i class="ph-fill ph-warning-circle text-3xl text-red-500" aria-hidden="true"></i>
                         <h3 class="font-bold text-red-600 dark:text-red-400">データは端末に保存されます</h3>
                     </div>
                     
@@ -234,7 +234,7 @@ const WIZARD_STEPS = [
                 </div>
 
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-xl flex gap-3 items-start">
-                    <i class="ph-fill ph-cloud-arrow-up text-xl text-indigo-500 mt-0.5"></i>
+                    <i class="ph-fill ph-cloud-arrow-up text-xl text-indigo-500 mt-0.5" aria-hidden="true"></i>
                     <div class="text-xs text-indigo-800 dark:text-indigo-200">
                         <p class="font-bold mb-1">バックアップを推奨します</p>
                         <p class="opacity-80">設定画面から「Googleドライブ」または「JSONファイル」でのバックアップが可能です。定期的な保存をお勧めします。</p>
@@ -242,7 +242,7 @@ const WIZARD_STEPS = [
                 </div>
 
                 <div class="flex items-center justify-center gap-2 mt-2 opacity-60">
-                    <i class="ph-bold ph-check-circle text-emerald-500"></i>
+                    <i class="ph-bold ph-check-circle text-emerald-500" aria-hidden="true"></i>
                     <span class="text-[11px] font-bold">上記を理解して次へ進む</span>
                 </div>
             </div>

@@ -115,7 +115,7 @@ const renderActionMenuBeerPresets = async () => {
                          data-on-success-param="action-menu-modal" 
                         class="w-full flex items-center gap-3 p-4 rounded-2xl border active:scale-95 transition shadow-sm hover:brightness-95 ${bgClass} group">
                     <div class="w-10 h-10 rounded-full bg-white dark:bg-base-900 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition">
-                        <i class="ph-duotone ph-beer-bottle ${iconColor} text-xl"></i>
+                        <i class="ph-duotone ph-beer-bottle ${iconColor} text-xl" aria-hidden="true"></i>
                     </div>
                     <div class="text-left overflow-hidden flex-1">
                         <div class="flex items-center gap-1 mb-0.5">
@@ -127,7 +127,7 @@ const renderActionMenuBeerPresets = async () => {
                         </div>
                     </div>
                     <div class="text-gray-300 dark:text-gray-600">
-                        <i class="ph-bold ph-caret-right"></i>
+                        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
                     </div>
                 </button>
             `;
@@ -135,7 +135,7 @@ const renderActionMenuBeerPresets = async () => {
     } else {
         html += `
             <button data-action="beer:openFirst" data-args='{"close": "action-menu-modal"}' class="w-full p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 text-gray-500 dark:text-gray-400 text-xs font-bold flex items-center justify-center gap-2">
-                <i class="ph-bold ph-plus"></i> Log First Beer
+                <i class="ph-bold ph-plus" aria-hidden="true"></i> Log First Beer
             </button>
         `;
     }
@@ -185,7 +185,7 @@ const renderActionMenuExerciseShortcuts = async () => {
                      data-on-success-param="action-menu-modal"
                     class="w-full flex items-center gap-3 p-4 mb-2 rounded-2xl border border-gray-100 dark:border-gray-800 bg-indigo-50 dark:bg-indigo-900/20 active:scale-95 transition shadow-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/40 group">
                 <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-800 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition">
-                    <i class="ph-duotone ph-sneaker-move text-xl text-indigo-500 dark:text-indigo-300"></i>
+                    <i class="ph-duotone ph-sneaker-move text-xl text-indigo-500 dark:text-indigo-300" aria-hidden="true"></i>
                 </div>
                 <div class="text-left overflow-hidden flex-1">
                     <div class="flex items-center gap-1 mb-0.5">
@@ -197,7 +197,7 @@ const renderActionMenuExerciseShortcuts = async () => {
                     </div>
                 </div>
                 <div class="text-indigo-400 dark:text-indigo-500">
-                    <i class="ph-bold ph-caret-right"></i>
+                    <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
                 </div>
             </button>
             `;
@@ -607,7 +607,7 @@ export const renderRecordTabShortcuts = async () => {
                              data-on-success-param="action-menu-modal" 
                             class="flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl border active:scale-95 transition shadow-sm ${bgClass} min-w-[130px]">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-white/50 dark:bg-black/20 flex items-center justify-center">
-                             <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
+                             <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg" aria-hidden="true"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
                             <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
@@ -649,7 +649,7 @@ export const renderRecordTabShortcuts = async () => {
                              data-on-success-param="action-menu-modal" 
                             class="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-sm active:scale-95 transition hover:border-indigo-300 dark:hover:border-indigo-500 min-w-[130px]">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-500">
-                            <i class="ph-duotone ph-sneaker-move"></i>
+                            <i class="ph-duotone ph-sneaker-move" aria-hidden="true"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
                             <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
@@ -731,14 +731,14 @@ export const showRolloverModal = () => {
         // 1. Weeklyに戻る
         const btnWeekly = document.createElement('button');
         btnWeekly.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
-        btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise"></i><span>週次モードに切替</span>`;
+        btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise" aria-hidden="true"></i><span>週次モードに切替</span>`;
         // UIがグローバルにある前提、またはimportが必要ですが、安全策としてonclick属性を使うか、window.UI経由で呼びます
         btnWeekly.dataset.action = 'rollover:weekly';
 
         // 2. 新規プロジェクト
         const btnNew = document.createElement('button');
         btnNew.className = "w-full py-3.5 px-4 bg-white dark:bg-base-800 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-indigo-900 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
-        btnNew.innerHTML = `<i class="ph-bold ph-plus"></i><span>新規プロジェクト</span>`;
+        btnNew.innerHTML = `<i class="ph-bold ph-plus" aria-hidden="true"></i><span>新規プロジェクト</span>`;
         btnNew.dataset.action = 'rollover:new_custom';
 
         // 3. 延長

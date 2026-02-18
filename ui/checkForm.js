@@ -99,8 +99,8 @@ export const handleLibraryItemToggle = (id) => {
         const iconArea = btn.querySelector('.check-icon');
         if (iconArea) {
             iconArea.innerHTML = checkbox.checked 
-                ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' 
-                : '<i class="ph-bold ph-circle text-gray-300"></i>';
+                ? '<i class="ph-fill ph-check-circle text-indigo-500" aria-hidden="true"></i>' 
+                : '<i class="ph-bold ph-circle text-gray-300" aria-hidden="true"></i>';
         }
     }
 };
@@ -422,7 +422,7 @@ export const renderCheckLibrary = () => {
                     <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${item.desc}</p>
                 </div>
                 <div class="check-icon">
-                    ${isActive ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' : '<i class="ph-bold ph-circle text-gray-300"></i>'}
+                    ${isActive ? '<i class="ph-fill ph-check-circle text-indigo-500" aria-hidden="true"></i>' : '<i class="ph-bold ph-circle text-gray-300" aria-hidden="true"></i>'}
                 </div>
             `;
             grid.appendChild(btn);
@@ -524,7 +524,7 @@ export const renderCheckEditor = () => {
         const div = document.createElement('div');
         div.className = "flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl mb-2";
         
-        const deleteBtn = `<button data-action="check:deleteItem" data-args='{"index":${index}}' class="text-red-500 hover:bg-red-100 p-1 rounded"><i class="ph-bold ph-trash"></i></button>`;
+        const deleteBtn = `<button data-action="check:deleteItem" data-args='{"index":${index}}' class="text-red-500 hover:bg-red-100 p-1 rounded"><i class="ph-bold ph-trash" aria-hidden="true"></i></button>`;
 
         const iconHtml = DOM.renderIcon(item.icon, 'text-xl text-gray-500');
 

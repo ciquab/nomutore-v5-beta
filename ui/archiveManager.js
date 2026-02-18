@@ -12,7 +12,7 @@ export async function renderArchives() {
     if (archives.length === 0) {
         container.innerHTML = `
             <div class="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                <i class="ph-duotone ph-archive text-4xl mb-2"></i>
+                <i class="ph-duotone ph-archive text-4xl mb-2" aria-hidden="true"></i>
                 <p class="text-sm font-bold">アーカイブはまだありません</p>
                 <p class="text-xs opacity-60">期間が完了するとここに表示されます</p>
             </div>

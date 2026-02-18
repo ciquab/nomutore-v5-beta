@@ -45,7 +45,7 @@ const updateBulkActionUI = () => {
     const deleteBtn = /** @type {HTMLButtonElement} */(document.getElementById('btn-delete-selected'));
     if (deleteBtn) {
         deleteBtn.disabled = count === 0;
-        deleteBtn.innerHTML = `<i class="ph-bold ph-trash"></i> 削除 (${count})`;
+        deleteBtn.innerHTML = `<i class="ph-bold ph-trash" aria-hidden="true"></i> 削除 (${count})`;
         if(StateManager.isEditMode) {
              deleteBtn.classList.remove('translate-y-20', 'opacity-0');
         } else {
@@ -121,7 +121,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>まだ記録がありません</li>`;
+        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>まだ記録がありません</li>`;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
         return;
     }
@@ -182,7 +182,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
                     <div class="ml-2 flex-shrink-0">${rightContent}</div>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate font-medium opacity-90">${subText}</div>
-                ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-base-50 dark:bg-base-800/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70"></i>${escapeHtml(log.memo)}</div>` : ''}
+                ${log.memo ? `<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-base-50 dark:bg-base-800/50 px-2 py-1.5 rounded-lg inline-block max-w-full"><i class="ph-bold ph-note-pencil mr-1 opacity-70" aria-hidden="true"></i>${escapeHtml(log.memo)}</div>` : ''}
             </div>
         `;
         

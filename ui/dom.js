@@ -254,7 +254,7 @@ export const showToastAnimation = () => {
     
     // アイコン定義 (OS絵文字 🍺 ではなく、発光するSVGアイコンを使用)
     // text-9xl (約128px) で大きく表示し、ドロップシャドウでネオン感を出す
-    const iconHtml = '<i class="ph-duotone ph-beer-stein text-amber-400 text-9xl drop-shadow-[0_0_25px_rgba(251,191,36,0.6)]"></i>';
+    const iconHtml = '<i class="ph-duotone ph-beer-stein text-amber-400 text-9xl drop-shadow-[0_0_25px_rgba(251,191,36,0.6)]" aria-hidden="true"></i>';
 
     // 左右のグラスとテキスト
     // animate-clink-left / right はCSSで定義済みのものをそのまま利用
@@ -519,19 +519,19 @@ export const showMessage = (text, type = 'info', action = null) => {
     // 2. デザイン設定 (Glassmorphism + Phosphor Icons)
     const config = {
         success: {
-            icon: '<i class="ph-fill ph-check-circle text-emerald-500 text-xl"></i>',
+            icon: '<i class="ph-fill ph-check-circle text-emerald-500 text-xl" aria-hidden="true"></i>',
             bg: 'bg-white/95 dark:bg-base-900/95',
             border: 'border-emerald-500/30',
             text: 'text-emerald-800 dark:text-emerald-100'
         },
         error: {
-            icon: '<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i>',
+            icon: '<i class="ph-fill ph-warning-circle text-red-500 text-xl" aria-hidden="true"></i>',
             bg: 'bg-white/95 dark:bg-base-900/95',
             border: 'border-red-500/30',
             text: 'text-red-800 dark:text-red-100'
         },
         info: {
-            icon: '<i class="ph-fill ph-info text-indigo-500 text-xl"></i>',
+            icon: '<i class="ph-fill ph-info text-indigo-500 text-xl" aria-hidden="true"></i>',
             bg: 'bg-white/95 dark:bg-base-900/95',
             border: 'border-indigo-500/30',
             text: 'text-gray-800 dark:text-gray-100'
@@ -559,7 +559,7 @@ export const showMessage = (text, type = 'info', action = null) => {
         // ボタンデザインもGlassmorphismに統一
         content += `
             <button id="${btnId}" class="shrink-0 ml-2 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-95 flex items-center gap-1 border border-indigo-100 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/30">
-                <i class="ph-bold ph-share-network"></i> Share
+                <i class="ph-bold ph-share-network" aria-hidden="true"></i> Share
             </button>
         `;
     }
@@ -638,7 +638,7 @@ export const toggleDryDay = (isDry) => {
         if (label) label.classList.add('text-emerald-800');
         if (hint) {
             hint.classList.add('text-emerald-600/70');
-            hint.innerHTML = '素晴らしい！肝臓が回復しています <i class="ph-fill ph-sparkle text-yellow-400 inline-block align-middle mb-1"></i>';
+            hint.innerHTML = '素晴らしい！肝臓が回復しています <i class="ph-fill ph-sparkle text-yellow-400 inline-block align-middle mb-1" aria-hidden="true"></i>';
         }
     } else {
         section.classList.add('bg-orange-50', 'border-orange-100');
@@ -716,7 +716,7 @@ export const showUpdateNotification = (waitingWorker) => {
         <div class="bg-slate-800 dark:bg-slate-700 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center justify-between border border-slate-600">
             <div class="flex items-center gap-3">
                 <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center shrink-0 animate-pulse">
-                    <i class="ph-bold ph-download-simple text-white"></i>
+                    <i class="ph-bold ph-download-simple text-white" aria-hidden="true"></i>
                 </div>
                 <div>
                     <p class="text-sm font-bold">Update Available</p>

@@ -27,10 +27,10 @@ const renderRatingStars = (score) => {
     for (let i = 1; i <= 5; i++) {
         if (i <= score) {
             // 塗りつぶしの星
-            starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[11px]"></i>';
+            starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[11px]" aria-hidden="true"></i>';
         } else {
             // 空の星（オプション: 表示しないなら省略可）
-            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[11px]"></i>';
+            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[11px]" aria-hidden="true"></i>';
         }
     }
     starsHtml += '</div>';
@@ -81,11 +81,11 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             </div>
 
             <div class="glass-panel p-5 rounded-2xl relative">
-                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500"></i> スタイル内訳</h3>
+                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10"></i>
+                        <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10" aria-hidden="true"></i>
                         <p id="style-chart-total-label" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">スタイル数</p>
                         <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
                     </div>
@@ -126,7 +126,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
         <div id="beer-collection-section">
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> ブルワリーランキング</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
                     <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
@@ -142,7 +142,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                 <div class="space-y-2">
                     <div class="relative">
                         <input type="text" id="beer-search-input" placeholder="ブルワリー名や銘柄名で検索" class="w-full bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
-                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" aria-hidden="true"></i>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
@@ -328,7 +328,7 @@ function renderHealthInsights(allLogs, checks) {
     // --- HTML 描画 ---
     section.innerHTML = `
         <div class="glass-panel p-5 rounded-2xl relative">
-            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500"></i> ヘルスインサイト</h3>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500" aria-hidden="true"></i> ヘルスインサイト</h3>
 
 
             <!-- 飲んだ日 vs 休肝日 -->
@@ -378,7 +378,7 @@ function renderHealthInsights(allLogs, checks) {
                 ${insights.stateText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
                     <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
-                        <i class="ph-duotone ph-heart text-sm flex-shrink-0 mt-0.5"></i>
+                        <i class="ph-duotone ph-heart text-sm flex-shrink-0 mt-0.5" aria-hidden="true"></i>
                         <span><span class="mr-1">状態:</span>${insights.stateText}</span>
                     </p>
                 </div>
@@ -386,7 +386,7 @@ function renderHealthInsights(allLogs, checks) {
                 ${insights.actionText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
                     <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-                        <i class="ph-duotone ph-check-circle text-sm flex-shrink-0"></i>
+                        <i class="ph-duotone ph-check-circle text-sm flex-shrink-0" aria-hidden="true"></i>
                         <span><span class="mr-1">行動:</span>${insights.actionText}</span>
                     </p>
                 </div>
@@ -737,7 +737,7 @@ function renderBeerList(beers) {
     if (!beers || beers.length === 0) {
         listEl.innerHTML = `
             <div class="text-center py-10 opacity-50">
-                <i class="ph-duotone ph-beer-bottle text-4xl mb-2"></i>
+                <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
                 <p class="text-xs font-bold">該当するビールがありません</p>
             </div>`;
         return;
@@ -745,12 +745,12 @@ function renderBeerList(beers) {
 
     listEl.innerHTML = beers.map((beer, index) => {
         let rankBadge = `<span class="text-gray-500 dark:text-gray-400 font-bold text-xs">#${index + 1}</span>`;
-        if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-yellow-500 drop-shadow-sm"></i>`;
-        if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-500 dark:text-gray-400 drop-shadow-sm"></i>`;
-        if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm"></i>`;
+        if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-yellow-500 drop-shadow-sm" aria-hidden="true"></i>`;
+        if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-500 dark:text-gray-400 drop-shadow-sm" aria-hidden="true"></i>`;
+        if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm" aria-hidden="true"></i>`;
 
         const rating = beer.averageRating > 0 
-            ? `<span class="flex items-center text-[11px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star"></i>${beer.averageRating.toFixed(1)}</span>`
+            ? `<span class="flex items-center text-[11px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star" aria-hidden="true"></i>${beer.averageRating.toFixed(1)}</span>`
             : '';
 
         // ★修正: STYLE_METADATAからアイコン定義を取得してレンダリング
@@ -781,7 +781,7 @@ function renderBeerList(beers) {
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
-                        ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]"></i></span>' : ''}
+                        ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]" aria-hidden="true"></i></span>' : ''}
                         <span class="ml-auto text-[11px] font-mono text-gray-500 dark:text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
@@ -869,7 +869,7 @@ function renderBreweryLeaderboard(breweryStats) {
     if (entries.length === 0) {
         listEl.innerHTML = `
             <div class="text-center py-8 opacity-50">
-                <i class="ph-duotone ph-warehouse text-3xl mb-2"></i>
+                <i class="ph-duotone ph-warehouse text-3xl mb-2" aria-hidden="true"></i>
                 <p class="text-xs font-bold">ブルワリーデータがまだありません</p>
             </div>`;
         return;
@@ -887,7 +887,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const value = axis.format(b[axis.key]);
 
         let rankBadge;
-        if (i === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500"></i>';
+        if (i === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500" aria-hidden="true"></i>';
         else if (i === 1) rankBadge = '<span class="text-xs font-black text-gray-500 dark:text-gray-400">2</span>';
         else if (i === 2) rankBadge = '<span class="text-xs font-black text-amber-700">3</span>';
         else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
@@ -909,7 +909,7 @@ function renderBreweryLeaderboard(breweryStats) {
                             <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                         </div>
-                        <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
+                        <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
                     </div>
                 </div>
             </div>`;
@@ -933,7 +933,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const remaining = entries.length - TOP_N;
         listEl.innerHTML += `
             <button id="brewery-show-all" class="w-full text-center py-2 text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition">
-                <i class="ph-bold ph-caret-down mr-1"></i>他 ${remaining} 件を表示
+                <i class="ph-bold ph-caret-down mr-1" aria-hidden="true"></i>他 ${remaining} 件を表示
             </button>`;
         const showAllBtn = document.getElementById('brewery-show-all');
         if (showAllBtn) {
@@ -962,7 +962,7 @@ function renderBreweryLeaderboard(breweryStats) {
                                         <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
                                         <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                                     </div>
-                                    <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
+                                    <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
                                 </div>
                             </div>
                         </div>`;
@@ -1013,7 +1013,7 @@ function showBreweryDetail(breweryName) {
                     <div class="flex items-center justify-between">
                         <h3 id="brewery-detail-title" class="text-lg font-black text-base-900 dark:text-white truncate"></h3>
                         <button id="brewery-detail-close" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-base-800 text-gray-500">
-                            <i class="ph-bold ph-x text-sm"></i>
+                            <i class="ph-bold ph-x text-sm" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-bold text-gray-500 dark:text-gray-400"></div>
@@ -1065,7 +1065,7 @@ function showBreweryDetail(breweryName) {
             `<span class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md">${(brewery.totalMl / 1000).toFixed(1)}L</span>`
         ];
         if (brewery.ratingCount > 0) {
-            metaParts.push(`<span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md flex items-center gap-0.5"><i class="ph-fill ph-star text-[11px]"></i>${brewery.averageRating.toFixed(1)}</span>`);
+            metaParts.push(`<span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md flex items-center gap-0.5"><i class="ph-fill ph-star text-[11px]" aria-hidden="true"></i>${brewery.averageRating.toFixed(1)}</span>`);
         }
         metaEl.innerHTML = metaParts.join('');
     }
@@ -1074,9 +1074,9 @@ function showBreweryDetail(breweryName) {
     if (listEl) {
         listEl.innerHTML = beers.map((beer, index) => {
             let rankBadge = `<span class="text-gray-500 dark:text-gray-400 font-bold text-xs">#${index + 1}</span>`;
-            if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-xl text-yellow-500"></i>`;
-            if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-500 dark:text-gray-400"></i>`;
-            if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700"></i>`;
+            if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-xl text-yellow-500" aria-hidden="true"></i>`;
+            if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-500 dark:text-gray-400" aria-hidden="true"></i>`;
+            if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700" aria-hidden="true"></i>`;
 
             return `
                 <div class="flex items-center bg-white dark:bg-base-900 p-3 rounded-2xl border border-gray-100 dark:border-gray-700">

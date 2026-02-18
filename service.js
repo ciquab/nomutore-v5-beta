@@ -241,7 +241,9 @@ export const Service = {
     },
 
    /**
- * 履歴の再計算（最終安定版）
+ * 履歴の再計算（最適化版）
+ * 変更日以降の運動ログがある日のみストリーク再計算を行い、
+ * 全日走査を回避する。O(D×S) → O(E×S) (E=運動日数)
  */
 recalcImpactedHistory: async (changedTimestamp) => {
     Service._recalcQueue = Service._recalcQueue.catch(() => {}).then(async () => {
@@ -256,18 +258,28 @@ recalcImpactedHistory: async (changedTimestamp) => {
                     let minTs = Number.MAX_SAFE_INTEGER;
                     let found = false;
 
-        // --- 1. Map作成（仮想日付ベース） ---
+        const virtualStartDateStr = getVirtualDate(changedTimestamp);
+
+        // --- 1. Map作成 + 運動ログ抽出を1パスで実行 ---
+        const exerciseLogsByDate = new Map();
+
         allLogs.forEach(l => {
             if (l.timestamp < minTs) minTs = l.timestamp;
             found = true;
             const d = getVirtualDate(l.timestamp);
             if (!logMap.has(d)) logMap.set(d, { hasBeer: false, hasExercise: false, balance: 0 });
-            
+
             const entry = logMap.get(d);
             if (l.type === 'beer') entry.hasBeer = true;
-            if (l.type === 'exercise') entry.hasExercise = true;
-            
-            // 既存の計算済みkcalを一旦セット（ここを起点に差分を計算する）
+            if (l.type === 'exercise') {
+                entry.hasExercise = true;
+                // 変更日以降の運動ログのみ抽出
+                if (d >= virtualStartDateStr) {
+                    if (!exerciseLogsByDate.has(d)) exerciseLogsByDate.set(d, []);
+                    exerciseLogsByDate.get(d).push(l);
+                }
+            }
+
             entry.balance += (l.kcal || 0);
         });
 
@@ -280,33 +292,19 @@ recalcImpactedHistory: async (changedTimestamp) => {
 
         const firstDate = found ? dayjs(minTs).startOf('day') : dayjs();
 
-        const exerciseLogsByDate = new Map();
-        allLogs.forEach(l => {
-            if (l.type === 'exercise') {
-                const dStr = getVirtualDate(l.timestamp);
-                if (!exerciseLogsByDate.has(dStr)) exerciseLogsByDate.set(dStr, []);
-                exerciseLogsByDate.get(dStr).push(l);
-            }
-        });
-
-        // --- 2. 遡及再計算ループ ---
-        const virtualStartDateStr = getVirtualDate(changedTimestamp);
-        let currentDate = dayjs(virtualStartDateStr).startOf('day');
-        const today = dayjs().endOf('day');
+        // --- 2. 運動ログがある日のみ日付順に再計算 ---
+        const exerciseDates = [...exerciseLogsByDate.keys()].sort();
 
         let updateCount = 0;
-        let safeGuard = 0;
 
-        while (currentDate.isBefore(today) || currentDate.isSame(today, 'day')) {
-            if (safeGuard++ > 3650) break;
+        for (const dateStr of exerciseDates) {
+            const currentDate = dayjs(dateStr).startOf('day');
 
-            const dateStr = currentDate.format('YYYY-MM-DD');
-            
-            // 重要：Calc.getStreakFromMap は「最終安定版」を使用
+            // ストリーク計算は運動ログがある日のみ実行
             const streak = Calc.getStreakFromMap(logMap, checkMap, firstDate, currentDate);
-            
-            const daysExerciseLogs = exerciseLogsByDate.get(dateStr) || [];
-            
+
+            const daysExerciseLogs = exerciseLogsByDate.get(dateStr);
+
             for (const log of daysExerciseLogs) {
                 // 元の運動時間 (rawMinutes) があればそれを使用、なければ minutes を使用
                 const targetMins = log.rawMinutes || log.minutes || 0;
@@ -334,7 +332,6 @@ recalcImpactedHistory: async (changedTimestamp) => {
                     updateCount++;
                 }
             }
-            currentDate = currentDate.add(1, 'day');
         }
 
         // --- 3. アーカイブの同期 ---
@@ -342,14 +339,14 @@ recalcImpactedHistory: async (changedTimestamp) => {
         for (const archive of affectedArchives) {
             const periodLogs = await LogService.getByTimestampRangeAsc(archive.startDate, archive.endDate);
             const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
-            
+
             await db.period_archives.update(archive.id, {
                 totalBalance: totalBalance,
                 logs: periodLogs,
                 updatedAt: Date.now()
             });
         }
-                    
+
     });
     } catch (e) {
                 console.error('[Service] Recalc impact error:', e);
@@ -357,7 +354,7 @@ recalcImpactedHistory: async (changedTimestamp) => {
         });
 
         // キューの完了を待機して結果を返す
-        return Service._recalcQueue;            
+        return Service._recalcQueue;
 },
 
     /**

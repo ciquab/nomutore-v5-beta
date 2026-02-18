@@ -133,7 +133,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
         // 右下に薄く配置
         hintIcon.className = 'absolute bottom-3 right-3 text-gray-500 dark:text-gray-400 pointer-events-none transition-opacity duration-500';
         hintIcon.style.animation = 'hint-pulse 3s infinite ease-in-out';
-        hintIcon.innerHTML = `<i class="ph-bold ph-arrows-clockwise text-lg"></i>`;
+        hintIcon.innerHTML = `<i class="ph-bold ph-arrows-clockwise text-lg" aria-hidden="true"></i>`;
         
         // 既存の相対配置コンテナであることを確認して追加
         if (getComputedStyle(heroCard).position === 'static') {

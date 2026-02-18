@@ -28,10 +28,10 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
     const badge = DOM.elements['streak-badge'] || document.getElementById('streak-badge');
     if (badge) {
         if (multiplier > 1.0) {
-            badge.innerHTML = `<i class="ph-fill ph-fire-simple mr-1"></i>x${multiplier.toFixed(1)} Bonus`;
+            badge.innerHTML = `<i class="ph-fill ph-fire-simple mr-1" aria-hidden="true"></i>x${multiplier.toFixed(1)} Bonus`;
             badge.className = "inline-flex items-center px-2 py-0.5 bg-orange-500 text-white text-[11px] font-bold rounded-full shadow-sm animate-pulse";
         } else {
-            badge.innerHTML = `<i class="ph-bold ph-trend-flat mr-1"></i>x1.0 Normal`;
+            badge.innerHTML = `<i class="ph-bold ph-trend-flat mr-1" aria-hidden="true"></i>x1.0 Normal`;
             badge.className = "inline-flex items-center px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[11px] font-bold rounded-full border border-gray-200 dark:border-gray-600";
         }
     }
@@ -69,40 +69,40 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
                 case 'rest_exercise': 
                     bgClass = "bg-emerald-100 dark:bg-emerald-900/30 border-yellow-400 dark:border-yellow-500 border-2";
                     textClass = "text-yellow-600 dark:text-yellow-400";
-                    iconHtml = `<i class="ph-fill ph-medal text-xl drop-shadow-sm"></i>`;
+                    iconHtml = `<i class="ph-fill ph-medal text-xl drop-shadow-sm" aria-hidden="true"></i>`;
                     break;
 
                 case 'exercise': 
                     bgClass = "bg-cyan-50 dark:bg-cyan-900/20 border-gray-300 dark:border-gray-500 border";
                     textClass = "text-cyan-600 dark:text-cyan-400";
-                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-500 dark:text-gray-400 dark:text-gray-300"></i>`;
+                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-500 dark:text-gray-400 dark:text-gray-300" aria-hidden="true"></i>`;
                     break;
 
                 case 'rest': 
                     bgClass = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800 border";
                     textClass = "text-emerald-500";
-                    iconHtml = `<i class="ph-fill ph-coffee text-lg"></i>`;
+                    iconHtml = `<i class="ph-fill ph-coffee text-lg" aria-hidden="true"></i>`;
                     break;
 
                 case 'drink_exercise_success': 
                     bgClass = "bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 border";
                     textClass = "text-blue-600 dark:text-blue-400";
-                    iconHtml = `<i class="ph-fill ph-fire text-xl text-orange-500 dark:text-orange-400"></i>`;
+                    iconHtml = `<i class="ph-fill ph-fire text-xl text-orange-500 dark:text-orange-400" aria-hidden="true"></i>`;
                     break;
 
                 case 'drink_exercise': 
                     bgClass = "bg-sky-100 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 border";
                     textClass = "text-sky-600 dark:text-sky-400";
                     iconHtml = dualIconWrapper(
-                        `<i class="ph-fill ph-beer-stein text-xs"></i>`,
-                        `<i class="ph-fill ph-person-simple-run text-xs"></i>`
+                        `<i class="ph-fill ph-beer-stein text-xs" aria-hidden="true"></i>`,
+                        `<i class="ph-fill ph-person-simple-run text-xs" aria-hidden="true"></i>`
                     );
                     break;
 
                 case 'drink': 
                     bgClass = "bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800 border";
                     textClass = "text-red-500";
-                    iconHtml = `<i class="ph-fill ph-beer-stein text-lg"></i>`;
+                    iconHtml = `<i class="ph-fill ph-beer-stein text-lg" aria-hidden="true"></i>`;
                     break;
                     
                 default:
@@ -170,37 +170,37 @@ export function renderHeatmap(checks, allLogs, profile) {
             case 'rest_exercise': 
                 bgClass = 'bg-emerald-600 border border-emerald-500 shadow-lg ring-2 ring-yellow-400 dark:ring-yellow-500 z-20';
                 textClass = 'text-white';
-                iconHtml = `<i class="ph-fill ph-medal text-xl text-yellow-300 drop-shadow-md"></i>`;
+                iconHtml = `<i class="ph-fill ph-medal text-xl text-yellow-300 drop-shadow-md" aria-hidden="true"></i>`;
                 break;
 
             case 'exercise':
                 bgClass = 'bg-cyan-600 border border-cyan-500 shadow-md ring-1 ring-white/50 z-10';
                 textClass = 'text-white';
-                iconHtml = `<i class="ph-fill ph-medal text-lg text-gray-200 filter drop-shadow-sm"></i>`; 
+                iconHtml = `<i class="ph-fill ph-medal text-lg text-gray-200 filter drop-shadow-sm" aria-hidden="true"></i>`; 
                 break;
 
             case 'rest':
                 bgClass = 'bg-emerald-400 border border-emerald-500 shadow-sm';
                 textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-coffee text-lg"></i>`;
+                iconHtml = `<i class="ph-fill ph-coffee text-lg" aria-hidden="true"></i>`;
                 break;
                 
             case 'drink_exercise_success': 
                 bgClass = 'bg-blue-500 border border-blue-400 shadow-md'; 
                 textClass = 'text-white';
-                iconHtml = `<i class="ph-fill ph-fire text-lg text-orange-200 filter drop-shadow-sm"></i>`; 
+                iconHtml = `<i class="ph-fill ph-fire text-lg text-orange-200 filter drop-shadow-sm" aria-hidden="true"></i>`; 
                 break;
 
             case 'drink_exercise':
                 bgClass = 'bg-sky-400 border border-sky-300 shadow-sm';
                 textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-person-simple-run text-lg"></i>`;
+                iconHtml = `<i class="ph-fill ph-person-simple-run text-lg" aria-hidden="true"></i>`;
                 break;
                 
             case 'drink':
                 bgClass = 'bg-red-400 border border-red-500 shadow-sm';
                 textClass = 'text-white font-bold';
-                iconHtml = `<i class="ph-fill ph-beer-stein text-lg"></i>`;
+                iconHtml = `<i class="ph-fill ph-beer-stein text-lg" aria-hidden="true"></i>`;
                 break;
                 
             default: 

@@ -78,14 +78,14 @@ export function renderLiverRank(checks, logs) {
     
     card.innerHTML = `
         <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 duration-500">
-            <i class="ph-fill ph-trophy text-5xl ${theme.icon}"></i>
+            <i class="ph-fill ph-trophy text-5xl ${theme.icon}" aria-hidden="true"></i>
         </div>
         
         <div class="relative z-10 flex flex-col h-full justify-between">
             <!-- Header Section -->
             <div>
                 <div class="flex items-center gap-2 mb-1.5 h-4"> <!-- 高さ固定 -->
-                    <h3 class="text-sm font-bold flex items-center gap-1.5 ${theme.text} ${theme.darkText}"><i class="ph-fill ph-trophy"></i> Liver Rank</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-1.5 ${theme.text} ${theme.darkText}"><i class="ph-fill ph-trophy" aria-hidden="true"></i> Liver Rank</h3>
                 </div>
                 
                 <div class="flex flex-col items-start min-h-[3.5rem] justify-center"> <!-- 高さ確保 -->

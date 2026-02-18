@@ -27,10 +27,10 @@ const renderRatingStars = (score) => {
     for (let i = 1; i <= 5; i++) {
         if (i <= score) {
             // 塗りつぶしの星
-            starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[10px]"></i>';
+            starsHtml += '<i class="ph-fill ph-star text-yellow-400 text-[11px]"></i>';
         } else {
             // 空の星（オプション: 表示しないなら省略可）
-            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[10px]"></i>';
+            starsHtml += '<i class="ph-regular ph-star text-gray-300 dark:text-gray-600 text-[11px]"></i>';
         }
     }
     starsHtml += '</div>';
@@ -67,15 +67,15 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
         <div class="space-y-6 pb-24">
             <div class="grid grid-cols-3 gap-3 text-center">
                 <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-2xl border border-amber-100 dark:border-amber-800/50">
-                    <p class="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">期間合計</p>
+                    <p class="text-[11px] font-bold text-amber-800 dark:text-amber-200 uppercase">期間合計</p>
                     <p class="text-xl font-black text-amber-600 dark:text-amber-400">${periodStats.totalCount}<span class="text-xs ml-1">杯</span></p>
                 </div>
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[10px] font-bold text-indigo-800 dark:text-indigo-200 uppercase">期間容量</p>
+                    <p class="text-[11px] font-bold text-indigo-800 dark:text-indigo-200 uppercase">期間容量</p>
                     <p class="text-xl font-black text-indigo-600 dark:text-indigo-400">${(periodStats.totalMl / 1000).toFixed(1)}<span class="text-xs ml-1">L</span></p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
-                    <p class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">全銘柄数</p>
+                    <p class="text-[11px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">全銘柄数</p>
                     <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${allStats.uniqueBeersCount}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
@@ -86,7 +86,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10"></i>
-                        <p id="style-chart-total-label" class="text-[10px] font-bold text-gray-400 mt-1">スタイル数</p>
+                        <p id="style-chart-total-label" class="text-[11px] font-bold text-gray-400 mt-1">スタイル数</p>
                         <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> ブルワリーランキング</h3>
-                    <span class="text-[10px] font-bold text-gray-400" id="brewery-count-label"></span>
+                    <span class="text-[11px] font-bold text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
                 <div id="brewery-ranking-list" class="space-y-2"></div>
@@ -147,7 +147,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
                     <div class="grid grid-cols-3 gap-2">
                         <div class="relative">
-                            <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-brewery" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="">ブルワリー名</option>
                                 ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
                             </select>
@@ -155,7 +155,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                         </div>
 
                         <div class="relative">
-                            <select id="filter-style" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-style" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="">ビアスタイル</option>
                                 ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
                             </select>
@@ -163,7 +163,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                         </div>
 
                         <div class="relative">
-                            <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[10px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
+                            <select id="filter-rating" class="w-full appearance-none bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold py-2 pl-2 pr-6 truncate focus:outline-none focus:border-indigo-500">
                                 <option value="0">評価</option>
                                 <option value="5">★ 5 のみ</option>
                                 <option value="4">★ 4 以上</option>
@@ -333,40 +333,40 @@ function renderHealthInsights(allLogs, checks) {
 
             <!-- 飲んだ日 vs 休肝日 -->
             <div class="mb-5">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
                 <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
-                        <p class="text-[9px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
+                        <p class="text-[11px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
                         <p class="${avgDrinkingState !== null ? 'text-2xl font-black text-red-500 dark:text-red-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
-                        <p class="text-[9px] text-gray-400">${drinkingStateScores.length}日</p>
+                        <p class="text-[11px] text-gray-400">${drinkingStateScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
-                        <p class="text-[9px] font-bold text-emerald-400 uppercase mb-1">状態達成率（休肝日）</p>
+                        <p class="text-[11px] font-bold text-emerald-400 uppercase mb-1">状態達成率（休肝日）</p>
                         <p class="${avgRestState !== null ? 'text-2xl font-black text-emerald-500 dark:text-emerald-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
-                        <p class="text-[9px] text-gray-400">${restStateScores.length}日</p>
+                        <p class="text-[11px] text-gray-400">${restStateScores.length}日</p>
                     </div>
                 </div>
-                ${!hasStateMetricData ? '<p class="text-[10px] text-gray-500 font-bold mb-2 text-center">ライブラリで状態項目を1つ追加してください</p>' : ''}
+                ${!hasStateMetricData ? '<p class="text-[11px] text-gray-500 font-bold mb-2 text-center">ライブラリで状態項目を1つ追加してください</p>' : ''}
                 <div class="grid grid-cols-2 gap-3 ${hasActionMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-center border border-amber-100 dark:border-amber-800/50">
-                        <p class="text-[9px] font-bold text-amber-500 uppercase mb-1">行動達成率（飲酒日）</p>
+                        <p class="text-[11px] font-bold text-amber-500 uppercase mb-1">行動達成率（飲酒日）</p>
                         <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
-                        <p class="text-[9px] text-gray-400">${drinkingActionScores.length}日</p>
+                        <p class="text-[11px] text-gray-400">${drinkingActionScores.length}日</p>
                     </div>
                     <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border" style="border-color:#7dd3fc;">
-                        <p class="text-[9px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
+                        <p class="text-[11px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
                         <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
-                        <p class="text-[9px] text-gray-400">${restActionScores.length}日</p>
+                        <p class="text-[11px] text-gray-400">${restActionScores.length}日</p>
                     </div>
                 </div>
-                ${!hasActionMetricData ? '<p class="text-[10px] text-gray-500 font-bold mt-2 text-center">ライブラリで行動項目を1つ追加してください</p>' : ''}
-                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
-                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[10px] text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
+                ${!hasActionMetricData ? '<p class="text-[11px] text-gray-500 font-bold mt-2 text-center">ライブラリで行動項目を1つ追加してください</p>' : ''}
+                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[11px] text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[11px] text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
             </div>
 
             <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
                 <div class="h-40 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
@@ -377,7 +377,7 @@ function renderHealthInsights(allLogs, checks) {
             <div class="space-y-2">
                 ${insights.stateText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
+                    <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
                         <i class="ph-duotone ph-heart text-sm flex-shrink-0 mt-0.5"></i>
                         <span><span class="mr-1">状態:</span>${insights.stateText}</span>
                     </p>
@@ -385,7 +385,7 @@ function renderHealthInsights(allLogs, checks) {
                 ` : ''}
                 ${insights.actionText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                    <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                         <i class="ph-duotone ph-check-circle text-sm flex-shrink-0"></i>
                         <span><span class="mr-1">行動:</span>${insights.actionText}</span>
                     </p>
@@ -397,7 +397,7 @@ function renderHealthInsights(allLogs, checks) {
             <!-- 体重トレンド (条件付き) -->
             ${hasWeight ? `
             <div class="mt-4">
-                <p class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
                 <div class="h-32 w-full relative">
                     <canvas id="weightTrendChart"></canvas>
                 </div>
@@ -677,14 +677,14 @@ function renderStyleChart(styleCounts) {
                         <span class="w-2.5 h-2.5 rounded-full border border-black/10" style="background:${color}"></span>
                         <span class="font-bold text-gray-700 dark:text-gray-200 truncate max-w-[150px]">${escapeHtml(style)}</span>
                     </div>
-                    <div class="text-gray-500 dark:text-gray-400 font-bold">${count}杯 <span class="text-[10px]">(${pct}%)</span></div>
+                    <div class="text-gray-500 dark:text-gray-400 font-bold">${count}杯 <span class="text-[11px]">(${pct}%)</span></div>
                 </div>
             `;
         }).join('');
 
         const othersCount = sortedEntries.slice(5).reduce((sum, [, c]) => sum + c, 0);
         const othersHtml = othersCount > 0
-            ? `<p class="text-[10px] text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
+            ? `<p class="text-[11px] text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
             : '';
 
         listEl.innerHTML = topRows + othersHtml;
@@ -750,7 +750,7 @@ function renderBeerList(beers) {
         if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm"></i>`;
 
         const rating = beer.averageRating > 0 
-            ? `<span class="flex items-center text-[10px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star"></i>${beer.averageRating.toFixed(1)}</span>`
+            ? `<span class="flex items-center text-[11px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star"></i>${beer.averageRating.toFixed(1)}</span>`
             : '';
 
         // ★修正: STYLE_METADATAからアイコン定義を取得してレンダリング
@@ -769,20 +769,20 @@ function renderBeerList(beers) {
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
                             <h4 class="text-sm font-black text-base-900 dark:text-white leading-tight">${escapeHtml(beer.name)}</h4>
                         </div>
                         <div class="text-right ml-2 flex-shrink-0">
                             <span class="block text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
-                            <span class="text-[9px] text-gray-400 font-bold uppercase">杯</span>
+                            <span class="text-[11px] text-gray-400 font-bold uppercase">杯</span>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2 mt-2">
-                        <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
+                        <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
-                        ${hasFlavorProfile(beer) ? '<span class="text-[10px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[9px]"></i></span>' : ''}
-                        <span class="ml-auto text-[10px] font-mono text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
+                        ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]"></i></span>' : ''}
+                        <span class="ml-auto text-[11px] font-mono text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
             </div>
@@ -837,7 +837,7 @@ function renderBreweryLeaderboard(breweryStats) {
     // タブ描画
     tabsEl.innerHTML = BREWERY_AXES.map(axis => {
         const active = axis.key === currentBreweryAxis;
-        const base = 'flex items-center gap-1 px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all cursor-pointer select-none';
+        const base = 'flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer select-none';
         const colors = active
             ? 'bg-indigo-600 text-white shadow-sm'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700';
@@ -902,14 +902,14 @@ function renderBreweryLeaderboard(breweryStats) {
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                     <div class="flex-grow min-w-0">
                         <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                        <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
+                        <p class="text-[11px] text-gray-400 font-bold truncate">${subInfo}</p>
                     </div>
                     <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                         <div>
                             <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                            <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                            <span class="text-[11px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                         </div>
-                        <i class="ph-bold ph-caret-right text-[10px] text-gray-300 dark:text-gray-600"></i>
+                        <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
                     </div>
                 </div>
             </div>`;
@@ -932,7 +932,7 @@ function renderBreweryLeaderboard(breweryStats) {
     if (!showAll && entries.length > TOP_N) {
         const remaining = entries.length - TOP_N;
         listEl.innerHTML += `
-            <button id="brewery-show-all" class="w-full text-center py-2 text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition">
+            <button id="brewery-show-all" class="w-full text-center py-2 text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition">
                 <i class="ph-bold ph-caret-down mr-1"></i>他 ${remaining} 件を表示
             </button>`;
         const showAllBtn = document.getElementById('brewery-show-all');
@@ -955,14 +955,14 @@ function renderBreweryLeaderboard(breweryStats) {
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                                 <div class="flex-grow min-w-0">
                                     <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                                    <p class="text-[9px] text-gray-400 font-bold truncate">${subInfo}</p>
+                                    <p class="text-[11px] text-gray-400 font-bold truncate">${subInfo}</p>
                                 </div>
                                 <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                                     <div>
                                         <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                                        <span class="text-[9px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                                        <span class="text-[11px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                                     </div>
-                                    <i class="ph-bold ph-caret-right text-[10px] text-gray-300 dark:text-gray-600"></i>
+                                    <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
                                 </div>
                             </div>
                         </div>`;
@@ -1016,7 +1016,7 @@ function showBreweryDetail(breweryName) {
                             <i class="ph-bold ph-x text-sm"></i>
                         </button>
                     </div>
-                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[10px] font-bold text-gray-400"></div>
+                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-bold text-gray-400"></div>
                 </div>
                 <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2 pb-10"></div>
             </div>
@@ -1065,7 +1065,7 @@ function showBreweryDetail(breweryName) {
             `<span class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md">${(brewery.totalMl / 1000).toFixed(1)}L</span>`
         ];
         if (brewery.ratingCount > 0) {
-            metaParts.push(`<span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md flex items-center gap-0.5"><i class="ph-fill ph-star text-[9px]"></i>${brewery.averageRating.toFixed(1)}</span>`);
+            metaParts.push(`<span class="bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 px-2 py-0.5 rounded-md flex items-center gap-0.5"><i class="ph-fill ph-star text-[11px]"></i>${brewery.averageRating.toFixed(1)}</span>`);
         }
         metaEl.innerHTML = metaParts.join('');
     }
@@ -1084,13 +1084,13 @@ function showBreweryDetail(breweryName) {
                     <div class="flex-grow min-w-0">
                         <h4 class="text-sm font-black text-base-900 dark:text-white truncate leading-tight">${escapeHtml(beer.name)}</h4>
                         <div class="flex items-center gap-2 mt-1.5">
-                            <span class="text-[10px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(beer.style)}</span>
+                            <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(beer.style)}</span>
                             ${renderRatingStars(beer.averageRating)}
                         </div>
                     </div>
                     <div class="flex-shrink-0 text-right ml-2">
                         <span class="block text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
-                        <span class="text-[9px] text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
+                        <span class="text-[11px] text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
                     </div>
                 </div>`;
         }).join('');
@@ -1199,7 +1199,7 @@ function renderBreweryFlavorRadar(avgProfile) {
         container.id = 'brewery-flavor-radar-container';
         container.className = 'bg-white dark:bg-base-900 p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 mb-3';
         container.innerHTML = `
-            <span class="text-[10px] font-bold text-gray-500 uppercase mb-2 block">味わい傾向（平均）</span>
+            <span class="text-[11px] font-bold text-gray-500 uppercase mb-2 block">味わい傾向（平均）</span>
             <div class="h-44 w-full relative">
                 <canvas id="brewery-flavor-radar"></canvas>
             </div>

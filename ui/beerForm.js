@@ -305,7 +305,7 @@ export const updateBeerKcalPreview = () => {
         const kcal = Calc.calculateBeerDebit(sizeMl, abv, carb, count);
 
         previewEl.innerHTML =
-            `${Math.round(kcal)} <span class="text-[10px] font-bold ml-1 text-gray-400">kcal</span>`;
+            `${Math.round(kcal)} <span class="text-[11px] font-bold ml-1 text-gray-400">kcal</span>`;
 
     } catch (e) {
         console.error(e);

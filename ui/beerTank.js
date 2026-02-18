@@ -272,9 +272,9 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
             badge.id = 'tank-custom-countdown';
             badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
             badge.innerHTML = `
-                <div class="text-[9px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
+                <div class="text-[11px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
                 <div class="text-xs font-black leading-none font-mono">
-                    ${daysLeft >= 0 ? `${daysLeft}<span class="text-[9px] font-normal ml-0.5">days</span>` : 'END'}
+                    ${daysLeft >= 0 ? `${daysLeft}<span class="text-[11px] font-normal ml-0.5">days</span>` : 'END'}
                 </div>
             `;
             tankWrapper.appendChild(badge);
@@ -316,13 +316,13 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
             
             if (currentViewMode === 'alcohol') {
                 cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
-                minText.innerHTML = `<span class="text-[10px] font-normal opacity-70">Pure Alcohol (period)</span>`;
+                minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
                 minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
                 msgText.textContent = latestPureAlcohol === 0 ? 'No alcohol yet' : 'Tap to switch view';
                 msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
             } else {
                 cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
-                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
+                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[11px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
                 minText.className = 'text-sm font-bold text-emerald-600 dark:text-emerald-400';
 
                 if (canCount < 0.5) {
@@ -395,13 +395,13 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
 
             if (currentViewMode === 'alcohol') {
                 cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
-                minText.innerHTML = `<span class="text-[10px] font-normal opacity-70">Pure Alcohol (period)</span>`;
+                minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
                 minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
                 msgText.textContent = 'Tap to switch view';
                 msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
             } else {
                 cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
-                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[10px] font-normal opacity-70">to burn</span>`;
+                minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[11px] font-normal opacity-70">to burn</span>`;
                 minText.className = 'text-sm font-bold text-red-500 dark:text-red-400';
 
                 if (debtCans > 2.5) {

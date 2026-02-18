@@ -14,7 +14,7 @@ body {
 }
 
 .dark body {
-    background-color: #0f172a; /* base-950 */
+    background-color: #0f172a; /* base-900 */
     color: #f1f5f9; /* base-100 */
 }
 
@@ -792,12 +792,6 @@ select:disabled {
 .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
-}
-
-/* 運動カード等の「光る」演出の強化（もし未定義なら） */
-.shadow-glow-indigo {
-    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.4);
-
 }
 
 /* --- 3D Flip Animation Utilities --- */

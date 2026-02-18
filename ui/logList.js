@@ -153,7 +153,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
 
         let mainText = log.type === 'beer' && log.brand 
-            ? (log.brewery ? `<span class="text-[10px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand))
+            ? (log.brewery ? `<span class="text-[11px] opacity-60 block leading-tight mb-0.5 font-bold uppercase tracking-wide">${escapeHtml(log.brewery)}</span>${escapeHtml(log.brand)}` : escapeHtml(log.brand))
             : escapeHtml(log.name);
 
         let subText = log.type === 'exercise'

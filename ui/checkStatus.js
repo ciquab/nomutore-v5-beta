@@ -35,7 +35,7 @@ export function renderCheckStatus(checks, logs) {
     let label = "Daily Check";
     let mainStatus = "No Record";
     let subStatus = "記録がありません";
-    let bottomContent = `<span class="text-[10px] font-bold opacity-60">Tap to record</span>`;
+    let bottomContent = `<span class="text-[11px] font-bold opacity-60">Tap to record</span>`;
 
     if (type !== 'none') {
         const { short, desc, score } = analyzeCondition(targetCheck, logs);
@@ -74,9 +74,9 @@ export function renderCheckStatus(checks, logs) {
         subStatus = desc;
         
         if (targetCheck.weight) {
-            bottomContent = `<span class="text-[10px] font-bold font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded">${targetCheck.weight}kg</span>`;
+            bottomContent = `<span class="text-[11px] font-bold font-mono bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded">${targetCheck.weight}kg</span>`;
         } else {
-            bottomContent = `<span class="text-[10px] font-bold opacity-40">Edit</span>`;
+            bottomContent = `<span class="text-[11px] font-bold opacity-40">Edit</span>`;
         }
     }
 

@@ -694,7 +694,7 @@ export const showUpdateNotification = (waitingWorker) => {
                 </div>
                 <div>
                     <p class="text-sm font-bold">Update Available</p>
-                    <p class="text-[10px] text-gray-300">新しいバージョンが利用可能です</p>
+                    <p class="text-[11px] text-gray-300">新しいバージョンが利用可能です</p>
                 </div>
             </div>
             <button id="btn-sw-update" class="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">

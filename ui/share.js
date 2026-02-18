@@ -101,7 +101,7 @@ const openPhotoComposer = (imgSrc, log) => {
         <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
             <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}"></i>
-            <span class="text-[9px] font-bold scale-90 origin-top">${r.label}</span>
+            <span class="text-[11px] font-bold scale-90 origin-top">${r.label}</span>
         </button>
     `).join('');
 
@@ -114,9 +114,9 @@ const openPhotoComposer = (imgSrc, log) => {
         { label: 'Pixel', value: 'font-dot', family: 'DotGothic16' }
     ];
  
-    // フォントボタン生成（コンパクト化: py-1, text-[10px]）
+    // フォントボタン生成（コンパクト化: py-1, text-[11px]）
     const fontButtonsHtml = fonts.map(f => `
-        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[10px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[11px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
                 data-value="${f.value}" style="font-family: '${f.family}';">
             ${f.label}
         </button>
@@ -149,7 +149,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 <div class="absolute bottom-0 left-0 w-full h-[35%] bg-gradient-to-t from-black/90 to-transparent pointer-events-none z-10"></div>
 
                 <div class="absolute top-5 left-5 z-20 drop-shadow-md">
-                    <p class="text-[10px] font-bold text-gray-200 tracking-widest opacity-90 leading-none" style="font-family: 'Noto Sans JP', sans-serif;">
+                    <p class="text-[11px] font-bold text-gray-200 tracking-widest opacity-90 leading-none" style="font-family: 'Noto Sans JP', sans-serif;">
                         ${date} | NOMUTORE
                     </p>
                 </div>
@@ -157,7 +157,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 <div id="composer-stats" class="absolute top-4 right-5 z-20 drop-shadow-md text-right transition-opacity duration-300">
                     <div class="flex flex-col items-end">
                         <span class="text-3xl font-black text-white leading-none tracking-tighter">-${kcal}</span>
-                        <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider mt-0.5">借金 (kcal)</span>
+                        <span class="text-[11px] font-bold text-red-400 uppercase tracking-wider mt-0.5">借金 (kcal)</span>
                     </div>
                 </div>
 
@@ -184,7 +184,7 @@ const openPhotoComposer = (imgSrc, log) => {
             </div>
 
             <div class="flex gap-2 px-4 py-1 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-start bg-base-950/50">
-                <span class="text-[9px] font-bold text-gray-500 self-center mr-1">FONT</span>
+                <span class="text-[11px] font-bold text-gray-500 self-center mr-1">FONT</span>
                 ${fontButtonsHtml}
             </div>
 
@@ -201,10 +201,10 @@ const openPhotoComposer = (imgSrc, log) => {
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
                             <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[9px] font-bold text-gray-400">カロリー</span>
+                        <span class="text-[11px] font-bold text-gray-400">カロリー</span>
                     </label>
 
-                    <span class="text-[9px] text-gray-600 font-bold flex items-center gap-1">
+                    <span class="text-[11px] text-gray-600 font-bold flex items-center gap-1">
                         <i class="ph-bold ph-hand-pointing"></i> ドラッグ＆ピンチ
                     </span>
                 </div>
@@ -507,7 +507,7 @@ const renderStatusCard = (container) => {
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
                         <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
-                    <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[10px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
+                    <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[11px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
                 </div>
                 <div class="text-right"><p class="text-xs text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p></div>
             </div>
@@ -526,7 +526,7 @@ const renderStatusCard = (container) => {
                     <div class="w-14 h-14 bg-white p-1 rounded-lg shadow-lg">
                         <img src="${qrApiUrl}" class="w-full h-full" crossorigin="anonymous" alt="QR">
                     </div>
-                    <div class="text-[10px] text-gray-400 leading-tight font-bold opacity-80">Scan to join<br>the healthy drinkers.</div>
+                    <div class="text-[11px] text-gray-400 leading-tight font-bold opacity-80">Scan to join<br>the healthy drinkers.</div>
                 </div>
                 <div class="text-right"><p class="text-sm font-black italic opacity-30">#NOMUTORE</p></div>
             </div>

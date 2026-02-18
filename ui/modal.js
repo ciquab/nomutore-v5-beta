@@ -75,7 +75,7 @@ const renderActionMenuBeerPresets = async () => {
     let html = '';
 
     if (recentBeers.length > 0) {
-        html += `<p class="text-[10px] font-bold text-gray-400 uppercase mb-2">前回のビール</p>`;
+        html += `<p class="text-[11px] font-bold text-gray-400 uppercase mb-2">前回のビール</p>`;
         
         recentBeers.forEach((beer, index) => {
             const isIPA = beer.style && beer.style.includes('IPA');
@@ -119,10 +119,10 @@ const renderActionMenuBeerPresets = async () => {
                     </div>
                     <div class="text-left overflow-hidden flex-1">
                         <div class="flex items-center gap-1 mb-0.5">
-                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
                         <div class="text-xs font-bold text-base-900 dark:text-white truncate">${mainLabel}</div>
-                        <div class="text-[9px] text-gray-500 truncate">
+                        <div class="text-[11px] text-gray-500 truncate">
                             ${subLabel} <span class="opacity-50 mx-1">/</span> ${beer.size || '350'}ml <span class="opacity-50 mx-1">/</span> ${kcal}kcal
                         </div>
                     </div>
@@ -159,7 +159,7 @@ const renderActionMenuExerciseShortcuts = async () => {
     if (recents.length > 0) {
         container.innerHTML += `
             <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4 mb-2">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">前回の運動</p>
+                <p class="text-[11px] font-bold text-gray-400 uppercase">前回の運動</p>
             </div>
         `;
 
@@ -189,10 +189,10 @@ const renderActionMenuExerciseShortcuts = async () => {
                 </div>
                 <div class="text-left overflow-hidden flex-1">
                     <div class="flex items-center gap-1 mb-0.5">
-                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                     </div>
                     <div class="text-xs font-bold text-base-900 dark:text-white truncate">${safeName}</div>
-                    <div class="text-[9px] text-gray-500 truncate">
+                    <div class="text-[11px] text-gray-500 truncate">
                         ${log.minutes} min <span class="opacity-50 mx-1">/</span> ${Math.round(log.kcal)} kcal
                     </div>
                 </div>
@@ -610,9 +610,9 @@ export const renderRecordTabShortcuts = async () => {
                              <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
-                            <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-[11px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate">${safeName}</div>
-                            <div class="text-[9px] text-gray-400 truncate mt-0.5"> ${beer.size || '350'}ml</div>
+                            <div class="text-[11px] text-gray-400 truncate mt-0.5"> ${beer.size || '350'}ml</div>
                         </div>
                     </button>
                 `;
@@ -652,9 +652,9 @@ export const renderRecordTabShortcuts = async () => {
                             <i class="ph-duotone ph-sneaker-move"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
-                            <div class="text-[9px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-[11px] font-bold text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${safeName}</div>
-                            <div class="text-[9px] text-gray-400 truncate mt-0.5">${log.minutes} min</div>
+                            <div class="text-[11px] text-gray-400 truncate mt-0.5">${log.minutes} min</div>
                         </div>
                     </button>
                 `;

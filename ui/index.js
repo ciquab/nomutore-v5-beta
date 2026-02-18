@@ -154,6 +154,8 @@ let _lastCellarRenderKey = '';
 let _latestErrorText = '';
 let _isErrorCopyHandlerBound = false;
 let _isSavingCheck = false;
+let _isSavingBeer = false;
+let _isSavingExercise = false;
 
 
 const resetRenderCaches = () => {
@@ -306,8 +308,9 @@ export const UI = {
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {
+    if (_isSavingBeer) return;
+    _isSavingBeer = true;
     const btn = document.getElementById('btn-save-beer');
-    if (btn && btn.disabled) return;
     const { data, existingId } = e.detail;
 
     try {
@@ -361,6 +364,7 @@ export const UI = {
         console.error('Save Beer Error:', err);
         showMessage('保存中にエラーが発生しました', 'error');
         } finally {
+        _isSavingBeer = false;
         // 【重要】成功しても失敗しても必ずボタンを復帰させる
         if (btn) {
             btn.disabled = false;
@@ -369,10 +373,11 @@ export const UI = {
     }
 });
 
-       // 🏃 運動保存リスナーの修正案
+       // 🏃 運動保存リスナー
 document.addEventListener('save-exercise', async (e) => {
+    if (_isSavingExercise) return;
+    _isSavingExercise = true;
     const btn = document.getElementById('btn-save-exercise');
-    if (btn && btn.disabled) return; // ガード
     const { exerciseKey, minutes, date, applyBonus, id } = e.detail;
     
     try {
@@ -418,6 +423,7 @@ document.addEventListener('save-exercise', async (e) => {
         console.error('Save Exercise Error:', err);
         showMessage('運動の記録に失敗しました', 'error');
     } finally {
+        _isSavingExercise = false;
         if (btn) {
             btn.disabled = false;
             btn.textContent = '記録を保存';

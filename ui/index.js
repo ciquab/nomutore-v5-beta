@@ -184,8 +184,12 @@ const _applyCellarSubView = (mode) => {
     if (activeEl) activeEl.classList.remove('hidden');
 };
 
-// ★引数 (forcedTabId) を追加
-export const refreshUI = async (forcedTabId = null) => {
+// refreshUI の並列実行防止（coalescing）
+let _refreshInProgress = false;
+let _refreshAgain = false;
+
+// 実際のUI更新処理
+const _executeRefreshUI = async (forcedTabId = null) => {
     try {
         if (!DOM.isInitialized) DOM.init();
 
@@ -195,19 +199,19 @@ export const refreshUI = async (forcedTabId = null) => {
         UI._statsData.periodLogs = logs;
         UI._statsData.allLogs = allLogs;
         UI._statsData.checks = checks;
-      
+
         // データの「指紋（Fingerprint）」を作成して、変更があるかチェック
         // (ログ件数、カロリー収支、チェック数 のどれかが変わっていれば変更とみなす)
         const currentFingerprint = `${allLogs.length}:${balance.toFixed(1)}:${checks.length}`;
 
         if (currentFingerprint !== _lastDataFingerprint) {
             _lastDataFingerprint = currentFingerprint;
-            
+
             // データが変わった時だけ、裏側のボタン類を作り直す（これで無駄な処理が減る）
-            renderRecordTabShortcuts(); 
-            updateActionMenuContent(); 
+            renderRecordTabShortcuts();
+            updateActionMenuContent();
         }
-        
+
         // 2. --- アクティブなタブに応じた描画の振り分け ---
         // 引数で指定があればそれを優先、なければDOMから探す
         let activeTabId = forcedTabId;
@@ -226,7 +230,7 @@ export const refreshUI = async (forcedTabId = null) => {
             // 重量・キャッシュ系
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
             const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
-            
+
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;
                 renderWeeklyAndHeatUp(allLogs, checks);
@@ -264,6 +268,26 @@ export const refreshUI = async (forcedTabId = null) => {
 
     } catch (e) {
         console.error('UI Refresh Error:', e);
+    }
+};
+
+// ★引数 (forcedTabId) を追加
+export const refreshUI = async (forcedTabId = null) => {
+    if (_refreshInProgress) {
+        // 実行中なら1回分だけ予約（複数呼び出しは1回に統合）
+        _refreshAgain = true;
+        return;
+    }
+    _refreshInProgress = true;
+    try {
+        await _executeRefreshUI(forcedTabId);
+        // 実行中に追加リクエストがあれば最新データで1回だけ再実行
+        while (_refreshAgain) {
+            _refreshAgain = false;
+            await _executeRefreshUI(null);
+        }
+    } finally {
+        _refreshInProgress = false;
     }
 };
 

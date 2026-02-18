@@ -20,6 +20,8 @@ const CORE_ASSETS = [
     './logService.js',
     './logic.js',
     './service.js',
+    './queryService.js',
+    './periodService.js',
     './eventBus.js',
     './types.js',
     './errorHandler.js',

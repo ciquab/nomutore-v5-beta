@@ -3,6 +3,7 @@
     "short_name": "NOMUTORE",
     "description": "飲んだら借金、動いて返済。ビール摂取カロリーを運動で帳消しにする、飲兵衛のためのスタイリッシュな健康管理ゲーム。",
     "start_url": "./index.html",
+    "scope": "./",
     "display": "standalone",
     "background_color": "#f8fafc",
     "theme_color": "#4F46E5",

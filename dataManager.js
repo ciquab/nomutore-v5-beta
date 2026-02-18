@@ -229,22 +229,45 @@ export const DataManager = {
      * JSONインポート (v4対応)
      * onboarding.js から await できるように Promise 化
      */
-    importJSON: (inputElement, options = {}) => { 
+    importJSON: (inputElement, options = {}) => {
         return new Promise((resolve, reject) => {
-            if (!inputElement.files.length) return resolve(false); 
-            
-            const f = inputElement.files[0]; 
-            const r = new FileReader(); 
-            
-            r.onload = async (e) => { 
-                try { 
+            if (!inputElement.files.length) return resolve(false);
+
+            const f = inputElement.files[0];
+
+            // ファイルサイズ上限: 50MB
+            const MAX_IMPORT_SIZE = 50 * 1024 * 1024;
+            if (f.size > MAX_IMPORT_SIZE) {
+                EventBus.emit(Events.NOTIFY, { message: '読込失敗: ファイルサイズが大きすぎます（上限50MB）', type: 'error' });
+                return resolve(false);
+            }
+
+            const r = new FileReader();
+
+            r.onload = async (e) => {
+                try {
                     const rawContent = e.target.result;
-                    const jsonString = rawContent.charCodeAt(0) === 0xFEFF 
-                        ? rawContent.slice(1) 
+                    const jsonString = rawContent.charCodeAt(0) === 0xFEFF
+                        ? rawContent.slice(1)
                         : rawContent;
 
-                    const d = JSON.parse(jsonString); 
-                    
+                    const d = JSON.parse(jsonString);
+
+                    // 構造バリデーション: v4形式またはレガシー形式の基本チェック
+                    const isV4 = d.version && d.version >= 4.0;
+                    if (isV4) {
+                        if (!d.data || typeof d.data !== 'object') {
+                            throw new Error('Invalid v4 backup: missing data object');
+                        }
+                        if (!Array.isArray(d.data.logs) && !Array.isArray(d.data.checks)) {
+                            throw new Error('Invalid v4 backup: data must contain logs or checks array');
+                        }
+                    } else {
+                        if (!Array.isArray(d.logs) && !Array.isArray(d.checks)) {
+                            throw new Error('Invalid backup: must contain logs or checks array');
+                        }
+                    }
+
                     // 1. 復元処理を実行（確認ダイアログが出ます）
                     const success = await DataManager.restoreFromObject(d, options);
                     

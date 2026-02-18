@@ -9,8 +9,8 @@ const CDN_ASSETS = [
     'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm',
     // Dexie — IndexedDB基盤
     'https://unpkg.com/dexie@3.2.4/dist/dexie.js',
-    // Chart.js — Statsタブ
-    'https://cdn.jsdelivr.net/npm/chart.js',
+    // Chart.js — Statsタブ（バージョン固定: SRI整合性のため）
+    'https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js',
     // canvas-confetti — 達成演出
     'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/+esm',
     // driver.js — オンボーディング

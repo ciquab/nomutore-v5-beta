@@ -383,10 +383,13 @@ const initApp = async () => {
 
         UI.init();
 
-        // 3. Migration & Initial Data Logic
-        if (Store.migrateV3ToV4) {
-            await Store.migrateV3ToV4();
-        }
+        // 3. Storage Integrity & Migration
+        // B3対策: IDBとlocalStorageの整合性を先にチェック（フラグ矛盾を解消）
+        await Store.ensureStorageIntegrity();
+        // v3→v4マイグレーション（整合性チェック後に実行）
+        await Store.migrateV3ToV4();
+        // B4対策: v3時代のchecksレコードにisDryDayをバックフィル
+        await Store.ensureFieldDefaults();
 
         // 4. Load & Verify Data
         updateBeerSelectOptions(); 

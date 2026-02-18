@@ -825,3 +825,66 @@ select:disabled {
 #settings-save-container {
     z-index: 90 !important;
 }
+
+/* =========================================
+   Accessibility: prefers-reduced-motion
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+    /* すべてのアニメーションを即時完了させる */
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* オーブ液体: 波の回転を停止 */
+    #orb-liquid-front, #orb-liquid-back,
+    .liquid-layer, .liquid-front, .liquid-back {
+        animation: none !important;
+    }
+
+    /* ネオンフリッカー: 静的表示 */
+    .animate-neon-flicker, .neon-power-on {
+        animation: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+    }
+
+    /* 泡: 非表示 */
+    .bubble-particle, .lp-bubble {
+        display: none !important;
+    }
+
+    /* コンセプトアイコン浮遊: 停止 */
+    .concept-icon-float, .concept-icon-float-delay {
+        animation: none !important;
+    }
+
+    /* リストアイテム: 即時表示 */
+    .log-item {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    /* Zen/Tipsyモード: アニメーション停止 */
+    .orb-container.zen-mode,
+    .orb-container.tipsy-mode {
+        animation: none !important;
+    }
+
+    /* 乾杯アニメーション: 即時完了 */
+    .animate-clink-left, .animate-clink-right, .animate-toast-text {
+        animation: none !important;
+    }
+
+    /* タイマー泡: 非表示 */
+    .animate-float-up {
+        animation: none !important;
+    }
+
+    /* 3Dフリップ: 即時切替 */
+    .flip-card-inner {
+        transition: none !important;
+    }
+}

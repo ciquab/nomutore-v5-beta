@@ -936,7 +936,7 @@ if (checkModal) {
             }
 
             document.querySelectorAll('.nav-item').forEach(el => {
-                el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-400';
+                el.className = 'nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400';
                 const icon = el.querySelector('i');
                 if(icon) icon.className = icon.className.replace('ph-fill', 'ph-bold');
             });

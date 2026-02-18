@@ -155,7 +155,7 @@ export const openCheckModal = async (dateStr = null) => {
                         <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                             ${iconHtml} ${item.label}
                         </span>
-                        ${item.desc ? `<span class="text-[11px] text-gray-400">${item.desc}</span>` : ''}
+                        ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
                     </div>
                 </label>
             `;
@@ -392,7 +392,7 @@ export const renderCheckLibrary = () => {
 
         const section = document.createElement('div');
         section.className = 'mb-4';
-        section.innerHTML = `<h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
+        section.innerHTML = `<h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 sticky top-0 bg-white dark:bg-base-900 py-2 z-10">${label}</h4>`;
 
         const grid = document.createElement('div');
         grid.className = 'grid grid-cols-1 sm:grid-cols-2 gap-2';
@@ -419,7 +419,7 @@ export const renderCheckLibrary = () => {
                         <p class="text-xs font-bold text-base-900 dark:text-white truncate">${item.label}</p>
                         ${badgeHtml}
                     </div>
-                    <p class="text-[11px] text-gray-400 truncate">${item.desc}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${item.desc}</p>
                 </div>
                 <div class="check-icon">
                     ${isActive ? '<i class="ph-fill ph-check-circle text-indigo-500"></i>' : '<i class="ph-bold ph-circle text-gray-300"></i>'}
@@ -538,7 +538,7 @@ export const renderCheckEditor = () => {
                         <p class="text-xs font-bold text-gray-800 dark:text-gray-200">${item.label}</p>
                         ${badgeHtml}
                     </div>
-                    <p class="text-[11px] text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc || ''} ${item.drinking_only ? '<span class="text-orange-500">(Drink Only)</span>' : ''}</p>
                 </div>
             </div>
             ${deleteBtn}

@@ -86,7 +86,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10"></i>
-                        <p id="style-chart-total-label" class="text-[11px] font-bold text-gray-400 mt-1">スタイル数</p>
+                        <p id="style-chart-total-label" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">スタイル数</p>
                         <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
                     </div>
                 </div>
@@ -127,7 +127,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500"></i> ブルワリーランキング</h3>
-                    <span class="text-[11px] font-bold text-gray-400" id="brewery-count-label"></span>
+                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
                 <div id="brewery-ranking-list" class="space-y-2"></div>
@@ -135,14 +135,14 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
             <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-3 px-1">
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">マイビール</h3>
-                    <span class="text-xs font-bold text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
+                    <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">マイビール</h3>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
 
                 <div class="space-y-2">
                     <div class="relative">
                         <input type="text" id="beer-search-input" placeholder="ブルワリー名や銘柄名で検索" class="w-full bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
-                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
@@ -151,7 +151,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                                 <option value="">ブルワリー名</option>
                                 ${uniqueBreweries.map(b => `<option value="${escapeHtml(b)}">${escapeHtml(b)}</option>`).join('')}
                             </select>
-                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400 text-xs">▼</div>
                         </div>
 
                         <div class="relative">
@@ -159,7 +159,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                                 <option value="">ビアスタイル</option>
                                 ${uniqueStyles.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
                             </select>
-                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400 text-xs">▼</div>
                         </div>
 
                         <div class="relative">
@@ -170,7 +170,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                                 <option value="3">★ 3 以上</option>
                                 <option value="2">★ 2 以上</option>
                             </select>
-                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+                            <div class="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 dark:text-gray-400 text-xs">▼</div>
                         </div>
                     </div>
                 </div>
@@ -338,12 +338,12 @@ function renderHealthInsights(allLogs, checks) {
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
                         <p class="text-[11px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
                         <p class="${avgDrinkingState !== null ? 'text-2xl font-black text-red-500 dark:text-red-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingState !== null ? `${avgDrinkingState}%` : '対象項目なし'}</p>
-                        <p class="text-[11px] text-gray-400">${drinkingStateScores.length}日</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${drinkingStateScores.length}日</p>
                     </div>
                     <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800/50">
                         <p class="text-[11px] font-bold text-emerald-400 uppercase mb-1">状態達成率（休肝日）</p>
                         <p class="${avgRestState !== null ? 'text-2xl font-black text-emerald-500 dark:text-emerald-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestState !== null ? `${avgRestState}%` : '対象項目なし'}</p>
-                        <p class="text-[11px] text-gray-400">${restStateScores.length}日</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${restStateScores.length}日</p>
                     </div>
                 </div>
                 ${!hasStateMetricData ? '<p class="text-[11px] text-gray-500 font-bold mb-2 text-center">ライブラリで状態項目を1つ追加してください</p>' : ''}
@@ -351,17 +351,17 @@ function renderHealthInsights(allLogs, checks) {
                     <div class="bg-amber-50 dark:bg-amber-900/20 p-3 rounded-xl text-center border border-amber-100 dark:border-amber-800/50">
                         <p class="text-[11px] font-bold text-amber-500 uppercase mb-1">行動達成率（飲酒日）</p>
                         <p class="${avgDrinkingAction !== null ? 'text-2xl font-black text-amber-500 dark:text-amber-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgDrinkingAction !== null ? `${avgDrinkingAction}%` : '対象項目なし'}</p>
-                        <p class="text-[11px] text-gray-400">${drinkingActionScores.length}日</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${drinkingActionScores.length}日</p>
                     </div>
                     <div class="bg-cyan-50 dark:bg-cyan-900/20 p-3 rounded-xl text-center border" style="border-color:#7dd3fc;">
                         <p class="text-[11px] font-bold text-cyan-500 uppercase mb-1">行動達成率（休肝日）</p>
                         <p class="${avgRestAction !== null ? 'text-2xl font-black text-cyan-600 dark:text-cyan-400' : 'text-sm font-bold text-gray-500 dark:text-gray-400'}">${avgRestAction !== null ? `${avgRestAction}%` : '対象項目なし'}</p>
-                        <p class="text-[11px] text-gray-400">${restActionScores.length}日</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${restActionScores.length}日</p>
                     </div>
                 </div>
                 ${!hasActionMetricData ? '<p class="text-[11px] text-gray-500 font-bold mt-2 text-center">ライブラリで行動項目を1つ追加してください</p>' : ''}
-                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[11px] text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
-                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[11px] text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasStateComparison || drinkingStateScores.length < 3 || restStateScores.length < 3) ? '<p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold mt-2 text-center">状態達成率比較は各3日以上で安定します</p>' : ''}
+                ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
             </div>
 
             <!-- コンディション推移チャート -->
@@ -684,7 +684,7 @@ function renderStyleChart(styleCounts) {
 
         const othersCount = sortedEntries.slice(5).reduce((sum, [, c]) => sum + c, 0);
         const othersHtml = othersCount > 0
-            ? `<p class="text-[11px] text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
+            ? `<p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold text-right">その他 ${othersCount}杯</p>`
             : '';
 
         listEl.innerHTML = topRows + othersHtml;
@@ -744,9 +744,9 @@ function renderBeerList(beers) {
     }
 
     listEl.innerHTML = beers.map((beer, index) => {
-        let rankBadge = `<span class="text-gray-400 font-bold text-xs">#${index + 1}</span>`;
+        let rankBadge = `<span class="text-gray-500 dark:text-gray-400 font-bold text-xs">#${index + 1}</span>`;
         if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-yellow-500 drop-shadow-sm"></i>`;
-        if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-400 drop-shadow-sm"></i>`;
+        if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-500 dark:text-gray-400 drop-shadow-sm"></i>`;
         if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm"></i>`;
 
         const rating = beer.averageRating > 0 
@@ -769,12 +769,12 @@ function renderBeerList(beers) {
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[11px] font-bold text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
+                            <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
                             <h4 class="text-sm font-black text-base-900 dark:text-white leading-tight">${escapeHtml(beer.name)}</h4>
                         </div>
                         <div class="text-right ml-2 flex-shrink-0">
                             <span class="block text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
-                            <span class="text-[11px] text-gray-400 font-bold uppercase">杯</span>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase">杯</span>
                         </div>
                     </div>
 
@@ -782,7 +782,7 @@ function renderBeerList(beers) {
                         <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
                         ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]"></i></span>' : ''}
-                        <span class="ml-auto text-[11px] font-mono text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
+                        <span class="ml-auto text-[11px] font-mono text-gray-500 dark:text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
             </div>
@@ -888,9 +888,9 @@ function renderBreweryLeaderboard(breweryStats) {
 
         let rankBadge;
         if (i === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500"></i>';
-        else if (i === 1) rankBadge = '<span class="text-xs font-black text-gray-400">2</span>';
+        else if (i === 1) rankBadge = '<span class="text-xs font-black text-gray-500 dark:text-gray-400">2</span>';
         else if (i === 2) rankBadge = '<span class="text-xs font-black text-amber-700">3</span>';
-        else rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
+        else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
 
         // サブ情報: 現在の軸以外の主要指標を1つ表示
         const subInfo = buildBrewerySubInfo(b, axis.key);
@@ -902,12 +902,12 @@ function renderBreweryLeaderboard(breweryStats) {
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                     <div class="flex-grow min-w-0">
                         <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                        <p class="text-[11px] text-gray-400 font-bold truncate">${subInfo}</p>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">${subInfo}</p>
                     </div>
                     <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                         <div>
                             <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                            <span class="text-[11px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                         </div>
                         <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
                     </div>
@@ -946,7 +946,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     const maxVal = entries[0][axis.key] || 1;
                     const pct = Math.round((b[axis.key] / maxVal) * 100);
                     const value = axis.format(b[axis.key]);
-                    const rankBadge = `<span class="text-xs font-bold text-gray-400">${i + 1}</span>`;
+                    const rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
                     const subInfo = buildBrewerySubInfo(b, axis.key);
                     return `
                         <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
@@ -955,12 +955,12 @@ function renderBreweryLeaderboard(breweryStats) {
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                                 <div class="flex-grow min-w-0">
                                     <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                                    <p class="text-[11px] text-gray-400 font-bold truncate">${subInfo}</p>
+                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">${subInfo}</p>
                                 </div>
                                 <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                                     <div>
                                         <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
-                                        <span class="text-[11px] text-gray-400 font-bold ml-0.5">${axis.unit}</span>
+                                        <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                                     </div>
                                     <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600"></i>
                                 </div>
@@ -1016,7 +1016,7 @@ function showBreweryDetail(breweryName) {
                             <i class="ph-bold ph-x text-sm"></i>
                         </button>
                     </div>
-                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-bold text-gray-400"></div>
+                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-bold text-gray-500 dark:text-gray-400"></div>
                 </div>
                 <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2 pb-10"></div>
             </div>
@@ -1073,9 +1073,9 @@ function showBreweryDetail(breweryName) {
     const listEl = document.getElementById('brewery-detail-list');
     if (listEl) {
         listEl.innerHTML = beers.map((beer, index) => {
-            let rankBadge = `<span class="text-gray-400 font-bold text-xs">#${index + 1}</span>`;
+            let rankBadge = `<span class="text-gray-500 dark:text-gray-400 font-bold text-xs">#${index + 1}</span>`;
             if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-xl text-yellow-500"></i>`;
-            if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-400"></i>`;
+            if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-xl text-gray-500 dark:text-gray-400"></i>`;
             if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-xl text-amber-700"></i>`;
 
             return `
@@ -1090,7 +1090,7 @@ function showBreweryDetail(breweryName) {
                     </div>
                     <div class="flex-shrink-0 text-right ml-2">
                         <span class="block text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
-                        <span class="text-[11px] text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
+                        <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
                     </div>
                 </div>`;
         }).join('');

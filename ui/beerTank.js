@@ -131,7 +131,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
         const hintIcon = document.createElement('div');
         hintIcon.id = 'tank-flip-hint';
         // 右下に薄く配置
-        hintIcon.className = 'absolute bottom-3 right-3 text-gray-400 dark:text-gray-500 pointer-events-none transition-opacity duration-500';
+        hintIcon.className = 'absolute bottom-3 right-3 text-gray-500 dark:text-gray-400 pointer-events-none transition-opacity duration-500';
         hintIcon.style.animation = 'hint-pulse 3s infinite ease-in-out';
         hintIcon.innerHTML = `<i class="ph-bold ph-arrows-clockwise text-lg"></i>`;
         
@@ -143,22 +143,25 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
     }
 
     // --- ★追加: "The Tease" (初回のみプルンと揺らす) ---
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (heroCard && !hasTeased) {
         hasTeased = true;
         // 画面描画から少し遅らせて「気づかせる」
-        setTimeout(() => {
-            // ユーザーがまだ触っていなければ揺らす
-            if (heroCard.dataset.isAnimating !== 'true') {
-                heroCard.animate([
-                    { transform: 'perspective(1000px) rotateY(0deg)' },
-                    { transform: 'perspective(1000px) rotateY(15deg)' }, // 15度だけチラ見せ
-                    { transform: 'perspective(1000px) rotateY(0deg)' }
-                ], {
-                    duration: 800,
-                    easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' // バネのような動き
-                });
-            }
-        }, 1500); // 1.5秒後に実行
+        if (!prefersReducedMotion) {
+            setTimeout(() => {
+                // ユーザーがまだ触っていなければ揺らす
+                if (heroCard.dataset.isAnimating !== 'true') {
+                    heroCard.animate([
+                        { transform: 'perspective(1000px) rotateY(0deg)' },
+                        { transform: 'perspective(1000px) rotateY(15deg)' }, // 15度だけチラ見せ
+                        { transform: 'perspective(1000px) rotateY(0deg)' }
+                    ], {
+                        duration: 800,
+                        easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' // バネのような動き
+                    });
+                }
+            }, 1500); // 1.5秒後に実行
+        }
     }
 
     // --- インタラクション: パネル全体を回転 ---
@@ -184,12 +187,16 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                 AudioEngine.playTone(800, 'triangle', 0.05, 0, 0.05); 
             }
 
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const flipDuration = reducedMotion ? 0 : 200;
+            const flipBackDuration = reducedMotion ? 0 : 300;
+
             // 1. 回転して消える
             const flipOut = heroCard.animate([
                 { transform: 'perspective(1000px) rotateY(0deg)' },
                 { transform: 'perspective(1000px) rotateY(90deg)' }
             ], {
-                duration: 200, 
+                duration: flipDuration,
                 easing: 'ease-in',
                 fill: 'forwards'
             });
@@ -199,7 +206,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                 const currentMode = StateManager.orbViewMode || 'cans';
                 const nextMode = currentMode === 'cans' ? 'kcal' : currentMode === 'kcal' ? 'alcohol' : 'cans';
                 StateManager.setOrbViewMode(nextMode);
-                
+
                 renderBeerTank(latestBalance);
 
                 // 3. 回転して戻る
@@ -207,7 +214,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                     { transform: 'perspective(1000px) rotateY(90deg)' },
                     { transform: 'perspective(1000px) rotateY(0deg)' }
                 ], {
-                    duration: 300, 
+                    duration: flipBackDuration,
                     easing: 'ease-out',
                     fill: 'forwards'
                 });
@@ -218,7 +225,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
 
                 flipIn.onfinish = () => {
                     heroCard.dataset.isAnimating = 'false';
-                    flipOut.cancel(); 
+                    flipOut.cancel();
                     flipIn.cancel();
                 };
             };
@@ -272,7 +279,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
             badge.id = 'tank-custom-countdown';
             badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
             badge.innerHTML = `
-                <div class="text-[11px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
+                <div class="text-[11px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-500 dark:text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
                 <div class="text-xs font-black leading-none font-mono">
                     ${daysLeft >= 0 ? `${daysLeft}<span class="text-[11px] font-normal ml-0.5">days</span>` : 'END'}
                 </div>
@@ -319,7 +326,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                 minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
                 minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
                 msgText.textContent = latestPureAlcohol === 0 ? 'No alcohol yet' : 'Tap to switch view';
-                msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
+                msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
             } else {
                 cansText.className = "text-4xl font-black text-emerald-600 dark:text-emerald-400 drop-shadow-sm font-numeric";
                 minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[11px] font-normal text-emerald-600/70 dark:text-emerald-200">to burn</span>`;
@@ -398,7 +405,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                 minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
                 minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
                 msgText.textContent = 'Tap to switch view';
-                msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
+                msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
             } else {
                 cansText.className = "text-4xl font-black text-red-500 dark:text-red-400 drop-shadow-sm font-numeric";
                 minText.innerHTML = `${Math.round(Math.abs(displayMinutes))} min <span class="text-[11px] font-normal opacity-70">to burn</span>`;
@@ -412,7 +419,7 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                     msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
                 } else {
                     msgText.textContent = 'Enjoying beer!';
-                    msgText.className = 'text-sm font-bold text-gray-400 dark:text-gray-500';
+                    msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
                 }
             }
         }

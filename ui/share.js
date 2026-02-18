@@ -98,7 +98,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
     // ボタン生成（コンパクト化: p-1.5, gap-0.5）
     const ratioButtonsHtml = ratios.map(r => `
-        <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
             <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}"></i>
             <span class="text-[11px] font-bold scale-90 origin-top">${r.label}</span>
@@ -116,7 +116,7 @@ const openPhotoComposer = (imgSrc, log) => {
  
     // フォントボタン生成（コンパクト化: py-1, text-[11px]）
     const fontButtonsHtml = fonts.map(f => `
-        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[11px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}" 
+        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[11px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
                 data-value="${f.value}" style="font-family: '${f.family}';">
             ${f.label}
         </button>
@@ -201,7 +201,7 @@ const openPhotoComposer = (imgSrc, log) => {
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
                             <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[11px] font-bold text-gray-400">カロリー</span>
+                        <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400">カロリー</span>
                     </label>
 
                     <span class="text-[11px] text-gray-600 font-bold flex items-center gap-1">
@@ -242,7 +242,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 b.classList.toggle('bg-indigo-600', isActive);
                 b.classList.toggle('text-white', isActive);
                 b.classList.toggle('bg-gray-800', !isActive);
-                b.classList.toggle('text-gray-400', !isActive);
+                b.classList.toggle('text-gray-500 dark:text-gray-400', !isActive);
             });
             Feedback.tap();
         });
@@ -262,7 +262,7 @@ const openPhotoComposer = (imgSrc, log) => {
                 b.classList.toggle('text-white', isActive);
                 b.classList.toggle('border-indigo-500', isActive);
                 b.classList.toggle('bg-gray-800', !isActive);
-                b.classList.toggle('text-gray-400', !isActive);
+                b.classList.toggle('text-gray-500 dark:text-gray-400', !isActive);
             });
             Feedback.tap();
         });
@@ -507,17 +507,17 @@ const renderStatusCard = (container) => {
                     <div class="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 overflow-hidden">
                         <img src="./icon-192_2.png" class="w-full h-full object-cover opacity-90" crossorigin="anonymous">
                     </div>
-                    <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[11px] text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
+                    <div><h1 class="text-xl font-black tracking-widest leading-none">NOMUTORE</h1><p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold tracking-[0.3em] uppercase mt-1">BEER & BURN</p></div>
                 </div>
-                <div class="text-right"><p class="text-xs text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p></div>
+                <div class="text-right"><p class="text-xs text-gray-500 dark:text-gray-400 font-bold tracking-wider">${dayjs().format('YYYY.MM.DD')}</p></div>
             </div>
             <div class="flex-1 flex flex-col justify-center items-center z-10 mt-2">
-                <p class="text-sm font-bold text-gray-400 tracking-widest mb-2 border-b border-gray-600 pb-1 whitespace-nowrap">${statusText}</p>
+                <p class="text-sm font-bold text-gray-500 dark:text-gray-400 tracking-widest mb-2 border-b border-gray-600 pb-1 whitespace-nowrap">${statusText}</p>
                 <div class="text-8xl font-black ${accentColor} drop-shadow-2xl flex items-baseline gap-2 leading-none">
-                    ${absBalance} <span class="text-2xl text-gray-400 font-bold">kcal</span>
+                    ${absBalance} <span class="text-2xl text-gray-500 dark:text-gray-400 font-bold">kcal</span>
                 </div>
                 <div class="mt-8 flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-sm">
-                    <span class="text-xs text-gray-400 font-bold uppercase whitespace-nowrap">Current Rank</span>
+                    <span class="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase whitespace-nowrap">Current Rank</span>
                     <span class="text-2xl font-black text-amber-400 whitespace-nowrap">${gradeData.rank}</span>
                 </div>
             </div>
@@ -526,7 +526,7 @@ const renderStatusCard = (container) => {
                     <div class="w-14 h-14 bg-white p-1 rounded-lg shadow-lg">
                         <img src="${qrApiUrl}" class="w-full h-full" crossorigin="anonymous" alt="QR">
                     </div>
-                    <div class="text-[11px] text-gray-400 leading-tight font-bold opacity-80">Scan to join<br>the healthy drinkers.</div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight font-bold opacity-80">Scan to join<br>the healthy drinkers.</div>
                 </div>
                 <div class="text-right"><p class="text-sm font-black italic opacity-30">#NOMUTORE</p></div>
             </div>

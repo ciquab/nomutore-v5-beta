@@ -66,7 +66,7 @@ export function renderAlcoholMeter(allLogs) {
         </div>
 
         <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-gray-400">${statusText}</span>
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400">${statusText}</span>
             ${overLimit ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${bgColor} ${textColor}">Over</span>` : ''}
         </div>
     `;

@@ -54,7 +54,7 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
             const status = Calc.getDayStatus(d, allLogsForDisplay, checks, profile);
             
             let bgClass = "bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700";
-            let textClass = "text-gray-400";
+            let textClass = "text-gray-500 dark:text-gray-400";
             let borderClass = "border";
             let iconHtml = '';
 
@@ -75,7 +75,7 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
                 case 'exercise': 
                     bgClass = "bg-cyan-50 dark:bg-cyan-900/20 border-gray-300 dark:border-gray-500 border";
                     textClass = "text-cyan-600 dark:text-cyan-400";
-                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-400 dark:text-gray-300"></i>`;
+                    iconHtml = `<i class="ph-fill ph-medal text-xl text-gray-500 dark:text-gray-400 dark:text-gray-300"></i>`;
                     break;
 
                 case 'rest': 

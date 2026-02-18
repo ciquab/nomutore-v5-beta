@@ -11,7 +11,7 @@ export async function renderArchives() {
 
     if (archives.length === 0) {
         container.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-64 text-gray-400">
+            <div class="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-archive text-4xl mb-2"></i>
                 <p class="text-sm font-bold">アーカイブはまだありません</p>
                 <p class="text-xs opacity-60">期間が完了するとここに表示されます</p>
@@ -33,14 +33,14 @@ export async function renderArchives() {
             <div class="glass-panel p-4 rounded-2xl mb-3 flex items-center justify-between group active:scale-95 transition cursor-pointer">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
-                        <span class="text-[11px] font-bold uppercase text-gray-400 px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded">${arch.mode || 'Weekly'}</span>
+                        <span class="text-[11px] font-bold uppercase text-gray-500 dark:text-gray-400 px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded">${arch.mode || 'Weekly'}</span>
                         <span class="text-xs font-bold text-gray-600 dark:text-gray-300">${start} - ${end}</span>
                     </div>
-                    <div class="text-[11px] text-gray-400">ID: #${arch.id}</div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400">ID: #${arch.id}</div>
                 </div>
                 <div class="flex flex-col items-end">
                     <span class="text-lg font-black ${isPositive ? 'text-emerald-500' : 'text-red-500'}">
-                        ${sign}${Math.round(balance)} <span class="text-xs font-bold text-gray-400">kcal</span>
+                        ${sign}${Math.round(balance)} <span class="text-xs font-bold text-gray-500 dark:text-gray-400">kcal</span>
                     </span>
                     <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${statusColor}">
                         ${isPositive ? '黒字' : '赤字'}

@@ -15,7 +15,7 @@ export function renderLiverRank(checks, logs) {
     let theme = {
         bg: "", darkBg: "",
         text: "text-gray-800", darkText: "dark:text-white",
-        icon: "text-gray-400",
+        icon: "text-gray-500 dark:text-gray-400",
         bar: "bg-gray-500"
     };
 

@@ -117,7 +117,7 @@ export const openLogDetail = (log) => {
 
             <div class="p-6 overflow-y-auto flex-1">
                 <div class="flex justify-between items-start mb-2">
-                    <span class="text-xs font-bold text-gray-400">${dateDisplay}</span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">${dateDisplay}</span>
                     <span class="px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider ${isBeer ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'}">
                         ${isBeer ? 'ビール記録' : '運動記録'}
                     </span>
@@ -127,7 +127,7 @@ export const openLogDetail = (log) => {
                     ${escapeHtml(displayName)}
                 </h2>
                 
-                ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.round(Math.abs(log.kcal))}<span class="text-sm font-bold text-gray-400">kcal</span></div>` : ''}
+                ${isBeer ? `<div class="text-3xl font-black text-red-500 mb-6 flex items-baseline gap-1">-${Math.round(Math.abs(log.kcal))}<span class="text-sm font-bold text-gray-500 dark:text-gray-400">kcal</span></div>` : ''}
 
                 ${detailsHtml}
             </div>
@@ -317,7 +317,7 @@ export const openDayDetail = async (dateStr) => {
     
     if (logs.length === 0) {
         listContainer.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-40 text-gray-400 opacity-60">
+            <div class="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 opacity-60">
                 <i class="ph-duotone ph-notebook text-4xl mb-2"></i>
                 <span class="text-xs font-bold">この日の記録はありません</span>
             </div>
@@ -372,7 +372,7 @@ export const openDayDetail = async (dateStr) => {
                 <span class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
                     ${mainText}
                 </span>
-                <span class="text-[11px] text-gray-400 font-bold truncate">
+                <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">
                     ${subText}
                 </span>
             </div>

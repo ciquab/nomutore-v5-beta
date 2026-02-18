@@ -139,7 +139,7 @@ const WIZARD_STEPS = [
                         </div>
                     </div>
                 </div>
-                <p class="text-[11px] text-gray-400 text-center">※Settingsタブからいつでも変更できます。</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center">※Settingsタブからいつでも変更できます。</p>
             </div>
             `;
         },

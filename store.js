@@ -81,7 +81,7 @@ export const Store = {
 
     migrateV3ToV4: async () => {
         if (localStorage.getItem('v4_migration_complete')) {
-            return false; 
+            return false;
         }
 
         console.log('[Migration] Starting v3 to v4 migration...');
@@ -92,9 +92,9 @@ export const Store = {
 
         if (!localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START)) {
             const now = dayjs();
-            const day = now.day() || 7; 
+            const day = now.day() || 7;
             const startOfWeek = now.subtract(day - 1, 'day').startOf('day').valueOf();
-            
+
             localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, startOfWeek);
         }
 
@@ -108,8 +108,74 @@ export const Store = {
 
         localStorage.setItem('v4_migration_complete', 'true');
         console.log('[Migration] v4 migration completed successfully.');
-        
-        return true; 
+
+        return true;
+    },
+
+    /**
+     * B4対策: v3時代のchecksレコードに isDryDay フィールドをバックフィルする。
+     * Dexie の upgrade() は既にv5に進んだユーザーには効かないため、
+     * 起動時にランタイムで未設定レコードを修正する（1回限りフラグ付き）。
+     */
+    ensureFieldDefaults: async () => {
+        if (localStorage.getItem('v5_field_defaults_applied')) {
+            return false;
+        }
+
+        try {
+            const checks = await db.checks.toArray();
+            const needsFix = checks.filter(c => c.isDryDay === undefined);
+
+            if (needsFix.length > 0) {
+                await db.transaction('rw', db.checks, async () => {
+                    for (const check of needsFix) {
+                        await db.checks.update(check.id, { isDryDay: false });
+                    }
+                });
+                console.log(`[B4] Backfilled isDryDay on ${needsFix.length} checks records.`);
+            }
+
+            localStorage.setItem('v5_field_defaults_applied', 'true');
+            return needsFix.length > 0;
+        } catch (e) {
+            console.error('[B4] ensureFieldDefaults failed:', e);
+            return false;
+        }
+    },
+
+    /**
+     * B3対策: IndexedDB と localStorage のマイグレーションフラグの整合性を検証する。
+     *
+     * シナリオA: IDB手動クリア → DB空だがフラグ残存 → フラグ削除して再マイグレーション
+     * シナリオB: localStorage手動クリア → フラグ消失 → DBにデータがあれば
+     *           マイグレーション不要なのでフラグだけ復元（PERIOD_START上書きを防止）
+     */
+    ensureStorageIntegrity: async () => {
+        try {
+            const migrationFlag = localStorage.getItem('v4_migration_complete');
+            const hasDbData = (await db.logs.count()) > 0 || (await db.checks.count()) > 0;
+
+            if (migrationFlag && !hasDbData) {
+                // シナリオA: フラグはあるがDBが空 → フラグを消してマイグレーション再実行を許可
+                localStorage.removeItem('v4_migration_complete');
+                localStorage.removeItem('v5_field_defaults_applied');
+                console.log('[B3] DB is empty but migration flag exists. Cleared flag for re-migration.');
+                return 'flag_cleared';
+            }
+
+            if (!migrationFlag && hasDbData) {
+                // シナリオB: DBにデータがあるがフラグが消えている → フラグだけ復元
+                // migrateV3ToV4 が再実行されると PERIOD_START を上書きしてしまうのを防ぐ
+                localStorage.setItem('v4_migration_complete', 'true');
+                console.log('[B3] DB has data but migration flag missing. Restored flag to prevent re-migration.');
+                return 'flag_restored';
+            }
+
+            return 'ok';
+        } catch (e) {
+            console.error('[B3] ensureStorageIntegrity failed:', e);
+            return 'error';
+        }
     }
 };
 

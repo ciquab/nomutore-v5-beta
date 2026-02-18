@@ -321,18 +321,18 @@
     </section>
 </div>
         <div id="tab-cellar" class="tab-content space-y-4 hidden">
-     <div class="flex items-center justify-between px-2 mb-1">
-        <div class="flex items-center gap-2">
+     <div class="flex flex-wrap items-center justify-between gap-y-2 px-2 mb-1">
+        <div class="flex items-center gap-2 shrink-0">
             <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Cellar</h2>
             <button data-action="modal:openHelp" data-args='["help-cellar"]' aria-label="セラーのヘルプ" class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
                 <i class="ph-bold ph-question text-lg" aria-hidden="true"></i>
             </button>
         </div>
-                <div role="tablist" aria-label="セラー表示切替" class="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                    <button id="btn-cellar-stats" role="tab" aria-selected="true" aria-controls="view-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-3 py-1.5 text-[11px] font-bold rounded-md transition-all">Stats</button>
-                    <button id="btn-cellar-logs" role="tab" aria-selected="false" aria-controls="view-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-3 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500">Logs</button>
-                    <button id="btn-cellar-collection" role="tab" aria-selected="false" aria-controls="view-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-3 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500">Collections</button>
-                    <button id="btn-cellar-archives" role="tab" aria-selected="false" aria-controls="view-cellar-archives" data-action="ui:switchCellarView" data-args='["archives"]' class="px-3 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500">Archives</button>
+                <div role="tablist" aria-label="セラー表示切替" class="flex min-w-0 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    <button id="btn-cellar-stats" role="tab" aria-selected="true" aria-controls="view-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap">Stats</button>
+                    <button id="btn-cellar-logs" role="tab" aria-selected="false" aria-controls="view-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Logs</button>
+                    <button id="btn-cellar-collection" role="tab" aria-selected="false" aria-controls="view-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Collections</button>
+                    <button id="btn-cellar-archives" role="tab" aria-selected="false" aria-controls="view-cellar-archives" data-action="ui:switchCellarView" data-args='["archives"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Archives</button>
                 </div>
              </div>
 
@@ -402,11 +402,11 @@
                         <input type="number" id="height-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="170">
                     </div>
                     <div>
-                        <label for="age-input" class="">年齢</label>
+                        <label for="age-input" class="text-xs font-medium text-gray-500 mb-1 block">年齢</label>
                         <input type="number" id="age-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="30">
                     </div>
                     <div>
-                        <label for="gender-input" class="">性別</label>
+                        <label for="gender-input" class="text-xs font-medium text-gray-500 mb-1 block">性別</label>
                         <select id="gender-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                             <option value="male">男性</option>
                             <option value="female">女性</option>
@@ -415,7 +415,7 @@
                 </div>
 
                 <div class="mb-2">
-    <label for="setting-period-mode" class="">集計期間</label>
+    <label for="setting-period-mode" class="text-xs font-medium text-gray-500 mb-1 block">集計期間</label>
     <select id="setting-period-mode" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold mb-1 text-sm">
         <option value="weekly">週次（月曜リセット）</option>
         <option value="monthly">月次（1日リセット）</option>
@@ -425,18 +425,18 @@
 
 <div id="custom-period-settings" class="hidden mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50 space-y-3">
     <div>
-        <label for="custom-period-label" class="">プロジェクト名</label>
+        <label for="custom-period-label" class="text-xs font-medium text-gray-500 mb-1 block">プロジェクト名</label>
         <input type="text" id="custom-period-label" placeholder="例: 夏休みダイエット"
                class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-bold placeholder-gray-400">
     </div>
     <div class="grid grid-cols-2 gap-3">
         <div>
-            <label for="custom-start-date" class="">開始日</label>
+            <label for="custom-start-date" class="text-xs font-medium text-gray-500 mb-1 block">開始日</label>
             <input type="date" id="custom-start-date" 
                    class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
         </div>
         <div>
-            <label for="custom-end-date" class="">終了日</label>
+            <label for="custom-end-date" class="text-xs font-medium text-gray-500 mb-1 block">終了日</label>
             <input type="date" id="custom-end-date" 
                    class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
         </div>
@@ -454,7 +454,7 @@
                 </h2>
 
                 <div class="mb-4">
-                    <label for="theme-input" class="">テーマ</label>
+                    <label for="theme-input" class="text-xs font-medium text-gray-500 mb-1 block">テーマ</label>
                     <select id="theme-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                         <option value="system">システムに合わせる</option>
                         <option value="light">ライトモード</option>
@@ -463,22 +463,22 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="setting-mode-1" class="">メインビール</label>
+                    <label for="setting-mode-1" class="text-xs font-medium text-gray-500 mb-1 block">メインビール</label>
                     <select id="setting-mode-1" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                 <div class="mb-4">
-                    <label for="setting-mode-2" class="">サブビール</label>
+                    <label for="setting-mode-2" class="text-xs font-medium text-gray-500 mb-1 block">サブビール</label>
                     <select id="setting-mode-2" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                 <div class="mb-4">
-                    <label for="setting-base-exercise" class="">基準運動</label>
+                    <label for="setting-base-exercise" class="text-xs font-medium text-gray-500 mb-1 block">基準運動</label>
                     <select id="setting-base-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                  <div class="mb-2">
-                    <label for="setting-default-record-exercise" class="">デフォルト運動</label>
+                    <label for="setting-default-record-exercise" class="text-xs font-medium text-gray-500 mb-1 block">デフォルト運動</label>
                     <select id="setting-default-record-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
             </div>
@@ -509,7 +509,7 @@
                     </label>
                 </div>
                 <div id="notif-daily-time-row" class="hidden mb-4 pl-4 border-l-2 border-amber-200 dark:border-amber-800">
-                    <label for="notif-daily-time" class="">通知時刻</label>
+                    <label for="notif-daily-time" class="text-xs font-medium text-gray-500 mb-1 block">通知時刻</label>
                     <input type="time" id="notif-daily-time" value="21:00" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                 </div>
 
@@ -525,7 +525,7 @@
                     </label>
                 </div>
                 <div id="notif-period-eve-time-row" class="hidden mb-2 pl-4 border-l-2 border-amber-200 dark:border-amber-800">
-                    <label for="notif-period-eve-time" class="text-[11px] font-medium text-gray-500 mb-1 block">通知時刻</label>
+                    <label for="notif-period-eve-time" class="text-xs font-medium text-gray-500 mb-1 block">通知時刻</label>
                     <input type="time" id="notif-period-eve-time" value="20:00" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                 </div>
             </div>

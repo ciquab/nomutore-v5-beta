@@ -98,9 +98,9 @@
     </script>
 
     <div id="landing-page" class="fixed inset-0 z-[600] flex flex-col items-center justify-center bg-[#0f172a] overflow-hidden">
-    <div class="bubble-container absolute inset-0 z-0"></div>
-    
-    <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/20 via-transparent to-amber-900/20 pointer-events-none z-10"></div>
+    <div class="bubble-container absolute inset-0 z-0" aria-hidden="true"></div>
+
+    <div class="absolute inset-0 bg-gradient-to-b from-indigo-900/20 via-transparent to-amber-900/20 pointer-events-none z-10" aria-hidden="true"></div>
 
     <div class="relative z-20 flex flex-col items-center text-center">
         <div class="relative mb-12">
@@ -118,6 +118,8 @@
         </button>
     </div>
 </div>
+
+    <a href="#tab-home" class="skip-nav">メインコンテンツへスキップ</a>
 
     <header class="fixed top-0 w-full z-40 bg-white/70 dark:bg-base-900/70 backdrop-blur-xl border-b border-white/40 dark:border-white/5 transition-colors hidden">
         <div class="container mx-auto max-w-md h-14 flex items-center justify-between px-4">
@@ -138,15 +140,15 @@
             </div>
 
             <div class="flex items-center gap-1">
-                <button data-action="ui:openShareModal" class="w-11 h-11 flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
-                <i class="ph-bold ph-share-network text-lg"></i>
+                <button data-action="ui:openShareModal" aria-label="シェア" class="w-11 h-11 flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
+                <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i>
             </button>
 
-            <button id="btn-help" data-action="modal:openHelp" class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
-                <i class="ph-bold ph-question text-lg"></i>
+            <button id="btn-help" data-action="modal:openHelp" aria-label="ヘルプ" class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
+                <i class="ph-bold ph-question text-lg" aria-hidden="true"></i>
             </button>
-            <button data-action="ui:applyTheme" class="w-11 h-11 flex items-center justify-center rounded-full transition flex-shrink-0">
-                <i id="theme-icon" class="ph-fill ph-sun text-lg text-orange-500"></i>
+            <button data-action="ui:applyTheme" aria-label="テーマ切替" class="w-11 h-11 flex items-center justify-center rounded-full transition flex-shrink-0">
+                <i id="theme-icon" class="ph-fill ph-sun text-lg text-orange-500" aria-hidden="true"></i>
             </button>
             </div>
             </div>
@@ -167,7 +169,7 @@
                 </span>
                 <i class="ph-bold ph-caret-down text-base-900/50 dark:text-white/50 text-[11px]"></i>
 
-                <select id="header-mode-select" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                <select id="header-mode-select" aria-label="ビアスタイル切替" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     <option value="mode1">Lager</option>
                     <option value="mode2">Ale</option>
                 </select>
@@ -224,9 +226,9 @@
                 <!-- 追加ここまで -->
 
                 <div class="flex justify-between items-center mb-2 px-1">
-                    <button id="heatmap-prev" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">◀</button>
+                    <button id="heatmap-prev" aria-label="前の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">◀</button>
                     <span id="heatmap-period-label" class="text-[11px] font-bold text-gray-500 dark:text-gray-400">Loading...</span>
-                    <button id="heatmap-next" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">▶</button>
+                    <button id="heatmap-next" aria-label="次の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">▶</button>
                 </div>
 
                 <div id="heatmap-grid" class="grid grid-cols-7 gap-1.5 mb-4"></div>
@@ -245,7 +247,7 @@
         <div id="tab-record" class="tab-content pb-24 hidden space-y-6">
     <div class="flex items-center justify-start gap-2 px-2 mb-1">
         <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Record</h2>
-        <button data-action="modal:openHelp" data-args='["help-record"]' class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+        <button data-action="modal:openHelp" data-args='["help-record"]' aria-label="記録のヘルプ" class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
             <i class="ph-bold ph-question text-lg"></i>
         </button>
     </div>
@@ -322,7 +324,7 @@
      <div class="flex items-center justify-between px-2 mb-1">
         <div class="flex items-center gap-2">
             <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Cellar</h2>
-            <button data-action="modal:openHelp" data-args='["help-cellar"]' class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+            <button data-action="modal:openHelp" data-args='["help-cellar"]' aria-label="セラーのヘルプ" class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
                 <i class="ph-bold ph-question text-lg"></i>
             </button>
         </div>
@@ -379,7 +381,7 @@
         <div id="tab-settings" class="tab-content pb-40 hidden relative z-0">
     <div class="flex items-center justify-start gap-2 px-2 mb-4">
         <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Settings</h2>
-        <button data-action="modal:openHelp" data-args='["help-settings"]' class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+        <button data-action="modal:openHelp" data-args='["help-settings"]' aria-label="設定のヘルプ" class="w-11 h-11 rounded-full flex items-center justify-center text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
             <i class="ph-bold ph-question text-lg"></i>
         </button>
     </div>
@@ -392,19 +394,19 @@
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">体重 (kg)</label>
+                        <label for="weight-input" class="text-xs font-medium text-gray-500 mb-1 block">体重 (kg)</label>
                         <input type="number" id="weight-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="60">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">身長 (cm)</label>
+                        <label for="height-input" class="text-xs font-medium text-gray-500 mb-1 block">身長 (cm)</label>
                         <input type="number" id="height-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="170">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">年齢</label>
+                        <label for="age-input" class="">年齢</label>
                         <input type="number" id="age-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="30">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-500 mb-1 block">性別</label>
+                        <label for="gender-input" class="">性別</label>
                         <select id="gender-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                             <option value="male">男性</option>
                             <option value="female">女性</option>
@@ -413,7 +415,7 @@
                 </div>
 
                 <div class="mb-2">
-    <label class="text-xs font-medium text-gray-500 mb-1 block">集計期間</label>
+    <label for="setting-period-mode" class="">集計期間</label>
     <select id="setting-period-mode" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold mb-1 text-sm">
         <option value="weekly">週次（月曜リセット）</option>
         <option value="monthly">月次（1日リセット）</option>
@@ -423,18 +425,18 @@
 
 <div id="custom-period-settings" class="hidden mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50 space-y-3">
     <div>
-        <label class="block text-[11px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">プロジェクト名</label>
+        <label for="custom-period-label" class="">プロジェクト名</label>
         <input type="text" id="custom-period-label" placeholder="例: 夏休みダイエット"
                class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-bold placeholder-gray-400">
     </div>
     <div class="grid grid-cols-2 gap-3">
         <div>
-            <label class="block text-[11px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">開始日</label>
+            <label for="custom-start-date" class="">開始日</label>
             <input type="date" id="custom-start-date" 
                    class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
         </div>
         <div>
-            <label class="block text-[11px] font-medium text-indigo-600 dark:text-indigo-400 mb-1">終了日</label>
+            <label for="custom-end-date" class="">終了日</label>
             <input type="date" id="custom-end-date" 
                    class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
         </div>
@@ -452,7 +454,7 @@
                 </h2>
 
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">テーマ</label>
+                    <label for="theme-input" class="">テーマ</label>
                     <select id="theme-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                         <option value="system">システムに合わせる</option>
                         <option value="light">ライトモード</option>
@@ -461,22 +463,22 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">メインビール</label>
+                    <label for="setting-mode-1" class="">メインビール</label>
                     <select id="setting-mode-1" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">サブビール</label>
+                    <label for="setting-mode-2" class="">サブビール</label>
                     <select id="setting-mode-2" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">基準運動</label>
+                    <label for="setting-base-exercise" class="">基準運動</label>
                     <select id="setting-base-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
                  <div class="mb-2">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">デフォルト運動</label>
+                    <label for="setting-default-record-exercise" class="">デフォルト運動</label>
                     <select id="setting-default-record-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
             </div>
@@ -507,7 +509,7 @@
                     </label>
                 </div>
                 <div id="notif-daily-time-row" class="hidden mb-4 pl-4 border-l-2 border-amber-200 dark:border-amber-800">
-                    <label class="text-[11px] font-medium text-gray-500 mb-1 block">通知時刻</label>
+                    <label for="notif-daily-time" class="">通知時刻</label>
                     <input type="time" id="notif-daily-time" value="21:00" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                 </div>
 
@@ -523,7 +525,7 @@
                     </label>
                 </div>
                 <div id="notif-period-eve-time-row" class="hidden mb-2 pl-4 border-l-2 border-amber-200 dark:border-amber-800">
-                    <label class="text-[11px] font-medium text-gray-500 mb-1 block">通知時刻</label>
+                    <label for="notif-period-eve-time" class="text-[11px] font-medium text-gray-500 mb-1 block">通知時刻</label>
                     <input type="time" id="notif-period-eve-time" value="20:00" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                 </div>
             </div>
@@ -658,7 +660,7 @@
 
     </main>
 
-<nav id="bottom-nav" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
+<nav id="bottom-nav" aria-label="メインナビゲーション" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
     <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center bg-white/80 dark:bg-base-900/80 backdrop-blur-xl shadow-float transition-all duration-300">
         
         <button id="nav-tab-home" data-action="ui:switchTab" data-args='["home"]' class="nav-item nav-pill-active">
@@ -700,11 +702,11 @@
 <!-- ========================================
    FAB ボタン
    ======================================== -->
-<button id="btn-fab-fixed" 
-    class="hidden fixed bottom-24 right-6 z-40 w-14 h-14 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 ease-out">    <i class="ph-bold ph-plus text-2xl"></i>
+<button id="btn-fab-fixed" aria-label="クイック記録"
+    class="hidden fixed bottom-24 right-6 z-40 w-14 h-14 bg-indigo-600 text-white rounded-2xl shadow-xl shadow-indigo-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 ease-out">    <i class="ph-bold ph-plus text-2xl" aria-hidden="true"></i>
 </button>
 
-    <div id="message-box" class="fixed top-6 left-1/2 transform -translate-x-1/2 translate-y-[-150%] opacity-0 transition-all duration-300"></div>
+    <div id="message-box" aria-live="polite" aria-atomic="true" class="fixed top-6 left-1/2 transform -translate-x-1/2 translate-y-[-150%] opacity-0 transition-all duration-300"></div>
     
     <div id="global-error-overlay" class="fixed inset-0 bg-black/90 hidden flex flex-col items-center justify-center p-6 text-white">
         <h2 class="text-2xl font-bold mb-4 text-red-500">システムエラー</h2>
@@ -716,15 +718,15 @@
     </div>
 
 <!-- Check Library Modal (Phase 1.5 New) -->
-    <div id="check-library-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="check-library-modal" role="dialog" aria-modal="true" aria-labelledby="check-library-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-base-50 dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
             <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center bg-white dark:bg-base-900 z-20">
                 <div>
-                    <h3 class="font-black text-lg">チェック項目ライブラリ</h3>
+                    <h3 id="check-library-title" class="font-black text-lg">チェック項目ライブラリ</h3>
                     <p class="text-[11px] text-gray-500 dark:text-gray-400">毎日チェックする項目を選択</p>
                 </div>
-                <button data-action="modal:close" data-args='["check-library-modal"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400"
-    <i class="ph-bold ph-x text-lg"></i></button>
+                <button data-action="modal:close" data-args='["check-library-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
+    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i></button>
             </div>
             
             <!-- Presets Section -->
@@ -759,7 +761,7 @@
         </div>
     </div>
 
-<div id="action-menu-modal" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
+<div id="action-menu-modal" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true" aria-labelledby="action-menu-date-label">
     
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto" data-action="modal:close" data-args='["action-menu-modal"]'></div>
     
@@ -772,8 +774,8 @@
                 <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">クイックアクション</span>
                 <h3 id="action-menu-date-label" class="text-xl font-black text-base-900 dark:text-white leading-none mt-0.5 font-['Outfit']">Today</h3>
             </div>
-            <button data-action="modal:close" data-args='["action-menu-modal"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <i class="ph-bold ph-x text-lg"></i>
+            <button data-action="modal:close" data-args='["action-menu-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
             </button>
         </div>
         
@@ -789,12 +791,12 @@
 </div>
 
     <!-- Beer Modal -->
-    <div id="beer-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="beer-modal" role="dialog" aria-modal="true" aria-labelledby="beer-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
-                <h3 class="font-bold text-lg">ビールを追加</h3>
-                <button data-action="modal:close" data-args='["beer-modal"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400"
-    <i class="ph-bold ph-x text-lg"></i></button>
+                <h3 id="beer-modal-title" class="font-bold text-lg">ビールを追加</h3>
+                <button data-action="modal:close" data-args='["beer-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
+    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i></button>
             </div>
             <div class="flex p-2 gap-2 bg-base-50 dark:bg-base-900">
                 <button id="tab-beer-preset" class="flex-1 py-2 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-sm transition">プリセット</button>
@@ -804,11 +806,11 @@
                 <input type="hidden" id="editing-log-id" value="">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">日付</label>
+                        <label for="check-date" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">日付</label>
                         <input type="date" id="beer-date" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1">
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">本数</label>
+                        <label for="beer-count" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">本数</label>
                         <div class="flex items-center gap-2 mt-1">
                             <button id="btn-beer-minus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">-</button>
                             <input type="number" id="beer-count" value="1" class="w-full text-center bg-transparent font-bold text-lg" readonly>
@@ -818,11 +820,11 @@
                 </div>
                 <div id="beer-input-preset" class="space-y-4">
                     <div>
-                        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">ビアスタイル</label>
+                        <label for="beer-select" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">ビアスタイル</label>
                         <select id="beer-select" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1"></select>
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">サイズ</label>
+                        <label for="beer-size" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">サイズ</label>
                         <select id="beer-size" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1"></select>
                     </div>
                     <div id="preset-abv-container">
@@ -858,11 +860,11 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                          <div>
-                            <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">ABV (%)</label>
+                            <label for="custom-abv" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">ABV (%)</label>
                             <input type="number" id="custom-abv" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1" placeholder="5.0">
                          </div>
                          <div>
-                            <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">容量 (ml)</label>
+                            <label for="custom-amount" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">容量 (ml)</label>
                             <input type="number" id="custom-amount" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1" placeholder="350">
                          </div>
                     </div>
@@ -991,7 +993,7 @@
 
             <!-- ★修正: Footer統一 (Cancel / Next / Save) -->
             <div class="relative z-10 p-4 border-base-100 dark:border-base-800 flex gap-2 bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
-                <button id="btn-delete-beer" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 transition">
+                <button id="btn-delete-beer" aria-label="この記録を削除" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 transition">
                     <i class="ph-bold ph-trash text-lg"></i>
                 </button>
 
@@ -1011,19 +1013,19 @@
     </div>
 
     <!-- Check Modal (Updated: UI Consistency) -->
-    <div id="check-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="check-modal" role="dialog" aria-modal="true" aria-labelledby="check-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
-                <h3 class="font-bold text-lg">デイリーチェック</h3>
-                <button data-action="modal:close" data-args='["check-modal"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400"
-    <i class="ph-bold ph-x text-lg"></i>
+                <h3 id="check-modal-title" class="font-bold text-lg">デイリーチェック</h3>
+                <button data-action="modal:close" data-args='["check-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
+    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
                 </button>
             </div>
 
             <!-- Scrollable Body -->
             <div class="p-5 overflow-y-auto space-y-4 relative z-0">
                 <div>
-                    <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">日付</label>
+                    <label for="manual-date" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">日付</label>
                     <input type="date" id="check-date" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1">
                 </div>
 
@@ -1045,7 +1047,7 @@
                 </div>
 
                 <div>
-                    <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">体重 (kg)</label>
+                    <label for="check-weight" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">体重 (kg)</label>
                     <input type="number" id="check-weight" step="0.1" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1" placeholder="任意">
                 </div>
             </div>
@@ -1062,13 +1064,13 @@
         </div>
     </div>
 
-    <div id="timer-modal" class="fixed inset-0 hidden items-center justify-center bg-base-900 text-white transition-opacity duration-300">
+    <div id="timer-modal" role="dialog" aria-modal="true" class="fixed inset-0 hidden items-center justify-center bg-base-900 text-white transition-opacity duration-300">
         <div id="timer-bubbles-container" class="absolute inset-0 overflow-hidden pointer-events-none opacity-40 z-0"></div>
         
         <div class="relative z-10 w-full max-w-md h-full flex flex-col justify-center p-8 text-center">
             
-            <button data-action="modal:closeTimer" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center hover:bg-black/30 transition z-50 cursor-pointer text-white border border-white/10">
-    <i class="ph-bold ph-x text-lg"></i></button>
+            <button data-action="modal:closeTimer" aria-label="タイマーを閉じる" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center hover:bg-black/30 transition z-50 cursor-pointer text-white border border-white/10">
+    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i></button>
 
             <div class="absolute top-8 left-0 right-0 flex justify-center">
                 <div class="flex items-center gap-2 bg-black/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/5">
@@ -1136,7 +1138,7 @@
         </div>
     </div>
 
-    <div id="rollover-modal" class="fixed inset-0 hidden flex items-center justify-center p-4 transition-opacity duration-300">
+    <div id="rollover-modal" role="dialog" aria-modal="true" aria-labelledby="rollover-title" class="fixed inset-0 hidden flex items-center justify-center p-4 transition-opacity duration-300">
     <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
     
     <div class="bg-white dark:bg-base-900 w-full max-w-sm rounded-3xl p-6 relative z-10 shadow-2xl border border-gray-100 dark:border-gray-800 transform transition-all scale-100 animate-bounce-in">
@@ -1161,29 +1163,29 @@
 </div>
 
         <!-- Exercise Modal -->
-    <div id="exercise-modal" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
     <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         
         <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
-            <h3 class="font-bold text-lg">運動を追加</h3>
-            <button data-action="modal:close" data-args='["exercise-modal"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400"
-    <i class="ph-bold ph-x text-lg"></i></button>
+            <h3 id="exercise-modal-title" class="font-bold text-lg">運動を追加</h3>
+            <button data-action="modal:close" data-args='["exercise-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
+    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i></button>
         </div>
         
         <div class="p-5 space-y-4 overflow-y-auto relative z-0">
             <input type="hidden" id="editing-exercise-id">
             <div class="grid grid-cols-5 gap-3">
                 <div class="col-span-3">
-                    <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">日付</label>
+                    <label for="beer-date" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">日付</label>
                     <input type="date" id="manual-date" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
                 </div>
                 <div class="col-span-2">
-                    <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">分</label>
+                    <label for="manual-minutes" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">分</label>
                     <input type="number" id="manual-minutes" placeholder="30" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold">
                 </div>
             </div>
             <div>
-                <label class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">種目</label>
+                <label for="exercise-select" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase ml-1">種目</label>
                 <select id="exercise-select" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl px-3 py-3 text-sm font-bold"></select>
             </div>
 
@@ -1203,7 +1205,7 @@
         </div>
 
         <div class="relative z-10 p-4 border-base-100 bg-white/95 dark:border-base-800 flex gap-2 bg-base-50 dark:bg-base-900">
-            <button id="btn-delete-exercise" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
+            <button id="btn-delete-exercise" aria-label="この記録を削除" class="hidden w-12 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 transition">
                 <i class="ph-bold ph-trash text-xl"></i>
             </button>
 
@@ -1218,7 +1220,7 @@
     </div>
 </div>
 
-<div id="day-detail-modal" 
+<div id="day-detail-modal" aria-labelledby="day-detail-date" 
      class="fixed inset-0 z-50 flex items-end sm:items-center justify-center hidden pointer-events-none" 
      role="dialog" aria-modal="true">
 
@@ -1237,9 +1239,9 @@
                         </h3>
                     <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1.5">デイリーサマリー</p>
                 </div>
-                <button data-action="modal:close" data-args='["day-detail-modal"]' 
+                <button data-action="modal:close" data-args='["day-detail-modal"]' aria-label="閉じる"
                         class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400 active:scale-90">
-                    <i class="ph-bold ph-x text-lg"></i>
+                    <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
                 </button>
             </div>
 
@@ -1278,7 +1280,7 @@
     </div>
 </div>
 
-<div id="day-add-selector" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true">
+<div id="day-add-selector" class="fixed inset-0 flex items-end sm:items-center justify-center hidden pointer-events-none" role="dialog" aria-modal="true" aria-labelledby="day-add-selector-label">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto" data-action="modal:toggle" data-args='["day-add-selector"]'></div>
     <div class="relative w-full sm:max-w-md bg-white dark:bg-base-900 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-10 transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto shadow-2xl overflow-hidden">    
         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden"></div>
@@ -1289,8 +1291,8 @@
                     種類を選択
                 </h3>
             </div>
-            <button data-action="modal:toggle" data-args='["day-add-selector"]' class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
-                <i class="ph-bold ph-x text-lg"></i>
+            <button data-action="modal:toggle" data-args='["day-add-selector"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
             </button>
         </div>
 
@@ -1327,16 +1329,16 @@
 </div>
 
     
-<div id="help-modal" class="fixed inset-0 bg-gray-900/60 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+<div id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" class="fixed inset-0 bg-gray-900/60 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-white dark:bg-base-900 w-full max-w-lg max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-slide-up">
         
         <div class="flex justify-between items-center p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur">
-            <h3 class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
+            <h3 id="help-modal-title" class="text-lg font-black text-base-900 dark:text-white flex items-center gap-2">
                 <i class="ph-duotone ph-book-open text-indigo-500"></i>
                 ユーザーガイド
             </h3>
-            <button data-action="modal:close" data-args='["help-modal"]' class="w-11 h-11 rounded-full bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition text-gray-500 dark:text-gray-300">
-                <i class="ph-bold ph-x text-lg"></i>
+            <button data-action="modal:close" data-args='["help-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-200/50 dark:bg-gray-700/50 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition text-gray-500 dark:text-gray-300">
+                <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
             </button>
         </div>
         

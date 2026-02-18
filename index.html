@@ -20,6 +20,17 @@
     </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://accounts.google.com https://apis.google.com;
+        style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com https://unpkg.com;
+        img-src 'self' data: blob:;
+        connect-src 'self' https://www.googleapis.com https://accounts.google.com https://apis.google.com https://asia-northeast1-nomutore-backup.cloudfunctions.net;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+    ">
     <title>NOMUTORE</title>
     
     <link rel="manifest" href="manifest.json">
@@ -43,16 +54,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" crossorigin="anonymous">
 
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" crossorigin="anonymous">
-    
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" integrity="sha384-bovbcpDBo0pTIhd7ws6ebPh1PG31ubAHcX2pv8Tcu5EtFHNl5FBciYFtS/e2SN66" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" integrity="sha384-6p9AefaqUhEVheRlj1mpAkbngHXy9mbYMrIdcIt4Jlc9lOLIablJq3bBsLOjGwZ7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" integrity="sha384-pPVoXE8ft+zxKtxIDDI7SfTK6y95NHm4qa+hKEg/hs8VkjW5IP+9/dGOPCbDpUPl" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" integrity="sha384-UVFvhZP7fWAENUPOoq61rJg5ef6QZW0k5vpAn71041/QS4STvUcJQCGNhStZLGx9" crossorigin="anonymous">
     
     <link rel="stylesheet" href="tailwind-output.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js" integrity="sha384-dPjGJ3rBpGktXk5Oc6fSuIzpWQb1Uk+yIt23iySD3broHItJTZOIKJVzRDCvW9kx" crossorigin="anonymous"></script>
 
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
@@ -74,12 +85,14 @@
     <script>
         // JSモジュールのロードを待たずに、LocalStorageを爆速でチェック
         (function() {
-            const lpSeen = localStorage.getItem('nomutore_lp_seen_v5');
-            const onboardingComplete = localStorage.getItem('nomutore_onboarding_complete');
+            var lpSeen = localStorage.getItem('nomutore_lp_seen_v5');
+            var onboardingComplete = localStorage.getItem('nomutore_onboarding_complete');
 
             if (lpSeen && onboardingComplete) {
                 // 継続ユーザーなら、描画が始まる前にLPとコンセプトページを物理的に隠す
-                document.write('<style>#landing-page, #concept-page { display: none !important; }</style>');
+                var s = document.createElement('style');
+                s.textContent = '#landing-page, #concept-page { display: none !important; }';
+                document.head.appendChild(s);
             }
         })();
     </script>

@@ -139,7 +139,9 @@ export function renderWeeklyAndHeatUp(allLogs, checks) {
 }
 
 // ✅ 修正: 引数名を logs -> allLogs に変更し、意味論を統一
-export function renderHeatmap(checks, allLogs, profile) {
+export function renderHeatmap() {
+    const { checks, allLogs } = StateManager;
+    const profile = Store.getProfile();
     const container = DOM.elements['heatmap-grid'] || document.getElementById('heatmap-grid');
     if (!container) return;
 

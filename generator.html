@@ -77,6 +77,49 @@ import { STYLE_SPECS, CHECK_SCHEMA } from './constants.js';
 const STYLE_KEYS = Object.keys(STYLE_SPECS);
 let generatedData = null;
 
+// ===== ブルワリー生成ロジック =====
+
+const BREWERY_BRANDS = {
+  "箕面ビール": ["ピルスナー", "スタウト", "ヴァイツェン"],
+  "志賀高原ビール": ["IPA", "ポーター", "ペールエール"],
+  "West Coast Brewing": ["Full Hop Alchemist", "Starwatcher"],
+  "Stone Brewing": ["Stone IPA", "Arrogant Bastard"],
+  "BrewDog": ["Punk IPA", "Elvis Juice"]
+};
+
+const WORD_A = ["Hazy", "Dark", "Golden", "Wild", "Lazy", "Cosmic"];
+const WORD_B = ["Fox", "Hop", "River", "Cloud", "Wave", "Sun"];
+const WORD_C = ["Brewing", "Craft", "Works", "Collective"];
+
+function randomFrom(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function generateRandomBrewery(){
+  return `${randomFrom(WORD_B)} ${randomFrom(WORD_C)}`;
+}
+
+function generateRandomBrand(){
+  return `${randomFrom(WORD_A)} ${randomFrom(WORD_B)}`;
+}
+
+function generateBreweryAndBrand(){
+
+  const usePreset = Math.random() < 0.7;
+
+  if(usePreset){
+    const breweryKeys = Object.keys(BREWERY_BRANDS);
+    const brewery = randomFrom(breweryKeys);
+    const brand = randomFrom(BREWERY_BRANDS[brewery]);
+    return { brewery, brand };
+  } else {
+    return {
+      brewery: generateRandomBrewery(),
+      brand: generateRandomBrand()
+    };
+  }
+}  
+
 function randomBool(rate=0.5){
   return Math.random() < rate;
 }
@@ -130,12 +173,27 @@ function generateArchive(monthKey, logs, checks, exercises){
   };
 }
 
+function generateRating(bias){
+  const r = Math.random();
+
+  if(bias === "high"){
+    return Math.floor(3 + r * 3); // 3〜5
+  }
+  if(bias === "low"){
+    return Math.floor(r * 3); // 0〜2
+  }
+  return Math.floor(r * 6); // 0〜5
+}
+  
 document.getElementById("generateBtn").addEventListener("click", () => {
 
   const logCount = parseInt(document.getElementById("logCount").value);
   const startDate = new Date(document.getElementById("startDate").value);
   const endDate = new Date(document.getElementById("endDate").value);
   const dryRate = parseFloat(document.getElementById("dryRate").value);
+  const scoreBias = document.getElementById("scoreBias").value;
+  const generateCondition = document.getElementById("generateCondition").value;
+  const generateExerciseOption = document.getElementById("generateExercise").value;
 
   const logs = [];
   const checks = [];
@@ -151,6 +209,7 @@ document.getElementById("generateBtn").addEventListener("click", () => {
 
     const style = STYLE_KEYS[Math.floor(Math.random()*STYLE_KEYS.length)];
     const spec = STYLE_SPECS[style];
+    const { brewery, brand } = generateBreweryAndBrand();
 
     const log = {
       timestamp,
@@ -161,9 +220,9 @@ document.getElementById("generateBtn").addEventListener("click", () => {
       size: "350",
       count: 1,
       abv: spec.abv,
-      brewery: "Test Brewery",
-      brand: "Test Brand",
-      rating: Math.floor(Math.random()*6),
+      brewery,
+      brand,
+      rating: generateRating(scoreBias),
       memo: "",
       isCustom: false,
       customType: null,
@@ -173,10 +232,14 @@ document.getElementById("generateBtn").addEventListener("click", () => {
 
     logs.push(log);
 
-    const check = generateCheck(timestamp, idCounter++, dryRate, true);
-    checks.push(check);
+    let check = null;
 
-    if(randomBool(0.4)){
+    if(generateCondition === "yes"){
+      check = generateCheck(timestamp, idCounter++, dryRate, true);
+      checks.push(check);
+    }
+
+    if(generateExerciseOption === "yes" && randomBool(0.4)){
       const ex = generateExercise(timestamp, idCounter++);
       exercises.push(ex);
     }
@@ -192,7 +255,9 @@ document.getElementById("generateBtn").addEventListener("click", () => {
     }
 
     archivesMap[monthKey].logs.push(log);
-    archivesMap[monthKey].checks.push(check);
+    if(check){
+      archivesMap[monthKey].checks.push(check);
+    }
   }
 
   exercises.forEach(ex=>{
@@ -203,7 +268,8 @@ document.getElementById("generateBtn").addEventListener("click", () => {
   });
 
   const archives = Object.keys(archivesMap).map(month =>
-    generateArchive(month, 
+    generateArchive(
+      month,
       archivesMap[month].logs,
       archivesMap[month].checks,
       archivesMap[month].exercises
@@ -225,7 +291,6 @@ document.getElementById("generateBtn").addEventListener("click", () => {
 
   document.getElementById("output").value =
     JSON.stringify(generatedData, null, 2);
-
 });
 
 document.getElementById("downloadBtn").addEventListener("click", () => {

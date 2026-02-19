@@ -388,7 +388,7 @@
             <div class="glass-panel p-5 rounded-2xl mb-4">
                 <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-user-circle text-indigo-500" aria-hidden="true"></i>
-                    プロフィール & 設定
+                    プロフィール
                 </h2>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -414,42 +414,43 @@
                 </div>
 
                 <div class="mb-2">
-    <label for="setting-period-mode" class="text-xs font-medium text-gray-500 mb-1 block">集計期間</label>
-    <select id="setting-period-mode" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold mb-1 text-sm">
-        <option value="weekly">週次（月曜リセット）</option>
-        <option value="monthly">月次（1日リセット）</option>
-        <option value="custom">カスタム（任意の期間）</option> <option value="permanent">永久（リセットなし）</option>
-    </select>
-</div>
+                    <label for="setting-period-mode" class="text-xs font-medium text-gray-500 mb-1 block">集計期間</label>
+                    <select id="setting-period-mode" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold mb-1 text-sm">
+                        <option value="weekly">週次（月曜リセット）</option>
+                        <option value="monthly">月次（1日リセット）</option>
+                        <option value="custom">カスタム（任意の期間）</option> <option value="permanent">永久（リセットなし）</option>
+                    </select>
+                </div>
 
-<div id="custom-period-settings" class="hidden mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50 space-y-3">
-    <div>
-        <label for="custom-period-label" class="text-xs font-medium text-gray-500 mb-1 block">プロジェクト名</label>
-        <input type="text" id="custom-period-label" placeholder="例: 夏休みダイエット"
-               class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-bold placeholder-gray-400">
-    </div>
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label for="custom-start-date" class="text-xs font-medium text-gray-500 mb-1 block">開始日</label>
-            <input type="date" id="custom-start-date" 
-                   class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
-        </div>
-        <div>
-            <label for="custom-end-date" class="text-xs font-medium text-gray-500 mb-1 block">終了日</label>
-            <input type="date" id="custom-end-date" 
-                   class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
-        </div>
-    </div>
-    <p class="text-[11px] text-indigo-800 dark:text-indigo-300 opacity-70 leading-tight">
-        ※指定した終了日まで記録が続きます。<br>終了後はアーカイブされ、通常モードに戻るか選択できます。
-    </p>
-</div>
-                <div class="border-t border-gray-100 dark:border-gray-800 my-5"></div>
+                <div id="custom-period-settings" class="hidden mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800/50 space-y-3">
+                    <div>
+                        <label for="custom-period-label" class="text-xs font-medium text-gray-500 mb-1 block">プロジェクト名</label>
+                        <input type="text" id="custom-period-label" placeholder="例: 夏休みダイエット"
+                               class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-bold placeholder-gray-400">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="custom-start-date" class="text-xs font-medium text-gray-500 mb-1 block">開始日</label>
+                            <input type="date" id="custom-start-date"
+                                   class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
+                        </div>
+                        <div>
+                            <label for="custom-end-date" class="text-xs font-medium text-gray-500 mb-1 block">終了日</label>
+                            <input type="date" id="custom-end-date"
+                                   class="w-full p-2 bg-white dark:bg-base-800 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-indigo-800 dark:text-indigo-300 opacity-70 leading-tight">
+                        ※指定した終了日まで記録が続きます。<br>終了後はアーカイブされ、通常モードに戻るか選択できます。
+                    </p>
+                </div>
+            </div>
 
-                <h3 class="text-xs font-bold mb-3 flex items-center gap-2 text-gray-400 dark:text-gray-500">
-                    <i class="ph-fill ph-gear" aria-hidden="true"></i>
+            <div class="glass-panel p-5 rounded-2xl mb-4">
+                <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
+                    <i class="ph-fill ph-gear text-indigo-500" aria-hidden="true"></i>
                     環境設定
-                </h3>
+                </h2>
 
                 <div class="mb-4">
                     <label for="theme-input" class="text-xs font-medium text-gray-500 mb-1 block">テーマ</label>
@@ -475,7 +476,7 @@
                     <select id="setting-base-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
 
-                 <div class="mb-2">
+                <div class="mb-2">
                     <label for="setting-default-record-exercise" class="text-xs font-medium text-gray-500 mb-1 block">デフォルト運動</label>
                     <select id="setting-default-record-exercise" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm"></select>
                 </div>
@@ -587,13 +588,6 @@
                     <div id="cloud-status" class="text-[11px] text-center text-gray-500 dark:text-gray-400 font-mono h-4 mt-1"></div>
                 </div>
 
-                <!-- ローカル -->
-                <div class="border-t border-gray-100 dark:border-gray-800 my-4"></div>
-
-                <h3 class="text-xs font-bold mb-3 flex items-center gap-2 text-gray-400 dark:text-gray-500">
-                    <i class="ph-fill ph-hard-drives" aria-hidden="true"></i>
-                    ローカル
-                </h3>
                 <button data-action="data:exportCSV" data-args='["logs"]' class="w-full mb-3 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                     ログをエクスポート (CSV)
                 </button>

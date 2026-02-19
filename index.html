@@ -401,21 +401,23 @@
                         <input type="number" id="height-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="170">
                     </div>
                     <div>
-                        <label for="age-input" class="text-xs font-medium text-gray-500 mb-1 block">年齢</label>
+                        <div class="flex items-center mb-1 h-5">
+                            <label for="age-input" class="text-xs font-medium text-gray-500 block">年齢</label>
+                        </div>
                         <input type="number" id="age-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="30">
                     </div>
                     <div>
-                        <div class="flex items-center gap-1 mb-1">
+                        <div class="flex items-center gap-1 mb-1 h-5">
                             <label for="gender-input" class="text-xs font-medium text-gray-500 block">計算基準</label>
                             <span class="relative group" tabindex="0" role="button" aria-label="基礎代謝量とアルコール上限の計算に使用します">
                                 <i class="ph-duotone ph-info text-gray-400 text-sm cursor-help" aria-hidden="true"></i>
-                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[10px] leading-tight rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-focus:opacity-100 transition-opacity z-50" role="tooltip">基礎代謝量とアルコール上限の計算に使用します</span>
+                                <span class="absolute bottom-full right-0 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[10px] leading-tight rounded-lg whitespace-normal w-max max-w-[200px] opacity-0 pointer-events-none group-hover:opacity-100 group-focus:opacity-100 transition-opacity z-50" role="tooltip">基礎代謝量とアルコール上限の計算に使用します</span>
                             </span>
                         </div>
                         <select id="gender-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
-                            <option value="male">男性の基準で計算</option>
-                            <option value="female">女性の基準で計算</option>
-                            <option value="other">その他 / 回答しない</option>
+                            <option value="male">男性の基準</option>
+                            <option value="female">女性の基準</option>
+                            <option value="other">その他</option>
                         </select>
                     </div>
                 </div>

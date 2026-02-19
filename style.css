@@ -390,8 +390,16 @@ body {
                 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-/* Nav Pill Active State */
-.nav-pill-active {
+/* Nav Item Base */
+.nav-item {
+    transition: all 0.3s ease;
+    color: #94a3b8; /* gray-400 */
+}
+.nav-item:active { transform: scale(0.95); }
+.nav-item span.label { display: none; }
+
+/* Nav Pill Active State (higher specificity to override .nav-item) */
+.nav-item.nav-pill-active {
     background-color: #4f46e5; /* indigo-600 */
     color: white;
     border-radius: 9999px;
@@ -403,21 +411,14 @@ body {
     transform: translateY(-2px);
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.nav-pill-active span.label {
+.nav-item.nav-pill-active span.label {
     display: inline-block;
     font-size: 0.75rem;
     font-weight: 700;
 }
-.nav-pill-active i {
+.nav-item.nav-pill-active i {
     font-size: 1.25rem;
 }
-
-.nav-item {
-    transition: all 0.3s ease;
-    color: #94a3b8; /* gray-400 */
-}
-.nav-item:active { transform: scale(0.95); }
-.nav-item span.label { display: none; }
 
 /* Status Text Styles */
 .text-accent { color: #f59e0b; }

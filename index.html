@@ -407,7 +407,10 @@
                     <div>
                         <div class="flex items-center gap-1 mb-1">
                             <label for="gender-input" class="text-xs font-medium text-gray-500 block">計算基準</label>
-                            <i class="ph-duotone ph-info text-gray-400 text-sm cursor-help" title="基礎代謝量とアルコール上限の計算に使用します" aria-hidden="true"></i>
+                            <span class="relative group" tabindex="0" role="button" aria-label="基礎代謝量とアルコール上限の計算に使用します">
+                                <i class="ph-duotone ph-info text-gray-400 text-sm cursor-help" aria-hidden="true"></i>
+                                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2.5 py-1.5 bg-gray-800 text-white text-[10px] leading-tight rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-focus:opacity-100 transition-opacity z-50" role="tooltip">基礎代謝量とアルコール上限の計算に使用します</span>
+                            </span>
                         </div>
                         <select id="gender-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
                             <option value="male">男性の基準で計算</option>

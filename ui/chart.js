@@ -22,7 +22,7 @@ export function renderChart(logs, checks) {
             const isActive = btn.dataset.range === StateManager.chartRange;
             btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
             btn.className = `px-2 py-1 text-[11px] font-bold rounded-md transition-all ${
-                isActive ? "active-filter bg-white dark:bg-gray-600 text-indigo-600 dark:text-indigo-300 shadow-sm"
+                isActive ? "active-filter bg-white dark:bg-gray-600 text-brand dark:text-indigo-300 shadow-sm"
                          : "text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
             }`;
         });

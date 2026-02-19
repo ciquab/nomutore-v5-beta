@@ -72,7 +72,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
                     <p class="text-[11px] font-bold text-indigo-800 dark:text-indigo-200 uppercase">期間容量</p>
-                    <p class="text-xl font-black text-indigo-600 dark:text-indigo-400">${(periodStats.totalMl / 1000).toFixed(1)}<span class="text-xs ml-1">L</span></p>
+                    <p class="text-xl font-black text-brand dark:text-brand-light">${(periodStats.totalMl / 1000).toFixed(1)}<span class="text-xs ml-1">L</span></p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
                     <p class="text-[11px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">全銘柄数</p>
@@ -86,8 +86,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                         <i class="ph-duotone ph-beer-bottle text-4xl text-base-900 dark:text-white opacity-10" aria-hidden="true"></i>
-                        <p id="style-chart-total-label" class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mt-1">スタイル数</p>
-                        <p id="style-chart-total-value" class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">0</p>
+                        <p id="style-chart-total-label" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mt-1">スタイル数</p>
+                        <p id="style-chart-total-value" class="text-lg font-black text-brand dark:text-brand-light leading-none">0</p>
                     </div>
                 </div>
                 <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
@@ -127,7 +127,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
-                    <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
                 <div id="brewery-ranking-list" class="space-y-2"></div>
@@ -333,7 +333,7 @@ function renderHealthInsights(allLogs, checks) {
 
             <!-- 飲んだ日 vs 休肝日 -->
             <div class="mb-5">
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
                 <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
                         <p class="text-[11px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
@@ -366,7 +366,7 @@ function renderHealthInsights(allLogs, checks) {
 
             <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
                 <div class="h-40 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
@@ -377,7 +377,7 @@ function renderHealthInsights(allLogs, checks) {
             <div class="space-y-2">
                 ${insights.stateText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-start gap-1.5">
+                    <p class="text-[11px] font-bold text-brand dark:text-brand-light flex items-start gap-1.5">
                         <i class="ph-duotone ph-heart text-sm flex-shrink-0 mt-0.5" aria-hidden="true"></i>
                         <span><span class="mr-1">状態:</span>${insights.stateText}</span>
                     </p>
@@ -385,7 +385,7 @@ function renderHealthInsights(allLogs, checks) {
                 ` : ''}
                 ${insights.actionText ? `
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-xl border border-indigo-100 dark:border-indigo-800/50">
-                    <p class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                    <p class="text-[11px] font-bold text-brand dark:text-brand-light flex items-center gap-1.5">
                         <i class="ph-duotone ph-check-circle text-sm flex-shrink-0" aria-hidden="true"></i>
                         <span><span class="mr-1">行動:</span>${insights.actionText}</span>
                     </p>
@@ -397,7 +397,7 @@ function renderHealthInsights(allLogs, checks) {
             <!-- 体重トレンド (条件付き) -->
             ${hasWeight ? `
             <div class="mt-4">
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
                 <div class="h-32 w-full relative">
                     <canvas id="weightTrendChart"></canvas>
                 </div>
@@ -769,17 +769,17 @@ function renderBeerList(beers) {
                 <div class="flex-grow min-w-0">
                     <div class="flex justify-between items-start">
                         <div>
-                            <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
+                            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase truncate tracking-wider">${escapeHtml(beer.brewery || '不明')}</p>
                             <h4 class="text-sm font-black text-base-900 dark:text-white leading-tight">${escapeHtml(beer.name)}</h4>
                         </div>
                         <div class="text-right ml-2 flex-shrink-0">
-                            <span class="block text-xl font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
+                            <span class="block text-xl font-black text-brand dark:text-brand-light leading-none">${beer.count}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold uppercase">杯</span>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2 mt-2">
-                        <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
+                        <span class="text-[11px] font-semibold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
                         ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]" aria-hidden="true"></i></span>' : ''}
                         <span class="ml-auto text-[11px] font-mono text-gray-500 dark:text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
@@ -839,7 +839,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const active = axis.key === currentBreweryAxis;
         const base = 'flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer select-none';
         const colors = active
-            ? 'bg-indigo-600 text-white shadow-sm'
+            ? 'bg-brand text-white shadow-sm'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700';
         return `<button class="${base} ${colors}" data-brewery-axis="${axis.key}">
             <i class="${axis.icon} text-xs"></i>${axis.label}
@@ -906,7 +906,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     </div>
                     <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                         <div>
-                            <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                            <span class="text-lg font-black text-brand dark:text-brand-light leading-none">${value}</span>
                             <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                         </div>
                         <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
@@ -959,7 +959,7 @@ function renderBreweryLeaderboard(breweryStats) {
                                 </div>
                                 <div class="flex-shrink-0 text-right flex items-center gap-1.5">
                                     <div>
-                                        <span class="text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${value}</span>
+                                        <span class="text-lg font-black text-brand dark:text-brand-light leading-none">${value}</span>
                                         <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
                                     </div>
                                     <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
@@ -1016,7 +1016,7 @@ function showBreweryDetail(breweryName) {
                             <i class="ph-bold ph-x text-sm" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-bold text-gray-500 dark:text-gray-400"></div>
+                    <div id="brewery-detail-meta" class="flex gap-3 mt-2 text-[11px] font-semibold text-gray-500 dark:text-gray-400"></div>
                 </div>
                 <div id="brewery-detail-list" class="overflow-y-auto px-4 py-3 space-y-2 pb-10"></div>
             </div>
@@ -1060,7 +1060,7 @@ function showBreweryDetail(breweryName) {
     const metaEl = document.getElementById('brewery-detail-meta');
     if (metaEl) {
         const metaParts = [
-            `<span class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-md">${brewery.totalCount}杯</span>`,
+            `<span class="bg-indigo-50 dark:bg-indigo-900/30 text-brand dark:text-brand-light px-2 py-0.5 rounded-md">${brewery.totalCount}杯</span>`,
             `<span class="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md">${brewery.uniqueBeers}種</span>`,
             `<span class="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-md">${(brewery.totalMl / 1000).toFixed(1)}L</span>`
         ];
@@ -1084,12 +1084,12 @@ function showBreweryDetail(breweryName) {
                     <div class="flex-grow min-w-0">
                         <h4 class="text-sm font-black text-base-900 dark:text-white truncate leading-tight">${escapeHtml(beer.name)}</h4>
                         <div class="flex items-center gap-2 mt-1.5">
-                            <span class="text-[11px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(beer.style)}</span>
+                            <span class="text-[11px] font-semibold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${escapeHtml(beer.style)}</span>
                             ${renderRatingStars(beer.averageRating)}
                         </div>
                     </div>
                     <div class="flex-shrink-0 text-right ml-2">
-                        <span class="block text-lg font-black text-indigo-600 dark:text-indigo-400 leading-none">${beer.count}</span>
+                        <span class="block text-lg font-black text-brand dark:text-brand-light leading-none">${beer.count}</span>
                         <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold">${(beer.totalMl / 1000).toFixed(1)}L</span>
                     </div>
                 </div>`;
@@ -1199,7 +1199,7 @@ function renderBreweryFlavorRadar(avgProfile) {
         container.id = 'brewery-flavor-radar-container';
         container.className = 'bg-white dark:bg-base-900 p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 mb-3';
         container.innerHTML = `
-            <span class="text-[11px] font-bold text-gray-500 uppercase mb-2 block">味わい傾向（平均）</span>
+            <span class="text-[11px] font-semibold text-gray-500 uppercase mb-2 block">味わい傾向（平均）</span>
             <div class="h-44 w-full relative">
                 <canvas id="brewery-flavor-radar"></canvas>
             </div>

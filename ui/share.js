@@ -98,7 +98,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
     // ボタン生成（コンパクト化: p-1.5, gap-0.5）
     const ratioButtonsHtml = ratios.map(r => `
-        <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
+        <button class="ratio-btn flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition shrink-0 ${editState.aspectRatio === r.value ? 'bg-brand text-white' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
                 data-value="${r.value}">
             <i class="ph-bold ${r.icon} text-lg inline-block ${r.class || ''}" aria-hidden="true"></i>
             <span class="text-[11px] font-bold scale-90 origin-top">${r.label}</span>
@@ -116,7 +116,7 @@ const openPhotoComposer = (imgSrc, log) => {
  
     // フォントボタン生成（コンパクト化: py-1, text-[11px]）
     const fontButtonsHtml = fonts.map(f => `
-        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[11px] font-bold ${editState.fontClass === f.value ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
+        <button class="font-btn px-3 py-1 rounded-lg border border-gray-700 transition shrink-0 text-[11px] font-bold ${editState.fontClass === f.value ? 'bg-brand text-white border-indigo-500' : 'bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-700'}" 
                 data-value="${f.value}" style="font-family: '${f.family}';">
             ${f.label}
         </button>
@@ -184,7 +184,7 @@ const openPhotoComposer = (imgSrc, log) => {
             </div>
 
             <div class="flex gap-2 px-4 py-1 overflow-x-auto border-b border-gray-800 scrollbar-hide justify-start bg-base-950/50">
-                <span class="text-[11px] font-bold text-gray-500 self-center mr-1">FONT</span>
+                <span class="text-[11px] font-semibold text-gray-500 self-center mr-1">FONT</span>
                 ${fontButtonsHtml}
             </div>
 
@@ -201,7 +201,7 @@ const openPhotoComposer = (imgSrc, log) => {
                             <input type="checkbox" id="toggle-kcal" class="sr-only peer" checked>
                             <div class="w-6 h-3.5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-2.5 after:w-2.5 after:transition-all peer-checked:bg-indigo-500"></div>
                         </div>
-                        <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400">カロリー</span>
+                        <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">カロリー</span>
                     </label>
 
                     <span class="text-[11px] text-gray-600 font-bold flex items-center gap-1">
@@ -239,7 +239,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
             ratioBtns.forEach(b => {
                 const isActive = b === btn;
-                b.classList.toggle('bg-indigo-600', isActive);
+                b.classList.toggle('bg-brand', isActive);
                 b.classList.toggle('text-white', isActive);
                 b.classList.toggle('bg-gray-800', !isActive);
                 b.classList.toggle('text-gray-500 dark:text-gray-400', !isActive);
@@ -258,7 +258,7 @@ const openPhotoComposer = (imgSrc, log) => {
 
             fontBtns.forEach(b => {
                 const isActive = b === btn;
-                b.classList.toggle('bg-indigo-600', isActive);
+                b.classList.toggle('bg-brand', isActive);
                 b.classList.toggle('text-white', isActive);
                 b.classList.toggle('border-indigo-500', isActive);
                 b.classList.toggle('bg-gray-800', !isActive);
@@ -446,7 +446,7 @@ const showPreviewModal = (dataUrl, file) => {
                     <i class="ph-bold ph-download-simple text-lg" aria-hidden="true"></i> 保存
                 </button>
                 ${canShare ? `
-                <button id="btn-share-native" class="flex-[2] py-3 bg-indigo-600 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition active:scale-95">
+                <button id="btn-share-native" class="flex-[2] py-3 bg-brand text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand/30 hover:bg-brand-dark transition active:scale-95">
                     <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i> シェアする
                 </button>
                 ` : ''}

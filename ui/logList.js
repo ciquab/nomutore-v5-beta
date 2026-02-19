@@ -149,7 +149,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             : (STYLE_METADATA[log.style]?.icon || 'ph-duotone ph-beer-bottle');
 
         const colorClass = log.type === 'exercise' 
-            ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' 
+            ? 'bg-indigo-100 text-brand dark:bg-indigo-900/30 dark:text-brand-light' 
             : 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500';
 
         let mainText = log.type === 'beer' && log.brand 

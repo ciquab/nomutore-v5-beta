@@ -75,7 +75,7 @@ const renderActionMenuBeerPresets = async () => {
     let html = '';
 
     if (recentBeers.length > 0) {
-        html += `<p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">前回のビール</p>`;
+        html += `<p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">前回のビール</p>`;
         
         recentBeers.forEach((beer, index) => {
             const isIPA = beer.style && beer.style.includes('IPA');
@@ -119,7 +119,7 @@ const renderActionMenuBeerPresets = async () => {
                     </div>
                     <div class="text-left overflow-hidden flex-1">
                         <div class="flex items-center gap-1 mb-0.5">
-                            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                            <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                         </div>
                         <div class="text-xs font-bold text-base-900 dark:text-white truncate">${mainLabel}</div>
                         <div class="text-[11px] text-gray-500 truncate">
@@ -159,7 +159,7 @@ const renderActionMenuExerciseShortcuts = async () => {
     if (recents.length > 0) {
         container.innerHTML += `
             <div class="mt-4 border-t border-gray-100 dark:border-gray-800 pt-4 mb-2">
-                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase">前回の運動</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">前回の運動</p>
             </div>
         `;
 
@@ -189,7 +189,7 @@ const renderActionMenuExerciseShortcuts = async () => {
                 </div>
                 <div class="text-left overflow-hidden flex-1">
                     <div class="flex items-center gap-1 mb-0.5">
-                        <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
+                        <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No.${index + 1}</span>
                     </div>
                     <div class="text-xs font-bold text-base-900 dark:text-white truncate">${safeName}</div>
                     <div class="text-[11px] text-gray-500 truncate">
@@ -610,7 +610,7 @@ export const renderRecordTabShortcuts = async () => {
                              <i class="ph-duotone ph-beer-bottle ${iconColor} text-lg" aria-hidden="true"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
-                            <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-tight truncate">${safeName}</div>
                             <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5"> ${beer.size || '350'}ml</div>
                         </div>
@@ -652,7 +652,7 @@ export const renderRecordTabShortcuts = async () => {
                             <i class="ph-duotone ph-sneaker-move" aria-hidden="true"></i>
                         </div>
                         <div class="text-left min-w-0 flex-1">
-                            <div class="text-[11px] font-bold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
+                            <div class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 leading-none mb-0.5">No.${index + 1}</div>
                             <div class="text-xs font-bold text-base-900 dark:text-white leading-none truncate">${safeName}</div>
                             <div class="text-[11px] text-gray-500 dark:text-gray-400 truncate mt-0.5">${log.minutes} min</div>
                         </div>
@@ -710,7 +710,7 @@ export const showRolloverModal = () => {
 
         // 「次へ進む」ボタン
         const btn = document.createElement('button');
-        btn.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2";
+        btn.className = "w-full py-3.5 px-4 bg-brand hover:bg-brand-dark text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2";
         btn.innerHTML = `<span>新しい${labelJa}を開始</span>`;
         btn.addEventListener('click', async () => {
             await Service.updatePeriodSettings(mode); // 期間を更新（次週へ）
@@ -730,14 +730,14 @@ export const showRolloverModal = () => {
 
         // 1. Weeklyに戻る
         const btnWeekly = document.createElement('button');
-        btnWeekly.className = "w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
+        btnWeekly.className = "w-full py-3.5 px-4 bg-brand hover:bg-brand-dark text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
         btnWeekly.innerHTML = `<i class="ph-bold ph-arrows-clockwise" aria-hidden="true"></i><span>週次モードに切替</span>`;
         // UIがグローバルにある前提、またはimportが必要ですが、安全策としてonclick属性を使うか、window.UI経由で呼びます
         btnWeekly.dataset.action = 'rollover:weekly';
 
         // 2. 新規プロジェクト
         const btnNew = document.createElement('button');
-        btnNew.className = "w-full py-3.5 px-4 bg-white dark:bg-base-800 text-indigo-600 dark:text-indigo-400 border-2 border-indigo-100 dark:border-indigo-900 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
+        btnNew.className = "w-full py-3.5 px-4 bg-white dark:bg-base-800 text-brand dark:text-brand-light border-2 border-indigo-100 dark:border-indigo-900 rounded-xl font-bold active:scale-95 transition-all flex items-center justify-center gap-2 mb-3";
         btnNew.innerHTML = `<i class="ph-bold ph-plus" aria-hidden="true"></i><span>新規プロジェクト</span>`;
         btnNew.dataset.action = 'rollover:new_custom';
 

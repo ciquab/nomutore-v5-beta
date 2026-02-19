@@ -72,81 +72,159 @@ textarea { width:100%; height:250px; margin-top:10px; }
 
 <script type="module">
 
-import { STYLE_SPECS } from './constants.js';
+import { STYLE_SPECS, CHECK_SCHEMA } from './constants.js';
 
 const STYLE_KEYS = Object.keys(STYLE_SPECS);
-
-const BREWERIES = [
-"A Brewing","B Craft","C Beer","D Brewery",
-"E Works","F Lab","G Factory"
-];
-
 let generatedData = null;
 
-function randomDate(start, end){
-return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+function randomBool(rate=0.5){
+  return Math.random() < rate;
 }
 
-function randomScore(bias){
-if(bias === "high") return 3.5 + Math.random()*1.5;
-if(bias === "low") return Math.random()*3;
-return Math.random()*5;
+function randomDate(start, end){
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+function randomWeight(base=68){
+  const fluctuation = (Math.random() * 4 - 2); // ±2kg
+  return parseFloat((base + fluctuation).toFixed(1));
+}
+
+function generateExercise(timestamp, id){
+  return {
+    timestamp,
+    type: "exercise",
+    name: "Walking",
+    kcal: -120,
+    duration: 30,
+    memo: "",
+    id
+  };
+}
+
+function generateCheck(timestamp, id, dryRate, hasLog){
+
+  const isDry = hasLog ? false : randomBool(dryRate);
+
+  const check = {
+    timestamp,
+    isDryDay: isDry,
+    weight: randomWeight(),
+    isSaved: true,
+    id
+  };
+
+  CHECK_SCHEMA.forEach(item=>{
+    check[item.id] = randomBool(0.5);
+  });
+
+  return check;
+}
+
+function generateArchive(monthKey, logs, checks, exercises){
+  return {
+    month: monthKey,
+    logs,
+    checks,
+    exercises
+  };
 }
 
 document.getElementById("generateBtn").addEventListener("click", () => {
 
-const logCount = parseInt(document.getElementById("logCount").value);
-const startDate = new Date(document.getElementById("startDate").value);
-const endDate = new Date(document.getElementById("endDate").value);
-const scoreBias = document.getElementById("scoreBias").value;
-const dryRate = parseFloat(document.getElementById("dryRate").value);
-const generateCondition = document.getElementById("generateCondition").value === "yes";
-const generateExercise = document.getElementById("generateExercise").value === "yes";
+  const logCount = parseInt(document.getElementById("logCount").value);
+  const startDate = new Date(document.getElementById("startDate").value);
+  const endDate = new Date(document.getElementById("endDate").value);
+  const dryRate = parseFloat(document.getElementById("dryRate").value);
 
-const logs = [];
-const checks = [];
-const exercises = [];
+  const logs = [];
+  const checks = [];
+  const exercises = [];
+  const archivesMap = {};
 
-for(let i=0;i<logCount;i++){
+  let idCounter = 1;
 
-const date = randomDate(startDate, endDate);
+  for(let i=0;i<logCount;i++){
 
-const style = STYLE_KEYS[Math.floor(Math.random()*STYLE_KEYS.length)];
-const spec = STYLE_SPECS[style];
+    const date = randomDate(startDate, endDate);
+    const timestamp = date.getTime();
 
-logs.push({
-id: i+1,
-timestamp: date.getTime(),
-name: "Test Beer " + (i+1),
-brewery: BREWERIES[Math.floor(Math.random()*BREWERIES.length)],
-style: style,
-abv: spec.abv,
-carb: spec.carb,
-score: Number(randomScore(scoreBias).toFixed(1)),
-volume: [350,473,500][Math.floor(Math.random()*3)]
-});
+    const style = STYLE_KEYS[Math.floor(Math.random()*STYLE_KEYS.length)];
+    const spec = STYLE_SPECS[style];
 
-checks.push({
-id: i+1,
-timestamp: date.getTime(),
-isDry: Math.random() < dryRate,
-condition: generateCondition ? ["good","normal","bad"][Math.floor(Math.random()*3)] : null
-});
+    const log = {
+      timestamp,
+      type: "beer",
+      name: style,
+      kcal: -150,
+      style,
+      size: "350",
+      count: 1,
+      abv: spec.abv,
+      brewery: "Test Brewery",
+      brand: "Test Brand",
+      rating: Math.floor(Math.random()*6),
+      memo: "",
+      isCustom: false,
+      customType: null,
+      rawAmount: null,
+      id: idCounter++
+    };
 
-if(generateExercise){
-exercises.push({
-id: i+1,
-timestamp: date.getTime(),
-type: ["walk","run","gym"][Math.floor(Math.random()*3)],
-duration: Math.floor(Math.random()*90)+10
-});
-}
-}
+    logs.push(log);
 
-generatedData = { logs, checks, exercises };
+    const check = generateCheck(timestamp, idCounter++, dryRate, true);
+    checks.push(check);
 
-document.getElementById("output").value =
-JSON.stringify(generatedData, null, 2);
+    if(randomBool(0.4)){
+      const ex = generateExercise(timestamp, idCounter++);
+      exercises.push(ex);
+    }
+
+    const monthKey = new Date(timestamp).toISOString().slice(0,7);
+
+    if(!archivesMap[monthKey]){
+      archivesMap[monthKey] = {
+        logs: [],
+        checks: [],
+        exercises: []
+      };
+    }
+
+    archivesMap[monthKey].logs.push(log);
+    archivesMap[monthKey].checks.push(check);
+  }
+
+  exercises.forEach(ex=>{
+    const monthKey = new Date(ex.timestamp).toISOString().slice(0,7);
+    if(archivesMap[monthKey]){
+      archivesMap[monthKey].exercises.push(ex);
+    }
+  });
+
+  const archives = Object.keys(archivesMap).map(month =>
+    generateArchive(month, 
+      archivesMap[month].logs,
+      archivesMap[month].checks,
+      archivesMap[month].exercises
+    )
+  );
+
+  generatedData = {
+    version: 4,
+    exportedAt: Date.now(),
+    data: {
+      logs,
+      checks,
+      exercises,
+      archives
+    },
+    settings: {},
+    device: navigator.userAgent
+  };
+
+  document.getElementById("output").value =
+    JSON.stringify(generatedData, null, 2);
 
 });
 

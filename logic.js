@@ -43,12 +43,10 @@ export const Calc = {
         const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
 
         const k = 1000 / 4.186; // kJ -> kcal conversion roughly
-        
-        if(gender === 'male') {
-            return ((0.0481 * weight) + (0.0234 * height) - (0.0138 * age) - 0.4235) * k;
-        } else {
-            return ((0.0481 * weight) + (0.0234 * height) - (0.0138 * age) - 0.9708) * k;
-        }
+        const c = gender === 'male' ? -0.4235
+                : gender === 'female' ? -0.9708
+                : -0.69715; // 'other': 男女中間値
+        return ((0.0481 * weight) + (0.0234 * height) - (0.0138 * age) + c) * k;
     },
 
     /**
@@ -577,7 +575,9 @@ export const Calc = {
     getWeeklyAlcoholLimit: (profile) => {
         const weight = Number((profile && profile.weight) ? profile.weight : APP.DEFAULTS.WEIGHT);
         const gender = (profile && profile.gender) ? profile.gender : APP.DEFAULTS.GENDER;
-        const r = gender === 'male' ? 0.68 : 0.55;
+        const r = gender === 'male' ? 0.68
+               : gender === 'female' ? 0.55
+               : 0.615; // 'other': 男女中間値
 
         const baseDailyG = 20;  // 厚労省基準: 60kg成人男性で20g/日
         const baseWeight = 60;

@@ -454,7 +454,13 @@ export const Service = {
         }
 
         if (formData.weight) {
-            localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, formData.weight);
+            const newerWithWeight = await db.checks
+                .where('timestamp').above(end)
+                .filter(r => r.weight != null)
+                .first();
+            if (!newerWithWeight) {
+                localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, formData.weight);
+            }
         }
 
         await Service.recalcImpactedHistory(ts);

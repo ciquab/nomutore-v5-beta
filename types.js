@@ -12,7 +12,7 @@
  * @property {number} weight - 体重 (kg)
  * @property {number} height - 身長 (cm)
  * @property {number} age - 年齢
- * @property {string} gender - 性別 ('male' | 'female')
+ * @property {'male'|'female'|'other'} gender - 計算基準 ('male' | 'female' | 'other')
  */
 
 /**

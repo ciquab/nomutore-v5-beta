@@ -405,10 +405,14 @@
                         <input type="number" id="age-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm" placeholder="30">
                     </div>
                     <div>
-                        <label for="gender-input" class="text-xs font-medium text-gray-500 mb-1 block">性別</label>
+                        <div class="flex items-center gap-1 mb-1">
+                            <label for="gender-input" class="text-xs font-medium text-gray-500 block">計算基準</label>
+                            <i class="ph-duotone ph-info text-gray-400 text-sm cursor-help" title="基礎代謝量とアルコール上限の計算に使用します" aria-hidden="true"></i>
+                        </div>
                         <select id="gender-input" class="w-full bg-base-50 dark:bg-base-900 border-0 rounded-xl p-3 font-bold text-sm">
-                            <option value="male">男性</option>
-                            <option value="female">女性</option>
+                            <option value="male">男性の基準で計算</option>
+                            <option value="female">女性の基準で計算</option>
+                            <option value="other">その他 / 回答しない</option>
                         </select>
                     </div>
                 </div>

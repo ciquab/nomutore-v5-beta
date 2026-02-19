@@ -80,11 +80,12 @@ const WIZARD_STEPS = [
                         <input type="number" id="wiz-age" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="30">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">性別</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">計算基準</label>
                         <div class="relative">
-                            <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
-                                <option value="male">男性</option>
-                                <option value="female">女性</option>
+                            <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-base text-center">
+                                <option value="male">男性基準</option>
+                                <option value="female">女性基準</option>
+                                <option value="other">その他</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>

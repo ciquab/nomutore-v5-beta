@@ -231,7 +231,7 @@ const _executeRefreshUI = async (forcedTabId = null) => {
 
             // 重量・キャッシュ系
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
-            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
+            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}:${StateManager.heatmapOffset}`;
 
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;

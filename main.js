@@ -27,6 +27,7 @@ const registerActions = () => {
         // ========== UI系 ==========
         'ui:switchTab': (tabName) => UI.switchTab(tabName),
         'ui:switchCellarView': (viewName) => UI.switchCellarViewHTML(viewName),
+        'ui:switchStatsView': (viewName) => UI.switchStatsView(viewName),
         'ui:applyTheme': () => {
             UI.toggleTheme();
         },

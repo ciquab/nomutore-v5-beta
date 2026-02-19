@@ -139,16 +139,12 @@
             </div>
 
             <div class="flex items-center gap-1">
-                <button data-action="ui:openShareModal" aria-label="シェア" class="w-11 h-11 flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
-                <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i>
-            </button>
-
-            <button id="btn-help" data-action="modal:openHelp" aria-label="ヘルプ" class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
-                <i class="ph-bold ph-question text-lg" aria-hidden="true"></i>
-            </button>
-            <button data-action="ui:applyTheme" aria-label="テーマ切替" class="w-11 h-11 flex items-center justify-center rounded-full transition flex-shrink-0">
-                <i id="theme-icon" class="ph-fill ph-sun text-lg text-orange-500" aria-hidden="true"></i>
-            </button>
+                <button data-action="ui:applyTheme" aria-label="テーマ切替" class="w-11 h-11 flex items-center justify-center rounded-full transition flex-shrink-0">
+                    <i id="theme-icon" class="ph-fill ph-sun text-lg text-orange-500" aria-hidden="true"></i>
+                </button>
+                <button data-action="ui:switchTab" data-args='["settings"]' aria-label="設定" class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
+                    <i class="ph-bold ph-gear text-lg" aria-hidden="true"></i>
+                </button>
             </div>
             </div>
     </header>
@@ -156,7 +152,16 @@
     <main class="container mx-auto max-w-md pt-20 px-4 pb-32 hidden">
         
         <div id="tab-home" class="tab-content active space-y-6">
-            
+
+            <div class="flex items-center justify-end gap-1 px-1">
+                <button data-action="ui:openShareModal" aria-label="シェア" class="w-11 h-11 flex items-center justify-center rounded-full text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
+                    <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i>
+                </button>
+                <button id="btn-help" data-action="modal:openHelp" aria-label="ヘルプ" class="w-11 h-11 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition flex-shrink-0">
+                    <i class="ph-bold ph-question text-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+
             <section class="relative text-center pt-0 pb-0">
                 <div class="glass-panel rounded-2xl px-8 pt-16 pb-4 mb-6 relative overflow-hidden text-center main-display-glow transition-all duration-300">
                 <div class="absolute top-4 left-0 right-0 flex justify-center z-20">
@@ -205,42 +210,6 @@
             <section id="alcohol-meter-card" class="glass-panel p-4 rounded-2xl">
             </section>
 
-            <section class="glass-panel p-5 rounded-2xl">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2">
-                        <i class="ph-fill ph-fire text-orange-500" aria-hidden="true"></i> Streak
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <span id="streak-badge" class="text-[11px] font-bold px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full">x1.0</span>
-                        <span id="streak-count" class="text-xl font-black text-base-800 dark:text-white">0</span>
-                    </div>
-                </div>
-                
-                <!-- ★修正: 1週間カレンダーを追加 (ヒートマップの上) -->
-                <div class="mb-2 flex items-center justify-between px-1">
-                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Weekly</span>
-                    <span id="weekly-range-label" class="text-[11px] font-mono text-gray-500 dark:text-gray-400"></span>
-                </div>
-                <div id="weekly-calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
-                <!-- 追加ここまで -->
-
-                <div class="flex justify-between items-center mb-2 px-1">
-                    <button id="heatmap-prev" aria-label="前の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">◀</button>
-                    <span id="heatmap-period-label" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Loading...</span>
-                    <button id="heatmap-next" aria-label="次の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">▶</button>
-                </div>
-
-                <div id="heatmap-grid" class="grid grid-cols-7 gap-1.5 mb-4"></div>
-
-                <div class="h-40 w-full mt-4">
-                    <canvas id="balanceChart"></canvas>
-                </div>
-                <div id="chart-filters" role="group" aria-label="チャート期間フィルター" class="flex justify-center gap-2 mt-2">
-                    <button data-range="1w" aria-pressed="false" class="min-w-[44px] min-h-[44px]">1W</button>
-                    <button data-range="1m" aria-pressed="true" class="min-w-[44px] min-h-[44px]">1M</button>
-                    <button data-range="3m" aria-pressed="false" class="min-w-[44px] min-h-[44px]">3M</button>
-                </div>
-            </section>
         </div>
 
         <div id="tab-record" class="tab-content pb-24 hidden space-y-6">
@@ -319,6 +288,61 @@
         </div>
     </section>
 </div>
+        <div id="tab-stats" class="tab-content hidden space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-y-2 px-2 mb-1">
+                <div class="flex items-center gap-2 shrink-0">
+                    <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Stats</h2>
+                </div>
+                <div role="tablist" aria-label="Stats表示切替" class="flex min-w-0 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    <button id="btn-stats-activity" role="tab" aria-selected="true" aria-controls="view-stats-activity" data-action="ui:switchStatsView" data-args='["activity"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap bg-white dark:bg-gray-700 text-brand dark:text-indigo-300 shadow">アクティビティ</button>
+                    <button id="btn-stats-beer" role="tab" aria-selected="false" aria-controls="view-stats-beer" data-action="ui:switchStatsView" data-args='["beer"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">ビール</button>
+                </div>
+            </div>
+
+            <div id="view-stats-activity" role="tabpanel" aria-labelledby="btn-stats-activity" class="pb-24 px-1">
+                <section class="glass-panel p-5 rounded-2xl">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-bold flex items-center gap-2">
+                            <i class="ph-fill ph-fire text-orange-500" aria-hidden="true"></i> Streak
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <span id="streak-badge" class="text-[11px] font-bold px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full">x1.0</span>
+                            <span id="streak-count" class="text-xl font-black text-base-800 dark:text-white">0</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-2 flex items-center justify-between px-1">
+                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Weekly</span>
+                        <span id="weekly-range-label" class="text-[11px] font-mono text-gray-500 dark:text-gray-400"></span>
+                    </div>
+                    <div id="weekly-calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
+
+                    <div class="flex justify-between items-center mb-2 px-1">
+                        <button id="heatmap-prev" aria-label="前の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">◀</button>
+                        <span id="heatmap-period-label" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Loading...</span>
+                        <button id="heatmap-next" aria-label="次の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">▶</button>
+                    </div>
+
+                    <div id="heatmap-grid" class="grid grid-cols-7 gap-1.5 mb-4"></div>
+
+                    <div class="h-40 w-full mt-4">
+                        <canvas id="balanceChart"></canvas>
+                    </div>
+                    <div id="chart-filters" role="group" aria-label="チャート期間フィルター" class="flex justify-center gap-2 mt-2">
+                        <button data-range="1w" aria-pressed="false" class="min-w-[44px] min-h-[44px]">1W</button>
+                        <button data-range="1m" aria-pressed="true" class="min-w-[44px] min-h-[44px]">1M</button>
+                        <button data-range="3m" aria-pressed="false" class="min-w-[44px] min-h-[44px]">3M</button>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-stats-beer" role="tabpanel" aria-labelledby="btn-stats-beer" class="hidden pb-24 px-1">
+                <div class="flex items-center justify-center h-40">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+                </div>
+            </div>
+        </div>
+
         <div id="tab-cellar" class="tab-content space-y-4 hidden">
      <div class="flex flex-wrap items-center justify-between gap-y-2 px-2 mb-1">
         <div class="flex items-center gap-2 shrink-0">
@@ -328,8 +352,7 @@
             </button>
         </div>
                 <div role="tablist" aria-label="セラー表示切替" class="flex min-w-0 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                    <button id="btn-cellar-stats" role="tab" aria-selected="true" aria-controls="view-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap bg-white dark:bg-gray-700 text-brand dark:text-indigo-300 shadow">Stats</button>
-                    <button id="btn-cellar-logs" role="tab" aria-selected="false" aria-controls="view-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Logs</button>
+                    <button id="btn-cellar-logs" role="tab" aria-selected="true" aria-controls="view-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap bg-white dark:bg-gray-700 text-brand dark:text-indigo-300 shadow">Logs</button>
                     <button id="btn-cellar-collection" role="tab" aria-selected="false" aria-controls="view-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Collections</button>
                     <button id="btn-cellar-archives" role="tab" aria-selected="false" aria-controls="view-cellar-archives" data-action="ui:switchCellarView" data-args='["archives"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Archives</button>
                 </div>
@@ -364,12 +387,6 @@
                  </div>
 
                  <div id="edit-spacer" class="h-16 hidden"></div>
-             </div>
-
-             <div id="view-cellar-stats" role="tabpanel" aria-labelledby="btn-cellar-stats" class="hidden pb-24 px-1">
-                 <div class="flex items-center justify-center h-40">
-                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-                 </div>
              </div>
 
              <div id="view-cellar-collection" role="tabpanel" aria-labelledby="btn-cellar-collection" class="hidden pb-24 px-1"></div>
@@ -677,20 +694,20 @@
             <i class="ph-fill ph-house" aria-hidden="true"></i>
             <span class="label">Home</span>
         </button>
-        
+
         <button id="nav-tab-record" data-action="ui:switchTab" data-args='["record"]' class="nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400">
             <i class="ph-bold ph-plus-circle" aria-hidden="true"></i>
             <span class="label">Record</span>
         </button>
-        
+
+        <button id="nav-tab-stats" data-action="ui:switchTab" data-args='["stats"]' class="nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400">
+            <i class="ph-bold ph-chart-bar" aria-hidden="true"></i>
+            <span class="label">Stats</span>
+        </button>
+
         <button id="nav-tab-cellar" data-action="ui:switchTab" data-args='["cellar"]' class="nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400">
             <i class="ph-bold ph-books" aria-hidden="true"></i>
             <span class="label">Cellar</span>
-        </button>
-        
-        <button id="nav-tab-settings" data-action="ui:switchTab" data-args='["settings"]' class="nav-item p-3 rounded-full hover:bg-base-100 dark:hover:bg-base-800 text-gray-500 dark:text-gray-400">
-            <i class="ph-bold ph-gear" aria-hidden="true"></i>
-            <span class="label">Settings</span>
         </button>
 
     </div>

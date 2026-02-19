@@ -777,30 +777,13 @@ if (checkModal) {
         });
 
         bind('heatmap-prev', 'click', () => {
-    console.log('prev clicked');
-
-    StateManager.setHeatmapOffset(StateManager.heatmapOffset + 1);
-
-    console.log('offset now:', StateManager.heatmapOffset);
-
-    renderHeatmap(
-        StateManager.checks,
-        StateManager.allLogs,
-        Store.getProfile()
-    );
-});
-
+            StateManager.setHeatmapOffset(StateManager.heatmapOffset + 1);
+            refreshUI();
+        });
         bind('heatmap-next', 'click', () => {
-            if (StateManager.heatmapOffset > 0) {
+            if(StateManager.heatmapOffset > 0) {
                 StateManager.setHeatmapOffset(StateManager.heatmapOffset - 1);
-
-                if (StateManager.activeTab === 'home') {
-                    const profile = Store.getProfile();
-                    const allLogs = StateManager.allLogs;
-                    const checks = StateManager.checks;
-
-                    renderHeatmap(checks, allLogs, profile);
-                }
+                refreshUI();
             }
         });
 

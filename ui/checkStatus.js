@@ -28,7 +28,7 @@ export function renderCheckStatus(checks, logs) {
     let theme = {
         bg: "", darkBg: "",
         text: "text-gray-800", darkText: "dark:text-white",
-        icon: "text-gray-300", iconName: "ph-clipboard-text",
+        iconColor: "text-gray-300", iconName: "ph-clipboard-text",
         accent: "bg-gray-200"
     };
     
@@ -46,19 +46,19 @@ export function renderCheckStatus(checks, logs) {
                 theme = { 
                     bg: "bg-emerald-50", darkBg: "dark:bg-emerald-900/20",
                     text: "text-emerald-900", darkText: "dark:text-emerald-100",
-                    icon: "text-emerald-500", iconName: "ph-smiley"
+                    iconColor: "text-emerald-500", iconName: "ph-smiley"
                 };
             } else if (score >= 1) { 
                 theme = { 
                     bg: "bg-blue-50", darkBg: "dark:bg-blue-900/20",
                     text: "text-blue-900", darkText: "dark:text-blue-100",
-                    icon: "text-blue-500", iconName: "ph-activity"
+                    iconColor: "text-blue-500", iconName: "ph-activity"
                 };
             } else { 
                 theme = { 
                     bg: "bg-orange-50", darkBg: "dark:bg-orange-900/20",
                     text: "text-orange-900", darkText: "dark:text-orange-100",
-                    icon: "text-orange-500", iconName: "ph-warning"
+                    iconColor: "text-orange-500", iconName: "ph-warning"
                 };
             }
         } else {
@@ -66,7 +66,7 @@ export function renderCheckStatus(checks, logs) {
             theme = { 
                 bg: "bg-white", darkBg: "dark:bg-gray-800",
                 text: "text-gray-600", darkText: "dark:text-gray-300",
-                icon: "text-gray-300", iconName: "ph-calendar-check"
+                iconColor: "text-gray-300", iconName: "ph-calendar-check"
             };
         }
 
@@ -85,7 +85,7 @@ export function renderCheckStatus(checks, logs) {
     
     status.innerHTML = `
         <div class="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 duration-500">
-            <i class="ph-fill ${theme.iconName} text-5xl ${theme.icon}" aria-hidden="true"></i>
+            <i class="ph-fill ${theme.iconName} text-5xl ${theme.iconColor}" aria-hidden="true"></i>
         </div>
         
         <div class="relative z-10 flex flex-col h-full justify-between">

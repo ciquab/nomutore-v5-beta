@@ -56,7 +56,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css" integrity="sha384-bovbcpDBo0pTIhd7ws6ebPh1PG31ubAHcX2pv8Tcu5EtFHNl5FBciYFtS/e2SN66" crossorigin="anonymous">
 
-    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" integrity="sha384-6p9AefaqUhEVheRlj1mpAkbngHXy9mbYMrIdcIt4Jlc9lOLIablJq3bBsLOjGwZ7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" integrity="sha384-pPVoXE8ft+zxKtxIDDI7SfTK6y95NHm4qa+hKEg/hs8VkjW5IP+9/dGOPCbDpUPl" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" integrity="sha384-UVFvhZP7fWAENUPOoq61rJg5ef6QZW0k5vpAn71041/QS4STvUcJQCGNhStZLGx9" crossorigin="anonymous">
@@ -329,7 +328,7 @@
             </button>
         </div>
                 <div role="tablist" aria-label="セラー表示切替" class="flex min-w-0 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                    <button id="btn-cellar-stats" role="tab" aria-selected="true" aria-controls="view-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap">Stats</button>
+                    <button id="btn-cellar-stats" role="tab" aria-selected="true" aria-controls="view-cellar-stats" data-action="ui:switchCellarView" data-args='["stats"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-300 shadow">Stats</button>
                     <button id="btn-cellar-logs" role="tab" aria-selected="false" aria-controls="view-cellar-logs" data-action="ui:switchCellarView" data-args='["logs"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Logs</button>
                     <button id="btn-cellar-collection" role="tab" aria-selected="false" aria-controls="view-cellar-collection" data-action="ui:switchCellarView" data-args='["collection"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Collections</button>
                     <button id="btn-cellar-archives" role="tab" aria-selected="false" aria-controls="view-cellar-archives" data-action="ui:switchCellarView" data-args='["archives"]' class="px-2 py-1.5 text-[11px] font-bold rounded-md transition-all text-gray-500 whitespace-nowrap">Archives</button>
@@ -389,7 +388,7 @@
             <div class="glass-panel p-5 rounded-2xl mb-4">
                 <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
                     <i class="ph-fill ph-user-circle text-indigo-500" aria-hidden="true"></i>
-                    プロフィール & モード
+                    プロフィール & 設定
                 </h2>
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
@@ -445,13 +444,12 @@
         ※指定した終了日まで記録が続きます。<br>終了後はアーカイブされ、通常モードに戻るか選択できます。
     </p>
 </div>
-            </div>
+                <div class="border-t border-gray-100 dark:border-gray-800 my-5"></div>
 
-            <div class="glass-panel p-5 rounded-2xl mb-4">
-                <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
-                    <i class="ph-fill ph-gear text-gray-500" aria-hidden="true"></i>
+                <h3 class="text-xs font-bold mb-3 flex items-center gap-2 text-gray-400 dark:text-gray-500">
+                    <i class="ph-fill ph-gear" aria-hidden="true"></i>
                     環境設定
-                </h2>
+                </h3>
 
                 <div class="mb-4">
                     <label for="theme-input" class="text-xs font-medium text-gray-500 mb-1 block">テーマ</label>
@@ -554,39 +552,48 @@
                 </div>
             </div>
 
-<div class="glass-panel p-5 rounded-2xl mb-4 border border-indigo-100 dark:border-indigo-900/30">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-                        <i class="ph-fill ph-google-logo" aria-hidden="true"></i>
-                        Googleドライブ連携
-                    </h2>
-                    <span class="text-[11px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">おすすめ</span>
-                </div>
-                
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-4 font-medium">
-                    データをGoogleドライブに安全に保存します。<br>
-                    機種変更やデータ紛失に備えて、定期的に保存しましょう。
-                </p>
-
-                <div class="grid grid-cols-2 gap-3 mb-2">
-                    <button id="btn-cloud-backup" data-action="data:backupToCloud" class="py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95 flex flex-col items-center justify-center gap-1">
-                        <i class="ph-bold ph-cloud-arrow-up text-xl" aria-hidden="true"></i>
-                        <span>Backup</span>
-                    </button>
-                    
-                    <button id="btn-cloud-restore" data-action="data:restoreFromCloud" class="py-3 rounded-xl bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition active:scale-95 flex flex-col items-center justify-center gap-1">
-                        <i class="ph-bold ph-cloud-arrow-down text-xl" aria-hidden="true"></i>
-                        <span>Restore</span>
-                    </button>
-                </div>
-                <div id="cloud-status" class="text-[11px] text-center text-gray-500 dark:text-gray-400 font-mono h-4 mt-1"></div>
-            </div>
-
-            <div class="glass-panel p-5 rounded-2xl mb-4">
-                <h2 class="text-sm font-bold mb-4 text-red-500 flex items-center gap-2">
-                    <i class="ph-fill ph-warning-circle" aria-hidden="true"></i>
-                    データ管理
+<div class="glass-panel p-5 rounded-2xl mb-4">
+                <h2 class="text-sm font-bold mb-4 flex items-center gap-2">
+                    <i class="ph-fill ph-database text-indigo-500" aria-hidden="true"></i>
+                    データ
                 </h2>
+
+                <!-- Googleドライブ連携 -->
+                <div class="p-4 rounded-xl mb-4 bg-indigo-50/50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                            <i class="ph-fill ph-google-logo" aria-hidden="true"></i>
+                            Googleドライブ連携
+                        </h3>
+                        <span class="text-[11px] font-bold bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">おすすめ</span>
+                    </div>
+
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-3 font-medium">
+                        データをGoogleドライブに安全に保存します。<br>
+                        機種変更やデータ紛失に備えて、定期的に保存しましょう。
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-3 mb-2">
+                        <button id="btn-cloud-backup" data-action="data:backupToCloud" class="py-3 rounded-xl bg-indigo-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                            <i class="ph-bold ph-cloud-arrow-up text-xl" aria-hidden="true"></i>
+                            <span>Backup</span>
+                        </button>
+
+                        <button id="btn-cloud-restore" data-action="data:restoreFromCloud" class="py-3 rounded-xl bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900 font-bold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition active:scale-95 flex flex-col items-center justify-center gap-1">
+                            <i class="ph-bold ph-cloud-arrow-down text-xl" aria-hidden="true"></i>
+                            <span>Restore</span>
+                        </button>
+                    </div>
+                    <div id="cloud-status" class="text-[11px] text-center text-gray-500 dark:text-gray-400 font-mono h-4 mt-1"></div>
+                </div>
+
+                <!-- ローカル -->
+                <div class="border-t border-gray-100 dark:border-gray-800 my-4"></div>
+
+                <h3 class="text-xs font-bold mb-3 flex items-center gap-2 text-gray-400 dark:text-gray-500">
+                    <i class="ph-fill ph-hard-drives" aria-hidden="true"></i>
+                    ローカル
+                </h3>
                 <button data-action="data:exportCSV" data-args='["logs"]' class="w-full mb-3 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 font-bold text-xs hover:bg-gray-200 dark:hover:bg-gray-700 transition">
                     ログをエクスポート (CSV)
                 </button>
@@ -661,7 +668,7 @@
     </main>
 
 <nav id="bottom-nav" aria-label="メインナビゲーション" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-sm z-50">
-    <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center bg-white/80 dark:bg-base-900/80 backdrop-blur-xl shadow-float transition-all duration-300">
+    <div class="floating-nav rounded-full px-2 py-2 flex justify-between items-center transition-all duration-300">
         
         <button id="nav-tab-home" data-action="ui:switchTab" data-args='["home"]' class="nav-item nav-pill-active">
             <i class="ph-fill ph-house" aria-hidden="true"></i>
@@ -719,8 +726,8 @@
 
 <!-- Check Library Modal (Phase 1.5 New) -->
     <div id="check-library-modal" role="dialog" aria-modal="true" aria-labelledby="check-library-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-base-50 dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
-            <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center bg-white dark:bg-base-900 z-20">
+        <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
+            <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center z-20">
                 <div>
                     <h3 id="check-library-title" class="font-black text-lg">チェック項目ライブラリ</h3>
                     <p class="text-[11px] text-gray-500 dark:text-gray-400">毎日チェックする項目を選択</p>
@@ -765,7 +772,7 @@
     
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto" data-action="modal:close" data-args='["action-menu-modal"]'></div>
     
-    <div class="relative w-full sm:max-w-md bg-white dark:bg-base-900 rounded-t-[2rem] sm:rounded-[2rem] p-6 pb-10 transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto max-h-[90vh] flex flex-col shadow-2xl">
+    <div class="relative w-full sm:max-w-md bg-white dark:bg-base-900 rounded-t-3xl sm:rounded-3xl p-6 pb-10 transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto max-h-[90vh] flex flex-col shadow-2xl">
         
         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden"></div>
 
@@ -792,7 +799,7 @@
 
     <!-- Beer Modal -->
     <div id="beer-modal" role="dialog" aria-modal="true" aria-labelledby="beer-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
+        <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 id="beer-modal-title" class="font-bold text-lg">ビールを追加</h3>
                 <button data-action="modal:close" data-args='["beer-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
@@ -1014,7 +1021,7 @@
 
     <!-- Check Modal (Updated: UI Consistency) -->
     <div id="check-modal" role="dialog" aria-modal="true" aria-labelledby="check-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-        <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
+        <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="relative z-10 p-4 border-b border-base-100 dark:border-base-800 flex justify-between items-center bg-white/95 dark:bg-base-900/95 backdrop-blur-md">
                 <h3 id="check-modal-title" class="font-bold text-lg">デイリーチェック</h3>
                 <button data-action="modal:close" data-args='["check-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
@@ -1164,7 +1171,7 @@
 
         <!-- Exercise Modal -->
     <div id="exercise-modal" role="dialog" aria-modal="true" aria-labelledby="exercise-modal-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
+    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] transform transition-all scale-95 opacity-0 duration-200">
         
         <div class="relative z-10 p-4 border-b border-base-100 bg-white/95 dark:border-base-800 flex justify-between items-center bg-base-50 dark:bg-base-900">
             <h3 id="exercise-modal-title" class="font-bold text-lg">運動を追加</h3>
@@ -1227,7 +1234,7 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0" data-action="modal:close" data-args='["day-detail-modal"]'>
     </div>
 
-    <div class="relative w-full sm:max-w-md h-[85vh] sm:h-[80vh] bg-gray-50 dark:bg-base-900 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto">
+    <div class="relative w-full sm:max-w-md h-[85vh] sm:h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto">
 
         <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden z-20"></div>
 

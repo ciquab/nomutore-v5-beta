@@ -18,7 +18,8 @@ const _state = {
     heatmapOffset: 0,
     logLimit: 50,
     isLoadingLogs: false,
-    cellarViewMode: 'stats',
+    cellarViewMode: 'logs',
+    statsViewMode: 'activity',
     selectedDate: null
 };
 
@@ -36,6 +37,7 @@ export const StateManager = {
     get logLimit() { return _state.logLimit; },
     get isLoadingLogs() { return _state.isLoadingLogs; },
     get cellarViewMode() { return _state.cellarViewMode; },
+    get statsViewMode() { return _state.statsViewMode; },
     get selectedDate() { return _state.selectedDate; },
 
     // --- Internal Helper: 変更通知と自動UI更新 ---
@@ -118,10 +120,16 @@ export const StateManager = {
         StateManager._notify('isLoadingLogs');
     },
 
-    setCellarViewMode: (v) => { 
+    setCellarViewMode: (v) => {
         if (_state.cellarViewMode === v) return;
-        _state.cellarViewMode = v; 
+        _state.cellarViewMode = v;
         StateManager._notify('cellarViewMode');
+    },
+
+    setStatsViewMode: (v) => {
+        if (_state.statsViewMode === v) return;
+        _state.statsViewMode = v;
+        StateManager._notify('statsViewMode');
     },
 
     setSelectedDate: (v) => {

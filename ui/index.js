@@ -150,7 +150,8 @@ const setupEventBusListeners = () => {
 let _lastHomeRenderKey = '';
 // ★追加: データ変更検知用のキャッシュ（ショートカット再生成の抑制用）
 let _lastDataFingerprint = '';
-let _lastCellarRenderKey = ''; 
+let _lastCellarRenderKey = '';
+let _lastStatsRenderKey = '';
 let _latestErrorText = '';
 let _isErrorCopyHandlerBound = false;
 let _isSavingCheck = false;
@@ -162,11 +163,12 @@ const resetRenderCaches = () => {
     _lastHomeRenderKey = '';
     _lastDataFingerprint = '';
     _lastCellarRenderKey = '';
+    _lastStatsRenderKey = '';
 };
 
 // Cellarサブビュー切替の共通ヘルパー（DOMの表示切替のみ）
 const _applyCellarSubView = (mode) => {
-    ['logs', 'stats', 'collection', 'archives'].forEach(m => {
+    ['logs', 'collection', 'archives'].forEach(m => {
         const el = document.getElementById(`view-cellar-${m}`);
         const btn = document.getElementById(`btn-cellar-${m}`);
         if (el) el.classList.add('hidden');
@@ -183,6 +185,27 @@ const _applyCellarSubView = (mode) => {
         }
     });
     const activeEl = document.getElementById(`view-cellar-${mode}`);
+    if (activeEl) activeEl.classList.remove('hidden');
+};
+
+// Statsサブビュー切替の共通ヘルパー（DOMの表示切替のみ）
+const _applyStatsSubView = (mode) => {
+    ['activity', 'beer'].forEach(m => {
+        const el = document.getElementById(`view-stats-${m}`);
+        const btn = document.getElementById(`btn-stats-${m}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+            btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
+            if (m === mode) {
+                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
+                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+            } else {
+                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
+                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+            }
+        }
+    });
+    const activeEl = document.getElementById(`view-stats-${mode}`);
     if (activeEl) activeEl.classList.remove('hidden');
 };
 
@@ -228,16 +251,6 @@ const _executeRefreshUI = async (forcedTabId = null) => {
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
             renderAlcoholMeter(allLogs);
-
-            // 重量・キャッシュ系
-            const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
-            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}:${StateManager.heatmapOffset}`;
-
-            if (renderKey !== _lastHomeRenderKey) {
-                _lastHomeRenderKey = renderKey;
-                renderWeeklyAndHeatUp(allLogs, checks);
-                renderChart(allLogs, checks);
-            }
         }
 
         else if (activeTabId === 'record') {
@@ -245,9 +258,25 @@ const _executeRefreshUI = async (forcedTabId = null) => {
             // 既に作成されているため、ここでは何もしなくてOKです。
             // これでタブ切り替えが一瞬になります。
         }
+        else if (activeTabId === 'stats') {
+            const statsMode = StateManager.statsViewMode || 'activity';
+            const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
+            const statsKey = `${currentFingerprint}:${statsMode}:${currentTheme}:${StateManager.heatmapOffset}`;
+
+            if (statsKey !== _lastStatsRenderKey) {
+                _lastStatsRenderKey = statsKey;
+
+                if (statsMode === 'activity') {
+                    renderWeeklyAndHeatUp(allLogs, checks);
+                    renderChart(allLogs, checks);
+                } else if (statsMode === 'beer') {
+                    renderBeerStats(logs, allLogs, checks);
+                }
+            }
+        }
         else if (activeTabId === 'cellar') {
             // ★修正: データまたは表示モードが変わった時だけ再描画する
-            const cellarMode = StateManager.cellarViewMode || 'stats';
+            const cellarMode = StateManager.cellarViewMode || 'logs';
             const cellarKey = `${currentFingerprint}:${cellarMode}`;
 
             if (cellarKey !== _lastCellarRenderKey) {
@@ -255,8 +284,6 @@ const _executeRefreshUI = async (forcedTabId = null) => {
 
                 if (cellarMode === 'logs') {
                     await updateLogListView(false, allLogs);
-                } else if (cellarMode === 'stats') {
-                    renderBeerStats(logs, allLogs, checks);
                 } else if (cellarMode === 'collection') {
                     renderBeerCollection(logs, allLogs);
                 } else if (cellarMode === 'archives') {
@@ -910,7 +937,7 @@ if (checkModal) {
 
             toggleFabLike(
                 fabEl,
-                ['home', 'cellar'].includes(tabId) && !isOnboarding
+                ['home', 'cellar', 'stats'].includes(tabId) && !isOnboarding
             );
 
             toggleFabLike(
@@ -956,8 +983,14 @@ if (checkModal) {
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
             if (tabId === 'cellar') {
-                StateManager.setCellarViewMode('stats');
-                _applyCellarSubView('stats');
+                StateManager.setCellarViewMode('logs');
+                _applyCellarSubView('logs');
+            }
+
+            // Statsタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
+            if (tabId === 'stats') {
+                const currentStatsMode = StateManager.statsViewMode || 'activity';
+                _applyStatsSubView(currentStatsMode);
             }
         });
 
@@ -971,6 +1004,16 @@ if (checkModal) {
         }
         StateManager.setCellarViewMode(mode);
         _applyCellarSubView(mode);
+        // DOM切替を先に描画してからデータ取得・描画を実行
+        requestAnimationFrame(() => refreshUI());
+    },
+
+    switchStatsView: (mode) => {
+        if (typeof Feedback !== 'undefined') {
+            Feedback.uiSwitch();
+        }
+        StateManager.setStatsViewMode(mode);
+        _applyStatsSubView(mode);
         // DOM切替を先に描画してからデータ取得・描画を実行
         requestAnimationFrame(() => refreshUI());
     },

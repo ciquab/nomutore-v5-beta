@@ -777,16 +777,18 @@ if (checkModal) {
         });
 
         bind('heatmap-prev', 'click', () => {
-            StateManager.setHeatmapOffset(StateManager.heatmapOffset + 1);
+    console.log('prev clicked');
 
-            if (StateManager.activeTab === 'home') {
-                const profile = Store.getProfile();
-                const allLogs = StateManager.allLogs;
-                const checks = StateManager.checks;
+    StateManager.setHeatmapOffset(StateManager.heatmapOffset + 1);
 
-                renderHeatmap(checks, allLogs, profile);
-            }
-        });
+    console.log('offset now:', StateManager.heatmapOffset);
+
+    renderHeatmap(
+        StateManager.checks,
+        StateManager.allLogs,
+        Store.getProfile()
+    );
+});
 
         bind('heatmap-next', 'click', () => {
             if (StateManager.heatmapOffset > 0) {

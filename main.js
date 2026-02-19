@@ -60,12 +60,15 @@ const registerActions = () => {
         'data:exportCSV': (type) => DataManager.exportCSV(type),
         'data:exportJSON': () => DataManager.exportJSON(),
         'data:importJSON': () => DataManager.importJSON(),
-        'data:backupToCloud': () => DataManager.backupToCloud(),
-        'data:restoreFromCloud': () => DataManager.restoreFromCloud({
-            confirmRestore: ({ logsCount, checksCount }) =>
-                confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
-(既存データと重複するものはスキップされます)`)
-        }),
+        'data:backupToCloud': async () => {
+            await DataManager.backupToCloud();
+        },
+        'data:restoreFromCloud': async () => {
+            await DataManager.restoreFromCloud({
+                confirmRestore: ({ logsCount, checksCount }) =>
+                    confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？(既存データと重複するものはスキップされます)`)
+            });
+        },
         'data:triggerImportFile': () => UI.triggerFileInput('import-file'),
         
         // ========== Log系 ==========

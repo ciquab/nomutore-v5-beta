@@ -21,44 +21,19 @@ export const CloudManager = {
      * ライブラリの初期化 (index.js等から呼ぶ)
      */
     init: async () => {
-        return new Promise((resolve, reject) => {
-            // 1. Google Identity Services (GIS) の初期化
-            if (window.google) {
-                CloudManager.tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID,
-                    scope: SCOPES,
-                    callback: (tokenResponse) => {
-                        if (tokenResponse.error) {
-                            console.error('Auth Error:', tokenResponse);
-                            reject(tokenResponse);
-                        }
-                        CloudManager.accessToken = tokenResponse.access_token;
-                        console.log('GIS Auth Success');
-                    },
-                });
-            }
+    if (!window.google) {
+        throw new Error('Google Identity Services not loaded');
+    }
 
-            // 2. gapi (API Client) の初期化
-            if (window.gapi) {
-                gapi.load('client', async () => {
-                    try {
-                        await gapi.client.init({
-                            // API Keyは不要 (GCPの設定次第ですが、今回はTokenのみで通します)
-                            discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-                        });
-                        CloudManager.isInitialized = true;
-                        console.log('GAPI Initialized');
-                        resolve();
-                    } catch (err) {
-                        console.error('GAPI Init Error:', err);
-                        reject(err);
-                    }
-                });
-            } else {
-                reject('Google Libraries not loaded');
-            }
-        });
-    },
+    CloudManager.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: () => {}, // login時に上書きする
+    });
+
+    CloudManager.isInitialized = true;
+    console.log('CloudManager Initialized (GIS only)');
+},
 
     /**
      * ログイン処理（ポップアップを表示）
@@ -174,18 +149,32 @@ export const CloudManager = {
     /**
      * ヘルパー: バックアップファイルのIDを探す
      */
-    findBackupFileId: async () => {
-        // gapi.client.drive.files.list を使うのが楽
-        const response = await gapi.client.drive.files.list({
-            q: `name = '${BACKUP_FILE_NAME}' and trashed = false`,
-            fields: 'files(id, name)',
-            spaces: 'drive'
-        });
+   findBackupFileId: async () => {
+    if (!CloudManager.accessToken) await CloudManager.login();
 
-        const files = response?.result?.files;
-        if (files && files.length > 0) {
-            return files[0].id;
+    const query = encodeURIComponent(
+        `name = '${BACKUP_FILE_NAME}' and trashed = false`
+    );
+
+    const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)&spaces=drive`,
+        {
+            headers: {
+                'Authorization': 'Bearer ' + CloudManager.accessToken
+            }
         }
-        return null;
+    );
+
+    if (!response.ok) {
+        throw new Error(await response.text());
     }
+
+    const data = await response.json();
+    const files = data.files;
+
+    if (files && files.length > 0) {
+        return files[0].id;
+    }
+    return null;
+}
 };

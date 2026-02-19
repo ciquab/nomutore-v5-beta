@@ -47,19 +47,19 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="grid grid-cols-2 gap-4 mb-6">
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">スタイル</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">スタイル</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.style || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">ブルワリー</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">ブルワリー</span>
                     <p class="font-bold text-base-900 dark:text-base-100 truncate">${escapeHtml(log.brewery || '-')}</p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">分量</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">分量</span>
                     <p class="font-bold text-base-900 dark:text-base-100">${amount}ml <span class="text-xs opacity-50">(${log.count} cans)</span></p>
                 </div>
                 <div class="bg-base-50 dark:bg-base-800 p-3 rounded-xl">
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">評価</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">評価</span>
                     <div class="flex text-amber-400 text-sm">
                         ${'★'.repeat(log.rating || 0)}${'<span class="opacity-30">★</span>'.repeat(5 - (log.rating || 0))}
                     </div>
@@ -68,13 +68,13 @@ export const openLogDetail = (log) => {
             
             ${log.memo ? `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
-                <span class="text-[11px] font-bold text-gray-500 uppercase mb-1 block">メモ</span>
+                <span class="text-[11px] font-semibold text-gray-500 uppercase mb-1 block">メモ</span>
                 <p class="text-sm text-base-700 dark:text-base-300 leading-relaxed whitespace-pre-wrap">${escapeHtml(log.memo)}</p>
             </div>` : ''}
 
             ${log.flavorProfile ? `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6">
-                <span class="text-[11px] font-bold text-gray-500 uppercase mb-2 block">味わいプロファイル</span>
+                <span class="text-[11px] font-semibold text-gray-500 uppercase mb-2 block">味わいプロファイル</span>
                 <div class="h-48 w-full relative">
                     <canvas id="log-detail-radar"></canvas>
                 </div>
@@ -85,11 +85,11 @@ export const openLogDetail = (log) => {
         detailsHtml = `
             <div class="bg-base-50 dark:bg-base-800 p-4 rounded-xl mb-6 flex items-center justify-between">
                 <div>
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">時間</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">時間</span>
                     <p class="text-2xl font-black text-base-900 dark:text-base-100">${log.minutes} <span class="text-sm font-bold text-gray-500">min</span></p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[11px] font-bold text-gray-500 uppercase">返済カロリー</span>
+                    <span class="text-[11px] font-semibold text-gray-500 uppercase">返済カロリー</span>
                     <p class="text-2xl font-black text-emerald-500">+${Math.round(Math.abs(log.kcal))} <span class="text-sm font-bold text-emerald-500/50">kcal</span></p>
                 </div>
             </div>
@@ -135,7 +135,7 @@ export const openLogDetail = (log) => {
             <div class="p-4 border-t border-base-100 dark:border-base-800 bg-base-50/80 dark:bg-base-900/50 backdrop-blur-sm flex gap-3 shrink-0 pb-8 sm:pb-4">
                 
                 ${isBeer ? `
-                <button id="btn-detail-share" class="flex-1 py-3.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95 border border-indigo-100 dark:border-indigo-800/50">
+                <button id="btn-detail-share" class="flex-1 py-3.5 bg-indigo-50 dark:bg-indigo-900/30 text-brand dark:text-indigo-300 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition active:scale-95 border border-indigo-100 dark:border-indigo-800/50">
                     <i class="ph-bold ph-share-network text-lg" aria-hidden="true"></i> シェア
                 </button>
                 ` : ''}
@@ -331,7 +331,7 @@ export const openDayDetail = async (dateStr) => {
             const isBeer = log.type === 'beer';
             const iconBg = isBeer 
     ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500' 
-    : 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400';
+    : 'bg-indigo-100 text-brand dark:bg-indigo-900/30 dark:text-brand-light';
             const iconClass = isBeer ? 'ph-beer-bottle' : 'ph-person-simple-run';
 
             // ▼▼▼ ここを修正：表示テキストの作成ロジック ▼▼▼

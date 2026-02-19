@@ -277,9 +277,9 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
 
             const badge = document.createElement('div');
             badge.id = 'tank-custom-countdown';
-            badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
+            badge.className = "absolute -top-3 -right-2 bg-white/90 dark:bg-base-900/90 backdrop-blur-md text-brand dark:text-brand-light shadow-sm border border-indigo-100 dark:border-indigo-900 rounded-lg px-3 py-1.5 z-50 flex flex-col items-center min-w-[80px]";
             badge.innerHTML = `
-                <div class="text-[11px] font-bold uppercase tracking-wider leading-none mb-0.5 text-gray-500 dark:text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
+                <div class="text-[11px] font-semibold uppercase tracking-wider leading-none mb-0.5 text-gray-500 dark:text-gray-400">${escapeHtml(customLabel || 'Project')}</div>
                 <div class="text-xs font-black leading-none font-mono">
                     ${daysLeft >= 0 ? `${daysLeft}<span class="text-[11px] font-normal ml-0.5">days</span>` : 'END'}
                 </div>
@@ -322,9 +322,9 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
             }
             
             if (currentViewMode === 'alcohol') {
-                cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
+                cansText.className = "text-4xl font-black text-brand dark:text-brand-light drop-shadow-sm font-numeric";
                 minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
-                minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
+                minText.className = 'text-sm font-bold text-brand dark:text-brand-light';
                 msgText.textContent = latestPureAlcohol === 0 ? 'No alcohol yet' : 'Tap to switch view';
                 msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
             } else {
@@ -401,9 +401,9 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
             }
 
             if (currentViewMode === 'alcohol') {
-                cansText.className = "text-4xl font-black text-indigo-600 dark:text-indigo-400 drop-shadow-sm font-numeric";
+                cansText.className = "text-4xl font-black text-brand dark:text-brand-light drop-shadow-sm font-numeric";
                 minText.innerHTML = `<span class="text-[11px] font-normal opacity-70">Pure Alcohol (period)</span>`;
-                minText.className = 'text-sm font-bold text-indigo-600 dark:text-indigo-400';
+                minText.className = 'text-sm font-bold text-brand dark:text-brand-light';
                 msgText.textContent = 'Tap to switch view';
                 msgText.className = 'text-sm font-bold text-gray-500 dark:text-gray-400';
             } else {

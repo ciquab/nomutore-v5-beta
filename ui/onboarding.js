@@ -21,7 +21,7 @@ const WIZARD_STEPS = [
                 <button data-action="onboarding:start-new" 
                         class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl">
+                        <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl">
                             <i class="ph-fill ph-sparkle" aria-hidden="true"></i>
                         </div>
                         <div>
@@ -80,11 +80,12 @@ const WIZARD_STEPS = [
                         <input type="number" id="wiz-age" class="w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center" placeholder="30">
                     </div>
                     <div>
-                        <label class="text-xs font-bold text-gray-500 mb-1 block">性別</label>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">計算基準</label>
                         <div class="relative">
-                            <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-lg text-center">
-                                <option value="male">男性</option>
-                                <option value="female">女性</option>
+                            <select id="wiz-gender" class="appearance-none w-full h-[56px] bg-gray-50 dark:bg-gray-800 border-2 border-transparent focus:border-indigo-500 rounded-xl p-3 font-bold text-base text-center">
+                                <option value="male">男性基準</option>
+                                <option value="female">女性基準</option>
+                                <option value="other">その他</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
@@ -165,14 +166,14 @@ const WIZARD_STEPS = [
                         おすすめ
                     </div>
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center text-xl">
+                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/50 text-brand dark:text-brand-light rounded-full flex items-center justify-center text-xl">
                             <i class="ph-bold ph-arrows-clockwise" aria-hidden="true"></i>
                         </div>
                         <div>
                             <h4 class="font-black text-sm text-gray-900 dark:text-white">週次リセット</h4>
                             <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-tight">
                                 毎週月曜日に<span class="font-bold text-red-500">借金をゼロ</span>にリセット。<br>
-                                <span class="text-indigo-600 dark:text-indigo-400 font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
+                                <span class="text-brand dark:text-brand-light font-bold">「先週は飲みすぎたけど今週は頑張ろう！」</span><br>
                                 と気持ちを切り替えられます。
                             </p>
                         </div>
@@ -364,7 +365,7 @@ export const Onboarding = {
         }
 
         dots.innerHTML = WIZARD_STEPS.map((_, i) => 
-            `<div class="w-2 h-2 rounded-full transition-all ${i === index ? 'bg-indigo-600 w-4' : 'bg-gray-300'}"></div>`
+            `<div class="w-2 h-2 rounded-full transition-all ${i === index ? 'bg-brand w-4' : 'bg-gray-300'}"></div>`
         ).join('');
 
         // --- 2. ボタンの表示制御（ここに追加） ---
@@ -383,7 +384,7 @@ export const Onboarding = {
         if (index === WIZARD_STEPS.length - 1) {
             // 最後のステップ
             btnNext.textContent = "はじめる";
-            btnNext.className = "px-6 py-3 bg-indigo-600 text-white rounded-xl font-black shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 transition transform hover:scale-105 active:scale-95";
+            btnNext.className = "px-6 py-3 bg-brand text-white rounded-xl font-black shadow-lg shadow-brand/30 hover:bg-brand-dark transition transform hover:scale-105 active:scale-95";
         } else {
             // 中間のステップ
             btnNext.textContent = "次へ";

@@ -150,7 +150,7 @@ export const openCheckModal = async (dateStr = null) => {
 
             div.innerHTML = `
                 <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
-                    <input type="checkbox" id="check-${item.id}" class="rounded text-indigo-600 focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                    <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
                     <div class="flex flex-col">
                         <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
                             ${iconHtml} ${item.label}

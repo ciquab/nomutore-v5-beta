@@ -98,7 +98,7 @@ export function renderLiverRank(checks, logs) {
             <!-- Footer Section -->
             <div class="mt-2">
                 <div class="flex justify-between items-end mb-1">
-                    <span class="text-[11px] font-bold opacity-60 ${theme.text} ${theme.darkText}">Progress</span>
+                    <span class="text-[11px] font-semibold opacity-60 ${theme.text} ${theme.darkText}">Progress</span>
                     <span class="text-[11px] font-bold ${theme.text} ${theme.darkText}">${Math.round(progressPercent)}%</span>
                 </div>
                 <div class="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">

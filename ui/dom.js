@@ -558,7 +558,7 @@ export const showMessage = (text, type = 'info', action = null) => {
         btnId = `msg-btn-share-${Date.now()}`;
         // ボタンデザインもGlassmorphismに統一
         content += `
-            <button id="${btnId}" class="shrink-0 ml-2 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-95 flex items-center gap-1 border border-indigo-100 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/30">
+            <button id="${btnId}" class="shrink-0 ml-2 bg-indigo-50 dark:bg-indigo-500/20 text-brand dark:text-indigo-300 px-3 py-1.5 rounded-lg text-xs font-bold transition active:scale-95 flex items-center gap-1 border border-indigo-100 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/30">
                 <i class="ph-bold ph-share-network" aria-hidden="true"></i> Share
             </button>
         `;
@@ -723,7 +723,7 @@ export const showUpdateNotification = (waitingWorker) => {
                     <p class="text-[11px] text-gray-300">新しいバージョンが利用可能です</p>
                 </div>
             </div>
-            <button id="btn-sw-update" class="bg-white text-indigo-600 px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">
+            <button id="btn-sw-update" class="bg-white text-brand px-4 py-1.5 rounded-lg text-xs font-black hover:bg-gray-100 active:scale-95 transition">
                 UPDATE
             </button>
         </div>

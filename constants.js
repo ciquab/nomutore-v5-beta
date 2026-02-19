@@ -227,6 +227,33 @@ export const STYLE_METADATA = {
     'ノンアル': { color: 'green', icon: 'ph-duotone ph-plant' },
 };
 
+// ==========================================================================
+// Day Status Colors (Weekly Calendar & Heatmap)
+// 色ファミリー: emerald, cyan, blue, red, gray, indigo, orange (7色)
+// ※ sky を廃止し blue に統合済み
+// ==========================================================================
+
+export const DAY_STATUS_STYLES = {
+    calendar: {
+        rest_exercise:        { bg: 'bg-emerald-100 dark:bg-emerald-900/30 border-yellow-400 dark:border-yellow-500 border-2', text: 'text-yellow-600 dark:text-yellow-400' },
+        exercise:             { bg: 'bg-cyan-50 dark:bg-cyan-900/20 border-gray-300 dark:border-gray-500 border', text: 'text-cyan-600 dark:text-cyan-400' },
+        rest:                 { bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800 border', text: 'text-emerald-500' },
+        drink_exercise_success: { bg: 'bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 border', text: 'text-blue-600 dark:text-blue-400' },
+        drink_exercise:       { bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-600 border', text: 'text-blue-500 dark:text-blue-300' },
+        drink:                { bg: 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800 border', text: 'text-red-500' },
+        empty:                { bg: 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700', text: 'text-gray-500 dark:text-gray-400' },
+    },
+    heatmap: {
+        rest_exercise:        { bg: 'bg-emerald-600 border border-emerald-500 shadow-lg ring-2 ring-yellow-400 dark:ring-yellow-500 z-20', text: 'text-white' },
+        exercise:             { bg: 'bg-cyan-600 border border-cyan-500 shadow-md ring-1 ring-white/50 z-10', text: 'text-white' },
+        rest:                 { bg: 'bg-emerald-400 border border-emerald-500 shadow-sm', text: 'text-white font-bold' },
+        drink_exercise_success: { bg: 'bg-blue-500 border border-blue-400 shadow-md', text: 'text-white' },
+        drink_exercise:       { bg: 'bg-blue-400 border border-blue-300 shadow-sm', text: 'text-white font-bold' },
+        drink:                { bg: 'bg-red-400 border border-red-500 shadow-sm', text: 'text-white font-bold' },
+        empty:                { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-300' },
+    },
+};
+
 export const STYLE_COLOR_MAP = {};
 Object.keys(CALORIES.STYLES).forEach(style => {
     STYLE_COLOR_MAP[style] = STYLE_METADATA[style] ? STYLE_METADATA[style].color : 'gold';

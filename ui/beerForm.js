@@ -305,7 +305,7 @@ export const updateBeerKcalPreview = () => {
         const kcal = Calc.calculateBeerDebit(sizeMl, abv, carb, count);
 
         previewEl.innerHTML =
-            `${Math.round(kcal)} <span class="text-[11px] font-bold ml-1 text-gray-500 dark:text-gray-400">kcal</span>`;
+            `${Math.round(kcal)} <span class="text-[11px] font-semibold ml-1 text-gray-500 dark:text-gray-400">kcal</span>`;
 
     } catch (e) {
         console.error(e);
@@ -349,7 +349,7 @@ export const switchBeerInputTab = (mode) => {
     
     if(!preset || !custom || !btnPreset || !btnCustom) return;
 
-    const activeClasses = ['bg-indigo-600', 'text-white', 'shadow-sm'];
+    const activeClasses = ['bg-brand', 'text-white', 'shadow-sm'];
     const inactiveClasses = ['text-gray-500', 'hover:bg-base-200', 'dark:hover:bg-base-800'];
 
     if (mode === 'preset') {

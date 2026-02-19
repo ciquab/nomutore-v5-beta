@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>NOMUTORE テストデータ生成（constants同期版）</title>
+<style>
+body { font-family: sans-serif; padding:20px; background:#f5f5f5;}
+.section { background:white; padding:15px; margin-bottom:15px; border-radius:8px;}
+label { display:block; margin-top:8px;}
+input, select { width:100%; padding:6px; margin-top:3px;}
+button { margin-top:10px; padding:10px; }
+textarea { width:100%; height:250px; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<h1>NOMUTORE テストデータ生成（constants同期）</h1>
+
+<div class="section">
+<h2>基本設定</h2>
+
+<label>生成ログ数
+<input type="number" id="logCount" value="200">
+</label>
+
+<label>開始日
+<input type="date" id="startDate">
+</label>
+
+<label>終了日
+<input type="date" id="endDate">
+</label>
+
+</div>
+
+<div class="section">
+<h2>分布設定</h2>
+
+<label>スコア傾向
+<select id="scoreBias">
+<option value="normal">通常</option>
+<option value="high">高評価偏重</option>
+<option value="low">低評価偏重</option>
+</select>
+</label>
+
+<label>休肝日率（0〜1）
+<input type="number" step="0.1" id="dryRate" value="0.3">
+</label>
+
+<label>体調記録生成
+<select id="generateCondition">
+<option value="yes">生成する</option>
+<option value="no">生成しない</option>
+</select>
+</label>
+
+<label>運動ログ生成
+<select id="generateExercise">
+<option value="yes">生成する</option>
+<option value="no">生成しない</option>
+</select>
+</label>
+
+</div>
+
+<button id="generateBtn">生成</button>
+<button id="downloadBtn">JSONダウンロード</button>
+<button id="copyBtn">コピー</button>
+
+<textarea id="output"></textarea>
+
+<script type="module">
+
+import { STYLE_SPECS } from './constants.js';
+
+const STYLE_KEYS = Object.keys(STYLE_SPECS);
+
+const BREWERIES = [
+"A Brewing","B Craft","C Beer","D Brewery",
+"E Works","F Lab","G Factory"
+];
+
+let generatedData = null;
+
+function randomDate(start, end){
+return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+}
+
+function randomScore(bias){
+if(bias === "high") return 3.5 + Math.random()*1.5;
+if(bias === "low") return Math.random()*3;
+return Math.random()*5;
+}
+
+document.getElementById("generateBtn").addEventListener("click", () => {
+
+const logCount = parseInt(document.getElementById("logCount").value);
+const startDate = new Date(document.getElementById("startDate").value);
+const endDate = new Date(document.getElementById("endDate").value);
+const scoreBias = document.getElementById("scoreBias").value;
+const dryRate = parseFloat(document.getElementById("dryRate").value);
+const generateCondition = document.getElementById("generateCondition").value === "yes";
+const generateExercise = document.getElementById("generateExercise").value === "yes";
+
+const logs = [];
+const checks = [];
+const exercises = [];
+
+for(let i=0;i<logCount;i++){
+
+const date = randomDate(startDate, endDate);
+
+const style = STYLE_KEYS[Math.floor(Math.random()*STYLE_KEYS.length)];
+const spec = STYLE_SPECS[style];
+
+logs.push({
+id: i+1,
+timestamp: date.getTime(),
+name: "Test Beer " + (i+1),
+brewery: BREWERIES[Math.floor(Math.random()*BREWERIES.length)],
+style: style,
+abv: spec.abv,
+carb: spec.carb,
+score: Number(randomScore(scoreBias).toFixed(1)),
+volume: [350,473,500][Math.floor(Math.random()*3)]
+});
+
+checks.push({
+id: i+1,
+timestamp: date.getTime(),
+isDry: Math.random() < dryRate,
+condition: generateCondition ? ["good","normal","bad"][Math.floor(Math.random()*3)] : null
+});
+
+if(generateExercise){
+exercises.push({
+id: i+1,
+timestamp: date.getTime(),
+type: ["walk","run","gym"][Math.floor(Math.random()*3)],
+duration: Math.floor(Math.random()*90)+10
+});
+}
+}
+
+generatedData = { logs, checks, exercises };
+
+document.getElementById("output").value =
+JSON.stringify(generatedData, null, 2);
+
+});
+
+document.getElementById("downloadBtn").addEventListener("click", () => {
+if(!generatedData) return alert("先に生成してください");
+
+const blob = new Blob([JSON.stringify(generatedData,null,2)],{
+type:"application/json"
+});
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = "nomutore_test_backup.json";
+a.click();
+});
+
+document.getElementById("copyBtn").addEventListener("click", () => {
+const textarea = document.getElementById("output");
+textarea.select();
+document.execCommand("copy");
+alert("コピーしました");
+});
+
+</script>
+</body>
+</html>

@@ -231,7 +231,7 @@ const _executeRefreshUI = async (forcedTabId = null) => {
 
             // 重量・キャッシュ系
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
-            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}:${StateManager.heatmapOffset}`;
+            const renderKey = `${allLogs.length}:${logs.length}:${balance}:${checks.length}:${currentTheme}`;
 
             if (renderKey !== _lastHomeRenderKey) {
                 _lastHomeRenderKey = renderKey;
@@ -778,12 +778,19 @@ if (checkModal) {
 
         bind('heatmap-prev', 'click', () => {
             StateManager.setHeatmapOffset(StateManager.heatmapOffset + 1);
-            refreshUI();
+
+            if (StateManager.activeTab === 'home') {
+            renderHeatmap();
+            }
         });
+
         bind('heatmap-next', 'click', () => {
-            if(StateManager.heatmapOffset > 0) {
+            if (StateManager.heatmapOffset > 0) {
                 StateManager.setHeatmapOffset(StateManager.heatmapOffset - 1);
-                refreshUI();
+            
+                if (StateManager.activeTab === 'home') {
+                    renderHeatmap();
+                }
             }
         });
 

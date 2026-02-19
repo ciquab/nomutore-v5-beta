@@ -543,13 +543,13 @@ export const showMessage = (text, type = 'info', action = null) => {
     // 3. コンテナのクラス設定 (角丸、影、アニメーション)
     box.className = `fixed top-6 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300
                      pl-4 pr-4 py-3 rounded-2xl shadow-xl shadow-black/5 backdrop-blur-md border
-                     flex items-center gap-3 min-w-[280px] max-w-[90vw]
+                     flex items-start gap-3 min-w-[280px] max-w-[90vw]
                      ${style.bg} ${style.border}`;
 
     // 4. HTMLコンテンツ生成
     let content = `
-        <div class="shrink-0 flex items-center justify-center">${style.icon}</div>
-        <span class="text-sm font-bold ${style.text} truncate flex-1">${cleanText}</span>
+        <div class="shrink-0 flex items-center justify-center mt-0.5">${style.icon}</div>
+        <span class="text-sm font-bold ${style.text} break-words flex-1 min-w-0">${cleanText}</span>
     `;
 
     // 5. シェアボタンの追加 (Action Logic)

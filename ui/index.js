@@ -268,7 +268,7 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 _lastStatsRenderKey = statsKey;
 
                 if (statsMode === 'activity') {
-                    renderWeeklyAndHeatUp(allLogs, checks);
+                    renderHeatmap(checks, allLogs, Store.getProfile());
                     renderChart(allLogs, checks);
                     renderHealthInsights(allLogs, checks);
                 } else if (statsMode === 'beer') {
@@ -1016,6 +1016,7 @@ if (checkModal) {
         if (typeof Feedback !== 'undefined') {
             Feedback.uiSwitch();
         }
+        _lastStatsRenderKey = ''; // サブタブ切替時に再描画を強制
         StateManager.setStatsViewMode(mode);
         _applyStatsSubView(mode);
         // DOM切替を先に描画してからデータ取得・描画を実行

@@ -107,7 +107,6 @@ export function renderChart(logs, checks) {
 
         const isDark = document.documentElement.classList.contains('dark');
         const textColor = isDark ? '#9CA3AF' : '#6B7280';
-        const gridColor = isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(229, 231, 235, 0.5)';
 
         const newChart = new Chart(ctxCanvas, {
             type: 'bar',
@@ -116,21 +115,19 @@ export function renderChart(logs, checks) {
                 datasets: [
                     {
                         label: '返済',
-                        // ★修正3: 純粋な稼ぎ分を表示
-                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.earned, baseEx, profile))), 
-                        backgroundColor: '#10B981', 
+                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.earned, baseEx, profile))),
+                        backgroundColor: 'rgba(16, 185, 129, 0.7)',
                         borderRadius: 4,
-                        stack: '0', 
+                        stack: '0',
                         order: 2,
                         yAxisID: 'y'
                     },
                     {
                         label: '借金',
-                        // ★修正4: 純粋な消費（飲酒）分を表示。負の値なのでグラフは下向きに伸びます
-                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.consumed, baseEx, profile))), 
-                        backgroundColor: '#EF4444', 
+                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.consumed, baseEx, profile))),
+                        backgroundColor: 'rgba(239, 68, 68, 0.5)',
                         borderRadius: 4,
-                        stack: '0', 
+                        stack: '0',
                         order: 3,
                         yAxisID: 'y'
                     },
@@ -139,31 +136,33 @@ export function renderChart(logs, checks) {
                         label: '体重',
                         data: dataArray.map(d => d.weight),
                         borderColor: '#6366F1',
-                        backgroundColor: '#6366F1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         borderWidth: 2,
                         pointRadius: 3,
+                        pointBackgroundColor: '#6366F1',
                         tension: 0.3,
                         yAxisID: 'y1',
                         order: 1,
-                        spanGaps: true
+                        spanGaps: true,
+                        fill: false
                     }
-                ] 
+                ]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    x: { 
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: {
                         stacked: true,
-                        ticks: { color: textColor, font: { size: 10 } },
+                        ticks: { color: textColor, font: { size: 9, weight: 'bold' }, maxRotation: 45 },
                         grid: { display: false }
-                    }, 
-                    y: { 
-                        beginAtZero: true, // 0を基準に上下に伸びる
+                    },
+                    y: {
+                        beginAtZero: true,
                         position: 'left',
-                        title: { display: false },
-                        ticks: { color: textColor, font: { size: 10 } },
-                        grid: { color: gridColor }
+                        ticks: { color: textColor, font: { size: 9 }, callback: v => `${v}min` },
+                        grid: { color: isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(0,0,0,0.05)' }
                     },
                     y1: {
                         type: 'linear',
@@ -172,20 +171,28 @@ export function renderChart(logs, checks) {
                         min: weightMin,
                         max: weightMax,
                         grid: { drawOnChartArea: false },
-                        ticks: { color: '#6366F1', font: { size: 10, weight: 'bold' } }
+                        ticks: { color: '#6366F1', font: { size: 9, weight: 'bold' }, callback: v => `${v}kg` }
                     }
-                }, 
-                plugins: { 
-                    legend: { 
-                        display: true, 
-                        position: 'bottom', 
-                        labels: { color: textColor, boxWidth: 10, font: { size: 10 } } 
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: { color: textColor, boxWidth: 8, padding: 12, font: { size: 9, weight: 'bold' } }
                     },
                     tooltip: {
-                        mode: 'index',
-                        intersect: false
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        bodyFont: { size: 11, weight: 'bold' },
+                        padding: 8,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: (ctx) => {
+                                if (ctx.dataset.label === '体重') return `体重: ${ctx.raw ?? '-'}kg`;
+                                return `${ctx.dataset.label}: ${ctx.raw ?? 0}min`;
+                            }
+                        }
                     }
-                } 
+                }
             }
         });
         

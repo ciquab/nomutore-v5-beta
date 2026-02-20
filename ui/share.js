@@ -238,12 +238,14 @@ const openPhotoComposer = (imgSrc, log) => {
             grid.style.aspectRatio = editState.aspectRatio;
 
             ratioBtns.forEach(b => {
-                const isActive = b === btn;
-                b.classList.toggle('bg-brand', isActive);
-                b.classList.toggle('text-white', isActive);
-                b.classList.toggle('bg-gray-800', !isActive);
-                b.classList.toggle('text-gray-500 dark:text-gray-400', !isActive);
-            });
+                const isActive = b === btn;
+                b.classList.toggle('bg-brand', isActive);
+                b.classList.toggle('text-white', isActive);
+                b.classList.toggle('bg-gray-800', !isActive);
+                // ★2行に分割します
+                b.classList.toggle('text-gray-500', !isActive); 
+                b.classList.toggle('dark:text-gray-400', !isActive);
+            });
             Feedback.tap();
         });
     });
@@ -257,13 +259,15 @@ const openPhotoComposer = (imgSrc, log) => {
             canvas.classList.add(editState.fontClass);
 
             fontBtns.forEach(b => {
-                const isActive = b === btn;
-                b.classList.toggle('bg-brand', isActive);
-                b.classList.toggle('text-white', isActive);
-                b.classList.toggle('border-indigo-500', isActive);
-                b.classList.toggle('bg-gray-800', !isActive);
-                b.classList.toggle('text-gray-500 dark:text-gray-400', !isActive);
-            });
+                const isActive = b === btn;
+                b.classList.toggle('bg-brand', isActive);
+                b.classList.toggle('text-white', isActive);
+                b.classList.toggle('border-indigo-500', isActive);
+                b.classList.toggle('bg-gray-800', !isActive);
+                // ★2行に分割します
+                b.classList.toggle('text-gray-500', !isActive);
+                b.classList.toggle('dark:text-gray-400', !isActive);
+            });
             Feedback.tap();
         });
     });

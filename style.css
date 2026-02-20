@@ -23,6 +23,16 @@ body {
 .log-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 2px; }
 .dark .log-container::-webkit-scrollbar-thumb { background-color: #475569; }
 
+
+/* --- Empty State (Phase 1 unified template) --- */
+.empty-state {
+    text-align: center;
+}
+
+.empty-state p + p {
+    margin-top: 0.25rem;
+}
+
 /* --- Animations --- */
 .tab-content {
     display: none;

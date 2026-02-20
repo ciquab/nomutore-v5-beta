@@ -732,9 +732,10 @@ function renderBeerList(beers) {
 
     if (!beers || beers.length === 0) {
         listEl.innerHTML = `
-            <div class="text-center py-10 opacity-50">
+            <div class="empty-state flex flex-col items-center justify-center py-10 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
-                <p class="text-xs font-bold">該当するビールがありません</p>
+                <p class="text-sm font-bold">該当するビールがありません</p>
+                <p class="text-xs opacity-60">フィルター条件を変更してお試しください</p>
             </div>`;
         return;
     }
@@ -864,9 +865,10 @@ function renderBreweryLeaderboard(breweryStats) {
 
     if (entries.length === 0) {
         listEl.innerHTML = `
-            <div class="text-center py-8 opacity-50">
+            <div class="empty-state flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-warehouse text-3xl mb-2" aria-hidden="true"></i>
-                <p class="text-xs font-bold">ブルワリーデータがまだありません</p>
+                <p class="text-sm font-bold">ブルワリーデータがまだありません</p>
+                <p class="text-xs opacity-60">ビールを記録すると自動で集計されます</p>
             </div>`;
         return;
     }

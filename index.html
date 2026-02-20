@@ -1472,6 +1472,16 @@
                                 </div>
                             </li>
                         </ul>
+                        <div class="flex flex-col gap-1.5 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 text-[11px] text-gray-500 dark:text-gray-400">
+                            <div class="flex items-center gap-2">
+                                <i class="ph-fill ph-share-network text-pink-400"></i>
+                                <span><strong>左ボタン</strong>: 現在のランク・収支画像をSNSでシェア</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="ph-fill ph-question text-indigo-400"></i>
+                                <span><strong>右ボタン</strong>: このユーザーガイドを開く</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
@@ -1525,43 +1535,11 @@
 
                     <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
                         <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
-                            <i class="ph-duotone ph-calendar-blank text-indigo-500 text-lg" aria-hidden="true"></i> カレンダー & ヒートマップ
+                            <i class="ph-fill ph-fire text-orange-500 text-lg" aria-hidden="true"></i> ストリーク & 週間カレンダー
                         </h5>
                         <div class="text-xs text-gray-600 dark:text-gray-300 space-y-2">
-                            <p>
-                                デイリーチェックや飲酒・運動の記録に応じてアイコンと色が変化します。日付を<strong>タップ</strong>すると詳細画面が開き、過去ログの確認・修正・追加登録が可能です。
-                            </p>
-                            <div class="flex items-center gap-2 text-[11px]">
-                                <span class="px-1.5 py-0.5 bg-indigo-100 text-brand rounded font-bold">Weekly</span>
-                                <span>直近1週間の詳細ログ</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-[11px]">
-                                <span class="px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded font-bold">Heatmap</span>
-                                <span>長期的な習慣の可視化</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
-                        <h5 class="font-bold text-sm mb-2 flex items-center gap-2">
-                            <i class="ph-duotone ph-chart-bar text-indigo-500 text-lg" aria-hidden="true"></i> 収支 & 体重チャート
-                        </h5>
-                        <div class="text-xs text-gray-600 dark:text-gray-300">
-                            <p class="mb-2 leading-tight">日々のカロリー収支と体重の変化をグラフで確認できます。</p>
-                            <div class="flex flex-col gap-1.5">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                    <span><strong>緑:</strong> 運動（貯金）</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-                                    <span><strong>赤:</strong> 飲酒（借金）</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2.5 h-0.5 bg-indigo-500 shrink-0"></span>
-                                    <span><strong>紫:</strong> 体重推移</span>
-                                </div>
-                            </div>
+                            <p>「休肝日」か「完済日」を連続で達成すると<strong>ストリーク</strong>が積み上がり、継続ボーナス倍率（x1.1〜x1.3）が上昇します。</p>
+                            <p>直近1週間の<strong>週間カレンダー</strong>では、各日の飲酒・運動・チェック結果をアイコンで確認できます。日付を<strong>タップ</strong>すると詳細画面が開き、過去ログの確認・修正・追加登録が可能です。</p>
                         </div>
                     </div>
 
@@ -1628,6 +1606,78 @@
 
                 </div>
             </section>
+
+            <section>
+                <h4 id="help-stats" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="ph-duotone ph-chart-line" aria-hidden="true"></i> 統計 (Stats)
+                </h4>
+                <div class="space-y-3">
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-fill ph-calendar-dots text-indigo-500" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">活動カレンダー（Activity）</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                月単位の<strong>ヒートマップ</strong>で長期的な活動パターンを可視化。◀▶ボタンで月をさかのぼれます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-fill ph-scales text-emerald-500" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">カロリーバランス推移（Activity）</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                日々のカロリー収支と体重変化をグラフで確認。1W・1M・3Mでレンジを切り替えられます。
+                            </p>
+                            <div class="flex flex-col gap-1 mt-2">
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                    <span><strong>緑:</strong> 運動（貯金）</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+                                    <span><strong>赤:</strong> 飲酒（借金）</span>
+                                </div>
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                                    <span class="w-2.5 h-0.5 bg-indigo-500 shrink-0"></span>
+                                    <span><strong>紫:</strong> 体重推移</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-fill ph-heartbeat text-rose-500" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">ヘルスインサイト（Activity）</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                <strong>飲んだ日 vs 休肝日</strong>でのデイリーチェック達成率を比較。直近14日間の各項目の推移グラフも確認できます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-beer-bottle text-amber-600 dark:text-amber-500" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">ビール統計（Beer）</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                期間内の総飲酒量・銘柄数・スタイル傾向をドーナツチャートで確認。「今期」「30日」「90日」「全期間」でレンジを切り替えられます。
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
             <section>
     <h4 id="help-cellar" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
         <i class="ph-duotone ph-books" aria-hidden="true"></i> セラー (Cellar)
@@ -1635,18 +1685,6 @@
     
     <div class="space-y-3">
         
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-duotone ph-chart-pie-slice text-brand dark:text-brand-light" aria-hidden="true"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">分析 (Stats)</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    期間内の総飲酒量や銘柄数を集計。スタイル傾向のチャートに加え、<strong>ヘルスインサイト</strong>（飲んだ日 vs 休肝日のチェック項目達成率比較、直近14日間の推移）を確認できます。
-                </p>
-            </div>
-        </div>
-
         <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
             <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
                 <i class="ph-duotone ph-list-dashes text-brand dark:text-brand-light" aria-hidden="true"></i>
@@ -1689,9 +1727,14 @@
                 <h4 id="help-settings" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-gear" aria-hidden="true"></i> 設定 (Settings)
                 </h4>
-                
+
                 <div class="space-y-3">
-                    
+
+                    <div class="flex items-center gap-3 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-[11px] text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-100 dark:border-indigo-800/40">
+                        <i class="ph-fill ph-gear text-lg shrink-0"></i>
+                        <span>画面上部ヘッダー右側の <strong>⚙ アイコン</strong> をタップして設定を開きます</span>
+                    </div>
+
                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-xl shrink-0">
                             <i class="ph-duotone ph-user-circle text-orange-600 dark:text-orange-500" aria-hidden="true"></i>

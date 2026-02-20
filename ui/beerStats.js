@@ -49,7 +49,7 @@ const renderRatingStars = (score) => {
  * @param {Array} [checks] - 全てのチェックデータ（Health Insights用）
  */
 export function renderBeerStats(periodLogs, allLogs, checks) {
-    const container = document.getElementById('view-cellar-stats');
+    const container = document.getElementById('view-stats-beer');
     if (!container) return;
 
     // 1. 集計計算
@@ -93,15 +93,11 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
             </div>
 
-            <div id="health-insights-section" class="space-y-4"></div>
         </div>
     `;
 
     // チャート描画（全期間のスタイル傾向）
     renderStyleChart(allStats.styleCounts);
-
-    // Health Insights 描画
-    renderHealthInsights(allLogs, checks || []);
 }
 
 /**
@@ -238,7 +234,7 @@ let insightsChart = null;
  * @param {Array} allLogs - 全期間ログ
  * @param {Array} checks - 全期間チェックデータ
  */
-function renderHealthInsights(allLogs, checks) {
+export function renderHealthInsights(allLogs, checks) {
     const section = document.getElementById('health-insights-section');
     if (!section) return;
 

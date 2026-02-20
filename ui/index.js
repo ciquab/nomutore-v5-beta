@@ -14,7 +14,7 @@ import { renderAlcoholMeter } from './alcoholMeter.js';
 import { renderWeeklyAndHeatUp, renderHeatmap } from './weekly.js';
 import { renderChart } from './chart.js';
 import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs } from './logList.js';
-import { renderBeerStats, renderBeerCollection } from './beerStats.js';
+import { renderBeerStats, renderBeerCollection, renderHealthInsights } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
 import { Share } from './share.js';
@@ -251,6 +251,7 @@ const _executeRefreshUI = async (forcedTabId = null) => {
             renderLiverRank(checks, allLogs);
             renderCheckStatus(checks, logs);
             renderAlcoholMeter(allLogs);
+            renderWeeklyAndHeatUp(allLogs, checks);
         }
 
         else if (activeTabId === 'record') {
@@ -269,6 +270,7 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 if (statsMode === 'activity') {
                     renderWeeklyAndHeatUp(allLogs, checks);
                     renderChart(allLogs, checks);
+                    renderHealthInsights(allLogs, checks);
                 } else if (statsMode === 'beer') {
                     renderBeerStats(logs, allLogs, checks);
                 }
@@ -983,12 +985,14 @@ if (checkModal) {
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
             if (tabId === 'cellar') {
+                _lastCellarRenderKey = ''; // タブ切替時に再描画を強制
                 StateManager.setCellarViewMode('logs');
                 _applyCellarSubView('logs');
             }
 
             // Statsタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
             if (tabId === 'stats') {
+                _lastStatsRenderKey = ''; // タブ切替時に再描画を強制
                 const currentStatsMode = StateManager.statsViewMode || 'activity';
                 _applyStatsSubView(currentStatsMode);
             }

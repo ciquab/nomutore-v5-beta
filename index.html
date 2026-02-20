@@ -315,23 +315,31 @@
 
             <div id="view-stats-activity" role="tabpanel" aria-labelledby="btn-stats-activity" class="pb-24 px-1 space-y-4">
                 <section class="glass-panel p-5 rounded-2xl">
+                    <h3 class="text-sm font-bold flex items-center gap-2 mb-4">
+                        <i class="ph-fill ph-calendar-dots text-indigo-500" aria-hidden="true"></i> 活動カレンダー
+                    </h3>
                     <div class="flex justify-between items-center mb-2 px-1">
                         <button id="heatmap-prev" aria-label="前の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">◀</button>
                         <span id="heatmap-period-label" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">Loading...</span>
                         <button id="heatmap-next" aria-label="次の期間" class="min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-500 dark:text-gray-400">▶</button>
                     </div>
+                    <div id="heatmap-grid" class="grid grid-cols-7 gap-1.5"></div>
+                </section>
 
-                    <div id="heatmap-grid" class="grid grid-cols-7 gap-1.5 mb-4"></div>
-
-                    <div class="h-40 w-full mt-4">
+                <section class="glass-panel p-5 rounded-2xl">
+                    <h3 class="text-sm font-bold flex items-center gap-2 mb-4">
+                        <i class="ph-fill ph-scales text-emerald-500" aria-hidden="true"></i> カロリーバランス推移
+                    </h3>
+                    <div class="h-56 w-full">
                         <canvas id="balanceChart"></canvas>
                     </div>
-                    <div id="chart-filters" role="group" aria-label="チャート期間フィルター" class="flex justify-center gap-2 mt-2">
+                    <div id="chart-filters" role="group" aria-label="チャート期間フィルター" class="flex justify-center gap-2 mt-3">
                         <button data-range="1w" aria-pressed="false" class="min-w-[44px] min-h-[44px]">1W</button>
                         <button data-range="1m" aria-pressed="true" class="min-w-[44px] min-h-[44px]">1M</button>
                         <button data-range="3m" aria-pressed="false" class="min-w-[44px] min-h-[44px]">3M</button>
                     </div>
                 </section>
+
                 <div id="health-insights-section" class="space-y-4"></div>
             </div>
 

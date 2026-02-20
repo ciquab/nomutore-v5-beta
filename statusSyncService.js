@@ -22,15 +22,26 @@ export const StatusSyncService = {
                         ? getVirtualDate(latestLogs[0].timestamp)
                         : null;
 
-                    const latestCheck = await db.checks.orderBy('timestamp').reverse().first();
-                    const lastCheckDate = latestCheck
-                        ? getVirtualDate(latestCheck.timestamp)
-                        : null;
+                    const allChecks = await db.checks.toArray();
+
+                    const lastSavedCheck = allChecks
+                      .filter(c => c.isSaved === true)
+                      .sort((a,b) => b.timestamp - a.timestamp)[0] || null;
+
+                    const todayVirtual = getVirtualDate();
+
+                    const lastCheckDate = lastSavedCheck
+                      ? getVirtualDate(lastSavedCheck.timestamp)
+                      : null;
+
+                    const isCheckedToday =
+                      lastCheckDate === todayVirtual;
 
                     await NotificationManager.updateServerStatus({
                         balance,
                         lastCheckDate,
-                        lastLogDate
+                        lastLogDate,
+                        isCheckedToday
                     });
                 } catch (e) {
                     console.warn('[StatusSyncService] Sync status warning:', e);

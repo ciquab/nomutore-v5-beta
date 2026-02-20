@@ -175,6 +175,11 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
                 return;
             }
 
+            // ホームカード上のシェア / ヘルプボタン押下時は回転させない
+            if (e.target.closest('[data-action="ui:openShareModal"]') || e.target.closest('#btn-help')) {
+                return;
+            }
+
             if (heroCard.dataset.isAnimating === 'true') return;
             heroCard.dataset.isAnimating = 'true';
 
@@ -429,4 +434,3 @@ export function renderBeerTank(currentBalanceKcal, periodLogs) {
         liquidBack.style.top = `${topVal + 2}%`; 
     });
 }
-

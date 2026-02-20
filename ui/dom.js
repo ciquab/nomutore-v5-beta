@@ -445,17 +445,18 @@ export const toggleModal = (modalId, show = true) => {
             if (focusable) focusable.focus();
         }, 50);
 
-        setTimeout(() => {
-            if (bg) {
-                bg.classList.remove('opacity-0');
-                bg.classList.add('opacity-100');
-            }
-            if (content) {
-                // translate-y-full（画面外）を消し、translate-y-0（表示位置）を足す
-                content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
-                content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
-            }
-        }, 10);
+        // 次フレーム待ちをせず、同一タスク内で表示クラスを切り替える。
+        // iOS/Safari 環境で発生する「オーバーレイ表示前に背面が1フレーム見える」
+        // フラッシュを抑制するため。
+        if (bg) {
+            bg.classList.remove('opacity-0');
+            bg.classList.add('opacity-100');
+        }
+        if (content) {
+            // translate-y-full（画面外）を消し、translate-y-0（表示位置）を足す
+            content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+            content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+        }
 
     } else {
         // --- 閉じる処理 ---
@@ -745,7 +746,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

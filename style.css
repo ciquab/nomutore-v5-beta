@@ -684,8 +684,11 @@ select:disabled {
     background: radial-gradient(circle at 30% 30%, rgba(251, 191, 36, 0.6), rgba(251, 191, 36, 0.1));
     box-shadow: 0 0 10px rgba(251, 191, 36, 0.2);
     border-radius: 50%;
+    opacity: 0;
+    transform: translateY(100vh) scale(0.5);
     pointer-events: none;
     animation: lp-bubble-float-up linear infinite;
+    animation-fill-mode: both;
     z-index: 1;
 }
 

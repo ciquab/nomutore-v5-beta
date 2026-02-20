@@ -416,6 +416,8 @@ export const escapeHtml = (str) => {
 
 // Escape キーでモーダルを閉じるためのスタック管理
 const _openModalStack = [];
+const MODAL_HISTORY_KEY = '__nomutoreModalId';
+let _isHandlingModalPopState = false;
 
 export const toggleModal = (modalId, show = true) => {
     // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
@@ -429,6 +431,9 @@ export const toggleModal = (modalId, show = true) => {
     const content = el.querySelector('div[class*="transform"]');
 
     if (show) {
+        const isAlreadyOpen = _openModalStack.includes(modalId) && !el.classList.contains('hidden');
+        if (isAlreadyOpen) return;
+
         // --- 【表示処理】 ---
         el.classList.remove('hidden');
         el.classList.add('flex');
@@ -458,8 +463,23 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
         }
 
+        if (!_isHandlingModalPopState && typeof window !== 'undefined' && window.history?.pushState) {
+            const nextState = {
+                ...(window.history.state || {}),
+                [MODAL_HISTORY_KEY]: modalId
+            };
+            window.history.pushState(nextState, '');
+        }
+
     } else {
         // --- 閉じる処理 ---
+
+        const topModalId = _openModalStack[_openModalStack.length - 1];
+        const currentStateModalId = window.history?.state?.[MODAL_HISTORY_KEY] || null;
+        if (!_isHandlingModalPopState && topModalId === modalId && currentStateModalId === modalId) {
+            window.history.back();
+            return;
+        }
 
         // Escapeスタックから除去
         const idx = _openModalStack.indexOf(modalId);
@@ -493,6 +513,23 @@ export const toggleModal = (modalId, show = true) => {
         }, 350);
     }
 };
+
+window.addEventListener('popstate', (event) => {
+    const targetModalId = event.state?.[MODAL_HISTORY_KEY] || null;
+    const topModalId = _openModalStack[_openModalStack.length - 1] || null;
+
+    if (targetModalId && topModalId === targetModalId) return;
+
+    _isHandlingModalPopState = true;
+    if (!topModalId && targetModalId) {
+        toggleModal(targetModalId, true);
+    } else if (topModalId && (!targetModalId || _openModalStack.includes(targetModalId))) {
+        toggleModal(topModalId, false);
+    } else if (topModalId && targetModalId && !_openModalStack.includes(targetModalId)) {
+        toggleModal(targetModalId, true);
+    }
+    _isHandlingModalPopState = false;
+});
 
 // グローバル Escape キーハンドラ: 最前面のモーダルを閉じる
 document.addEventListener('keydown', (e) => {
@@ -746,7 +783,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

@@ -96,7 +96,7 @@ export function renderCheckStatus(checks, logs) {
                 </div>
                 
                 <div class="flex flex-col items-start min-h-[3.5rem] justify-center"> <!-- 高さ確保 -->
-                    <span class="text-3xl font-black ${theme.text} ${theme.darkText} leading-none tracking-tight truncate w-full">${mainStatus}</span>
+                    <span class="text-3xl font-black ${theme.text} ${theme.darkText} leading-none tracking-tight truncate w-full pb-[0.08em] -mb-[0.08em]">${mainStatus}</span>
                     <span class="text-xs font-bold opacity-80 ${theme.text} ${theme.darkText} mt-1 truncate w-full">${subStatus}</span>
                 </div>
             </div>

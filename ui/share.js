@@ -22,6 +22,9 @@ let editState = {
     fontClass: 'font-sans'
 };
 
+
+const getShareFilename = (prefix = 'nomutore_share') => `${prefix}_${dayjs().format('YYYYMMDD_HHmmss')}.png`;
+
 export const Share = {
     generateAndShare: async (mode = 'status', data = null) => {
         if (mode === 'beer') {
@@ -372,7 +375,7 @@ const openPhotoComposer = (imgSrc, log) => {
                     style: { transform: 'scale(1)', transformOrigin: 'top left' }
                 });
                 const blob = await (await fetch(dataUrl)).blob();
-                const file = new File([blob], `nomutore_beer_${dayjs().format('YYYYMMDD')}.png`, { type: 'image/png' });
+                const file = new File([blob], getShareFilename('nomutore_beer'), { type: 'image/png' });
             
                 hideLoadingOverlay(loadingId);
                 modal.remove();
@@ -412,7 +415,7 @@ const generateGraphicCard = async (mode, data) => {
         hideLoadingOverlay(loadingId);
 
         const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], `nomutore_share.png`, { type: 'image/png' });
+        const file = new File([blob], getShareFilename('nomutore_share'), { type: 'image/png' });
 
         showPreviewModal(dataUrl, file);
 

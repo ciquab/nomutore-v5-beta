@@ -85,9 +85,11 @@ export const QueryService = {
      * 指定した日付のチェック記録と飲酒状況を取得する
      */
     getCheckStatusForDate: async (dateVal) => {
-        const d = dayjs(dateVal);
-        const virtualDate = getVirtualDate(d.valueOf());
-        const v = dayjs(virtualDate);
+        // dateVal は呼び出し元で既に仮想日付から生成された日付文字列のタイムスタンプ。
+        // 再度 getVirtualDate を適用すると、深夜0時のタイムスタンプが前日と判定されてしまうため、
+        // 日付文字列として直接使用する。
+        const dateStr = dayjs(dateVal).format('YYYY-MM-DD');
+        const v = dayjs(dateStr);
         const start = v.startOf('day').valueOf();
         const end = v.endOf('day').valueOf();
 
@@ -97,8 +99,10 @@ export const QueryService = {
             c.timestamp >= start && c.timestamp <= end
         ) || null;
 
+        // ビールログは実際の記録時刻に getVirtualDate を適用して日付を判定する。
+        // これにより深夜4時前の記録も正しく前日の仮想日付に紐付けられる。
         const hasBeer = snapshot.allLogs.some(l =>
-            l.timestamp >= start && l.timestamp <= end && l.type === 'beer'
+            getVirtualDate(l.timestamp) === dateStr && l.type === 'beer'
         );
 
         return { check, hasBeer };

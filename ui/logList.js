@@ -61,16 +61,16 @@ const updateFilterChips = () => {
 export const toggleEditMode = () => {
     const isEdit = !StateManager.isEditMode;
     StateManager.setIsEditMode(isEdit);
-    
-    updateLogListView(false); 
-    
-    const selectAllBtn = document.getElementById('btn-select-all');
-    if (selectAllBtn) {
-        if (isEdit) selectAllBtn.classList.remove('hidden');
-        else selectAllBtn.classList.add('hidden');
+
+    if (!isEdit) {
+        document.querySelectorAll('.log-checkbox').forEach(cb => {
+            /** @type {HTMLInputElement} */(cb).checked = false;
+        });
     }
-    
+
+    updateLogListView(false);
     updateBulkActionUI();
+    updateEditButtonLabels();
 };
 
 export const toggleSelectAll = () => {
@@ -88,6 +88,11 @@ const updateBulkActionUI = () => {
     const count = document.querySelectorAll('.log-checkbox:checked').length;
     const toolbar = document.getElementById('edit-toolbar'); 
     if (toolbar) toolbar.classList.toggle('hidden', !StateManager.isEditMode);
+
+    const selectAllBtn = document.getElementById('btn-select-all');
+    if (selectAllBtn) {
+        selectAllBtn.classList.toggle('hidden', !StateManager.isEditMode);
+    }
     
     const deleteBtn = /** @type {HTMLButtonElement} */(document.getElementById('btn-delete-selected'));
     if (deleteBtn) {
@@ -102,6 +107,31 @@ const updateBulkActionUI = () => {
     
     const countLabel = document.getElementById('bulk-selected-count');
     if (countLabel) countLabel.textContent = String(count);
+
+    updateEditButtonLabels();
+};
+
+
+const updateEditButtonLabels = () => {
+    const editBtn = /** @type {HTMLButtonElement|null} */(document.querySelector('[data-action="log:toggleEditMode"]'));
+    if (editBtn) {
+        editBtn.textContent = StateManager.isEditMode ? '編集終了' : '編集';
+    }
+
+    const selectAllBtn = /** @type {HTMLButtonElement|null} */(document.getElementById('btn-select-all'));
+    if (selectAllBtn) {
+        const checkboxes = document.querySelectorAll('.log-checkbox');
+        const hasCheckboxes = checkboxes.length > 0;
+        const allChecked = hasCheckboxes && Array.from(checkboxes).every(cb => /** @type {HTMLInputElement} */(cb).checked);
+        selectAllBtn.textContent = allChecked ? '選択解除' : 'すべて選択';
+    }
+};
+
+export const exitEditMode = () => {
+    if (!StateManager.isEditMode) return;
+    StateManager.setIsEditMode(false);
+    updateBulkActionUI();
+    updateEditButtonLabels();
 };
 
 export const deleteSelectedLogs = async () => {
@@ -187,6 +217,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
             </li>
         `;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
+        updateBulkActionUI();
         return;
     }
 
@@ -255,6 +286,8 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
 
     listEl.innerHTML = '';
     listEl.appendChild(fragment);
+
+    updateBulkActionUI();
 
     if (loadMoreBtn) {
         loadMoreBtn.classList.toggle('hidden', totalCount <= currentLimit);

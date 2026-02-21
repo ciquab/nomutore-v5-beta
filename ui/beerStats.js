@@ -81,7 +81,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             </div>
 
             <div class="glass-panel p-5 rounded-2xl relative">
-                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
+                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -120,20 +120,26 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
+            <section class="px-1 mb-3">
+                <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">コレクション</h3>
+                <p class="section-helper mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
+            </section>
+
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy section-icon text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
                 <div id="brewery-ranking-list" class="space-y-2"></div>
             </div>
 
-            <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
-                <div class="flex items-center justify-between mb-3 px-1">
-                    <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">マイビール</h3>
+            <div class="sticky-section-shell py-3 -mx-2 px-2">
+                <div class="flex items-center justify-between mb-1 px-1">
+                    <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">マイビール</h3>
                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
+                <p class="section-helper px-1 mb-3">検索・フィルターで条件を絞り込めます</p>
 
                 <div class="space-y-2">
                     <div class="relative">
@@ -324,7 +330,7 @@ export function renderHealthInsights(allLogs, checks) {
     // --- HTML 描画 ---
     section.innerHTML = `
         <div class="glass-panel p-5 rounded-2xl relative">
-            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat text-rose-500" aria-hidden="true"></i> ヘルスインサイト</h3>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat section-icon text-rose-500" aria-hidden="true"></i> ヘルスインサイト</h3>
 
 
             <!-- 飲んだ日 vs 休肝日 -->
@@ -732,9 +738,10 @@ function renderBeerList(beers) {
 
     if (!beers || beers.length === 0) {
         listEl.innerHTML = `
-            <div class="text-center py-10 opacity-50">
+            <div class="empty-state flex flex-col items-center justify-center py-10 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
-                <p class="text-xs font-bold">該当するビールがありません</p>
+                <p class="text-sm font-bold">該当するビールがありません</p>
+                <p class="text-xs opacity-60">フィルター条件を変更してお試しください</p>
             </div>`;
         return;
     }
@@ -759,7 +766,7 @@ function renderBeerList(beers) {
         const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
-            <div class="flex items-center bg-white dark:bg-base-900 p-4 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
+            <div class="item-card flex items-center bg-white dark:bg-base-900 p-4 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
                 <div class="flex-shrink-0 w-8 text-center mr-1">${rankBadge}</div>
 
                 <div class="flex-grow min-w-0">
@@ -864,9 +871,10 @@ function renderBreweryLeaderboard(breweryStats) {
 
     if (entries.length === 0) {
         listEl.innerHTML = `
-            <div class="text-center py-8 opacity-50">
+            <div class="empty-state flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-warehouse text-3xl mb-2" aria-hidden="true"></i>
-                <p class="text-xs font-bold">ブルワリーデータがまだありません</p>
+                <p class="text-sm font-bold">ブルワリーデータがまだありません</p>
+                <p class="text-xs opacity-60">ビールを記録すると自動で集計されます</p>
             </div>`;
         return;
     }
@@ -892,7 +900,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const subInfo = buildBrewerySubInfo(b, axis.key);
 
         return `
-            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+            <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                 <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                 <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -945,7 +953,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     const rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
                     const subInfo = buildBrewerySubInfo(b, axis.key);
                     return `
-                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+                        <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                             <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                             <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>

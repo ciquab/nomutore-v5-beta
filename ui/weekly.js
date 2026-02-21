@@ -174,10 +174,10 @@ export function renderHeatmap(checks, allLogs, profile) {
         const content = iconHtml ? iconHtml : `<span class="text-[11px] opacity-40 font-mono">${d.format('D')}</span>`;
 
         html += `
-            <div class="heatmap-cell aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 ${bgClass} ${textClass} relative"
+            <div class="heatmap-cell aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer transition ${bgClass} ${textClass} relative"
                  title="${d.format('YYYY-MM-DD')}: ${status}"
                  data-action="ui:openDayDetail" data-args='{"date": "${d.format('YYYY-MM-DD')}"}'>
-                <span class="text-sm leading-none select-none filter drop-shadow-sm">${content}</span>
+                <span class="text-sm leading-none select-none">${content}</span>
             </div>
         `;
     }

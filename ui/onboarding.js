@@ -592,7 +592,13 @@ Onboarding.handleCloudRestore = async () => {
             const success = await DataManager.restoreFromCloud({
                 confirmRestore: ({ logsCount, checksCount }) =>
                     confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
-(既存データと重複するものはスキップされます)`)
+(既存データと重複するものはスキップされます)`),
+                confirmArchiveBackfill: ({ mode, archivesCount, logsCount }) => {
+                    if (archivesCount > 0 || logsCount === 0) return false;
+                    const label = mode === 'weekly' ? '週次' : '月次';
+                    return confirm(`バックアップにアーカイブが含まれていません。
+復元したログから過去の${label}アーカイブを自動生成しますか？`);
+                }
             });
             if (success) {
                 showMessage('☁️ ドライブから復元しました', 'success');
@@ -610,7 +616,13 @@ Onboarding.handleJsonRestore = async (input) => {
             const success = await DataManager.importJSON(input, {
                 confirmRestore: ({ logsCount, checksCount }) =>
                     confirm(`ログ ${logsCount}件、チェック ${checksCount}件を復元しますか？
-(既存データと重複するものはスキップされます)`)
+(既存データと重複するものはスキップされます)`),
+                confirmArchiveBackfill: ({ mode, archivesCount, logsCount }) => {
+                    if (archivesCount > 0 || logsCount === 0) return false;
+                    const label = mode === 'weekly' ? '週次' : '月次';
+                    return confirm(`バックアップにアーカイブが含まれていません。
+復元したログから過去の${label}アーカイブを自動生成しますか？`);
+                }
             });
             if (success) Onboarding.completeAfterRestore();
         } catch (e) { 

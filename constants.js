@@ -244,12 +244,13 @@ export const DAY_STATUS_STYLES = {
         empty:                { bg: 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700', text: 'text-gray-500 dark:text-gray-400' },
     },
     heatmap: {
-        rest_exercise:        { bg: 'bg-emerald-600 border border-emerald-500 shadow-lg ring-2 ring-yellow-400 dark:ring-yellow-500 z-20', text: 'text-white' },
-        exercise:             { bg: 'bg-cyan-600 border border-cyan-500 shadow-md ring-1 ring-white/50 z-10', text: 'text-white' },
-        rest:                 { bg: 'bg-emerald-400 border border-emerald-500 shadow-sm', text: 'text-white font-bold' },
-        drink_exercise_success: { bg: 'bg-blue-500 border border-blue-400 shadow-md', text: 'text-white' },
-        drink_exercise:       { bg: 'bg-blue-400 border border-blue-300 shadow-sm', text: 'text-white font-bold' },
-        drink:                { bg: 'bg-red-400 border border-red-500 shadow-sm', text: 'text-white font-bold' },
+        // NOTE: heatmap下端で影色が滲んで見える端末があるため、セル影は使わず境界/リングで強調する
+        rest_exercise:        { bg: 'bg-emerald-600 border border-emerald-500 ring-2 ring-yellow-400 dark:ring-yellow-500 z-20', text: 'text-white' },
+        exercise:             { bg: 'bg-cyan-600 border border-cyan-500 ring-1 ring-white/50 z-10', text: 'text-white' },
+        rest:                 { bg: 'bg-emerald-400 border border-emerald-500', text: 'text-white font-bold' },
+        drink_exercise_success: { bg: 'bg-blue-500 border border-blue-400', text: 'text-white' },
+        drink_exercise:       { bg: 'bg-blue-400 border border-blue-300', text: 'text-white font-bold' },
+        drink:                { bg: 'bg-red-400 border border-red-500', text: 'text-white font-bold' },
         empty:                { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-300' },
     },
 };

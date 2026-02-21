@@ -120,6 +120,11 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
+            <section class="px-1 mb-3">
+                <h3 class="text-sm font-bold text-base-900 dark:text-white">コレクション</h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
+            </section>
+
             <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
@@ -130,10 +135,11 @@ export function renderBeerCollection(periodLogs, allLogs) {
             </div>
 
             <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
-                <div class="flex items-center justify-between mb-3 px-1">
-                    <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">マイビール</h3>
+                <div class="flex items-center justify-between mb-1 px-1">
+                    <h3 class="text-sm font-bold text-base-900 dark:text-white">マイビール</h3>
                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 px-1 mb-3">検索・フィルターで条件を絞り込めます</p>
 
                 <div class="space-y-2">
                     <div class="relative">

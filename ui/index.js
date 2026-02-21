@@ -1120,6 +1120,7 @@ if (checkModal) {
         const { allLogs, checks } = UI._statsData;
         if (allLogs && checks) {
             renderChart(allLogs, checks);
+            renderHealthInsights(allLogs, checks);
         }
     },
 

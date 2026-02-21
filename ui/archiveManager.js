@@ -16,6 +16,79 @@ const formatModeLabel = (mode) => {
     return labels[mode] || mode || 'Unknown';
 };
 
+const summarizeArchiveLogs = (logs) => {
+    let earned = 0;
+    let consumed = 0;
+
+    logs.forEach((log) => {
+        const kcal = log.kcal || 0;
+        if (kcal > 0) earned += kcal;
+        else consumed += kcal;
+    });
+
+    return {
+        earned: Math.round(earned),
+        consumed: Math.round(consumed)
+    };
+};
+
+const buildArchiveLogRows = (logs) => {
+    if (logs.length === 0) {
+        return `
+            <div class="flex flex-col items-center justify-center h-40 text-gray-500 dark:text-gray-400 opacity-60">
+                <i class="ph-duotone ph-notebook text-4xl mb-2" aria-hidden="true"></i>
+                <span class="text-xs font-bold">この期間の記録はありません</span>
+            </div>
+        `;
+    }
+
+    return logs
+        .slice()
+        .sort((a, b) => b.timestamp - a.timestamp)
+        .map((log) => {
+            const isBeer = log.type === 'beer';
+            const iconBg = isBeer
+                ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-500'
+                : 'bg-indigo-100 text-brand dark:bg-indigo-900/30 dark:text-brand-light';
+            const iconClass = isBeer ? 'ph-beer-bottle' : 'ph-person-simple-run';
+            const kcal = Math.round(log.kcal || 0);
+            const logDate = dayjs(log.timestamp).format('MM/DD HH:mm');
+
+            let mainText = log.name || '記録';
+            let subText = logDate;
+            if (isBeer) {
+                mainText = (log.brand && log.brand.trim()) ? log.brand : (log.style || log.name || 'ビール');
+                if (log.count && log.count > 1) {
+                    mainText += ` x${log.count}`;
+                }
+                const sizeStr = log.size ? `${log.size}ml` : '';
+                subText = `${logDate} · ${log.style || ''} ${sizeStr}`.trim();
+            } else {
+                subText = `${logDate} · ${log.minutes || 0} min`;
+            }
+
+            return `
+                <button type="button" class="w-full flex items-center justify-between p-3 bg-white dark:bg-base-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm active:scale-[0.98] transition" data-archive-log-id="${log.id || ''}" data-archive-log-ts="${log.timestamp}">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0">
+                            <i class="ph-fill ${iconClass} text-xl" aria-hidden="true"></i>
+                        </div>
+                        <div class="flex flex-col overflow-hidden text-left">
+                            <span class="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">${escapeHtml(mainText)}</span>
+                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">${escapeHtml(subText)}</span>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0 ml-2">
+                        <span class="block text-sm font-black ${isBeer ? 'text-red-500' : 'text-emerald-500'}">
+                            ${kcal > 0 ? '+' : ''}${kcal} <span class="text-[11px]">kcal</span>
+                        </span>
+                    </div>
+                </button>
+            `;
+        })
+        .join('');
+};
+
 const createArchiveDetailModal = (archive) => {
     const existing = document.getElementById(ARCHIVE_DETAIL_MODAL_ID);
     if (existing) existing.remove();
@@ -31,65 +104,42 @@ const createArchiveDetailModal = (archive) => {
     const balance = Math.round(archive.totalBalance || 0);
     const isPositive = balance >= 0;
     const sign = isPositive ? '+' : '';
-
-    const logsHtml = logs.length > 0
-        ? logs
-            .slice()
-            .sort((a, b) => b.timestamp - a.timestamp)
-            .map((log) => {
-                const logDate = dayjs(log.timestamp).format('MM/DD HH:mm');
-                const kcal = Math.round(log.kcal || 0);
-                const logSign = kcal >= 0 ? '+' : '';
-                const name = log.brand || log.name || '記録';
-
-                return `
-                    <button type="button" class="w-full text-left px-3 py-2 rounded-xl bg-white dark:bg-base-900 border border-base-100 dark:border-base-800 active:scale-[0.98] transition" data-archive-log-id="${log.id || ''}" data-archive-log-ts="${log.timestamp}">
-                        <div class="flex items-center justify-between gap-2">
-                            <div>
-                                <div class="text-sm font-bold text-base-900 dark:text-white">${escapeHtml(name)}</div>
-                                <div class="text-[11px] text-gray-500 dark:text-gray-400">${logDate} · ${log.type === 'beer' ? '飲酒' : '運動'}</div>
-                            </div>
-                            <div class="text-sm font-black ${kcal >= 0 ? 'text-indigo-500' : 'text-red-500'}">${logSign}${kcal} kcal</div>
-                        </div>
-                    </button>
-                `;
-            })
-            .join('')
-        : '<p class="text-xs text-gray-500 dark:text-gray-400">この期間のログ情報は保存されていません。</p>';
+    const { earned, consumed } = summarizeArchiveLogs(logs);
 
     modal.innerHTML = `
-        <div id="${ARCHIVE_DETAIL_MODAL_ID}-bg" class="modal-bg absolute inset-0 bg-black/55 opacity-0 transition-opacity duration-300"></div>
-        <div class="relative w-full sm:max-w-2xl max-h-[88vh] bg-base-50 dark:bg-base-950 rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-all duration-300 ease-out translate-y-full sm:translate-y-10">
-            <div class="p-4 border-b border-base-200 dark:border-base-800 flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-bold text-gray-500 dark:text-gray-400">${formatModeLabel(archive.mode)}</p>
-                    <h3 class="text-lg font-black text-base-900 dark:text-white">${start} - ${end}</h3>
+        <div id="${ARCHIVE_DETAIL_MODAL_ID}-bg" class="modal-bg absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
+
+        <div class="relative w-full max-w-md sm:max-w-lg max-h-[88vh] bg-gradient-to-b from-white to-gray-50 dark:from-base-900 dark:to-base-950 rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-all duration-300 ease-out translate-y-full sm:translate-y-10 border border-white/50 dark:border-base-700 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-base-200 dark:border-base-800 bg-white/80 dark:bg-base-900/80 backdrop-blur shrink-0">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-black text-base-900 dark:text-white">期間詳細</h3>
+                    <button id="${ARCHIVE_DETAIL_MODAL_ID}-close" class="w-10 h-10 rounded-full bg-base-200 dark:bg-base-800 text-base-700 dark:text-base-200">
+                        <i class="ph-bold ph-x"></i>
+                    </button>
                 </div>
-                <button id="${ARCHIVE_DETAIL_MODAL_ID}-close" class="w-10 h-10 rounded-full bg-base-200 dark:bg-base-800 text-base-700 dark:text-base-200">
-                    <i class="ph-bold ph-x"></i>
-                </button>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-[11px] font-bold px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">${formatModeLabel(archive.mode)}</span>
+                    <span class="text-xs font-bold text-gray-500 dark:text-gray-400">${start} - ${end}</span>
+                </div>
+                <div class="text-2xl font-black ${isPositive ? 'text-emerald-500' : 'text-red-500'}">${sign}${balance}<span class="text-sm text-gray-500 dark:text-gray-400 ml-1">kcal</span></div>
             </div>
 
-            <div class="p-4 overflow-y-auto max-h-[65vh] space-y-4">
-                <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="rounded-xl bg-white dark:bg-base-900 border border-base-100 dark:border-base-800 p-2">
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">収支</p>
-                        <p class="text-base font-black ${isPositive ? 'text-emerald-500' : 'text-red-500'}">${sign}${balance}</p>
+            <div class="p-4 bg-base-50 dark:bg-base-900/40 border-b border-base-100 dark:border-base-800 shrink-0">
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                    <div class="bg-white dark:bg-base-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <span class="text-[11px] font-semibold text-gray-500 uppercase">返済カロリー</span>
+                        <div class="text-lg font-black text-emerald-600 dark:text-emerald-400">+${earned}</div>
                     </div>
-                    <div class="rounded-xl bg-white dark:bg-base-900 border border-base-100 dark:border-base-800 p-2">
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">ログ件数</p>
-                        <p class="text-base font-black text-base-900 dark:text-white">${logs.length}</p>
-                    </div>
-                    <div class="rounded-xl bg-white dark:bg-base-900 border border-base-100 dark:border-base-800 p-2">
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">ID</p>
-                        <p class="text-base font-black text-base-900 dark:text-white">#${archive.id}</p>
+                    <div class="bg-white dark:bg-base-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
+                        <span class="text-[11px] font-semibold text-gray-500 uppercase">借金カロリー</span>
+                        <div class="text-lg font-black text-red-600 dark:text-red-400">${consumed}</div>
                     </div>
                 </div>
+                <div class="text-[11px] text-gray-500 dark:text-gray-400 font-bold">ログ件数: ${logs.length}件 / Archive #${archive.id}</div>
+            </div>
 
-                <section class="space-y-2">
-                    <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400">期間ログ</h4>
-                    ${logsHtml}
-                </section>
+            <div class="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain">
+                ${buildArchiveLogRows(logs)}
             </div>
         </div>
     `;

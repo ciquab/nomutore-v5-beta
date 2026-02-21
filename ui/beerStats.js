@@ -104,6 +104,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     _breweryStats = [...(allStats.breweryStats || [])];
 
     // 2. HTML構造生成
+    // セクションアイコン配色ルール: 味覚/傾向=暖色, 分析チャート=寒色, 解釈/比較=青系で統一
     container.innerHTML = `
         <div class="space-y-4 pb-24">
             <div class="grid grid-cols-3 gap-2 text-center">
@@ -123,7 +124,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-pie section-icon text-fuchsia-500" aria-hidden="true"></i> フレーバー推移</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">最近30日 vs 過去90日</span>
                 </div>
                 ${flavorTrend.hasData ? `
@@ -235,7 +236,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-brand" aria-hidden="true"></i> ${isPermanent ? '直近比較' : '期間比較'}</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> ${isPermanent ? '直近比較' : '期間比較'}</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${comparisonLabel}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 text-[11px]">

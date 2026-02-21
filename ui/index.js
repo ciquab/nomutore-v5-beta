@@ -13,7 +13,7 @@ import { renderCheckStatus } from './checkStatus.js';
 import { renderAlcoholMeter } from './alcoholMeter.js';
 import { renderWeeklyAndHeatUp, renderHeatmap } from './weekly.js';
 import { renderChart } from './chart.js';
-import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs } from './logList.js';
+import { updateLogListView, toggleEditMode, toggleSelectAll, updateBulkCount, setFetchLogsHandler, deleteSelectedLogs, exitEditMode } from './logList.js';
 import { renderBeerStats, renderBeerCollection, renderHealthInsights } from './beerStats.js';
 import { renderArchives } from './archiveManager.js';
 import { Timer } from './timer.js';
@@ -176,11 +176,9 @@ const _applyCellarSubView = (mode) => {
             // ARIA tab: 選択状態を更新
             btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.add('is-active');
             } else {
-                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.remove('is-active');
             }
         }
     });
@@ -197,11 +195,9 @@ const _applyStatsSubView = (mode) => {
         if (btn) {
             btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.add('is-active');
             } else {
-                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.remove('is-active');
             }
         }
     });
@@ -934,6 +930,10 @@ if (checkModal) {
                 Feedback.uiSwitch();
             }
 
+            if (tabId !== 'cellar') {
+                exitEditMode();
+            }
+
             const onboarding = document.getElementById('onboarding-modal');
             const isOnboarding = onboarding && !onboarding.classList.contains('hidden');
 
@@ -1005,6 +1005,9 @@ if (checkModal) {
     switchCellarView: (mode) => {
         if (typeof Feedback !== 'undefined') {
             Feedback.uiSwitch();
+        }
+        if (mode !== 'logs') {
+            exitEditMode();
         }
         StateManager.setCellarViewMode(mode);
         _applyCellarSubView(mode);

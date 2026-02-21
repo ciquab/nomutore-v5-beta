@@ -11,19 +11,66 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 let currentLimit = 20; 
 const LIMIT_STEP = 20; 
 
+const logFilters = {
+    type: 'all',
+    range: 'all',
+    term: ''
+};
+
+const getRangeStartTs = (range) => {
+    const now = dayjs();
+    if (range === '7d') return now.subtract(7, 'day').startOf('day').valueOf();
+    if (range === '30d') return now.subtract(30, 'day').startOf('day').valueOf();
+    if (range === 'month') return now.startOf('month').valueOf();
+    return null;
+};
+
+const applyLogFilters = (logs) => {
+    const rangeStart = getRangeStartTs(logFilters.range);
+    const term = (logFilters.term || '').trim().toLowerCase();
+
+    return logs.filter(log => {
+        const matchType = logFilters.type === 'all' || log.type === logFilters.type;
+        const matchRange = rangeStart === null || log.timestamp >= rangeStart;
+
+        if (!term) return matchType && matchRange;
+
+        const searchTargets = [
+            log.name,
+            log.brand,
+            log.brewery,
+            log.memo,
+            log.style,
+            log.exerciseKey
+        ].filter(Boolean).map(v => String(v).toLowerCase());
+
+        const matchTerm = searchTargets.some(v => v.includes(term));
+        return matchType && matchRange && matchTerm;
+    });
+};
+
+const updateFilterChips = () => {
+    ['all', 'beer', 'exercise'].forEach(type => {
+        const btn = document.getElementById(`log-filter-type-${type}`);
+        if (!btn) return;
+        if (logFilters.type === type) btn.classList.add('is-active');
+        else btn.classList.remove('is-active');
+    });
+};
+
 export const toggleEditMode = () => {
     const isEdit = !StateManager.isEditMode;
     StateManager.setIsEditMode(isEdit);
-    
-    updateLogListView(false); 
-    
-    const selectAllBtn = document.getElementById('btn-select-all');
-    if (selectAllBtn) {
-        if (isEdit) selectAllBtn.classList.remove('hidden');
-        else selectAllBtn.classList.add('hidden');
+
+    if (!isEdit) {
+        document.querySelectorAll('.log-checkbox').forEach(cb => {
+            /** @type {HTMLInputElement} */(cb).checked = false;
+        });
     }
-    
+
+    updateLogListView(false);
     updateBulkActionUI();
+    updateEditButtonLabels();
 };
 
 export const toggleSelectAll = () => {
@@ -41,6 +88,11 @@ const updateBulkActionUI = () => {
     const count = document.querySelectorAll('.log-checkbox:checked').length;
     const toolbar = document.getElementById('edit-toolbar'); 
     if (toolbar) toolbar.classList.toggle('hidden', !StateManager.isEditMode);
+
+    const selectAllBtn = document.getElementById('btn-select-all');
+    if (selectAllBtn) {
+        selectAllBtn.classList.toggle('hidden', !StateManager.isEditMode);
+    }
     
     const deleteBtn = /** @type {HTMLButtonElement} */(document.getElementById('btn-delete-selected'));
     if (deleteBtn) {
@@ -55,6 +107,31 @@ const updateBulkActionUI = () => {
     
     const countLabel = document.getElementById('bulk-selected-count');
     if (countLabel) countLabel.textContent = String(count);
+
+    updateEditButtonLabels();
+};
+
+
+const updateEditButtonLabels = () => {
+    const editBtn = /** @type {HTMLButtonElement|null} */(document.querySelector('[data-action="log:toggleEditMode"]'));
+    if (editBtn) {
+        editBtn.textContent = StateManager.isEditMode ? '編集終了' : '編集';
+    }
+
+    const selectAllBtn = /** @type {HTMLButtonElement|null} */(document.getElementById('btn-select-all'));
+    if (selectAllBtn) {
+        const checkboxes = document.querySelectorAll('.log-checkbox');
+        const hasCheckboxes = checkboxes.length > 0;
+        const allChecked = hasCheckboxes && Array.from(checkboxes).every(cb => /** @type {HTMLInputElement} */(cb).checked);
+        selectAllBtn.textContent = allChecked ? '選択解除' : 'すべて選択';
+    }
+};
+
+export const exitEditMode = () => {
+    if (!StateManager.isEditMode) return;
+    StateManager.setIsEditMode(false);
+    updateBulkActionUI();
+    updateEditButtonLabels();
 };
 
 export const deleteSelectedLogs = async () => {
@@ -95,34 +172,52 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const loadMoreBtn = document.getElementById('btn-load-more');
     if (!listEl) return;
 
+    updateFilterChips();
+
     if (isLoadMore) {
         currentLimit += LIMIT_STEP;
     } else {
         currentLimit = 20; 
     }
 
-    let sortedLogs;
+    let baseLogs;
     if (providedLogs) {
-        sortedLogs = [...providedLogs].sort((a, b) => b.timestamp - a.timestamp);
+        baseLogs = [...providedLogs];
     } else {
         // ✅ 修正点: Service を通じて「調理済み」のデータを取得
         // これにより「収支計算」「キャッシュ更新」「期間フィルタ」が正しく実行される
         const snapshot = await Service.getAppDataSnapshot();
-        
+
         // セラー画面（履歴一覧）では「全履歴」を見せたい場合は snapshot.allLogs を、
         // 設定された期間内だけを見せたい場合は snapshot.logs を使います。
         // 元のロジックに合わせて snapshot.allLogs を採用します。
-        sortedLogs = [...snapshot.allLogs].sort((a, b) => b.timestamp - a.timestamp);
+        baseLogs = [...snapshot.allLogs];
     }
-    
+
+    const filteredLogs = applyLogFilters(baseLogs);
+    const sortedLogs = [...filteredLogs].sort((a, b) => b.timestamp - a.timestamp);
+
     const totalCount = sortedLogs.length;
     const logs = sortedLogs.slice(0, currentLimit);
 
     const fragment = document.createDocumentFragment();
 
+    const baseLabel = document.getElementById('history-base-label');
+    if (baseLabel) {
+        const typeLabel = logFilters.type === 'all' ? '全件' : (logFilters.type === 'beer' ? 'ビール' : '運動');
+        baseLabel.textContent = `${typeLabel} ${totalCount}件`;
+    }
+
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>まだ記録がありません</li>`;
+        listEl.innerHTML = `
+            <li class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 empty-state">
+                <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
+                <p class="text-sm font-bold">該当する記録がありません</p>
+                <p class="text-xs opacity-60">条件を変更するか、Recordタブから記録を追加してください</p>
+            </li>
+        `;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
+        updateBulkActionUI();
         return;
     }
 
@@ -133,14 +228,14 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         
         if (dateStr !== currentDateStr) {
             const header = document.createElement('li');
-            header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
+            header.className = "sticky-section-shell py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 mt-1";
             header.innerHTML = `<span>${dateStr}</span>`;
             fragment.appendChild(header);
             currentDateStr = dateStr;
         }
 
         const li = document.createElement('li');
-        li.className = "log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
+        li.className = "item-row log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         li.dataset.logId = log.id;
         
@@ -192,6 +287,8 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     listEl.innerHTML = '';
     listEl.appendChild(fragment);
 
+    updateBulkActionUI();
+
     if (loadMoreBtn) {
         loadMoreBtn.classList.toggle('hidden', totalCount <= currentLimit);
         if (totalCount > currentLimit) {
@@ -223,10 +320,38 @@ if (!_logListListenersAttached) {
     });
 
     document.addEventListener('change', (e) => {
-        if (/** @type {HTMLElement} */(e.target).classList.contains('log-checkbox')) {
+        const target = /** @type {HTMLElement} */(e.target);
+        if (target.classList.contains('log-checkbox')) {
             updateBulkCount();
+            return;
+        }
+
+        if (target.id === 'log-filter-range') {
+            const select = /** @type {HTMLSelectElement} */(target);
+            logFilters.range = select.value;
+            updateLogListView(false);
         }
     });
+
+    document.addEventListener('input', (e) => {
+        const target = /** @type {HTMLElement} */(e.target);
+        if (target.id === 'log-filter-term') {
+            const input = /** @type {HTMLInputElement} */(target);
+            logFilters.term = input.value;
+            updateLogListView(false);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const target = /** @type {HTMLElement} */(e.target);
+        const typeBtn = target.closest('[data-log-type]');
+        if (!typeBtn) return;
+
+        logFilters.type = typeBtn.getAttribute('data-log-type') || 'all';
+        updateFilterChips();
+        updateLogListView(false);
+    });
+
     _logListListenersAttached = true;
 }
 

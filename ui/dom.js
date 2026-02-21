@@ -553,6 +553,9 @@ export const showMessage = (text, type = 'info', action = null) => {
 
     // 1. 表示用テキストの整形: 先頭のOS絵文字（✅, 🚨, ✨）を除去
     const cleanText = text.replace(/^[✅🚨✨]\s*/, '');
+    const hasExplicitLineBreak = /\n/.test(cleanText);
+    const containerAlignClass = hasExplicitLineBreak ? 'items-start' : 'items-center';
+    const iconOffsetClass = hasExplicitLineBreak ? 'mt-0.5' : '';
 
     // 2. デザイン設定 (Glassmorphism + Phosphor Icons)
     const config = {
@@ -581,13 +584,13 @@ export const showMessage = (text, type = 'info', action = null) => {
     // 3. コンテナのクラス設定 (角丸、影、アニメーション)
     box.className = `fixed top-6 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-300
                      pl-4 pr-4 py-3 rounded-2xl shadow-xl shadow-black/5 backdrop-blur-md border
-                     flex items-start gap-3 min-w-[280px] max-w-[90vw]
+                     flex ${containerAlignClass} gap-3 min-w-[280px] max-w-[90vw]
                      ${style.bg} ${style.border}`;
 
     // 4. HTMLコンテンツ生成
     let content = `
-        <div class="shrink-0 flex items-center justify-center mt-0.5">${style.icon}</div>
-        <span class="text-sm font-bold ${style.text} break-words flex-1 min-w-0">${cleanText}</span>
+        <div class="shrink-0 flex items-center justify-center ${iconOffsetClass}">${style.icon}</div>
+        <span class="text-sm font-bold ${style.text} break-words whitespace-pre-line flex-1 min-w-0">${cleanText}</span>
     `;
 
     // 5. シェアボタンの追加 (Action Logic)
@@ -783,7 +786,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

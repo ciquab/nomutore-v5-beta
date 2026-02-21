@@ -1595,14 +1595,21 @@
                     <i class="ph-duotone ph-plus-circle" aria-hidden="true"></i> 記録 (Record)
                 </h4>
                 <div class="space-y-3">
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/40">
+                        <h5 class="font-bold text-sm text-base-900 dark:text-white mb-1">クイック登録</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            上段の<strong>「よく飲むビール」</strong>と<strong>「いつもの運動」</strong>は、記録履歴から自動で表示されるショートカットです。よく使う記録をワンタップで追加できます。
+                        </p>
+                    </div>
+
                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-xl shrink-0">
                             <i class="ph-duotone ph-beer-bottle text-amber-600 dark:text-amber-500" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">ビールを記録</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">ビールを記録（手入力）</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                「プリセット」からスタイルを選ぶか、「カスタム」で度数(ABV)と量を直接入力。銘柄名を入れて<i class="ph-bold ph-magnifying-glass inline-block align-text-bottom" aria-hidden="true"></i>を押すとUntappdで検索も可能です。
+                                「ビールを記録」では、プリセット選択・カスタム入力・Untappd検索に対応。銘柄名やスタイル、ABV、容量を設定して記録できます。
                             </p>
                         </div>
                     </div>
@@ -1612,34 +1619,36 @@
                             <i class="ph-duotone ph-note-pencil text-gray-600 dark:text-gray-400" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">運動を記録 (手動)</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">運動を記録（手入力）</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                ジムに行かなくてもOK。<span class="text-brand dark:text-brand-light font-bold">「通勤」「ビア散歩」「家事」</span>なども立派な運動です。あとから手動入力でカロリーに変換しましょう。
+                                ジムだけでなく、<span class="text-brand dark:text-brand-light font-bold">通勤・家事・散歩</span>などの日常活動も入力可能。時間や運動種別から消費カロリーを記録できます。
                             </p>
                         </div>
                     </div>
 
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-                        <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xl shrink-0">
-                            <i class="ph-duotone ph-check-circle text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xl shrink-0">
+                                <i class="ph-duotone ph-check-circle text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-sm text-base-900 dark:text-white">デイリーチェック</h5>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                    休肝日・体重に加え、睡眠や体調などの項目をチェック。設定タブで項目を追加・編集できます。
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">デイリーチェック</h5>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                「休肝日」や体重の記録に加え、腹周り・睡眠・水分など、自分に合った項目を選んでコンディションを定点観測できます。
-                            </p>
-                        </div>
-                    </div>
 
-                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                            <i class="ph-duotone ph-timer text-brand dark:text-brand-light" aria-hidden="true"></i>
-                        </div>
-                        <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">ストップウォッチ</h5>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                運動開始で計測スタート。1分以上で保存可能、最大3時間のバックグラウンド計測に対応。リアルタイムで「ビール換算の返済量」が表示され、没入感を高めます。
-                            </p>
+                        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                                <i class="ph-duotone ph-timer text-brand dark:text-brand-light" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-sm text-base-900 dark:text-white">ストップウォッチ</h5>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                    運動時間をリアルタイム計測し、記録に変換。バックグラウンド計測にも対応しています。
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -1647,6 +1656,7 @@
             </section>
 
             <section>
+                <h4 id="help-stats"            <section>
                 <h4 id="help-stats" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-chart-line" aria-hidden="true"></i> 統計 (Stats)
                 </h4>
@@ -1718,49 +1728,54 @@
             </section>
 
             <section>
-    <h4 id="help-cellar" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-        <i class="ph-duotone ph-books" aria-hidden="true"></i> セラー (Cellar)
-    </h4>
-    
-    <div class="space-y-3">
-        
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-duotone ph-list-dashes text-brand dark:text-brand-light" aria-hidden="true"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">履歴管理 (Logs)</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    記録の修正・削除が可能。「編集」ボタンで選択モードになり、<strong>一括削除</strong>も行えます。
-                </p>
-            </div>
-        </div>
+                <h4 id="help-cellar" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="ph-duotone ph-books" aria-hidden="true"></i> セラー (Cellar)
+                </h4>
+                <div class="space-y-3">
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/40">
+                        <h5 class="font-bold text-sm text-base-900 dark:text-white mb-1">3つのビューを切り替え</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            Cellarでは<strong>Logs / Collections / Archives</strong>をタブで切り替えて、記録の確認・整理・振り返りを行います。
+                        </p>
+                    </div>
 
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-duotone ph-books text-brand dark:text-brand-light" aria-hidden="true"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">コレクション (Collections)</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    飲んだ頻度順のランキング表示。銘柄・ブルワリー・スタイル・評価での<strong>絞り込み検索</strong>に対応。<strong>ブルワリーランキング</strong>もこのビューで確認できます。
-                </p>
-            </div>
-        </div>
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-list-dashes text-brand dark:text-brand-light" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">履歴管理 (Logs)</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                時系列でログを表示。種別・期間・キーワードで検索でき、編集モードでは複数選択して一括削除も可能です。
+                            </p>
+                        </div>
+                    </div>
 
-        <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
-                <i class="ph-duotone ph-archive text-brand dark:text-brand-light" aria-hidden="true"></i>
-            </div>
-            <div>
-                <h5 class="font-bold text-sm text-base-900 dark:text-white">過去の記録 (Archives)</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                    期間リセットごとの成績と収支ログがここに保存され、いつでも振り返ることができます。
-                </p>
-            </div>
-        </div>
-    </div>
-</section>
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-books text-brand dark:text-brand-light" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">コレクション (Collections)</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                銘柄・ブルワリー単位で集計し、ランキングやフィルターで傾向を把握。スタイルや評価などで絞り込みできます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-archive text-brand dark:text-brand-light" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">過去の記録 (Archives)</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                期間リセットごとの結果を保存。各期間の収支・達成状況をあとから確認できます。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <section>
                 <h4 id="help-settings" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -1768,10 +1783,9 @@
                 </h4>
 
                 <div class="space-y-3">
-
                     <div class="flex items-center gap-3 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-[11px] text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-100 dark:border-indigo-800/40">
                         <i class="ph-fill ph-gear text-lg shrink-0"></i>
-                        <span>画面上部ヘッダー右側の <strong>⚙ アイコン</strong> をタップして設定を開きます</span>
+                        <span>画面上部ヘッダー右側の <strong>⚙ アイコン</strong> から開けます</span>
                     </div>
 
                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
@@ -1779,11 +1793,9 @@
                             <i class="ph-duotone ph-user-circle text-orange-600 dark:text-orange-500" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">基本設定と期間モード</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">プロフィール & 集計期間</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                基礎代謝計算用のプロフィール設定や、借金をリセットする周期を変更できます。<br>
-                                期間モードで「カスタム」を選ぶと、旅行や短期集中ダイエット用に「プロジェクト名・開始日・終了日」を自由に設定して計測できます。<br>
-                                <span class="opacity-80">※リセットなしで続ける<strong>永久モード</strong>も選択可能です。</span>
+                                体格情報や計算基準、集計期間（週次・月次・カスタム・永久）を設定。カスタム期間ではプロジェクト名と開始/終了日を指定できます。
                             </p>
                         </div>
                     </div>
@@ -1793,9 +1805,21 @@
                             <i class="ph-duotone ph-sliders text-brand dark:text-brand-light" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">カスタマイズ</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">表示・運動・チェック項目のカスタム</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                テーマ（ダークモード）、よく飲むビールのスタイル、デフォルトの運動・換算基準の運動の設定に加え、<strong>デイリーチェック項目</strong>の編集（ライブラリからの追加やカスタム作成）もここで行います。
+                                テーマ、メイン/サブビール、基準運動、デフォルト運動を調整可能。デイリーチェックはライブラリ追加とカスタム項目作成に対応しています。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-bell-ringing text-amber-600 dark:text-amber-500" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">通知</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                未記録時のデイリーリマインダーと、期間リセット前日サマリーのON/OFFと時刻を設定できます。
                             </p>
                         </div>
                     </div>
@@ -1807,9 +1831,7 @@
                         <div class="flex-1">
                             <h5 class="font-bold text-sm text-base-900 dark:text-white">データ管理とバックアップ</h5>
                             <p class="text-xs text-blue-900/70 dark:text-blue-200/70 mt-1 leading-relaxed">
-                                NOMUTOREのデータは、あなたの端末内にのみ保存されています。<br>
-                                機種変更や故障に備えて、<strong>設定タブ</strong>からGoogleドライブへのバックアップを定期的に行うことを強く推奨します。<br>
-                                ログのCSV形式でのエクスポート、JSONファイルのダウンロードによるバックアップと復元にも対応しています。
+                                Googleドライブ連携、CSVエクスポート、JSONバックアップ/復元に対応。大切な記録を守るため、定期バックアップがおすすめです。
                             </p>
                             <div class="mt-2">
                                 <button data-action="help:goToSettings" class="text-[11px] font-bold bg-white dark:bg-blue-800 text-blue-600 dark:text-blue-200 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-50 transition shadow-sm">
@@ -1821,7 +1843,6 @@
 
                 </div>
             </section>
-
 <section>
                 <h4 id="help-useful" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-sparkle" aria-hidden="true"></i> 便利な機能
@@ -2119,7 +2140,6 @@
 </body>
 
 </html>
-
 
 
 

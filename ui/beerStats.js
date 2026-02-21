@@ -770,7 +770,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
-                <div id="brewery-ranking-list" class="space-y-2"></div>
+                <div id="brewery-ranking-list"></div>
             </div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
@@ -1590,7 +1590,7 @@ function renderBreweryLeaderboardItem({ brewery, rankIndex, axis, maxVal }) {
     else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${rankIndex + 1}</span>`;
 
     return `
-        <div class="item-row rounded-2xl bg-white dark:bg-base-900 border border-base-100 dark:border-base-700 px-3 py-2.5 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(brewery.brewery)}">
+        <div class="item-row px-2 py-2 cursor-pointer active:scale-[0.98] transition-transform border-b border-gray-100 dark:border-gray-800" data-brewery-name="${escapeHtml(brewery.brewery)}">
             <div class="flex items-center gap-2.5">
                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                 <div class="flex-grow min-w-0">

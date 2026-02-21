@@ -770,7 +770,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
-                <div id="brewery-ranking-list" class="space-y-2"></div>
+                <div id="brewery-ranking-list"></div>
             </div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
@@ -1538,40 +1538,10 @@ function renderBreweryLeaderboard(breweryStats) {
     const showAll = entries.length <= TOP_N + 2; // 残り1-2件なら全部出す
     const visible = showAll ? entries : entries.slice(0, TOP_N);
 
-    listEl.innerHTML = visible.map((b, i) => {
-        // バーの幅を算出 (1位を100%とする)
-        const maxVal = entries[0][axis.key] || 1;
-        const pct = Math.round((b[axis.key] / maxVal) * 100);
-        const value = axis.format(b[axis.key]);
-
-        let rankBadge;
-        if (i === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500" aria-hidden="true"></i>';
-        else if (i === 1) rankBadge = '<span class="text-xs font-black text-gray-500 dark:text-gray-400">2</span>';
-        else if (i === 2) rankBadge = '<span class="text-xs font-black text-amber-700">3</span>';
-        else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
-
-        // サブ情報: 現在の軸以外の主要指標を1つ表示
-        const subInfo = buildBrewerySubInfo(b, axis.key);
-
-        return `
-            <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
-                <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
-                <div class="relative flex items-center gap-2.5 px-3 py-2.5">
-                    <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
-                    <div class="flex-grow min-w-0">
-                        <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">${subInfo}</p>
-                    </div>
-                    <div class="flex-shrink-0 text-right flex items-center gap-1.5">
-                        <div>
-                            <span class="text-lg font-black text-brand dark:text-brand-light leading-none">${value}</span>
-                            <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
-                        </div>
-                        <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
-                    </div>
-                </div>
-            </div>`;
-    }).join('');
+    const maxVal = entries[0][axis.key] || 1;
+    listEl.innerHTML = visible
+        .map((b, i) => renderBreweryLeaderboardItem({ brewery: b, rankIndex: i, axis, maxVal }))
+        .join('');
 
     // ブルワリーエントリのクリックイベント
     // ★修正: イベントデリゲーションに変更
@@ -1599,36 +1569,43 @@ function renderBreweryLeaderboard(breweryStats) {
                 // 残り全件を追加
                 const extra = entries.slice(TOP_N);
                 showAllBtn.remove();
-                const fragment = extra.map((b, idx) => {
-                    const i = idx + TOP_N;
-                    const maxVal = entries[0][axis.key] || 1;
-                    const pct = Math.round((b[axis.key] / maxVal) * 100);
-                    const value = axis.format(b[axis.key]);
-                    const rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
-                    const subInfo = buildBrewerySubInfo(b, axis.key);
-                    return `
-                        <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
-                            <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
-                            <div class="relative flex items-center gap-2.5 px-3 py-2.5">
-                                <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
-                                <div class="flex-grow min-w-0">
-                                    <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(b.brewery)}</p>
-                                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate">${subInfo}</p>
-                                </div>
-                                <div class="flex-shrink-0 text-right flex items-center gap-1.5">
-                                    <div>
-                                        <span class="text-lg font-black text-brand dark:text-brand-light leading-none">${value}</span>
-                                        <span class="text-[11px] text-gray-500 dark:text-gray-400 font-bold ml-0.5">${axis.unit}</span>
-                                    </div>
-                                    <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600" aria-hidden="true"></i>
-                                </div>
-                            </div>
-                        </div>`;
-                }).join('');
+                const fragment = extra
+                    .map((b, idx) => renderBreweryLeaderboardItem({ brewery: b, rankIndex: idx + TOP_N, axis, maxVal }))
+                    .join('');
                 listEl.insertAdjacentHTML('beforeend', fragment);
             });
         }
     }
+}
+
+function renderBreweryLeaderboardItem({ brewery, rankIndex, axis, maxVal }) {
+    const pct = Math.round((brewery[axis.key] / maxVal) * 100);
+    const value = axis.format(brewery[axis.key]);
+    const subInfo = buildBrewerySubInfo(brewery, axis.key);
+    let rankBadge;
+
+    if (rankIndex === 0) rankBadge = '<i class="ph-duotone ph-crown text-lg text-yellow-500" aria-hidden="true"></i>';
+    else if (rankIndex === 1) rankBadge = '<span class="text-xs font-black text-gray-500 dark:text-gray-400">2</span>';
+    else if (rankIndex === 2) rankBadge = '<span class="text-xs font-black text-amber-700">3</span>';
+    else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${rankIndex + 1}</span>`;
+
+    return `
+        <div class="item-row px-2 py-2 cursor-pointer active:scale-[0.98] transition-transform border-b border-gray-100 dark:border-gray-800" data-brewery-name="${escapeHtml(brewery.brewery)}">
+            <div class="flex items-center gap-2.5">
+                <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
+                <div class="flex-grow min-w-0">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(brewery.brewery)}</p>
+                        <p class="text-[11px] font-black text-brand dark:text-brand-light whitespace-nowrap">${value}${axis.unit}</p>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate mt-0.5">${subInfo}</p>
+                    <div class="mt-1.5 h-1.5 rounded-full bg-gray-100 dark:bg-base-800 overflow-hidden" aria-hidden="true">
+                        <div class="h-full rounded-full bg-indigo-400 dark:bg-indigo-500" style="width: ${pct}%"></div>
+                    </div>
+                </div>
+                <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600 flex-shrink-0" aria-hidden="true"></i>
+            </div>
+        </div>`;
 }
 
 /**

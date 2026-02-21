@@ -139,7 +139,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         
         if (dateStr !== currentDateStr) {
             const header = document.createElement('li');
-            header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
+            header.className = "sticky-section-shell py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 mt-1";
             header.innerHTML = `<span>${dateStr}</span>`;
             fragment.appendChild(header);
             currentDateStr = dateStr;

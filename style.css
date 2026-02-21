@@ -77,6 +77,39 @@ body {
     color: rgb(165 180 252);
 }
 
+
+
+/* --- Phase 4: visual refinement tokens --- */
+.section-helper {
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgb(107 114 128);
+}
+
+.dark .section-helper {
+    color: rgb(156 163 175);
+}
+
+.section-icon {
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.sticky-section-shell {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background-color: rgba(248, 250, 252, 0.95);
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+.dark .sticky-section-shell {
+    background-color: rgba(15, 23, 42, 0.95);
+    border-bottom-color: rgb(31 41 55);
+}
+
 /* --- Animations --- */
 .tab-content {
     display: none;

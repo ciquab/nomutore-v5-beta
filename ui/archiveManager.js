@@ -9,9 +9,17 @@ export async function renderArchives() {
     // DBからアーカイブ取得 (新しい順)
     const archives = await Service.getArchives();
 
+    const headerHtml = `
+        <section class="px-1 mb-3">
+            <h3 class="text-sm font-bold text-base-900 dark:text-white">アーカイブ</h3>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">完了した期間の結果を一覧で確認できます</p>
+        </section>
+    `;
+
     if (archives.length === 0) {
         container.innerHTML = `
-            <div class="flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
+            ${headerHtml}
+            <div class="empty-state flex flex-col items-center justify-center h-64 text-gray-500 dark:text-gray-400">
                 <i class="ph-duotone ph-archive text-4xl mb-2" aria-hidden="true"></i>
                 <p class="text-sm font-bold">アーカイブはまだありません</p>
                 <p class="text-xs opacity-60">期間が完了するとここに表示されます</p>
@@ -50,5 +58,5 @@ export async function renderArchives() {
         `;
     }).join('');
 
-    container.innerHTML = `<div class="pb-20">${html}</div>`;
+    container.innerHTML = `${headerHtml}<div class="pb-20">${html}</div>`;
 }

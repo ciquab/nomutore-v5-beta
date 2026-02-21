@@ -121,7 +121,13 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>まだ記録がありません</li>`;
+        listEl.innerHTML = `
+            <li class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 empty-state">
+                <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
+                <p class="text-sm font-bold">記録はまだありません</p>
+                <p class="text-xs opacity-60">Recordタブから最初の1件を追加してみましょう</p>
+            </li>
+        `;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
         return;
     }

@@ -8,6 +8,8 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 import { StateManager } from './state.js';
 
 let statsChart = null;
+let flavorTrendChart = null;
+let rollingTrendChart = null;
 
 // モジュールスコープでビールデータを保持（ブルワリー詳細表示用）
 let _allBeers = [];
@@ -71,6 +73,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     const heatmap = buildWeekdayTimeHeatmap(periodBeerLogs);
     const perSessionProfile = buildPerSessionProfile(periodBeerLogs);
     const explorationBalance = buildExplorationBalance(periodBeerLogs);
+    const flavorTrend = buildFlavorTrendData(allLogs, periodRange.endTs);
+    const rollingTrend = buildRollingBeerTrend(allLogs, periodRange.endTs);
     const beerInsights = generateBeerInsights({
         periodStats,
         previousStats,
@@ -180,8 +184,44 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
             </div>
 
+            <div class="glass-panel p-5 rounded-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-radar section-icon text-fuchsia-500" aria-hidden="true"></i> フレーバー推移</h3>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">最近30日 vs 過去90日</span>
+                </div>
+                ${flavorTrend.hasData ? `
+                    <div class="h-56 w-full">
+                        <canvas id="beerFlavorTrendChart"></canvas>
+                    </div>
+                    <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+                        ${flavorTrend.topChanges.map(item => `
+                            <div class="rounded-xl border border-fuchsia-100 dark:border-fuchsia-900/40 bg-fuchsia-50/60 dark:bg-fuchsia-900/20 p-2.5">
+                                <p class="font-semibold text-gray-500 dark:text-gray-400">${escapeHtml(item.label)}</p>
+                                <p class="font-black ${item.delta >= 0 ? 'text-fuchsia-600 dark:text-fuchsia-300' : 'text-emerald-600 dark:text-emerald-300'}">${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <div class="empty-state flex flex-col items-center justify-center py-8 text-gray-500 dark:text-gray-400">
+                        <i class="ph-duotone ph-beer-bottle text-3xl mb-2" aria-hidden="true"></i>
+                        <p class="text-sm font-bold">フレーバーデータが不足しています</p>
+                        <p class="text-xs opacity-60">味わい付きの記録で比較が表示されます</p>
+                    </div>
+                `}
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-line section-icon text-cyan-500" aria-hidden="true"></i> 4週間ローリングトレンド</h3>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">週次推移</span>
+                </div>
+                <div class="h-56 w-full">
+                    <canvas id="beerRollingTrendChart"></canvas>
+                </div>
+            </div>
+
             <div class="glass-panel p-5 rounded-2xl relative">
-                <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
                 <div class="h-48 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -208,8 +248,10 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
         </div>
     `;
 
-    // チャート描画（全期間のスタイル傾向）
+    // チャート描画
     renderStyleChart(allStats.styleCounts);
+    renderFlavorTrendChart(flavorTrend);
+    renderRollingTrendChart(rollingTrend);
 }
 
 /**
@@ -447,6 +489,198 @@ function renderSessionMetric(label, data, unit = '') {
             <p class="text-gray-700 dark:text-gray-300 font-bold">P90 <span class="text-base text-base-900 dark:text-white">${Math.round(data.p90)}${suffix}</span></p>
         </div>
     `;
+}
+
+function calcAvgFlavorByLogs(logs) {
+    const target = (logs || []).filter(l => l.type === 'beer' && l.flavorProfile);
+    if (target.length === 0) return null;
+
+    const sums = Object.fromEntries(FLAVOR_AXES.map(a => [a.key, 0]));
+    const counts = Object.fromEntries(FLAVOR_AXES.map(a => [a.key, 0]));
+
+    target.forEach(l => {
+        FLAVOR_AXES.forEach(a => {
+            const v = l.flavorProfile?.[a.key];
+            if (v !== null && v !== undefined) {
+                sums[a.key] += v;
+                counts[a.key] += 1;
+            }
+        });
+    });
+
+    const avg = {};
+    let has = false;
+    FLAVOR_AXES.forEach(a => {
+        if (counts[a.key] > 0) {
+            avg[a.key] = Math.round((sums[a.key] / counts[a.key]) * 10) / 10;
+            has = true;
+        } else {
+            avg[a.key] = 0;
+        }
+    });
+    return has ? avg : null;
+}
+
+function buildFlavorTrendData(allLogs, endTs = Date.now()) {
+    const end = dayjs(endTs);
+    const recentStart = end.subtract(30, 'day').startOf('day').valueOf();
+    const baselineStart = end.subtract(120, 'day').startOf('day').valueOf();
+    const baselineEnd = end.subtract(31, 'day').endOf('day').valueOf();
+
+    const recentLogs = (allLogs || []).filter(l => l.type === 'beer' && l.timestamp >= recentStart && l.timestamp <= end.valueOf());
+    const baselineLogs = (allLogs || []).filter(l => l.type === 'beer' && l.timestamp >= baselineStart && l.timestamp <= baselineEnd);
+
+    const recentAvg = calcAvgFlavorByLogs(recentLogs);
+    const baselineAvg = calcAvgFlavorByLogs(baselineLogs);
+
+    if (!recentAvg || !baselineAvg) {
+        return { hasData: false, recentAvg: null, baselineAvg: null, topChanges: [] };
+    }
+
+    const topChanges = FLAVOR_AXES.map(a => ({
+        key: a.key,
+        label: a.label,
+        delta: Math.round(((recentAvg[a.key] || 0) - (baselineAvg[a.key] || 0)) * 10) / 10
+    }))
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+        .slice(0, 3);
+
+    return { hasData: true, recentAvg, baselineAvg, topChanges };
+}
+
+function buildRollingBeerTrend(allLogs, endTs = Date.now()) {
+    const end = dayjs(endTs).endOf('day');
+    const labels = [];
+    const alcohol = [];
+    const avgAbv = [];
+    const styleVariety = [];
+
+    for (let i = 3; i >= 0; i--) {
+        const rangeEnd = end.subtract(i * 7, 'day');
+        const rangeStart = rangeEnd.subtract(6, 'day').startOf('day');
+        const bucketLogs = (allLogs || []).filter(l =>
+            l.type === 'beer' &&
+            l.timestamp >= rangeStart.valueOf() &&
+            l.timestamp <= rangeEnd.valueOf()
+        );
+
+        labels.push(`${rangeStart.format('M/D')}-${rangeEnd.format('M/D')}`);
+        alcohol.push(Math.round(Calc.calcTotalPureAlcohol(bucketLogs)));
+        avgAbv.push(calcAverageAbv(bucketLogs));
+        styleVariety.push(new Set(bucketLogs.map(l => l.style || 'Unknown')).size);
+    }
+
+    return { labels, alcohol, avgAbv, styleVariety };
+}
+
+function renderFlavorTrendChart(flavorTrend) {
+    const ctx = document.getElementById('beerFlavorTrendChart');
+    if (!ctx || !flavorTrend?.hasData) return;
+    if (flavorTrendChart) flavorTrendChart.destroy();
+
+    const labels = FLAVOR_AXES.map(a => a.label);
+    const recent = FLAVOR_AXES.map(a => flavorTrend.recentAvg[a.key] || 0);
+    const baseline = FLAVOR_AXES.map(a => flavorTrend.baselineAvg[a.key] || 0);
+
+    flavorTrendChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '最近30日',
+                    data: recent,
+                    backgroundColor: 'rgba(192, 38, 211, 0.18)',
+                    borderColor: 'rgba(192, 38, 211, 0.85)',
+                    borderWidth: 2,
+                    pointRadius: 3
+                },
+                {
+                    label: '過去90日',
+                    data: baseline,
+                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                    borderColor: 'rgba(14, 165, 233, 0.8)',
+                    borderWidth: 2,
+                    pointRadius: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+            scales: {
+                r: {
+                    min: 0,
+                    max: FLAVOR_SCALE_MAX,
+                    ticks: { stepSize: 1, display: false },
+                    pointLabels: { font: { size: 10, weight: 'bold' } }
+                }
+            }
+        }
+    });
+}
+
+function renderRollingTrendChart(rollingTrend) {
+    const ctx = document.getElementById('beerRollingTrendChart');
+    if (!ctx) return;
+    if (rollingTrendChart) rollingTrendChart.destroy();
+
+    rollingTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: rollingTrend.labels,
+            datasets: [
+                {
+                    label: '純アルコール(g)',
+                    data: rollingTrend.alcohol,
+                    borderColor: 'rgba(239, 68, 68, 0.9)',
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    tension: 0.35,
+                    borderWidth: 2,
+                    yAxisID: 'y'
+                },
+                {
+                    label: '平均ABV(%)',
+                    data: rollingTrend.avgAbv,
+                    borderColor: 'rgba(59, 130, 246, 0.9)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                    tension: 0.35,
+                    borderWidth: 2,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'スタイル数',
+                    data: rollingTrend.styleVariety,
+                    borderColor: 'rgba(16, 185, 129, 0.9)',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    tension: 0.35,
+                    borderWidth: 2,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '純アルコール(g)' }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'ABV / スタイル数' }
+                }
+            }
+        }
+    });
 }
 
 /**

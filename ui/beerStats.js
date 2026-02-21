@@ -5,6 +5,7 @@ import { DOM, escapeHtml } from './dom.js';
 import { STYLE_METADATA, FLAVOR_AXES, FLAVOR_SCALE_MAX } from '../constants.js';
 import { openLogDetail } from './logDetail.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
+import { StateManager } from './state.js';
 
 let statsChart = null;
 
@@ -244,19 +245,29 @@ export function renderHealthInsights(allLogs, checks) {
     const section = document.getElementById('health-insights-section');
     if (!section) return;
 
-    // --- 1. 飲酒日 vs 休肝日 の状態/行動比較 ---
     const now = dayjs();
+    const chartRange = StateManager.chartRange || '1m';
+    const rangeStart = chartRange === '1w'
+        ? now.subtract(7, 'day').startOf('day')
+        : chartRange === '1m'
+            ? now.subtract(1, 'month').startOf('day')
+            : now.subtract(3, 'month').startOf('day');
+
+    const rangeChecks = checks.filter(c => c.timestamp >= rangeStart.valueOf());
+    const rangeLogs = allLogs.filter(l => l.timestamp >= rangeStart.valueOf());
+
+    // --- 1. 飲酒日 vs 休肝日 の状態/行動比較 ---
     const drinkingStateScores = [];
     const restStateScores = [];
     const drinkingActionScores = [];
     const restActionScores = [];
 
-    checks.forEach(c => {
+    rangeChecks.forEach(c => {
         if (!c.isSaved) return;
         const stateScore = Calc.calcStateScore(c);
         const actionScore = Calc.calcActionScore(c);
 
-        const hasBeer = Calc.hasAlcoholLog(allLogs, c.timestamp);
+        const hasBeer = Calc.hasAlcoholLog(rangeLogs, c.timestamp);
         if (c.isDryDay && !hasBeer) {
             if (stateScore !== null) restStateScores.push(stateScore);
             if (actionScore !== null) restActionScores.push(actionScore);
@@ -279,8 +290,8 @@ export function renderHealthInsights(allLogs, checks) {
     const hasStateMetricData = drinkingStateScores.length > 0 || restStateScores.length > 0;
     const hasActionMetricData = drinkingActionScores.length > 0 || restActionScores.length > 0;
 
-    // --- 2. 状態/行動推移データ (直近14日) ---
-    const chartDays = 14;
+    // --- 2. 状態/行動推移データ ---
+    const chartDays = chartRange === '1w' ? 7 : chartRange === '1m' ? 30 : 90;
     const chartStart = now.subtract(chartDays - 1, 'day').startOf('day');
     const chartLabels = [];
     const alcoholData = [];
@@ -295,14 +306,12 @@ export function renderHealthInsights(allLogs, checks) {
 
         chartLabels.push(dateStr);
 
-        // 純アルコール量
-        const dayBeerLogs = allLogs.filter(l =>
+        const dayBeerLogs = rangeLogs.filter(l =>
             l.type === 'beer' && l.timestamp >= dayStart && l.timestamp <= dayEnd
         );
         alcoholData.push(Math.round(Calc.calcTotalPureAlcohol(dayBeerLogs)));
 
-        // 状態達成率 / 行動達成率
-        const dayCheck = checks.find(c =>
+        const dayCheck = rangeChecks.find(c =>
             c.isSaved && c.timestamp >= dayStart && c.timestamp <= dayEnd
         );
         const stateScore = dayCheck ? Calc.calcStateScore(dayCheck) : null;
@@ -324,18 +333,23 @@ export function renderHealthInsights(allLogs, checks) {
     });
 
     // --- 4. 体重トレンド (条件付き) ---
-    const weightEntries = checks.filter(c => c.isSaved && c.weight > 0).sort((a, b) => a.timestamp - b.timestamp);
+    const weightEntries = rangeChecks.filter(c => c.isSaved && c.weight > 0).sort((a, b) => a.timestamp - b.timestamp);
     const hasWeight = weightEntries.length >= 5;
 
-    // --- HTML 描画 ---
     section.innerHTML = `
         <div class="glass-panel p-5 rounded-2xl relative">
-            <h3 class="text-sm font-bold flex items-center gap-2 mb-4"><i class="ph-fill ph-heartbeat section-icon text-rose-500" aria-hidden="true"></i> ヘルスインサイト</h3>
+            <div class="flex items-center justify-between gap-3 mb-4">
+                <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-heartbeat section-icon text-rose-500" aria-hidden="true"></i> ヘルスインサイト</h3>
+                <div id="health-insights-filters" role="group" aria-label="ヘルスインサイト期間フィルター" class="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                    ${['1w', '1m', '3m'].map(range => {
+                        const active = range === chartRange;
+                        return `<button data-range="${range}" data-action="chart:period" data-args='{"range":"${range}"}' aria-pressed="${active}" class="px-2 py-1 text-[11px] font-bold rounded-md transition-all ${active ? 'bg-white dark:bg-gray-600 text-brand dark:text-indigo-300 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}">${range.toUpperCase()}</button>`;
+                    }).join('')}
+                </div>
+            </div>
 
-
-            <!-- 飲んだ日 vs 休肝日 -->
             <div class="mb-5">
-                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">比較：飲酒日 vs 休肝日（${chartRange.toUpperCase()}）</p>
                 <div class="grid grid-cols-2 gap-3 mb-2 ${hasStateMetricData ? '' : 'opacity-60 grayscale'}">
                     <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl text-center border border-red-100 dark:border-red-800/50">
                         <p class="text-[11px] font-bold text-red-400 uppercase mb-1">状態達成率（飲酒日）</p>
@@ -366,15 +380,13 @@ export function renderHealthInsights(allLogs, checks) {
                 ${(!hasActionComparison || drinkingActionScores.length < 3 || restActionScores.length < 3) ? '<p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold mt-1 text-center">行動達成率比較は各3日以上で安定します</p>' : ''}
             </div>
 
-            <!-- コンディション推移チャート -->
             <div class="mb-4">
-                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（14日間）</p>
-                <div class="h-40 w-full relative">
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">状態/行動の達成率推移（${chartRange.toUpperCase()}）</p>
+                <div class="h-56 w-full relative">
                     <canvas id="healthInsightsChart"></canvas>
                 </div>
             </div>
 
-            <!-- テキストインサイト -->
             ${(insights.stateText || insights.actionText) ? `
             <div class="space-y-2">
                 ${insights.stateText ? `
@@ -396,10 +408,9 @@ export function renderHealthInsights(allLogs, checks) {
             </div>
             ` : ''}
 
-            <!-- 体重トレンド (条件付き) -->
             ${hasWeight ? `
             <div class="mt-4">
-                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">体重推移</p>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">体重推移（${chartRange.toUpperCase()}）</p>
                 <div class="h-32 w-full relative">
                     <canvas id="weightTrendChart"></canvas>
                 </div>
@@ -408,10 +419,8 @@ export function renderHealthInsights(allLogs, checks) {
         </div>
     `;
 
-    // チャート描画
     renderHealthChart(chartLabels, alcoholData, stateData, actionData);
 
-    // 体重チャート描画
     if (hasWeight) {
         renderWeightChart(weightEntries);
     }
@@ -424,6 +433,9 @@ function renderHealthChart(labels, alcoholData, stateData, actionData) {
     const ctx = document.getElementById('healthInsightsChart');
     if (!ctx) return;
     if (insightsChart) insightsChart.destroy();
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#9CA3AF' : '#6B7280';
 
     insightsChart = new Chart(ctx, {
         type: 'bar',
@@ -475,7 +487,11 @@ function renderHealthChart(labels, alcoholData, stateData, actionData) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: false },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { color: textColor, boxWidth: 10, padding: 12, font: { size: 9, weight: 'bold' } }
+                },
                 tooltip: {
                     backgroundColor: 'rgba(0,0,0,0.8)',
                     bodyFont: { size: 11, weight: 'bold' },
@@ -491,20 +507,20 @@ function renderHealthChart(labels, alcoholData, stateData, actionData) {
             },
             scales: {
                 x: {
-                    ticks: { font: { size: 9, weight: 'bold' }, maxRotation: 45 },
+                    ticks: { color: textColor, font: { size: 9, weight: 'bold' }, maxRotation: 45 },
                     grid: { display: false }
                 },
                 y: {
                     position: 'right',
                     title: { display: false },
-                    ticks: { font: { size: 9 }, callback: v => `${v}g` },
-                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: { color: textColor, font: { size: 9 }, callback: v => `${v}g` },
+                    grid: { color: isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(0,0,0,0.05)' },
                     min: 0
                 },
                 y1: {
                     position: 'left',
                     title: { display: false },
-                    ticks: { font: { size: 9 }, callback: v => `${v}%` },
+                    ticks: { color: '#6366F1', font: { size: 9, weight: 'bold' }, callback: v => `${v}%` },
                     grid: { display: false },
                     min: 0,
                     max: 100

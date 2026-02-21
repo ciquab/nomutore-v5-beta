@@ -56,7 +56,6 @@ export function renderChart(logs, checks) {
                          now.subtract(3, 'month').valueOf();
 
         const profile = Store.getProfile();
-        const baseEx = profile.baseExercise || 'walking';
 
         // --- データセット準備 ---
         const dateMap = new Map();
@@ -115,7 +114,7 @@ export function renderChart(logs, checks) {
                 datasets: [
                     {
                         label: '返済',
-                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.earned, baseEx, profile))),
+                        data: dataArray.map(d => Math.round(d.earned)),
                         backgroundColor: 'rgba(16, 185, 129, 0.7)',
                         borderRadius: 4,
                         stack: '0',
@@ -124,7 +123,7 @@ export function renderChart(logs, checks) {
                     },
                     {
                         label: '借金',
-                        data: dataArray.map(d => Math.round(Calc.convertKcalToMinutes(d.consumed, baseEx, profile))),
+                        data: dataArray.map(d => Math.round(d.consumed)),
                         backgroundColor: 'rgba(239, 68, 68, 0.5)',
                         borderRadius: 4,
                         stack: '0',
@@ -161,7 +160,7 @@ export function renderChart(logs, checks) {
                     y: {
                         beginAtZero: true,
                         position: 'left',
-                        ticks: { color: textColor, font: { size: 9 }, callback: v => `${v}min` },
+                        ticks: { color: textColor, font: { size: 9 }, callback: v => `${v}kcal` },
                         grid: { color: isDark ? 'rgba(75, 85, 99, 0.2)' : 'rgba(0,0,0,0.05)' }
                     },
                     y1: {
@@ -188,7 +187,7 @@ export function renderChart(logs, checks) {
                         callbacks: {
                             label: (ctx) => {
                                 if (ctx.dataset.label === '体重') return `体重: ${ctx.raw ?? '-'}kg`;
-                                return `${ctx.dataset.label}: ${ctx.raw ?? 0}min`;
+                                return `${ctx.dataset.label}: ${ctx.raw ?? 0}kcal`;
                             }
                         }
                     }

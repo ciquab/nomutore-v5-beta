@@ -760,13 +760,13 @@ export function renderBeerCollection(periodLogs, allLogs) {
     container.innerHTML = `
         <div id="beer-collection-section">
             <section class="px-1 mb-3">
-                <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">コレクション</h3>
+                <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Collections</p>
                 <p class="section-helper mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
             </section>
 
             <section id="brewery-leaderboard-section" class="px-1 mb-1">
                 <div class="flex items-center justify-between mb-1">
-                    <h3 class="section-title text-sm font-bold text-base-900 dark:text-white flex items-center gap-2"><i class="ph-fill ph-trophy section-icon text-amber-500" aria-hidden="true"></i>ブルワリーランキング</h3>
+                    <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">ブルワリーランキング</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
                 <p class="section-helper">軸を切り替えてブルワリー傾向を比較できます</p>

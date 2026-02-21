@@ -70,6 +70,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
     const focusBeerLogs = (scopedLogs || []).filter(l => l.type === 'beer');
     const periodRange = deriveBeerPeriodRange(scopedLogs, allLogs);
+    const firstTryBeers = calcFirstTryBeerCount(focusBeerLogs, allLogs, periodRange.startTs);
     const previousBeerLogs = getPreviousPeriodBeerLogs(allLogs, periodRange);
     const focusAlcohol = Math.round(Calc.calcTotalPureAlcohol(focusBeerLogs));
     const previousStats = Calc.getBeerStats(previousBeerLogs);
@@ -115,8 +116,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <p class="text-xl font-black text-brand dark:text-brand-light">${(focusStats.totalMl / 1000).toFixed(1)}<span class="text-xs ml-1">L</span></p>
                 </div>
                 <div class="bg-emerald-50 dark:bg-emerald-900/20 p-2.5 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
-                    <p class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">全銘柄数</p>
-                    <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${allStats.uniqueBeersCount}<span class="text-xs ml-1">種</span></p>
+                    <p class="text-[10px] font-bold text-emerald-800 dark:text-emerald-200 uppercase">新規銘柄</p>
+                    <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${firstTryBeers}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
 
@@ -263,6 +264,25 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     renderStyleChart(allStats.styleCounts);
     renderFlavorTrendChart(flavorTrend);
     renderRollingTrendChart(rollingTrend);
+}
+
+function buildBeerIdentity(log) {
+    const brewery = (log.brewery || '').trim() || 'Unknown';
+    const brand = (log.brand || log.name || '').trim() || 'Unknown Beer';
+    return `${brewery}|${brand}`;
+}
+
+function calcFirstTryBeerCount(focusBeerLogs, allLogs, startTs) {
+    const historicalSet = new Set((allLogs || [])
+        .filter(l => l.type === 'beer' && Number.isFinite(l.timestamp) && l.timestamp < startTs)
+        .map(buildBeerIdentity));
+
+    const firstTrySet = new Set();
+    (focusBeerLogs || []).forEach(l => {
+        const key = buildBeerIdentity(l);
+        if (!historicalSet.has(key)) firstTrySet.add(key);
+    });
+    return firstTrySet.size;
 }
 
 /**

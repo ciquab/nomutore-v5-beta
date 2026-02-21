@@ -123,7 +123,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-radar section-icon text-fuchsia-500" aria-hidden="true"></i> フレーバー推移</h3>
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-pie section-icon text-fuchsia-500" aria-hidden="true"></i> フレーバー推移</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">最近30日 vs 過去90日</span>
                 </div>
                 ${flavorTrend.hasData ? `

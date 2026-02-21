@@ -4,10 +4,73 @@ import { db, Store } from './store.js';
 import { Calc } from './logic.js';
 import { EventBus, Events } from './eventBus.js';
 import { CloudManager } from './cloudManager.js';
+import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export const DataManager = {
 
 // --- 共通ロジック (Internal) ---
+
+
+    _getArchiveBackfillMode: () => {
+        const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+        return (mode === 'weekly' || mode === 'monthly') ? mode : null;
+    },
+
+    _calculateBackfillStart: (mode, ts) => {
+        const d = dayjs(ts).startOf('day');
+        if (mode === 'weekly') {
+            const day = d.day() || 7;
+            return d.subtract(day - 1, 'day').startOf('day');
+        }
+        return d.startOf('month');
+    },
+
+    _backfillPeriodArchivesFromLogs: async (mode) => {
+        if (!db.period_archives || (mode !== 'weekly' && mode !== 'monthly')) return { created: 0 };
+
+        const allLogs = await db.logs.toArray();
+        if (allLogs.length === 0) return { created: 0 };
+
+        const minTs = Math.min(...allLogs.map(l => l.timestamp || Date.now()));
+        const now = dayjs();
+        const currentStart = mode === 'weekly'
+            ? DataManager._calculateBackfillStart('weekly', now.valueOf())
+            : now.startOf('month');
+
+        let cursor = DataManager._calculateBackfillStart(mode, minTs);
+        let created = 0;
+
+        while (cursor.isBefore(currentStart, 'day')) {
+            const next = mode === 'weekly'
+                ? cursor.add(7, 'day').startOf('day')
+                : cursor.add(1, 'month').startOf('month');
+
+            const startTs = cursor.valueOf();
+            const endTs = next.valueOf() - 1;
+
+            const existing = await db.period_archives.where('startDate').equals(startTs).first();
+            if (!existing) {
+                const periodLogs = allLogs.filter(log => log.timestamp >= startTs && log.timestamp <= endTs);
+                const totalBalance = periodLogs.reduce((sum, log) => sum + (log.kcal || 0), 0);
+
+                await db.period_archives.add({
+                    startDate: startTs,
+                    endDate: endTs,
+                    mode,
+                    totalBalance,
+                    logs: periodLogs,
+                    createdAt: Date.now(),
+                    generatedBy: 'restore-backfill'
+                });
+                created++;
+            }
+
+            cursor = next;
+        }
+
+        return { created };
+    },
+
 
     /**
      * バックアップ用の全データオブジェクトを生成する
@@ -108,6 +171,31 @@ export const DataManager = {
                 Object.entries(d.settings).forEach(([key, val]) => {
                     localStorage.setItem(key, val);
                 });
+            }
+
+            const backfillMode = DataManager._getArchiveBackfillMode();
+            if (archives.length === 0 && backfillMode && typeof options.confirmArchiveBackfill === 'function') {
+                const shouldBackfill = await options.confirmArchiveBackfill({
+                    mode: backfillMode,
+                    logsCount: logs.length,
+                    checksCount: checks.length,
+                    archivesCount: archives.length
+                });
+
+                if (shouldBackfill) {
+                    const result = await DataManager._backfillPeriodArchivesFromLogs(backfillMode);
+                    if (result.created > 0) {
+                        EventBus.emit(Events.NOTIFY, {
+                            message: `復元ログから${result.created}件の${backfillMode === 'weekly' ? '週次' : '月次'}アーカイブを生成しました`,
+                            type: 'success'
+                        });
+                    } else {
+                        EventBus.emit(Events.NOTIFY, {
+                            message: '生成対象の完了期間がないため、アーカイブは追加されませんでした',
+                            type: 'info'
+                        });
+                    }
+                }
             }
 
             localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');

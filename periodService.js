@@ -34,8 +34,6 @@ export const PeriodService = {
     updatePeriodSettings: async (newMode, customData = {}) => {
         localStorage.setItem(APP.STORAGE_KEYS.PERIOD_MODE, newMode);
 
-        let restoredCount = 0;
-
         if (newMode === 'custom') {
             if (customData.startDate) {
                 localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, dayjs(customData.startDate).startOf('day').valueOf());
@@ -47,18 +45,10 @@ export const PeriodService = {
                 localStorage.setItem(APP.STORAGE_KEYS.CUSTOM_LABEL, customData.label || 'Project');
             }
         } else if (newMode === 'permanent') {
-            const archives = await db.period_archives.toArray();
-            if (archives.length > 0) {
-                for (const arch of archives) {
-                    if (arch.logs && arch.logs.length > 0) {
-                        const logsToRestore = arch.logs.map(({id, ...rest}) => rest);
-                        await LogService.bulkAdd(logsToRestore);
-                        restoredCount += logsToRestore.length;
-                    }
-                }
-                await db.period_archives.clear();
-                localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, 0);
-            }
+            // A-2-2方針:
+            // permanent は QueryService 側で「全ログ表示」となるため、
+            // アーカイブ復元や削除は行わず参照データとして保持する。
+            localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, 0);
         } else {
             const start = PeriodService.calculatePeriodStart(newMode);
             localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, start);
@@ -66,7 +56,7 @@ export const PeriodService = {
 
         return {
             mode: newMode,
-            restoredCount: restoredCount
+            restoredCount: 0
         };
     },
 

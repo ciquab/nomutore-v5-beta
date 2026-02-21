@@ -121,7 +121,13 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const fragment = document.createDocumentFragment();
 
     if (logs.length === 0) {
-        listEl.innerHTML = `<li class="text-center text-gray-500 dark:text-gray-400 py-10 text-xs flex flex-col items-center"><i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>まだ記録がありません</li>`;
+        listEl.innerHTML = `
+            <li class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 empty-state">
+                <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
+                <p class="text-sm font-bold">記録はまだありません</p>
+                <p class="text-xs opacity-60">Recordタブから最初の1件を追加してみましょう</p>
+            </li>
+        `;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
         return;
     }
@@ -133,14 +139,14 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         
         if (dateStr !== currentDateStr) {
             const header = document.createElement('li');
-            header.className = "sticky top-[-1px] z-20 bg-base-50/95 dark:bg-base-900/95 backdrop-blur-sm py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest border-b border-indigo-100 dark:border-indigo-900/50 mb-3 mt-1";
+            header.className = "sticky-section-shell py-2 px-1 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-3 mt-1";
             header.innerHTML = `<span>${dateStr}</span>`;
             fragment.appendChild(header);
             currentDateStr = dateStr;
         }
 
         const li = document.createElement('li');
-        li.className = "log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
+        li.className = "item-row log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         li.dataset.logId = log.id;
         

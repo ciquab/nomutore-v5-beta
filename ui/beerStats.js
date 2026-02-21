@@ -121,7 +121,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
     container.innerHTML = `
         <div id="beer-collection-section">
             <section class="px-1 mb-3">
-                <h3 class="text-sm font-bold text-base-900 dark:text-white">コレクション</h3>
+                <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">コレクション</h3>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
             </section>
 
@@ -136,7 +136,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
             <div class="sticky top-0 bg-base-50/95 dark:bg-base-900/95 backdrop-blur z-20 py-3 -mx-2 px-2 border-b border-gray-200 dark:border-gray-800">
                 <div class="flex items-center justify-between mb-1 px-1">
-                    <h3 class="text-sm font-bold text-base-900 dark:text-white">マイビール</h3>
+                    <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">マイビール</h3>
                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 px-1 mb-3">検索・フィルターで条件を絞り込めます</p>
@@ -766,7 +766,7 @@ function renderBeerList(beers) {
         const iconHtml = DOM.renderIcon(iconDef, `text-3xl ${iconColor}`);
 
         return `
-            <div class="flex items-center bg-white dark:bg-base-900 p-4 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
+            <div class="item-card flex items-center bg-white dark:bg-base-900 p-4 rounded-2xl shadow-sm border border-base-100 dark:border-base-700 cursor-pointer active:scale-[0.98] transition-transform" data-beer-brewery="${escapeHtml(beer.brewery || '')}" data-beer-name="${escapeHtml(beer.name)}">
                 <div class="flex-shrink-0 w-8 text-center mr-1">${rankBadge}</div>
 
                 <div class="flex-grow min-w-0">
@@ -900,7 +900,7 @@ function renderBreweryLeaderboard(breweryStats) {
         const subInfo = buildBrewerySubInfo(b, axis.key);
 
         return `
-            <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+            <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                 <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                 <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                     <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
@@ -953,7 +953,7 @@ function renderBreweryLeaderboard(breweryStats) {
                     const rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${i + 1}</span>`;
                     const subInfo = buildBrewerySubInfo(b, axis.key);
                     return `
-                        <div class="relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
+                        <div class="item-card relative overflow-hidden rounded-xl bg-white dark:bg-base-900 border border-gray-100 dark:border-gray-800 cursor-pointer active:scale-[0.98] transition-transform" data-brewery-name="${escapeHtml(b.brewery)}">
                             <div class="absolute inset-y-0 left-0 bg-indigo-50 dark:bg-indigo-900/20 transition-all duration-500" style="width: ${pct}%"></div>
                             <div class="relative flex items-center gap-2.5 px-3 py-2.5">
                                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>

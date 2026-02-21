@@ -176,11 +176,9 @@ const _applyCellarSubView = (mode) => {
             // ARIA tab: 選択状態を更新
             btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.add('is-active');
             } else {
-                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.remove('is-active');
             }
         }
     });
@@ -197,11 +195,9 @@ const _applyStatsSubView = (mode) => {
         if (btn) {
             btn.setAttribute('aria-selected', m === mode ? 'true' : 'false');
             if (m === mode) {
-                btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.add('is-active');
             } else {
-                btn.classList.remove('bg-white', 'dark:bg-gray-700', 'text-brand', 'dark:text-indigo-300', 'shadow');
-                btn.classList.add('text-gray-500', 'dark:text-gray-400', 'hover:bg-gray-200');
+                btn.classList.remove('is-active');
             }
         }
     });

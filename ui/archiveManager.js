@@ -11,7 +11,7 @@ export async function renderArchives() {
 
     const headerHtml = `
         <section class="px-1 mb-3">
-            <h3 class="text-sm font-bold text-base-900 dark:text-white">アーカイブ</h3>
+            <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">アーカイブ</h3>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">完了した期間の結果を一覧で確認できます</p>
         </section>
     `;
@@ -38,7 +38,7 @@ export async function renderArchives() {
         const sign = isPositive ? '+' : '';
 
         return `
-            <div class="glass-panel p-4 rounded-2xl mb-3 flex items-center justify-between group active:scale-95 transition cursor-pointer">
+            <div class="item-card glass-panel p-4 rounded-2xl mb-3 flex items-center justify-between group active:scale-95 transition cursor-pointer">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-[11px] font-semibold uppercase text-gray-500 dark:text-gray-400 px-1.5 py-0.5 border border-gray-200 dark:border-gray-700 rounded">${arch.mode || 'Weekly'}</span>

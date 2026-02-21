@@ -146,7 +146,7 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
         }
 
         const li = document.createElement('li');
-        li.className = "log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
+        li.className = "item-row log-item relative group bg-white dark:bg-base-900 rounded-2xl p-4 shadow-sm flex items-center gap-4 mb-3 transition-all active:scale-[0.98] border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 cursor-pointer group";
         li.style.animationDelay = `${Math.min(index * 0.05, 0.3)}s`;
         li.dataset.logId = log.id;
         

@@ -11,8 +11,14 @@ export function renderCheckStatus(checks, logs) {
     const today = dayjs(vTodayStr);     // dayjsオブジェクト化
     const yest = today.subtract(1, 'day');
     
-    const todayCheck = checks.find(c => dayjs(c.timestamp).isSame(today, 'day') && c.isSaved === true);
-    const yestCheck = checks.find(c => dayjs(c.timestamp).isSame(yest, 'day') && c.isSaved === true);
+    const isCheckOnVirtualDate = (check, dateObj) => (
+        check &&
+        check.isSaved === true &&
+        getVirtualDate(check.timestamp) === dateObj.format('YYYY-MM-DD')
+    );
+
+    const todayCheck = checks.find(c => isCheckOnVirtualDate(c, today));
+    const yestCheck = checks.find(c => isCheckOnVirtualDate(c, yest));
 
     let targetCheck = null;
     let type = 'none';

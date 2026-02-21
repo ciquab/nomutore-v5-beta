@@ -1,5 +1,9 @@
 // @ts-check
 import { APP } from './constants.js';
+import { db } from './store.js';
+import { LogService } from './logService.js';
+import { QueryService } from './queryService.js';
+import { getVirtualDate } from './logic.js';
 
 const KEYS = APP.STORAGE_KEYS;
 const PUSH = APP.PUSH;
@@ -117,6 +121,7 @@ export const NotificationManager = {
 
             // サーバーに送信
             const settings = NotificationManager.getSettings();
+            const status = await _collectLatestStatus();
             const res = await fetch(`${PUSH.API_BASE}/subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -131,7 +136,8 @@ export const NotificationManager = {
                         mode: periodMode,   
                         start: periodStart, 
                         end: periodEnd      
-                    }
+                    },
+                    ...status
                 }),
             });
 
@@ -153,8 +159,9 @@ export const NotificationManager = {
      * @param {number} [status.balance] - 現在の収支
      * @param {string|null} [status.lastCheckDate] - 最終チェック日(YYYY-MM-DD)
      * @param {string|null} [status.lastLogDate] - 最終ログ日(YYYY-MM-DD)
+     * @param {boolean} [status.isCheckedToday] - 本日分チェック済みか
      */
-    updateServerStatus: async ({ balance, lastCheckDate, lastLogDate }) => {
+    updateServerStatus: async ({ balance, lastCheckDate, lastLogDate, isCheckedToday }) => {
         // 購読中でなければ送信しない
         if (localStorage.getItem(APP.STORAGE_KEYS.PUSH_SUBSCRIBED) !== 'true') return;
 
@@ -180,8 +187,9 @@ export const NotificationManager = {
 
             // 値がある場合のみペイロードに追加（undefinedを送らない）
             if (balance !== undefined) payload.currentBalance = Math.round(balance);
-            if (lastCheckDate) payload.lastCheckDate = lastCheckDate;
-            if (lastLogDate) payload.lastLogDate = lastLogDate;
+            if (lastCheckDate !== undefined) payload.lastCheckDate = lastCheckDate;
+            if (lastLogDate !== undefined) payload.lastLogDate = lastLogDate;
+            if (isCheckedToday !== undefined) payload.isCheckedToday = isCheckedToday;
 
             // 送信（順序保証のため await）
             const res = await fetch(`${PUSH.API_BASE}/subscribe`, {
@@ -247,4 +255,33 @@ function _urlBase64ToUint8Array(base64String) {
         outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
+}
+
+/**
+ * Firebase購読同期時に初期状態を同時送信する
+ * @returns {Promise<{currentBalance: number, lastCheckDate: string | null, lastLogDate: string | null, isCheckedToday: boolean}>}
+ */
+async function _collectLatestStatus() {
+    const { balance } = await QueryService.getAppDataSnapshot();
+    const latestLogs = await LogService.getRecent(1);
+    const lastLogDate = latestLogs.length > 0
+        ? getVirtualDate(latestLogs[0].timestamp)
+        : null;
+
+    const allChecks = await db.checks.toArray();
+    const lastSavedCheck = allChecks
+        .filter(c => c.isSaved === true)
+        .sort((a, b) => b.timestamp - a.timestamp)[0] || null;
+
+    const todayVirtual = getVirtualDate();
+    const lastCheckDate = lastSavedCheck
+        ? getVirtualDate(lastSavedCheck.timestamp)
+        : null;
+
+    return {
+        currentBalance: Math.round(balance),
+        lastCheckDate,
+        lastLogDate,
+        isCheckedToday: lastCheckDate === todayVirtual
+    };
 }

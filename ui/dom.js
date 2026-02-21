@@ -418,6 +418,41 @@ export const escapeHtml = (str) => {
 const _openModalStack = [];
 const MODAL_HISTORY_KEY = '__nomutoreModalId';
 let _isHandlingModalPopState = false;
+let _lockedScrollY = 0;
+
+const syncBackgroundScrollLock = () => {
+    const hasOpenModal = _openModalStack.length > 0;
+    const body = document.body;
+    const html = document.documentElement;
+
+    if (hasOpenModal) {
+        if (!body.dataset.modalScrollLocked) {
+            _lockedScrollY = window.scrollY || window.pageYOffset || 0;
+            body.dataset.modalScrollLocked = 'true';
+            body.style.position = 'fixed';
+            body.style.top = `-${_lockedScrollY}px`;
+            body.style.left = '0';
+            body.style.right = '0';
+            body.style.width = '100%';
+        }
+
+        body.classList.add('overflow-hidden', 'touch-none');
+        html.classList.add('overflow-hidden');
+        return;
+    }
+
+    if (body.dataset.modalScrollLocked) {
+        body.classList.remove('overflow-hidden', 'touch-none');
+        html.classList.remove('overflow-hidden');
+        body.style.position = '';
+        body.style.top = '';
+        body.style.left = '';
+        body.style.right = '';
+        body.style.width = '';
+        delete body.dataset.modalScrollLocked;
+        window.scrollTo({ top: _lockedScrollY, behavior: 'auto' });
+    }
+};
 
 export const toggleModal = (modalId, show = true) => {
     // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
@@ -440,6 +475,7 @@ export const toggleModal = (modalId, show = true) => {
 
         // Escapeキーで閉じられるようスタックに追加
         _openModalStack.push(modalId);
+        syncBackgroundScrollLock();
 
         // ブラウザに「今この瞬間」の状態を強制認識させる（リフロー）
         el.offsetHeight;
@@ -484,6 +520,7 @@ export const toggleModal = (modalId, show = true) => {
         // Escapeスタックから除去
         const idx = _openModalStack.indexOf(modalId);
         if (idx !== -1) _openModalStack.splice(idx, 1);
+        syncBackgroundScrollLock();
 
         if (bg) {
             bg.classList.remove('opacity-100');
@@ -786,7 +823,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

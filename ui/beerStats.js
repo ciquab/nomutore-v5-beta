@@ -80,6 +80,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
     const contextLabel = isPermanent ? `直近${focusDays}日` : '現在期間';
     const comparisonLabel = isPermanent ? `直近${focusDays}日 vs その前` : '直前期間比';
+    const modeScopeLabel = isPermanent ? `全体基準: 直近${focusDays}日（${chartRange.toUpperCase()}）` : '全体基準: 期間モード';
 
     const abvBands = buildAbvBands(focusBeerLogs);
     const heatmap = buildWeekdayTimeHeatmap(focusBeerLogs);
@@ -107,6 +108,12 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     // セクションアイコン配色ルール: 味覚/傾向=暖色, 分析チャート=寒色, 解釈/比較=青系で統一
     container.innerHTML = `
         <div class="space-y-4 pb-24">
+            <div class="px-1">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[11px] font-bold px-3 py-1">
+                    <i class="ph-fill ph-funnel-simple text-[11px]" aria-hidden="true"></i>${modeScopeLabel}
+                </span>
+            </div>
+
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-2xl border border-amber-100 dark:border-amber-800/50">
                     <p class="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">${isPermanent ? '直近杯数' : '期間合計'}</p>
@@ -125,7 +132,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">最近30日 vs 過去90日</span>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">固定: 30日 vs 90日</span>
                 </div>
                 ${flavorTrend.hasData ? `
                     <div class="h-52 w-full">
@@ -146,10 +153,14 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                         <p class="text-xs opacity-60">味わい付きの記録で比較が表示されます</p>
                     </div>
                 `}
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 嗜好変化の検知を優先するため固定窓で表示</p>
             </div>
 
             <div class="glass-panel p-4 rounded-2xl relative">
-                <h3 class="text-sm font-bold flex items-center gap-2 mb-3"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">基準: この期間</span>
+                </div>
                 <div class="h-44 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -163,6 +174,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-gauge section-icon text-amber-500" aria-hidden="true"></i> ABV帯分布</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
                 <div class="space-y-2">
                     ${abvBands.map(band => {
                         const pct = focusStats.totalCount > 0 ? Math.round((band.count / focusStats.totalCount) * 100) : 0;
@@ -185,15 +197,17 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-line section-icon text-cyan-500" aria-hidden="true"></i> 4週間ローリングトレンド</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">週次推移</span>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">固定: 4週間</span>
                 </div>
                 <div class="h-52 w-full">
                     <canvas id="beerRollingTrendChart"></canvas>
                 </div>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 短期トレンドの比較のため固定窓で表示</p>
             </div>
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-check section-icon text-sky-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
                 <div class="grid gap-1 text-[10px]" style="grid-template-columns: 24px repeat(4, minmax(0,1fr));">
                     <div></div>
                     ${heatmap.slots.map(slot => `<div class="text-center font-bold text-gray-500 dark:text-gray-400">${slot}</div>`).join('')}
@@ -210,6 +224,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-chart-line-up section-icon text-emerald-500" aria-hidden="true"></i> 1日あたり摂取プロファイル</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
                 <div class="grid grid-cols-3 gap-2 text-[11px]">
                     ${renderSessionMetric('杯数', perSessionProfile.count)}
                     ${renderSessionMetric('容量', perSessionProfile.ml, 'ml')}
@@ -220,6 +235,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-compass section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
                 <div class="grid grid-cols-2 gap-2 text-[11px]">
                     <div class="rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/60 dark:bg-violet-900/20 p-2.5">
                         <p class="font-semibold text-gray-500 dark:text-gray-400">Explore率</p>
@@ -516,17 +532,9 @@ function renderSessionMetric(label, data, unit = '') {
     const suffix = unit ? `${unit}` : '';
     return `
         <div class="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-base-900 p-2.5">
-            <p class="min-h-[2.1em] text-gray-500 dark:text-gray-400 font-semibold leading-tight">${label}</p>
-            <div class="mt-1 rounded-lg border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
-                <div class="grid grid-cols-[2.4rem_minmax(0,1fr)] items-center gap-x-1 px-2 py-1.5">
-                    <span class="text-gray-700 dark:text-gray-300 font-bold">P50</span>
-                    <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end">${Math.round(data.p50)}${suffix}</span>
-                </div>
-                <div class="grid grid-cols-[2.4rem_minmax(0,1fr)] items-center gap-x-1 px-2 py-1.5">
-                    <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
-                    <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end">${Math.round(data.p90)}${suffix}</span>
-                </div>
-            </div>
+            <p class="text-gray-500 dark:text-gray-400 font-semibold">${label}</p>
+            <p class="mt-1 text-gray-700 dark:text-gray-300 font-bold">P50 <span class="text-base text-base-900 dark:text-white whitespace-nowrap">${Math.round(data.p50)}${suffix}</span></p>
+            <p class="text-gray-700 dark:text-gray-300 font-bold">P90 <span class="text-base text-base-900 dark:text-white whitespace-nowrap">${Math.round(data.p90)}${suffix}</span></p>
         </div>
     `;
 }

@@ -8,7 +8,7 @@
  * @typedef {import('../types.js').CheckSchemaItem} CheckSchemaItem
  */
 
-import { CHECK_SCHEMA, APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
+import { CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
 import { Service } from '../service.js';       
 import { DOM, toggleModal, showMessage, Feedback } from './dom.js';
@@ -224,11 +224,7 @@ export const openCheckModal = async (dateStr = null) => {
             setCheck('check-is-dry', !!anyRecord.isDryDay);
             syncDryDayUI(!!anyRecord.isDryDay);
             
-            let schema = CHECK_SCHEMA;
-            try {
-                const s = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
-                if (s) schema = JSON.parse(s);
-            } catch(e) {}
+            const schema = Service.getCheckSchema();
 
             const renderedIds = new Set(['id', 'timestamp', 'isDryDay', 'weight', 'isSaved', 'date']);
             schema.forEach(item => {
@@ -304,41 +300,14 @@ export const openCheckModal = async (dateStr = null) => {
  * @returns {CheckSchemaItem[]}
  */
 const getActiveSchemaFromIds = (ids) => {
-    /** @type {CheckSchemaItem[]} */
-    const activeSchema = [];
-    ids.forEach(id => {
-        let item = null;
-        Object.values(CHECK_LIBRARY).forEach(category => {
-            const found = category.find(i => i.id === id);
-            if (found) item = found;
-        });
-        
-        if (!item) {
-            try {
-                const current = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-                item = current.find(/** @param {CheckSchemaItem} i */ i => i.id === id);
-            } catch(e){}
-        }
-
-        if (item) {
-            activeSchema.push(item);
-        }
-    });
-    return activeSchema;
+    return Service.resolveCheckSchemaItemsByIds(ids);
 };
 
 /**
  * 現在のスキーマID一覧を取得
  * @returns {string[]}
  */
-const getCurrentActiveIds = () => {
-    try {
-        const schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-        return schema.map(/** @param {CheckSchemaItem} i */ i => i.id);
-    } catch(e) {
-        return CHECK_DEFAULT_IDS;
-    }
-};
+const getCurrentActiveIds = () => Service.getCurrentCheckSchemaIds();
 
 /**
  * チェック項目ライブラリ画面を描画
@@ -441,20 +410,7 @@ export const applyLibraryChanges = () => {
     const checkedInputs = /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('#library-content input[type="checkbox"]:checked'));
     const selectedIds = Array.from(checkedInputs).map(input => input.value);
     
-    let currentSchema = [];
-    try {
-        currentSchema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-    } catch(e){}
-
-    const libraryIds = new Set();
-    Object.values(CHECK_LIBRARY).flat().forEach(i => libraryIds.add(i.id));
-
-    const customItems = currentSchema.filter(/** @param {CheckSchemaItem} item */ item => !libraryIds.has(item.id));
-
-    const newSchemaFromLibrary = getActiveSchemaFromIds(selectedIds);
-    const finalSchema = [...newSchemaFromLibrary, ...customItems];
-
-    localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(finalSchema));
+    Service.applyCheckLibrarySelection(selectedIds);
     
     toggleModal('check-library-modal', false);
     renderCheckEditor(); 
@@ -473,18 +429,7 @@ export const applyPreset = (presetKey) => {
 
     const selectedIds = preset.ids;
     
-    let currentSchema = [];
-    try {
-        currentSchema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-    } catch(e){}
-    const libraryIds = new Set();
-    Object.values(CHECK_LIBRARY).flat().forEach(i => libraryIds.add(i.id));
-    const customItems = currentSchema.filter(/** @param {CheckSchemaItem} item */ item => !libraryIds.has(item.id));
-
-    const newSchemaFromLibrary = getActiveSchemaFromIds(selectedIds);
-    const finalSchema = [...newSchemaFromLibrary, ...customItems];
-
-    localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(finalSchema));
+    Service.applyCheckLibrarySelection(selectedIds);
     
     const modal = document.getElementById('check-library-modal');
     if(modal && !modal.classList.contains('hidden')) {
@@ -511,14 +456,11 @@ export const renderCheckEditor = () => {
     if (!container) return; 
     container.innerHTML = '';
     
-    let schema = [];
-    try {
-        schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]');
-        if (schema.length === 0) {
-            schema = getActiveSchemaFromIds(CHECK_DEFAULT_IDS);
-            localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema));
-        }
-    } catch(e) {}
+    let schema = Service.getCheckSchema();
+    if (schema.length === 0) {
+        schema = getActiveSchemaFromIds(CHECK_DEFAULT_IDS);
+        Service.setCheckSchema(schema);
+    }
 
     schema.forEach((/** @type {CheckSchemaItem} */ item, index) => {
         const div = document.createElement('div');
@@ -553,10 +495,9 @@ export const renderCheckEditor = () => {
  */
 export const deleteCheckItem = (index) => {
     if(!confirm('この項目を削除しますか？')) return;
-    let schema = [];
-    try { schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]'); } catch(e) {}
+    const schema = Service.getCheckSchema();
     schema.splice(index, 1);
-    localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema));
+    Service.setCheckSchema(schema);
     renderCheckEditor();
 };
 
@@ -616,10 +557,9 @@ export const addNewCheckItem = () => {
         drinking_only: drinkingOnly
     };
 
-    let schema = [];
-    try { schema = JSON.parse(localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA) || '[]'); } catch(e) {}
+    const schema = Service.getCheckSchema();
     schema.push(newItem);
-    localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema));
+    Service.setCheckSchema(schema);
     
     renderCheckEditor();
 };
@@ -630,14 +570,7 @@ export const addNewCheckItem = () => {
  * 保存されたスキーマを取得
  * @returns {CheckSchemaItem[]}
  */
-const getStoredSchema = () => {
-    try {
-        const stored = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
-        return stored ? JSON.parse(stored) : getActiveSchemaFromIds(CHECK_DEFAULT_IDS);
-    } catch(e) {
-        return getActiveSchemaFromIds(CHECK_DEFAULT_IDS);
-    }
-};
+const getStoredSchema = () => Service.getCheckSchema();
 
 /**
  * 休肝日UIの同期

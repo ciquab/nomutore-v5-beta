@@ -1661,6 +1661,12 @@
                     <i class="ph-duotone ph-chart-line" aria-hidden="true"></i> 統計 (Stats)
                 </h4>
                 <div class="space-y-3">
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/40">
+                        <h5 class="font-bold text-sm text-base-900 dark:text-white mb-1">2つのビューを切り替え</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            Statsでは<strong>Activity / Beer</strong>を上部タブで切り替えます。Activityで活動推移を、Beerで銘柄・スタイル傾向を確認できます。
+                        </p>
+                    </div>
 
                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xl shrink-0">
@@ -1707,7 +1713,7 @@
                         <div>
                             <h5 class="font-bold text-sm text-base-900 dark:text-white">ヘルスインサイト（Activity）</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                <strong>飲んだ日 vs 休肝日</strong>でのデイリーチェック達成率を比較。直近14日間の各項目の推移グラフも確認できます。
+                                <strong>飲酒日 vs 休肝日</strong>の状態/行動達成率を比較。右上フィルターで<strong>1W・1M・3M</strong>の表示期間を切り替えて推移を確認できます。
                             </p>
                         </div>
                     </div>
@@ -1793,9 +1799,9 @@
                             <i class="ph-duotone ph-user-circle text-orange-600 dark:text-orange-500" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">プロフィール & 集計期間</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">プロフィール</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                体格情報や計算基準、集計期間（週次・月次・カスタム・永久）を設定。カスタム期間ではプロジェクト名と開始/終了日を指定できます。
+                                体重・身長・年齢・計算基準を設定し、基礎代謝や各種目安の計算に反映します。
                             </p>
                         </div>
                     </div>
@@ -1805,9 +1811,9 @@
                             <i class="ph-duotone ph-sliders text-brand dark:text-brand-light" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h5 class="font-bold text-sm text-base-900 dark:text-white">表示・運動・チェック項目のカスタム</h5>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">環境設定（集計期間を含む）</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-                                テーマ、メイン/サブビール、基準運動、デフォルト運動を調整可能。デイリーチェックはライブラリ追加とカスタム項目作成に対応しています。
+                                集計期間（週次・月次・カスタム・永久）やテーマ、メイン/サブビール、基準運動、デフォルト運動を設定できます。
                             </p>
                         </div>
                     </div>
@@ -1820,6 +1826,18 @@
                             <h5 class="font-bold text-sm text-base-900 dark:text-white">通知</h5>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
                                 未記録時のデイリーリマインダーと、期間リセット前日サマリーのON/OFFと時刻を設定できます。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-xl shrink-0">
+                            <i class="ph-duotone ph-check-square-offset text-emerald-600 dark:text-emerald-400" aria-hidden="true"></i>
+                        </div>
+                        <div>
+                            <h5 class="font-bold text-sm text-base-900 dark:text-white">デイリーチェック項目編集</h5>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+                                ライブラリからの追加とカスタム作成で、毎日記録する状態/行動項目を調整できます。
                             </p>
                         </div>
                     </div>
@@ -1843,7 +1861,8 @@
 
                 </div>
             </section>
-<section>
+
+            <section>
                 <h4 id="help-useful" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-sparkle" aria-hidden="true"></i> 便利な機能
                 </h4>

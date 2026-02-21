@@ -516,9 +516,17 @@ function renderSessionMetric(label, data, unit = '') {
     const suffix = unit ? `${unit}` : '';
     return `
         <div class="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-base-900 p-2.5">
-            <p class="text-gray-500 dark:text-gray-400 font-semibold">${label}</p>
-            <p class="mt-1 text-gray-700 dark:text-gray-300 font-bold">P50 <span class="text-base text-base-900 dark:text-white whitespace-nowrap">${Math.round(data.p50)}${suffix}</span></p>
-            <p class="text-gray-700 dark:text-gray-300 font-bold">P90 <span class="text-base text-base-900 dark:text-white whitespace-nowrap">${Math.round(data.p90)}${suffix}</span></p>
+            <p class="min-h-[2.1em] text-gray-500 dark:text-gray-400 font-semibold leading-tight">${label}</p>
+            <div class="mt-1 rounded-lg border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800 overflow-hidden">
+                <div class="grid grid-cols-[2.4rem_minmax(0,1fr)] items-center gap-x-1 px-2 py-1.5">
+                    <span class="text-gray-700 dark:text-gray-300 font-bold">P50</span>
+                    <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end">${Math.round(data.p50)}${suffix}</span>
+                </div>
+                <div class="grid grid-cols-[2.4rem_minmax(0,1fr)] items-center gap-x-1 px-2 py-1.5">
+                    <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
+                    <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end">${Math.round(data.p90)}${suffix}</span>
+                </div>
+            </div>
         </div>
     `;
 }

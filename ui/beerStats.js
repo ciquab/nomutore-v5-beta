@@ -764,14 +764,15 @@ export function renderBeerCollection(periodLogs, allLogs) {
                 <p class="section-helper mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
             </section>
 
-            <div id="brewery-leaderboard-section" class="glass-panel p-5 rounded-2xl relative mb-4">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-trophy section-icon text-amber-500" aria-hidden="true"></i> ブルワリーランキング</h3>
+            <section id="brewery-leaderboard-section" class="px-1 mb-1">
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="section-title text-sm font-bold text-base-900 dark:text-white flex items-center gap-2"><i class="ph-fill ph-trophy section-icon text-amber-500" aria-hidden="true"></i>ブルワリーランキング</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
-                <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
-                <div id="brewery-ranking-list"></div>
-            </div>
+                <p class="section-helper">軸を切り替えてブルワリー傾向を比較できます</p>
+            </section>
+            <div id="brewery-axis-tabs" class="flex gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1"></div>
+            <div id="brewery-ranking-list" class="divide-y divide-gray-100 dark:divide-gray-800 mb-3"></div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
                 <div class="flex items-center justify-between mb-1 px-1">
@@ -1548,10 +1549,6 @@ function renderBreweryLeaderboard(breweryStats) {
     listEl.onclick = (e) => {
         const target = e.target.closest('[data-brewery-name]');
         if (target) {
-            // タップ時のフィードバック演出
-            target.classList.add('bg-gray-100', 'dark:bg-gray-700'); 
-            setTimeout(() => target.classList.remove('bg-gray-100', 'dark:bg-gray-700'), 100);
-            
             showBreweryDetail(target.dataset.breweryName);
         }
     };
@@ -1590,7 +1587,7 @@ function renderBreweryLeaderboardItem({ brewery, rankIndex, axis, maxVal }) {
     else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${rankIndex + 1}</span>`;
 
     return `
-        <div class="item-row px-2 py-2 cursor-pointer active:scale-[0.98] transition-transform border-b border-gray-100 dark:border-gray-800" data-brewery-name="${escapeHtml(brewery.brewery)}">
+        <div class="item-row px-1 py-2.5 cursor-pointer active:scale-[0.98] transition-transform bg-transparent border-none rounded-none shadow-none" data-brewery-name="${escapeHtml(brewery.brewery)}">
             <div class="flex items-center gap-2.5">
                 <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
                 <div class="flex-grow min-w-0">

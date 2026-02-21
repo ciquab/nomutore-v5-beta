@@ -87,7 +87,9 @@ export const updateBulkCount = () => {
 const updateBulkActionUI = () => {
     const count = document.querySelectorAll('.log-checkbox:checked').length;
     const toolbar = document.getElementById('edit-toolbar'); 
+    const bulkActionArea = document.getElementById('bulk-action-area');
     if (toolbar) toolbar.classList.toggle('hidden', !StateManager.isEditMode);
+    if (bulkActionArea) bulkActionArea.classList.toggle('hidden', !StateManager.isEditMode);
 
     const selectAllBtn = document.getElementById('btn-select-all');
     if (selectAllBtn) {
@@ -357,6 +359,5 @@ if (!_logListListenersAttached) {
 
 /** @type {any} */(updateLogListView).updateBulkCount = updateBulkCount;
 export const setFetchLogsHandler = (fn) => {};
-
 
 

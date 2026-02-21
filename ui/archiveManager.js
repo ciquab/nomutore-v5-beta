@@ -95,7 +95,7 @@ const createArchiveDetailModal = (archive) => {
 
     const modal = document.createElement('div');
     modal.id = ARCHIVE_DETAIL_MODAL_ID;
-    modal.className = 'fixed inset-0 z-[1200] hidden items-end sm:items-center justify-center';
+    modal.className = 'fixed inset-0 z-50 hidden items-end sm:items-center justify-center pointer-events-none';
     modal.dataset.destroy = 'true';
 
     const logs = archive.logs || [];
@@ -107,13 +107,14 @@ const createArchiveDetailModal = (archive) => {
     const { earned, consumed } = summarizeArchiveLogs(logs);
 
     modal.innerHTML = `
-        <div id="${ARCHIVE_DETAIL_MODAL_ID}-bg" class="modal-bg absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
+        <div id="${ARCHIVE_DETAIL_MODAL_ID}-bg" class="modal-bg absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 opacity-0 pointer-events-auto"></div>
 
-        <div class="relative w-full max-w-md sm:max-w-lg max-h-[88vh] bg-gradient-to-b from-white to-gray-50 dark:from-base-900 dark:to-base-950 rounded-t-3xl sm:rounded-3xl shadow-2xl transform transition-all duration-300 ease-out translate-y-full sm:translate-y-10 border border-white/50 dark:border-base-700 flex flex-col overflow-hidden">
-            <div class="p-4 border-b border-base-200 dark:border-base-800 bg-white/80 dark:bg-base-900/80 backdrop-blur shrink-0">
+        <div class="relative w-full sm:max-w-md h-[85vh] sm:h-[80vh] bg-white dark:bg-base-900 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden transform transition-all duration-300 translate-y-full sm:translate-y-10 scale-95 opacity-0 pointer-events-auto">
+            <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full sm:hidden z-20"></div>
+            <div class="relative z-10 p-5 pt-8 sm:pt-5 border-b border-gray-200 dark:border-base-800 bg-white/90 dark:bg-base-900/90 backdrop-blur-md shrink-0">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-lg font-black text-base-900 dark:text-white">期間詳細</h3>
-                    <button id="${ARCHIVE_DETAIL_MODAL_ID}-close" class="w-10 h-10 rounded-full bg-base-200 dark:bg-base-800 text-base-700 dark:text-base-200">
+                    <h3 class="text-3xl font-black text-gray-900 dark:text-white font-['Outfit'] leading-none tracking-tight">期間詳細</h3>
+                    <button id="${ARCHIVE_DETAIL_MODAL_ID}-close" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400 active:scale-90">
                         <i class="ph-bold ph-x"></i>
                     </button>
                 </div>
@@ -121,24 +122,28 @@ const createArchiveDetailModal = (archive) => {
                     <span class="text-[11px] font-bold px-2 py-0.5 rounded border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300">${formatModeLabel(archive.mode)}</span>
                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400">${start} - ${end}</span>
                 </div>
-                <div class="text-2xl font-black ${isPositive ? 'text-emerald-500' : 'text-red-500'}">${sign}${balance}<span class="text-sm text-gray-500 dark:text-gray-400 ml-1">kcal</span></div>
+                <div class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1.5">アーカイブサマリー</div>
             </div>
 
-            <div class="p-4 bg-base-50 dark:bg-base-900/40 border-b border-base-100 dark:border-base-800 shrink-0">
-                <div class="grid grid-cols-2 gap-3 mb-2">
-                    <div class="bg-white dark:bg-base-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
-                        <span class="text-[11px] font-semibold text-gray-500 uppercase">返済カロリー</span>
-                        <div class="text-lg font-black text-emerald-600 dark:text-emerald-400">+${earned}</div>
+            <div class="p-4 bg-white/90 dark:bg-base-900/90 border-b border-gray-100 dark:border-base-800 shrink-0">
+                <div class="grid grid-cols-3 gap-3 mb-2 text-center">
+                    <div class="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/50">
+                        <div class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-0.5">PAYBACK</div>
+                        <div class="text-lg font-black text-emerald-600 dark:text-emerald-400 font-['Outfit']">+${earned}</div>
                     </div>
-                    <div class="bg-white dark:bg-base-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
-                        <span class="text-[11px] font-semibold text-gray-500 uppercase">借金カロリー</span>
-                        <div class="text-lg font-black text-red-600 dark:text-red-400">${consumed}</div>
+                    <div class="p-3 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-800/50">
+                        <div class="text-[11px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider mb-0.5">DEBT</div>
+                        <div class="text-lg font-black text-red-600 dark:text-red-400 font-['Outfit']">${consumed}</div>
+                    </div>
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/50">
+                        <div class="text-[11px] font-bold text-brand dark:text-brand-light uppercase tracking-wider mb-0.5">BALANCE</div>
+                        <div class="text-lg font-black text-brand dark:text-brand-light font-['Outfit']">${sign}${balance}</div>
                     </div>
                 </div>
                 <div class="text-[11px] text-gray-500 dark:text-gray-400 font-bold">ログ件数: ${logs.length}件 / Archive #${archive.id}</div>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain">
+            <div class="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 relative z-0 overscroll-contain">
                 ${buildArchiveLogRows(logs)}
             </div>
         </div>

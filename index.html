@@ -371,14 +371,34 @@
                      <p class="section-helper mt-0.5">時系列でログを確認・編集できます</p>
                  </section>
 
-                 <div class="flex justify-between items-center px-2 mb-2">
-    <span id="history-base-label" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">すべての記録</span>
-    <div class="flex gap-3"> <button data-action="log:toggleEditMode" class="text-xs text-brand dark:text-brand-light font-bold hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition">
-            編集
-        </button>
-        <button id="btn-select-all" data-action="log:toggleSelectAll" class="hidden text-xs text-indigo-500 font-bold">すべて選択</button>
-    </div>
-</div>
+                 <section class="px-2 mb-2 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <span id="history-base-label" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">全件</span>
+                        <div class="flex gap-3"> <button data-action="log:toggleEditMode" class="text-xs text-brand dark:text-brand-light font-bold hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1 rounded transition">
+                                編集
+                            </button>
+                            <button id="btn-select-all" data-action="log:toggleSelectAll" class="hidden text-xs text-indigo-500 font-bold">すべて選択</button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-1.5 overflow-x-auto pb-1">
+                        <button id="log-filter-type-all" class="subtab-pill is-active" data-log-type="all" type="button">全て</button>
+                        <button id="log-filter-type-beer" class="subtab-pill" data-log-type="beer" type="button">ビール</button>
+                        <button id="log-filter-type-exercise" class="subtab-pill" data-log-type="exercise" type="button">運動</button>
+                        <select id="log-filter-range" class="ml-auto bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-lg text-[11px] font-bold py-1.5 px-2">
+                            <option value="all">全期間</option>
+                            <option value="7d">7日</option>
+                            <option value="30d">30日</option>
+                            <option value="month">今月</option>
+                        </select>
+                    </div>
+
+                    <div class="relative">
+                        <input id="log-filter-term" type="text" placeholder="ログを検索（銘柄・運動名・メモ）" class="w-full bg-white dark:bg-base-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold py-2.5 pl-9 pr-3 focus:ring-2 focus:ring-indigo-500 transition">
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400" aria-hidden="true"></i>
+                    </div>
+                    <p class="section-helper">※ Collectionsは銘柄集計、Logsは記録履歴の検索です</p>
+                </section>
                  
                  <div id="edit-toolbar" class="hidden sticky top-16 z-30 bg-white/90 dark:bg-base-900/90 backdrop-blur p-2 rounded-xl shadow-lg border border-indigo-100 dark:border-indigo-900 mb-2 flex justify-between items-center">
                      <span aria-live="polite" aria-atomic="true" class="text-xs font-bold ml-2"><span id="bulk-selected-count">0</span> 件選択</span>

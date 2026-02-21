@@ -11,6 +11,53 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 let currentLimit = 20; 
 const LIMIT_STEP = 20; 
 
+const logFilters = {
+    type: 'all',
+    range: 'all',
+    term: ''
+};
+
+const getRangeStartTs = (range) => {
+    const now = dayjs();
+    if (range === '7d') return now.subtract(7, 'day').startOf('day').valueOf();
+    if (range === '30d') return now.subtract(30, 'day').startOf('day').valueOf();
+    if (range === 'month') return now.startOf('month').valueOf();
+    return null;
+};
+
+const applyLogFilters = (logs) => {
+    const rangeStart = getRangeStartTs(logFilters.range);
+    const term = (logFilters.term || '').trim().toLowerCase();
+
+    return logs.filter(log => {
+        const matchType = logFilters.type === 'all' || log.type === logFilters.type;
+        const matchRange = rangeStart === null || log.timestamp >= rangeStart;
+
+        if (!term) return matchType && matchRange;
+
+        const searchTargets = [
+            log.name,
+            log.brand,
+            log.brewery,
+            log.memo,
+            log.style,
+            log.exerciseKey
+        ].filter(Boolean).map(v => String(v).toLowerCase());
+
+        const matchTerm = searchTargets.some(v => v.includes(term));
+        return matchType && matchRange && matchTerm;
+    });
+};
+
+const updateFilterChips = () => {
+    ['all', 'beer', 'exercise'].forEach(type => {
+        const btn = document.getElementById(`log-filter-type-${type}`);
+        if (!btn) return;
+        if (logFilters.type === type) btn.classList.add('is-active');
+        else btn.classList.remove('is-active');
+    });
+};
+
 export const toggleEditMode = () => {
     const isEdit = !StateManager.isEditMode;
     StateManager.setIsEditMode(isEdit);
@@ -95,37 +142,48 @@ export const updateLogListView = async (isLoadMore = false, providedLogs = null)
     const loadMoreBtn = document.getElementById('btn-load-more');
     if (!listEl) return;
 
+    updateFilterChips();
+
     if (isLoadMore) {
         currentLimit += LIMIT_STEP;
     } else {
         currentLimit = 20; 
     }
 
-    let sortedLogs;
+    let baseLogs;
     if (providedLogs) {
-        sortedLogs = [...providedLogs].sort((a, b) => b.timestamp - a.timestamp);
+        baseLogs = [...providedLogs];
     } else {
         // ✅ 修正点: Service を通じて「調理済み」のデータを取得
         // これにより「収支計算」「キャッシュ更新」「期間フィルタ」が正しく実行される
         const snapshot = await Service.getAppDataSnapshot();
-        
+
         // セラー画面（履歴一覧）では「全履歴」を見せたい場合は snapshot.allLogs を、
         // 設定された期間内だけを見せたい場合は snapshot.logs を使います。
         // 元のロジックに合わせて snapshot.allLogs を採用します。
-        sortedLogs = [...snapshot.allLogs].sort((a, b) => b.timestamp - a.timestamp);
+        baseLogs = [...snapshot.allLogs];
     }
-    
+
+    const filteredLogs = applyLogFilters(baseLogs);
+    const sortedLogs = [...filteredLogs].sort((a, b) => b.timestamp - a.timestamp);
+
     const totalCount = sortedLogs.length;
     const logs = sortedLogs.slice(0, currentLimit);
 
     const fragment = document.createDocumentFragment();
 
+    const baseLabel = document.getElementById('history-base-label');
+    if (baseLabel) {
+        const typeLabel = logFilters.type === 'all' ? '全件' : (logFilters.type === 'beer' ? 'ビール' : '運動');
+        baseLabel.textContent = `${typeLabel} ${totalCount}件`;
+    }
+
     if (logs.length === 0) {
         listEl.innerHTML = `
             <li class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400 empty-state">
                 <i class="ph-duotone ph-beer-bottle text-4xl mb-2" aria-hidden="true"></i>
-                <p class="text-sm font-bold">記録はまだありません</p>
-                <p class="text-xs opacity-60">Recordタブから最初の1件を追加してみましょう</p>
+                <p class="text-sm font-bold">該当する記録がありません</p>
+                <p class="text-xs opacity-60">条件を変更するか、Recordタブから記録を追加してください</p>
             </li>
         `;
         if (loadMoreBtn) loadMoreBtn.classList.add('hidden');
@@ -229,10 +287,38 @@ if (!_logListListenersAttached) {
     });
 
     document.addEventListener('change', (e) => {
-        if (/** @type {HTMLElement} */(e.target).classList.contains('log-checkbox')) {
+        const target = /** @type {HTMLElement} */(e.target);
+        if (target.classList.contains('log-checkbox')) {
             updateBulkCount();
+            return;
+        }
+
+        if (target.id === 'log-filter-range') {
+            const select = /** @type {HTMLSelectElement} */(target);
+            logFilters.range = select.value;
+            updateLogListView(false);
         }
     });
+
+    document.addEventListener('input', (e) => {
+        const target = /** @type {HTMLElement} */(e.target);
+        if (target.id === 'log-filter-term') {
+            const input = /** @type {HTMLInputElement} */(target);
+            logFilters.term = input.value;
+            updateLogListView(false);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const target = /** @type {HTMLElement} */(e.target);
+        const typeBtn = target.closest('[data-log-type]');
+        if (!typeBtn) return;
+
+        logFilters.type = typeBtn.getAttribute('data-log-type') || 'all';
+        updateFilterChips();
+        updateLogListView(false);
+    });
+
     _logListListenersAttached = true;
 }
 

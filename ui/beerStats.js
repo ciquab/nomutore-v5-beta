@@ -58,6 +58,25 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     const allStats = Calc.getBeerStats(allLogs);       // 全期間用
 
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
+    const periodBeerLogs = (periodLogs || []).filter(l => l.type === 'beer');
+    const periodRange = inferPeriodRange(periodLogs, allLogs);
+    const previousBeerLogs = getPreviousPeriodBeerLogs(allLogs, periodRange);
+    const periodAlcohol = Math.round(Calc.calcTotalPureAlcohol(periodBeerLogs));
+    const previousStats = Calc.getBeerStats(previousBeerLogs);
+    const previousAlcohol = Math.round(Calc.calcTotalPureAlcohol(previousBeerLogs));
+    const avgAbvCurrent = calcAverageAbv(periodBeerLogs);
+    const avgAbvPrevious = calcAverageAbv(previousBeerLogs);
+
+    const abvBands = buildAbvBands(periodBeerLogs);
+    const beerInsights = generateBeerInsights({
+        periodStats,
+        previousStats,
+        periodAlcohol,
+        previousAlcohol,
+        avgAbvCurrent,
+        avgAbvPrevious,
+        abvBands
+    });
 
     // モジュールスコープに保存（ブルワリー詳細表示・Collection用）— 防御コピー
     _allBeers = [...allBeers];
@@ -81,6 +100,39 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
             </div>
 
+            <div class="glass-panel p-5 rounded-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-brand" aria-hidden="true"></i> 期間比較</h3>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">直前期間比</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                    ${renderComparisonMetric('杯数', periodStats.totalCount, previousStats.totalCount, '杯')}
+                    ${renderComparisonMetric('容量', Number((periodStats.totalMl / 1000).toFixed(1)), Number((previousStats.totalMl / 1000).toFixed(1)), 'L')}
+                    ${renderComparisonMetric('純アルコール', periodAlcohol, previousAlcohol, 'g')}
+                    ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl">
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-3"><i class="ph-fill ph-gauge section-icon text-amber-500" aria-hidden="true"></i> ABV帯分布</h3>
+                <div class="space-y-2.5">
+                    ${abvBands.map(band => {
+                        const pct = periodStats.totalCount > 0 ? Math.round((band.count / periodStats.totalCount) * 100) : 0;
+                        return `
+                            <div>
+                                <div class="flex items-center justify-between text-[11px] mb-1">
+                                    <span class="font-bold text-gray-700 dark:text-gray-200">${band.label}</span>
+                                    <span class="font-semibold text-gray-500 dark:text-gray-400">${band.count}杯 (${pct}%)</span>
+                                </div>
+                                <div class="h-2 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                    <div class="h-full rounded-full ${band.barClass}" style="width:${pct}%"></div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+
             <div class="glass-panel p-5 rounded-2xl relative">
                 <h3 class="text-sm font-bold flex items-center justify-center gap-2 mb-4"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
                 <div class="h-48 w-full relative">
@@ -94,11 +146,155 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
             </div>
 
+            <div class="glass-panel p-5 rounded-2xl">
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-3"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> Beer Insight</h3>
+                <div class="space-y-2">
+                    ${beerInsights.map(item => `
+                        <div class="bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-xl p-3">
+                            <p class="text-xs font-bold text-base-900 dark:text-white">${escapeHtml(item.title)}</p>
+                            <p class="text-[11px] text-gray-600 dark:text-gray-300 mt-1">${escapeHtml(item.detail)}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
         </div>
     `;
 
     // チャート描画（全期間のスタイル傾向）
     renderStyleChart(allStats.styleCounts);
+}
+
+/**
+ * 期間ログからレンジを推定する
+ * @param {Array} periodLogs
+ * @param {Array} allLogs
+ * @returns {{ startTs:number, endTs:number, spanDays:number }}
+ */
+function inferPeriodRange(periodLogs, allLogs) {
+    const logs = (periodLogs || []).filter(l => l && Number.isFinite(l.timestamp));
+    if (logs.length === 0) {
+        const fallbackEnd = Date.now();
+        return {
+            startTs: dayjs(fallbackEnd).subtract(7, 'day').startOf('day').valueOf(),
+            endTs: fallbackEnd,
+            spanDays: 7
+        };
+    }
+
+    const timestamps = logs.map(l => l.timestamp);
+    const startTs = Math.min(...timestamps);
+    const endTs = Math.max(...timestamps);
+    const spanDays = Math.max(1, dayjs(endTs).diff(dayjs(startTs), 'day') + 1);
+    return { startTs, endTs, spanDays };
+}
+
+/**
+ * 直前期間のビールログを取得
+ * @param {Array} allLogs
+ * @param {{startTs:number, endTs:number, spanDays:number}} periodRange
+ * @returns {Array}
+ */
+function getPreviousPeriodBeerLogs(allLogs, periodRange) {
+    const { startTs, spanDays } = periodRange;
+    const previousEnd = dayjs(startTs).subtract(1, 'day').endOf('day').valueOf();
+    const previousStart = dayjs(previousEnd).subtract(spanDays - 1, 'day').startOf('day').valueOf();
+    return (allLogs || []).filter(l =>
+        l.type === 'beer' &&
+        Number.isFinite(l.timestamp) &&
+        l.timestamp >= previousStart &&
+        l.timestamp <= previousEnd
+    );
+}
+
+/**
+ * 平均ABVを算出
+ * @param {Array} beerLogs
+ * @returns {number}
+ */
+function calcAverageAbv(beerLogs) {
+    const weighted = (beerLogs || []).filter(l => (l.abv || 0) > 0);
+    if (weighted.length === 0) return 0;
+
+    const totalCount = weighted.reduce((sum, l) => sum + (l.count || 1), 0);
+    if (totalCount <= 0) return 0;
+
+    const weightedAbv = weighted.reduce((sum, l) => sum + (l.abv * (l.count || 1)), 0);
+    return Math.round((weightedAbv / totalCount) * 10) / 10;
+}
+
+/**
+ * ABV帯分布を算出
+ * @param {Array} beerLogs
+ */
+function buildAbvBands(beerLogs) {
+    const bands = [
+        { label: '0-4%', min: 0, max: 4, count: 0, barClass: 'bg-emerald-400' },
+        { label: '4-6%', min: 4, max: 6, count: 0, barClass: 'bg-sky-400' },
+        { label: '6-8%', min: 6, max: 8, count: 0, barClass: 'bg-amber-400' },
+        { label: '8%+', min: 8, max: Infinity, count: 0, barClass: 'bg-rose-400' }
+    ];
+
+    (beerLogs || []).forEach(l => {
+        const abv = Number(l.abv || 0);
+        const count = l.count || 1;
+        const target = bands.find(b => abv >= b.min && abv < b.max) || bands[bands.length - 1];
+        target.count += count;
+    });
+
+    return bands;
+}
+
+function renderComparisonMetric(label, current, previous, unit = '', digits = 0) {
+    const safeCurrent = Number.isFinite(current) ? current : 0;
+    const safePrevious = Number.isFinite(previous) ? previous : 0;
+    const diff = safeCurrent - safePrevious;
+    const sign = diff > 0 ? '+' : '';
+    const tone = diff > 0
+        ? 'text-rose-500 dark:text-rose-400'
+        : diff < 0
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : 'text-gray-500 dark:text-gray-400';
+
+    const formatValue = (v) => digits > 0 ? v.toFixed(digits) : String(Math.round(v));
+
+    return `
+        <div class="rounded-xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-base-900 p-2.5">
+            <p class="text-gray-500 dark:text-gray-400 font-semibold">${label}</p>
+            <p class="text-sm font-black text-base-900 dark:text-white mt-0.5">${formatValue(safeCurrent)}${unit}</p>
+            <p class="font-bold mt-1 ${tone}">${sign}${formatValue(diff)}${unit}</p>
+        </div>
+    `;
+}
+
+function generateBeerInsights({ periodStats, previousStats, periodAlcohol, previousAlcohol, avgAbvCurrent, avgAbvPrevious, abvBands }) {
+    const insights = [];
+    const countDiff = periodStats.totalCount - previousStats.totalCount;
+    insights.push({
+        title: '杯数トレンド',
+        detail: countDiff === 0
+            ? '直前期間と同じ杯数ペースです。'
+            : `直前期間比で${countDiff > 0 ? `${countDiff}杯増加` : `${Math.abs(countDiff)}杯減少`}しています。`
+    });
+
+    const alcoholDiff = periodAlcohol - previousAlcohol;
+    insights.push({
+        title: '純アルコール量',
+        detail: alcoholDiff === 0
+            ? '純アルコール総量は横ばいです。'
+            : `純アルコール量は${alcoholDiff > 0 ? `+${alcoholDiff}g` : `${alcoholDiff}g`}の変化です。`
+    });
+
+    const abvDiff = Math.round((avgAbvCurrent - avgAbvPrevious) * 10) / 10;
+    const highAbv = abvBands.find(b => b.label === '8%+')?.count || 0;
+    const total = periodStats.totalCount || 1;
+    const highPct = Math.round((highAbv / total) * 100);
+    insights.push({
+        title: '強度（ABV）傾向',
+        detail: `平均ABVは${avgAbvCurrent.toFixed(1)}%（前期比${abvDiff >= 0 ? '+' : ''}${abvDiff.toFixed(1)}pt）、8%+は${highPct}%です。`
+    });
+
+    return insights;
 }
 
 /**

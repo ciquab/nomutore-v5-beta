@@ -19,9 +19,29 @@ const mergeLayout = (input = null) => ({
 });
 
 
+const STATS_LAYOUT_ITEMS = {
+    beer: [
+        { key: 'summaryMetrics', label: 'サマリーメトリクス' },
+        { key: 'flavorTrend', label: 'フレーバー推移' },
+        { key: 'styleBreakdown', label: 'スタイル内訳' },
+        { key: 'abvBands', label: 'ABV帯分布' },
+        { key: 'rollingTrend', label: '4週間ローリングトレンド' },
+        { key: 'weekdayHeatmap', label: '曜日×時間帯ヒートマップ' },
+        { key: 'sessionProfile', label: '1日あたり摂取プロファイル' },
+        { key: 'exploreRepeat', label: 'Explore / Repeat バランス' },
+        { key: 'periodComparison', label: '期間比較' },
+        { key: 'beerInsights', label: 'Beer Insight' },
+    ],
+    activity: [
+        { key: 'activityCalendar', label: '活動カレンダー' },
+        { key: 'calorieBalance', label: 'カロリーバランス推移' },
+        { key: 'healthInsights', label: 'ヘルスインサイト' },
+    ],
+};
+
 const ensureBeerLayoutHasOneEnabled = (layout) => {
     const merged = mergeLayout(layout);
-    const beerKeys = ['weekdayHeatmap', 'exploreRepeat', 'periodComparison'];
+    const beerKeys = STATS_LAYOUT_ITEMS.beer.map(item => item.key);
     const hasAnyEnabled = beerKeys.some(key => merged?.beer?.[key] !== false);
 
     if (!hasAnyEnabled) {
@@ -32,34 +52,31 @@ const ensureBeerLayoutHasOneEnabled = (layout) => {
     return { layout: merged, adjusted: false };
 };
 
+const renderStatsLayoutSection = (sectionKey, title) => {
+    const items = STATS_LAYOUT_ITEMS[sectionKey] || [];
+    const rows = items.map((item, idx) => `
+        <label class="flex items-center justify-between py-2 cursor-pointer ${idx > 0 ? 'border-t border-base-200 dark:border-base-700' : ''}">
+            <span class="text-sm font-bold text-base-900 dark:text-white">${item.label}</span>
+            <input type="checkbox" ${draftLayout?.[sectionKey]?.[item.key] !== false ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='${JSON.stringify({ section: sectionKey, key: item.key })}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+        </label>
+    `).join('');
+
+    return `
+        <section class="p-3 rounded-xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800">
+            <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">${title}</h4>
+            ${rows}
+        </section>
+    `;
+};
+
 const renderStatsLayoutEditor = () => {
     const panel = document.getElementById('stats-layout-content');
     if (!panel) return;
 
     panel.innerHTML = `
         <div class="space-y-3">
-            <section class="p-3 rounded-xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800">
-                <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Beer分析カード</h4>
-                <label class="flex items-center justify-between py-2 cursor-pointer">
-                    <span class="text-sm font-bold text-base-900 dark:text-white">曜日×時間帯ヒートマップ</span>
-                    <input type="checkbox" ${draftLayout.beer.weekdayHeatmap ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"beer","key":"weekdayHeatmap"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                </label>
-                <label class="flex items-center justify-between py-2 cursor-pointer border-t border-base-200 dark:border-base-700">
-                    <span class="text-sm font-bold text-base-900 dark:text-white">Explore / Repeat バランス</span>
-                    <input type="checkbox" ${draftLayout.beer.exploreRepeat ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"beer","key":"exploreRepeat"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                </label>
-                <label class="flex items-center justify-between py-2 cursor-pointer border-t border-base-200 dark:border-base-700">
-                    <span class="text-sm font-bold text-base-900 dark:text-white">期間比較</span>
-                    <input type="checkbox" ${draftLayout.beer.periodComparison ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"beer","key":"periodComparison"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                </label>
-            </section>
-            <section class="p-3 rounded-xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800">
-                <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Activity分析カード</h4>
-                <label class="flex items-center justify-between py-2 cursor-pointer">
-                    <span class="text-sm font-bold text-base-900 dark:text-white">ヘルスインサイト</span>
-                    <input type="checkbox" ${draftLayout.activity.healthInsights ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"activity","key":"healthInsights"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                </label>
-            </section>
+            ${renderStatsLayoutSection('beer', 'Beer分析カード')}
+            ${renderStatsLayoutSection('activity', 'Activity分析カード')}
         </div>
     `;
 };

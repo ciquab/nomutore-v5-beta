@@ -1,7 +1,7 @@
 // @ts-check
 import { Calc } from '../logic.js';
 import { escapeHtml } from './dom.js';
-import { APP, FLAVOR_AXES, FLAVOR_SCALE_MAX } from '../constants.js';
+import { APP, FLAVOR_AXES, FLAVOR_SCALE_MAX, STYLE_METADATA } from '../constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 import { StateManager } from './state.js';
 import { setBeerStatsContext } from './beerStatsShared.js';
@@ -10,11 +10,6 @@ let statsChart = null;
 let flavorTrendChart = null;
 let rollingTrendChart = null;
 
-/**
- * ビール統計画面の描画
- * @param {Array} periodLogs - 現在の期間（今週/今月）のログ
- * @param {Array} allLogs - DBにある全てのメインログ
- */
 /**
  * ビール統計画面の描画
  * @param {Array} periodLogs - 現在の期間（今週/今月）のログ
@@ -39,7 +34,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     const focusStats = Calc.getBeerStats(scopedLogs);
     const allBeers = allStats.beerStats || []; // 全期間の銘柄リスト
     const focusBeerLogs = (scopedLogs || []).filter(l => l.type === 'beer');
-    const periodRange = deriveBeerPeriodRange(scopedLogs, allLogs);
+    const periodRange = deriveBeerPeriodRange(scopedLogs);
     const firstTryBeers = calcFirstTryBeerCount(focusBeerLogs, allLogs, periodRange.startTs);
     const previousBeerLogs = getPreviousPeriodBeerLogs(allLogs, periodRange);
     const focusAlcohol = Math.round(Calc.calcTotalPureAlcohol(focusBeerLogs));
@@ -104,7 +99,6 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${firstTryBeers}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
-            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
@@ -174,7 +168,6 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     }).join('')}
                 </div>
             </div>
-            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
@@ -256,10 +249,9 @@ function calcFirstTryBeerCount(focusBeerLogs, allLogs, startTs) {
 /**
  * 期間ログからレンジを推定する
  * @param {Array} periodLogs
- * @param {Array} allLogs
  * @returns {{ startTs:number, endTs:number, spanDays:number }}
  */
-function deriveBeerPeriodRange(periodLogs, allLogs) {
+function deriveBeerPeriodRange(periodLogs) {
     const logs = (periodLogs || []).filter(l => l && Number.isFinite(l.timestamp));
     if (logs.length === 0) {
         const fallbackEnd = Date.now();
@@ -477,6 +469,95 @@ function buildExplorationBalance(beerLogs) {
         repeatRate: pairCount > 0 ? Math.round((repeatPairs / pairCount) * 100) : 0,
         dayCount
     };
+}
+
+
+function renderWeekdayHeatmapSection(beerLayout, heatmap) {
+    if (!beerLayout?.weekdayHeatmap) return '';
+
+    const levelClass = (value, max) => {
+        if (!max || value <= 0) return 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500';
+        const ratio = value / max;
+        if (ratio >= 0.75) return 'bg-indigo-600 text-white';
+        if (ratio >= 0.45) return 'bg-indigo-400 text-white';
+        if (ratio >= 0.2) return 'bg-indigo-200 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200';
+        return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-300';
+    };
+
+    return `
+        <div class="glass-panel p-4 rounded-2xl">
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-blank section-icon text-cyan-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
+            <div class="grid grid-cols-5 gap-1 text-[11px]">
+                <div></div>
+                ${heatmap.slots.map(slot => `<div class="text-center text-gray-500 dark:text-gray-400 font-bold">${slot}</div>`).join('')}
+                ${heatmap.weekdays.map((day, dayIdx) => `
+                    <div class="contents">
+                        <div class="text-gray-500 dark:text-gray-400 font-bold py-1">${day}</div>
+                        ${heatmap.values[dayIdx].map(v => `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`).join('')}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderExploreRepeatSection(beerLayout, explorationBalance) {
+    if (!beerLayout?.exploreRepeat) return '';
+    return `
+        <div class="glass-panel p-4 rounded-2xl">
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-shuffle-angular section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 p-3">
+                    <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">Explore率</p>
+                    <p class="text-xl font-black text-emerald-600 dark:text-emerald-300">${explorationBalance.exploreRate}%</p>
+                </div>
+                <div class="rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 p-3">
+                    <p class="text-[11px] font-semibold text-indigo-700 dark:text-indigo-300">Repeat率</p>
+                    <p class="text-xl font-black text-indigo-600 dark:text-indigo-300">${explorationBalance.repeatRate}%</p>
+                </div>
+            </div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">集計日数: ${explorationBalance.dayCount}日</p>
+        </div>
+    `;
+}
+
+function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats, previousStats, focusAlcohol, previousAlcohol, avgAbvCurrent, avgAbvPrevious }) {
+    if (!beerLayout?.periodComparison) return '';
+    return `
+        <div class="glass-panel p-4 rounded-2xl">
+            <div class="flex items-center justify-between mb-2">
+                <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> 期間比較</h3>
+                <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${comparisonLabel}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                ${renderComparisonMetric('杯数', focusStats.totalCount, previousStats.totalCount, '杯')}
+                ${renderComparisonMetric('容量', focusStats.totalMl / 1000, previousStats.totalMl / 1000, 'L', 1)}
+                ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
+                ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
+            </div>
+        </div>
+    `;
+}
+
+function renderBeerLayoutEmptyState() {
+    return `
+        <div class="empty-state flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">
+            <i class="ph-duotone ph-layout text-3xl mb-2" aria-hidden="true"></i>
+            <p class="text-sm font-bold">Beer分析カードがすべて非表示です</p>
+            <p class="text-xs opacity-60">表示設定から1つ以上ONにしてください</p>
+        </div>
+    `;
+}
+
+function darkenHex(hex, ratio = 0.25) {
+    const h = String(hex || '').replace('#', '');
+    if (!/^[0-9a-fA-F]{6}$/.test(h)) return '#94a3b8';
+    const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
+    const r = clamp(parseInt(h.slice(0, 2), 16) * (1 - ratio));
+    const g = clamp(parseInt(h.slice(2, 4), 16) * (1 - ratio));
+    const b = clamp(parseInt(h.slice(4, 6), 16) * (1 - ratio));
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
 function renderSessionMetric(label, data, unit = '') {

@@ -108,6 +108,7 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
 
     // 味わいセクションの初期化
     initFlavorSection(log);
+    initBeerDetailsSection(log);
 
     const delBtn = document.getElementById('btn-delete-beer');
     if (delBtn) {
@@ -400,6 +401,13 @@ export const resetBeerForm = (keepDate = false) => {
     // 味わいセクションのリセット
     resetFlavorSection();
 
+    const detailInputs = document.getElementById('beer-details-inputs');
+    const detailIcon = document.getElementById('beer-details-toggle-icon');
+    if (detailInputs && detailIcon) {
+        detailInputs.classList.add('hidden');
+        detailIcon.style.transform = '';
+    }
+
     switchBeerInputTab('preset');
 };
 
@@ -454,6 +462,40 @@ export const updateBeerSelectOptions = () => {
 // ===========================================
 
 const FLAVOR_OPENED_KEY = 'nomutore_flavor_opened';
+
+const initBeerDetailsSection = (log = null) => {
+    const toggle = document.getElementById('beer-details-toggle');
+    const inputs = document.getElementById('beer-details-inputs');
+    const icon = document.getElementById('beer-details-toggle-icon');
+    if (!toggle || !inputs || !icon) return;
+
+    const hasDetails = !!(log && (
+        (log.brewery && log.brewery.trim()) ||
+        ((log.brand || log.name) && String(log.brand || log.name).trim()) ||
+        (log.rating && log.rating > 0) ||
+        (log.memo && log.memo.trim()) ||
+        log.flavorProfile
+    ));
+
+    const open = () => {
+        inputs.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    };
+
+    const close = () => {
+        inputs.classList.add('hidden');
+        icon.style.transform = '';
+    };
+
+    toggle.onclick = () => {
+        const isHidden = inputs.classList.contains('hidden');
+        if (isHidden) open();
+        else close();
+    };
+
+    if (hasDetails) open();
+    else close();
+};
 
 /**
  * 味わいセクションの初期化

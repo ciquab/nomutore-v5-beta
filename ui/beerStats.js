@@ -100,6 +100,13 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
         contextLabel
     });
 
+    const statsLayout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT || { beer: {} };
+    const beerLayout = {
+        weekdayHeatmap: statsLayout?.beer?.weekdayHeatmap !== false,
+        exploreRepeat: statsLayout?.beer?.exploreRepeat !== false,
+        periodComparison: statsLayout?.beer?.periodComparison !== false,
+    };
+
     // モジュールスコープに保存（ブルワリー詳細表示・Collection用）— 防御コピー
     _allBeers = [...allBeers];
     _breweryStats = [...(allStats.breweryStats || [])];
@@ -209,6 +216,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 短期トレンドの比較のため固定窓で表示</p>
             </div>
 
+            ${beerLayout.weekdayHeatmap ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-check section-icon text-sky-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
                 <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
@@ -225,6 +233,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     `).join('')}
                 </div>
             </div>
+            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-chart-line-up section-icon text-emerald-500" aria-hidden="true"></i> 1日あたり摂取プロファイル</h3>
@@ -237,6 +246,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">P50 = 中央値 / P90 = 多い日の目安（上位10%）</p>
             </div>
 
+            ${beerLayout.exploreRepeat ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-compass section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
                 <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
@@ -253,7 +263,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     </div>
                 </div>
             </div>
+            ` : ''}
 
+            ${beerLayout.periodComparison ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> ${isPermanent ? '直近比較' : '期間比較'}</h3>
@@ -264,8 +276,10 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     ${renderComparisonMetric('容量', Number((focusStats.totalMl / 1000).toFixed(1)), Number((previousStats.totalMl / 1000).toFixed(1)), 'L')}
                     ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
                     ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
+
                 </div>
             </div>
+            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> Beer Insight</h3>

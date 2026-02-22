@@ -520,8 +520,9 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
                         ${heatmap.values[dayIdx].map(v => `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`).join('')}
                     </div>
                 `).join('')}
-            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
-    `;
+            </div>
+        </div>
+    `; // ここでシンプルに閉じる
 }
 
 function renderExploreRepeatSection(beerLayout, explorationBalance) {
@@ -557,9 +558,11 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
                 ${renderComparisonMetric('容量', focusStats.totalMl / 1000, previousStats.totalMl / 1000, 'L', 1)}
                 ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
                 ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
-            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
-    `;
+            </div>
+        </div>
+    `; // ここもシンプルに閉じる
 }
+
 function renderBeerLayoutEmptyState() {
     return `
         <div class="empty-state flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">
@@ -594,8 +597,9 @@ function renderSessionMetric(label, data, unit = '') {
                     <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
                     <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end text-right tabular-nums">${Math.round(data.p90)}${suffix}</span>
                 </div>
-            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
-    `;
+            </div>
+        </div>
+    `; // 余計な三項演算子の残骸を消す
 }
 
 function calcAvgFlavorByLogs(logs) {

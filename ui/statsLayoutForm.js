@@ -75,15 +75,19 @@ const renderStatsLayoutEditor = () => {
 
     panel.innerHTML = `
         <div class="space-y-3">
-            ${renderStatsLayoutSection('beer', 'Beer分析カード')}
             ${renderStatsLayoutSection('activity', 'Activity分析カード')}
+            ${renderStatsLayoutSection('beer', 'Beer分析カード')}
         </div>
     `;
 };
 
-export const openStatsLayoutModal = () => {
+export const primeStatsLayoutModalContent = () => {
     draftLayout = mergeLayout(StateManager.statsLayout);
     renderStatsLayoutEditor();
+};
+
+export const openStatsLayoutModal = () => {
+    primeStatsLayoutModalContent();
     toggleModal('stats-layout-modal', true);
 };
 

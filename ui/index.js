@@ -54,7 +54,7 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
-import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings } from './statsLayoutForm.js';
+import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings, primeStatsLayoutModalContent } from './statsLayoutForm.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -368,6 +368,7 @@ export const UI = {
 
         resetRenderCaches();
         DOM.init();
+        primeStatsLayoutModalContent();
 
         // ───── EventBus リスナー登録（単方向データフロー: Data層 → UI層） ─────
         setupEventBusListeners();

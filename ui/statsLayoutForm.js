@@ -90,8 +90,8 @@ export const toggleStatsLayoutItem = (args, event) => {
     if (section === 'beer') {
         const guarded = ensureBeerLayoutHasOneEnabled(draftLayout);
         draftLayout = guarded.layout;
-        if (guarded.adjusted && event?.target) {
-            event.target.checked = true;
+        if (guarded.adjusted) {
+            renderStatsLayoutEditor();
             showMessage('Beer分析カードは最低1つ表示する必要があります', 'warning');
         }
     }

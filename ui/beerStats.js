@@ -522,7 +522,7 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
                 `).join('')}
             </div>
         </div>
-    `;
+    `; // ここでシンプルに閉じる
 }
 
 function renderExploreRepeatSection(beerLayout, explorationBalance) {
@@ -560,7 +560,7 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
                 ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
             </div>
         </div>
-    `;
+    `; // ここもシンプルに閉じる
 }
 function renderBeerLayoutEmptyState() {
     return `

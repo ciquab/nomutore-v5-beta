@@ -2,7 +2,7 @@
 import { db, Store } from './store.js';
 import { LogService } from './logService.js';
 import { Calc, getVirtualDate } from './logic.js';
-import { APP, EXERCISE, STYLE_SPECS } from './constants.js';
+import { APP, EXERCISE, STYLE_SPECS, CHECK_LIBRARY, CHECK_DEFAULT_IDS } from './constants.js';
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 import { StatusSyncService } from './statusSyncService.js';
 import { QueryService } from './queryService.js';
@@ -55,6 +55,77 @@ export const Service = {
     getRecentBeers: QueryService.getRecentBeers,
     getFrequentExercises: QueryService.getFrequentExercises,
     getRecentExercises: QueryService.getRecentExercises,
+
+    /**
+     * チェックスキーマをIDリストから解決（ライブラリ + 現在のカスタム項目）
+     * @param {string[]} ids
+     */
+    resolveCheckSchemaItemsByIds: (ids) => {
+        /** @type {any[]} */
+        const resolved = [];
+        const currentSchema = Service.getCheckSchema();
+
+        ids.forEach(id => {
+            let item = null;
+
+            Object.values(CHECK_LIBRARY).forEach(category => {
+                const found = category.find(i => i.id === id);
+                if (found) item = found;
+            });
+
+            if (!item) {
+                item = currentSchema.find(i => i.id === id) || null;
+            }
+
+            if (item) resolved.push(item);
+        });
+
+        return resolved;
+    },
+
+    /**
+     * チェックスキーマを取得（未保存時はデフォルトを生成して返す）
+     */
+    getCheckSchema: () => {
+        try {
+            const stored = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
+            if (!stored) return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+
+            const parsed = JSON.parse(stored);
+            return Array.isArray(parsed) && parsed.length > 0
+                ? parsed
+                : Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+        } catch (_) {
+            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+        }
+    },
+
+    /**
+     * チェックスキーマ保存
+     * @param {any[]} schema
+     */
+    setCheckSchema: (schema) => {
+        localStorage.setItem(APP.STORAGE_KEYS.CHECK_SCHEMA, JSON.stringify(schema || []));
+    },
+
+    /**
+     * 現在アクティブなチェックスキーマID一覧
+     */
+    getCurrentCheckSchemaIds: () => Service.getCheckSchema().map(i => i.id),
+
+    /**
+     * ライブラリ選択を適用（カスタム項目は維持）
+     * @param {string[]} selectedIds
+     */
+    applyCheckLibrarySelection: (selectedIds) => {
+        const currentSchema = Service.getCheckSchema();
+        const libraryIds = new Set(Object.values(CHECK_LIBRARY).flat().map(i => i.id));
+        const customItems = currentSchema.filter(item => !libraryIds.has(item.id));
+        const newSchemaFromLibrary = Service.resolveCheckSchemaItemsByIds(selectedIds);
+        const finalSchema = [...newSchemaFromLibrary, ...customItems];
+        Service.setCheckSchema(finalSchema);
+        return finalSchema;
+    },
 
     // --- PeriodService (期間管理) ---
     calculatePeriodStart: PeriodService.calculatePeriodStart,

@@ -1,5 +1,5 @@
 // @ts-check
-const CACHE_VERSION = 'v0.5.2-b6';
+const CACHE_VERSION = 'v0.5.2-b7';
 const CACHE_NAME = `nomutore-${CACHE_VERSION}`;
 
 // B1対策: CDNリソースもプリキャッシュしてオフライン動作を保証する。

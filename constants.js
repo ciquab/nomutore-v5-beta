@@ -75,11 +75,20 @@ Object.keys(STYLE_SPECS).forEach(key => {
 export const STATS_LAYOUT_DEFAULTS = {
     version: 1,
     beer: {
+        summaryMetrics: true,
+        flavorTrend: false,
+        styleBreakdown: true,
+        abvBands: false,
+        rollingTrend: false,
         weekdayHeatmap: true,
-        exploreRepeat: true,
+        sessionProfile: false,
+        exploreRepeat: false,
         periodComparison: true,
+        beerInsights: true,
     },
     activity: {
+        activityCalendar: true,
+        calorieBalance: true,
         healthInsights: true,
     },
 };
@@ -89,22 +98,40 @@ export const STATS_LAYOUT_PRESETS = {
     compact: {
         version: 1,
         beer: {
+            summaryMetrics: false,
+            flavorTrend: false,
+            styleBreakdown: false,
+            abvBands: false,
+            rollingTrend: false,
             weekdayHeatmap: false,
+            sessionProfile: false,
             exploreRepeat: false,
             periodComparison: false,
+            beerInsights: false,
         },
         activity: {
+            activityCalendar: false,
+            calorieBalance: false,
             healthInsights: false,
         },
     },
     deep: {
         version: 1,
         beer: {
+            summaryMetrics: true,
+            flavorTrend: true,
+            styleBreakdown: true,
+            abvBands: true,
+            rollingTrend: true,
             weekdayHeatmap: true,
+            sessionProfile: true,
             exploreRepeat: true,
             periodComparison: true,
+            beerInsights: true,
         },
         activity: {
+            activityCalendar: true,
+            calorieBalance: true,
             healthInsights: true,
         },
     },

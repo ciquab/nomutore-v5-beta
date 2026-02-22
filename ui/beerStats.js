@@ -132,28 +132,32 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">固定: 30日 vs 90日</span>
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${escapeHtml(flavorTrend.caption)}</span>
                 </div>
                 ${flavorTrend.hasData ? `
                     <div class="h-52 w-full">
                         <canvas id="beerFlavorTrendChart"></canvas>
                     </div>
-                    <div class="mt-2 grid grid-cols-3 gap-2 text-[11px]">
-                        ${flavorTrend.topChanges.map(item => `
-                            <div class="rounded-xl border border-fuchsia-100 dark:border-fuchsia-900/40 bg-fuchsia-50/60 dark:bg-fuchsia-900/20 p-2">
-                                <p class="font-semibold text-gray-500 dark:text-gray-400">${escapeHtml(item.label)}</p>
-                                <p class="font-black ${item.delta >= 0 ? 'text-fuchsia-600 dark:text-fuchsia-300' : 'text-emerald-600 dark:text-emerald-300'}">${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}</p>
-                            </div>
-                        `).join('')}
-                    </div>
+                    ${flavorTrend.hasComparison ? `
+                        <div class="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+                            ${flavorTrend.topChanges.map(item => `
+                                <div class="rounded-xl border border-fuchsia-100 dark:border-fuchsia-900/40 bg-fuchsia-50/60 dark:bg-fuchsia-900/20 p-2">
+                                    <p class="font-semibold text-gray-500 dark:text-gray-400">${escapeHtml(item.label)}</p>
+                                    <p class="font-black ${item.delta >= 0 ? 'text-fuchsia-600 dark:text-fuchsia-300' : 'text-emerald-600 dark:text-emerald-300'}">${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <p class="mt-2 text-[11px] text-gray-500 dark:text-gray-400 font-semibold">比較データは蓄積中です。味わい傾向の現在値を表示しています。</p>
+                    `}
                 ` : `
                     <div class="empty-state flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">
                         <i class="ph-duotone ph-beer-bottle text-3xl mb-2" aria-hidden="true"></i>
                         <p class="text-sm font-bold">フレーバーデータが不足しています</p>
-                        <p class="text-xs opacity-60">味わい付きの記録で比較が表示されます</p>
+                        <p class="text-xs opacity-60">味わい付きの記録を追加すると推移が表示されます</p>
                     </div>
                 `}
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 嗜好変化の検知を優先するため固定窓で表示</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">${escapeHtml(flavorTrend.note)}</p>
             </div>
 
             <div class="glass-panel p-4 rounded-2xl relative">
@@ -578,30 +582,77 @@ function calcAvgFlavorByLogs(logs) {
 }
 
 function buildFlavorTrendData(allLogs, endTs = Date.now()) {
-    const end = dayjs(endTs);
-    const recentStart = end.subtract(30, 'day').startOf('day').valueOf();
-    const baselineStart = end.subtract(120, 'day').startOf('day').valueOf();
-    const baselineEnd = end.subtract(31, 'day').endOf('day').valueOf();
+    const end = dayjs(endTs).endOf('day');
 
-    const recentLogs = (allLogs || []).filter(l => l.type === 'beer' && l.timestamp >= recentStart && l.timestamp <= end.valueOf());
-    const baselineLogs = (allLogs || []).filter(l => l.type === 'beer' && l.timestamp >= baselineStart && l.timestamp <= baselineEnd);
+    const recentWindow = 30;
+    const baselineWindow = 90;
+
+    const recentStartTs = end.subtract(recentWindow - 1, 'day').startOf('day').valueOf();
+    const baselineEndTs = end.subtract(recentWindow, 'day').endOf('day').valueOf();
+    const baselineStartTs = dayjs(baselineEndTs).subtract(baselineWindow - 1, 'day').startOf('day').valueOf();
+
+    const flavorLogs = (allLogs || []).filter(l => l.type === 'beer' && l.flavorProfile);
+    const recentLogs = flavorLogs.filter(l => l.timestamp >= recentStartTs && l.timestamp <= end.valueOf());
+    const baselineLogs = flavorLogs.filter(l => l.timestamp >= baselineStartTs && l.timestamp <= baselineEndTs);
 
     const recentAvg = calcAvgFlavorByLogs(recentLogs);
     const baselineAvg = calcAvgFlavorByLogs(baselineLogs);
 
-    if (!recentAvg || !baselineAvg) {
-        return { hasData: false, recentAvg: null, baselineAvg: null, topChanges: [] };
+    if (recentAvg && baselineAvg) {
+        const topChanges = FLAVOR_AXES.map(a => ({
+            key: a.key,
+            label: a.label,
+            delta: Math.round(((recentAvg[a.key] || 0) - (baselineAvg[a.key] || 0)) * 10) / 10
+        }))
+            .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+            .slice(0, 3);
+
+        return {
+            hasData: true,
+            hasComparison: true,
+            recentAvg,
+            baselineAvg,
+            topChanges,
+            recentLabel: `最近${recentWindow}日`,
+            baselineLabel: `過去${baselineWindow}日`,
+            caption: `固定: ${recentWindow}日 vs ${baselineWindow}日`,
+            note: '※ 嗜好変化の検知を優先するため固定窓で表示'
+        };
     }
 
-    const topChanges = FLAVOR_AXES.map(a => ({
-        key: a.key,
-        label: a.label,
-        delta: Math.round(((recentAvg[a.key] || 0) - (baselineAvg[a.key] || 0)) * 10) / 10
-    }))
-        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
-        .slice(0, 3);
+    const fallbackAvg = recentAvg || calcAvgFlavorByLogs(flavorLogs);
+    if (!fallbackAvg) {
+        return {
+            hasData: false,
+            hasComparison: false,
+            recentAvg: null,
+            baselineAvg: null,
+            topChanges: [],
+            recentLabel: '',
+            baselineLabel: '',
+            caption: `固定: ${recentWindow}日 vs ${baselineWindow}日`,
+            note: '※ 嗜好変化の検知を優先するため固定窓で表示'
+        };
+    }
 
-    return { hasData: true, recentAvg, baselineAvg, topChanges };
+    const historyStartTs = Math.min(...flavorLogs.map(l => l.timestamp));
+    const historyDays = Math.max(1, end.diff(dayjs(historyStartTs), 'day') + 1);
+
+    return {
+        hasData: true,
+        hasComparison: false,
+        recentAvg: fallbackAvg,
+        baselineAvg: null,
+        topChanges: [],
+        recentLabel: historyDays < recentWindow ? `記録済み${historyDays}日` : `最近${recentWindow}日`,
+        baselineLabel: '',
+        caption: historyDays < recentWindow
+            ? `記録期間: ${historyDays}日（比較データ準備中）`
+            : '比較データ準備中（現在値のみ表示）',
+        note: historyDays < recentWindow
+            ? `※ 味わい記録の累積日数が${recentWindow}日未満のため、現在値のみ表示`
+            : `※ 比較用データ（過去${baselineWindow}日）が不足のため、現在値のみ表示`
+    };
 }
 
 function buildRollingBeerTrend(allLogs, endTs = Date.now()) {
@@ -636,30 +687,34 @@ function renderFlavorTrendChart(flavorTrend) {
 
     const labels = FLAVOR_AXES.map(a => a.label);
     const recent = FLAVOR_AXES.map(a => flavorTrend.recentAvg[a.key] || 0);
-    const baseline = FLAVOR_AXES.map(a => flavorTrend.baselineAvg[a.key] || 0);
+    const datasets = [
+        {
+            label: flavorTrend.recentLabel || '現在値',
+            data: recent,
+            backgroundColor: 'rgba(192, 38, 211, 0.18)',
+            borderColor: 'rgba(192, 38, 211, 0.85)',
+            borderWidth: 2,
+            pointRadius: 3
+        }
+    ];
+
+    if (flavorTrend.hasComparison && flavorTrend.baselineAvg) {
+        const baseline = FLAVOR_AXES.map(a => flavorTrend.baselineAvg[a.key] || 0);
+        datasets.push({
+            label: flavorTrend.baselineLabel || '比較期間',
+            data: baseline,
+            backgroundColor: 'rgba(14, 165, 233, 0.1)',
+            borderColor: 'rgba(14, 165, 233, 0.8)',
+            borderWidth: 2,
+            pointRadius: 2
+        });
+    }
 
     flavorTrendChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels,
-            datasets: [
-                {
-                    label: '最近30日',
-                    data: recent,
-                    backgroundColor: 'rgba(192, 38, 211, 0.18)',
-                    borderColor: 'rgba(192, 38, 211, 0.85)',
-                    borderWidth: 2,
-                    pointRadius: 3
-                },
-                {
-                    label: '過去90日',
-                    data: baseline,
-                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
-                    borderColor: 'rgba(14, 165, 233, 0.8)',
-                    borderWidth: 2,
-                    pointRadius: 2
-                }
-            ]
+            datasets
         },
         options: {
             responsive: true,

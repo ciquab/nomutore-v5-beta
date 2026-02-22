@@ -54,6 +54,7 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
+import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings } from './statsLayoutForm.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -275,7 +276,13 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 if (statsMode === 'activity') {
                     renderHeatmap(checks, allLogs, Store.getProfile());
                     renderChart(allLogs, checks);
-                    renderHealthInsights(allLogs, checks);
+                    const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+                    if (layout?.activity?.healthInsights !== false) {
+                        renderHealthInsights(allLogs, checks);
+                    } else {
+                        const section = document.getElementById('health-insights-section');
+                        if (section) section.innerHTML = '';
+                    }
                 } else if (statsMode === 'beer') {
                     renderBeerStats(logs, allLogs, checks);
                 }
@@ -1136,7 +1143,13 @@ if (checkModal) {
         const { allLogs, checks } = UI._statsData;
         if (allLogs && checks) {
             renderChart(allLogs, checks);
-            renderHealthInsights(allLogs, checks);
+            const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+            if (layout?.activity?.healthInsights !== false) {
+                renderHealthInsights(allLogs, checks);
+            } else {
+                const section = document.getElementById('health-insights-section');
+                if (section) section.innerHTML = '';
+            }
         }
     },
 
@@ -1203,6 +1216,10 @@ if (checkModal) {
     showUpdateNotification: showUpdateNotification,
     renderCheckLibrary: renderCheckLibrary,
     openCheckLibrary: openCheckLibrary,
+    openStatsLayoutModal: openStatsLayoutModal,
+    applyStatsLayoutPreset: applyStatsLayoutPreset,
+    toggleStatsLayoutItem: toggleStatsLayoutItem,
+    saveStatsLayoutSettings: saveStatsLayoutSettings,
     applyLibraryChanges: applyLibraryChanges,
     applyPreset: applyPreset,
     deleteCheckItem: deleteCheckItem,

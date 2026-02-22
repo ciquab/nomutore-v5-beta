@@ -276,7 +276,13 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 if (statsMode === 'activity') {
                     renderHeatmap(checks, allLogs, Store.getProfile());
                     renderChart(allLogs, checks);
-                    renderHealthInsights(allLogs, checks);
+                    const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+                    if (layout?.activity?.healthInsights !== false) {
+                        renderHealthInsights(allLogs, checks);
+                    } else {
+                        const section = document.getElementById('health-insights-section');
+                        if (section) section.innerHTML = '';
+                    }
                 } else if (statsMode === 'beer') {
                     renderBeerStats(logs, allLogs, checks);
                 }
@@ -1137,7 +1143,13 @@ if (checkModal) {
         const { allLogs, checks } = UI._statsData;
         if (allLogs && checks) {
             renderChart(allLogs, checks);
-            renderHealthInsights(allLogs, checks);
+            const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+            if (layout?.activity?.healthInsights !== false) {
+                renderHealthInsights(allLogs, checks);
+            } else {
+                const section = document.getElementById('health-insights-section');
+                if (section) section.innerHTML = '';
+            }
         }
     },
 

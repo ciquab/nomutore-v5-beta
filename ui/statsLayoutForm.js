@@ -12,6 +12,10 @@ const mergeLayout = (input = null) => ({
         ...STATS_LAYOUT_DEFAULTS.beer,
         ...((input && input.beer) || {}),
     },
+    activity: {
+        ...STATS_LAYOUT_DEFAULTS.activity,
+        ...((input && input.activity) || {}),
+    },
 });
 
 const renderStatsLayoutEditor = () => {
@@ -29,6 +33,17 @@ const renderStatsLayoutEditor = () => {
                 <label class="flex items-center justify-between py-2 cursor-pointer border-t border-base-200 dark:border-base-700">
                     <span class="text-sm font-bold text-base-900 dark:text-white">Explore / Repeat バランス</span>
                     <input type="checkbox" ${draftLayout.beer.exploreRepeat ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"beer","key":"exploreRepeat"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </label>
+                <label class="flex items-center justify-between py-2 cursor-pointer border-t border-base-200 dark:border-base-700">
+                    <span class="text-sm font-bold text-base-900 dark:text-white">期間比較</span>
+                    <input type="checkbox" ${draftLayout.beer.periodComparison ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"beer","key":"periodComparison"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                </label>
+            </section>
+            <section class="p-3 rounded-xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800">
+                <h4 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Activity分析カード</h4>
+                <label class="flex items-center justify-between py-2 cursor-pointer">
+                    <span class="text-sm font-bold text-base-900 dark:text-white">ヘルスインサイト</span>
+                    <input type="checkbox" ${draftLayout.activity.healthInsights ? 'checked' : ''} data-action="statsLayout:toggleItem" data-args='{"section":"activity","key":"healthInsights"}' class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                 </label>
             </section>
         </div>

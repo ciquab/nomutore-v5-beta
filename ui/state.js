@@ -21,6 +21,10 @@ const loadStatsLayout = () => {
                 ...STATS_LAYOUT_DEFAULTS.beer,
                 ...(parsed?.beer || {}),
             },
+            activity: {
+                ...STATS_LAYOUT_DEFAULTS.activity,
+                ...(parsed?.activity || {}),
+            },
         };
     } catch (e) {
         console.warn('[State] Failed to parse stats layout. Falling back to defaults.', e);
@@ -162,6 +166,10 @@ export const StateManager = {
             beer: {
                 ...STATS_LAYOUT_DEFAULTS.beer,
                 ...((v && v.beer) || {}),
+            },
+            activity: {
+                ...STATS_LAYOUT_DEFAULTS.activity,
+                ...((v && v.activity) || {}),
             },
         };
         _state.statsLayout = merged;

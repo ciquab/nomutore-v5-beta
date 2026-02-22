@@ -77,6 +77,10 @@ export const STATS_LAYOUT_DEFAULTS = {
     beer: {
         weekdayHeatmap: true,
         exploreRepeat: true,
+        periodComparison: true,
+    },
+    activity: {
+        healthInsights: true,
     },
 };
 
@@ -87,6 +91,10 @@ export const STATS_LAYOUT_PRESETS = {
         beer: {
             weekdayHeatmap: false,
             exploreRepeat: false,
+            periodComparison: false,
+        },
+        activity: {
+            healthInsights: false,
         },
     },
     deep: {
@@ -94,6 +102,10 @@ export const STATS_LAYOUT_PRESETS = {
         beer: {
             weekdayHeatmap: true,
             exploreRepeat: true,
+            periodComparison: true,
+        },
+        activity: {
+            healthInsights: true,
         },
     },
 };

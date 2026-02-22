@@ -512,9 +512,10 @@ export const toggleModal = (modalId, show = true) => {
 
         const topModalId = _openModalStack[_openModalStack.length - 1];
         const currentStateModalId = window.history?.state?.[MODAL_HISTORY_KEY] || null;
-        if (!_isHandlingModalPopState && topModalId === modalId && currentStateModalId === modalId) {
-            window.history.back();
-            return;
+        if (!_isHandlingModalPopState && topModalId === modalId && currentStateModalId === modalId && window.history?.replaceState) {
+            const nextState = { ...(window.history.state || {}) };
+            delete nextState[MODAL_HISTORY_KEY];
+            window.history.replaceState(nextState, '');
         }
 
         // Escapeスタックから除去
@@ -551,20 +552,12 @@ export const toggleModal = (modalId, show = true) => {
     }
 };
 
-window.addEventListener('popstate', (event) => {
-    const targetModalId = event.state?.[MODAL_HISTORY_KEY] || null;
+window.addEventListener('popstate', () => {
     const topModalId = _openModalStack[_openModalStack.length - 1] || null;
-
-    if (targetModalId && topModalId === targetModalId) return;
+    if (!topModalId) return;
 
     _isHandlingModalPopState = true;
-    if (!topModalId && targetModalId) {
-        toggleModal(targetModalId, true);
-    } else if (topModalId && (!targetModalId || _openModalStack.includes(targetModalId))) {
-        toggleModal(topModalId, false);
-    } else if (topModalId && targetModalId && !_openModalStack.includes(targetModalId)) {
-        toggleModal(targetModalId, true);
-    }
+    toggleModal(topModalId, false);
     _isHandlingModalPopState = false;
 });
 

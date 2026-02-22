@@ -1,5 +1,5 @@
 // @ts-check
-import { APP } from '../constants.js';
+import { APP, STATS_LAYOUT_DEFAULTS } from '../constants.js';
 import { EventBus, Events } from '../eventBus.js';
 
 // ■ 1. イベントバス (Pub/Sub) — eventBus.js から再エクスポート
@@ -8,6 +8,30 @@ export { EventBus };
 
 // ■ 2. 内部状態 (直接アクセス禁止)
 // ---------------------------------------------------------
+
+const loadStatsLayout = () => {
+    try {
+        const raw = localStorage.getItem(APP.STORAGE_KEYS.STATS_LAYOUT);
+        if (!raw) return structuredClone(STATS_LAYOUT_DEFAULTS);
+        const parsed = JSON.parse(raw);
+        return {
+            ...structuredClone(STATS_LAYOUT_DEFAULTS),
+            ...parsed,
+            beer: {
+                ...STATS_LAYOUT_DEFAULTS.beer,
+                ...(parsed?.beer || {}),
+            },
+            activity: {
+                ...STATS_LAYOUT_DEFAULTS.activity,
+                ...(parsed?.activity || {}),
+            },
+        };
+    } catch (e) {
+        console.warn('[State] Failed to parse stats layout. Falling back to defaults.', e);
+        return structuredClone(STATS_LAYOUT_DEFAULTS);
+    }
+};
+
 const _state = { 
     beerMode: localStorage.getItem('nomutore_home_beer_mode') || 'mode1', 
     chart: null, 
@@ -20,6 +44,7 @@ const _state = {
     isLoadingLogs: false,
     cellarViewMode: 'logs',
     statsViewMode: 'activity',
+    statsLayout: loadStatsLayout(),
     selectedDate: null
 };
 
@@ -38,6 +63,7 @@ export const StateManager = {
     get isLoadingLogs() { return _state.isLoadingLogs; },
     get cellarViewMode() { return _state.cellarViewMode; },
     get statsViewMode() { return _state.statsViewMode; },
+    get statsLayout() { return _state.statsLayout; },
     get selectedDate() { return _state.selectedDate; },
 
     // --- Internal Helper: 変更通知と自動UI更新 ---
@@ -49,7 +75,7 @@ export const StateManager = {
         
         // 2. 重要な変更に対して自動でUI更新をトリガーする
         //    (これにより、各所での `document.dispatchEvent` や `refreshUI` 呼び出しを削減できます)
-        const AUTO_REFRESH_KEYS = ['beerMode', 'chartRange', 'selectedDate', 'heatmapOffset'];
+        const AUTO_REFRESH_KEYS = ['beerMode', 'chartRange', 'selectedDate', 'heatmapOffset', 'statsLayout'];
         
         // EventBus経由でUIに更新要求を通知（循環依存を避ける）
         if (AUTO_REFRESH_KEYS.includes(key)) {
@@ -130,6 +156,25 @@ export const StateManager = {
         if (_state.statsViewMode === v) return;
         _state.statsViewMode = v;
         StateManager._notify('statsViewMode');
+    },
+
+
+    setStatsLayout: (v) => {
+        const merged = {
+            ...structuredClone(STATS_LAYOUT_DEFAULTS),
+            ...(v || {}),
+            beer: {
+                ...STATS_LAYOUT_DEFAULTS.beer,
+                ...((v && v.beer) || {}),
+            },
+            activity: {
+                ...STATS_LAYOUT_DEFAULTS.activity,
+                ...((v && v.activity) || {}),
+            },
+        };
+        _state.statsLayout = merged;
+        localStorage.setItem(APP.STORAGE_KEYS.STATS_LAYOUT, JSON.stringify(merged));
+        StateManager._notify('statsLayout');
     },
 
     setSelectedDate: (v) => {

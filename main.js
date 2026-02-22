@@ -41,6 +41,11 @@ const registerActions = () => {
         // ========== Chart系 (追加) ==========
         'chart:period': (args) => UI.handleChartPeriod(args.range),
 
+        // ========== Stats Layout =========
+        'statsLayout:applyPreset': (presetKey) => UI.applyStatsLayoutPreset(presetKey),
+        'statsLayout:toggleItem': (args, event) => UI.toggleStatsLayoutItem(args, event),
+        'statsLayout:save': () => UI.saveStatsLayoutSettings(),
+
         // ========== Modal系 ==========
         'modal:open': (modalId) => toggleModal(modalId, true),
         'modal:close': (modalId) => toggleModal(modalId, false),
@@ -56,6 +61,7 @@ const registerActions = () => {
         'modal:openHelp': (section) => UI.openHelp(section),
         'modal:openActionMenu': () => UI.openActionMenu(),
         'modal:openCheckLibrary': () =>  UI.openCheckLibrary(),
+        'modal:openStatsLayout': () => UI.openStatsLayoutModal(),
         
         // ========== Data系 ==========
         'data:exportCSV': (type) => DataManager.exportCSV(type),

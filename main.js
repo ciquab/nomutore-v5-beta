@@ -278,6 +278,69 @@ window.__appInitState = window.__appInitState || APP_INIT_STATES.IDLE;
    Lifecycle Management
    ========================================================================== */
 
+
+const setupNetworkStatusBanner = () => {
+    const banner = document.getElementById('offline-banner');
+    if (!banner) return;
+
+    const sync = () => {
+        const offline = navigator.onLine === false;
+        banner.classList.toggle('hidden', !offline);
+    };
+
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    sync();
+};
+
+
+const setupInstallGuidance = () => {
+    const card = document.getElementById('install-card');
+    const btn = document.getElementById('btn-install-app');
+    const desc = document.getElementById('install-description');
+    const iosSteps = document.getElementById('install-ios-steps');
+    if (!card || !btn || !desc || !iosSteps) return;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) {
+        card.classList.add('hidden');
+        return;
+    }
+
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    let deferredInstallPrompt = null;
+
+    if (isIOS) {
+        card.classList.remove('hidden');
+        desc.textContent = 'ホーム画面に追加すると、次回からフルスクリーンで素早く起動できます。';
+        btn.textContent = 'インストール手順を表示';
+        btn.addEventListener('click', () => {
+            iosSteps.classList.toggle('hidden');
+        });
+        return;
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        card.classList.remove('hidden');
+        desc.textContent = 'ホーム画面に追加すると、アプリのようにすぐ開けます。';
+        btn.textContent = 'ホーム画面に追加';
+    });
+
+    window.addEventListener('appinstalled', () => {
+        card.classList.add('hidden');
+        deferredInstallPrompt = null;
+    });
+
+    btn.addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+    });
+};
+
 const setupLifecycleListeners = () => {
     document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
@@ -472,6 +535,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. ライフサイクル管理
     setupLifecycleListeners();
+    setupNetworkStatusBanner();
+    setupInstallGuidance();
 
     initApp();
 });

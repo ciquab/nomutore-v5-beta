@@ -173,7 +173,7 @@ export async function renderArchives() {
 
     const headerHtml = `
         <section class="px-1 mb-3">
-            <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">アーカイブ</h3>
+            <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">アーカイブ履歴</h3>
             <p class="section-helper mt-0.5">完了した期間の結果を一覧で確認できます</p>
         </section>
     `;

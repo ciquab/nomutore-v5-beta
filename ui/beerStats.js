@@ -759,9 +759,8 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
-            <section class="px-1 mb-3">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Collections</p>
-                <p class="section-helper mt-0.5">銘柄・ブルワリーを横断して整理できます</p>
+            <section class="px-1 mb-2">
+                <p class="section-helper">銘柄・ブルワリーを横断して整理できます</p>
             </section>
 
             <section id="brewery-leaderboard-section" class="px-1 mb-1">

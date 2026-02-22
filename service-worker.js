@@ -1,5 +1,5 @@
 // @ts-check
-const CACHE_VERSION = 'v0.5.3-b1';
+const CACHE_VERSION = 'v0.5.4-b1';
 const CACHE_NAME = `nomutore-${CACHE_VERSION}`;
 
 // B1対策: CDNリソースもプリキャッシュしてオフライン動作を保証する。
@@ -73,7 +73,10 @@ const CORE_ASSETS = [
     './ui/onboarding.js',
     './ui/rollover.js',
     './ui/archiveManager.js',
-    './ui/beerStats.js'
+    './ui/beerStats.js',
+    './ui/beerStatsShared.js',
+    './ui/beerCollectionView.js',
+    './ui/healthInsightsView.js'
 ];
 
 const cachePut = async (request, response) => {

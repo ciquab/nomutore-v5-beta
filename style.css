@@ -525,6 +525,16 @@ body {
 /* Utility */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
+/* Fixed controls: base offset + safe area */
+#bottom-nav {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+#btn-fab-fixed,
+#settings-save-container {
+    bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
 /* タイマーの鼓動アニメーション */
 @keyframes timer-pulse {
     0%, 100% { transform: scale(1); opacity: 1; }

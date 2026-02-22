@@ -63,9 +63,12 @@ export const Service = {
     resolveCheckSchemaItemsByIds: (ids) => {
         /** @type {any[]} */
         const resolved = [];
+        const seen = new Set();
         const currentSchema = Service.getCheckSchema();
 
         ids.forEach(id => {
+            if (seen.has(id)) return;
+
             let item = null;
 
             Object.values(CHECK_LIBRARY).forEach(category => {
@@ -77,7 +80,10 @@ export const Service = {
                 item = currentSchema.find(i => i.id === id) || null;
             }
 
-            if (item) resolved.push(item);
+            if (item) {
+                seen.add(id);
+                resolved.push(item);
+            }
         });
 
         return resolved;
@@ -118,10 +124,11 @@ export const Service = {
      * @param {string[]} selectedIds
      */
     applyCheckLibrarySelection: (selectedIds) => {
+        const uniqueSelectedIds = [...new Set(selectedIds || [])];
         const currentSchema = Service.getCheckSchema();
         const libraryIds = new Set(Object.values(CHECK_LIBRARY).flat().map(i => i.id));
         const customItems = currentSchema.filter(item => !libraryIds.has(item.id));
-        const newSchemaFromLibrary = Service.resolveCheckSchemaItemsByIds(selectedIds);
+        const newSchemaFromLibrary = Service.resolveCheckSchemaItemsByIds(uniqueSelectedIds);
         const finalSchema = [...newSchemaFromLibrary, ...customItems];
         Service.setCheckSchema(finalSchema);
         return finalSchema;

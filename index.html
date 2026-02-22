@@ -294,6 +294,9 @@
             <div class="flex flex-wrap items-center justify-between gap-y-2 px-2 mb-1">
                 <div class="flex items-center gap-2 shrink-0">
                     <h2 class="text-2xl font-black text-base-900 dark:text-white tracking-tight">Stats</h2>
+                    <button data-action="modal:openStatsLayout" aria-label="Stats表示設定" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition">
+                        <i class="ph-bold ph-sliders-horizontal text-lg" aria-hidden="true"></i>
+                    </button>
                 </div>
                 <div role="tablist" aria-label="Stats表示切替" class="flex min-w-0 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                     <button id="btn-stats-activity" role="tab" aria-selected="true" aria-controls="view-stats-activity" data-action="ui:switchStatsView" data-args='["activity"]' class="subtab-pill is-active">Activity</button>
@@ -798,6 +801,38 @@
         </div>
     </div>
 
+
+<div id="stats-layout-modal" role="dialog" aria-modal="true" aria-labelledby="stats-layout-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
+        <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center z-20">
+            <div>
+                <h3 id="stats-layout-title" class="font-black text-lg">Stats表示設定</h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">表示する分析カードを選択</p>
+            </div>
+            <button data-action="modal:close" data-args='["stats-layout-modal"]' aria-label="閉じる" class="w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center transition text-gray-500 dark:text-gray-400">
+                <i class="ph-bold ph-x text-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="p-4 bg-white dark:bg-base-900 border-b border-base-200 dark:border-base-800 z-20">
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">プリセット</p>
+            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                <button data-action="statsLayout:applyPreset" data-args='["standard"]' class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-indigo-100 hover:text-brand transition">Standard</button>
+                <button data-action="statsLayout:applyPreset" data-args='["compact"]' class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-indigo-100 hover:text-brand transition">Compact</button>
+                <button data-action="statsLayout:applyPreset" data-args='["deep"]' class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold whitespace-nowrap hover:bg-indigo-100 hover:text-brand transition">Deep</button>
+            </div>
+        </div>
+
+        <div id="stats-layout-content" class="p-4 overflow-y-auto flex-1"></div>
+
+        <div class="p-4 border-t border-base-200 dark:border-base-800 bg-white dark:bg-base-900 z-20">
+            <button data-action="statsLayout:save" class="w-full py-3 bg-brand text-white rounded-xl font-bold shadow-lg shadow-brand/30 hover:bg-brand-dark transition">
+                表示設定を保存
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Check Library Modal (Phase 1.5 New) -->
     <div id="check-library-modal" role="dialog" aria-modal="true" aria-labelledby="check-library-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
         <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
@@ -950,7 +985,28 @@
                          </div>
                     </div>
                 </div>
-                <div class="pt-4 border-t border-base-100 dark:border-base-800 space-y-3">
+                <div id="beer-kcal-preview-container" class="mt-2 p-4 bg-base-50 dark:bg-base-800 rounded-xl border border-base-200 dark:border-base-700">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            <i class="ph-duotone ph-calculator text-sm text-indigo-500" aria-hidden="true"></i>
+                            推定カロリー借金
+                        </span>
+                        <div id="beer-kcal-preview" class="text-2xl font-black text-brand dark:text-brand-light">
+                            0 <span class="text-xs font-bold ml-1 text-gray-500 dark:text-gray-400">kcal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-base-100 dark:border-base-800">
+                    <button type="button" id="beer-details-toggle" class="w-full flex items-center justify-between p-3 bg-base-50 dark:bg-base-800 rounded-xl border border-base-200 dark:border-base-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+                        <span class="text-left">
+                            <span class="block text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">詳細（任意）</span>
+                            <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">未入力でも記録できます</span>
+                        </span>
+                        <i id="beer-details-toggle-icon" class="ph-bold ph-caret-down text-sm text-gray-500 dark:text-gray-400 transition-transform duration-200" aria-hidden="true"></i>
+                    </button>
+
+                    <div id="beer-details-inputs" class="hidden mt-3 space-y-3">
                     <input type="text" id="beer-brewery" list="brewery-list" placeholder="ブルワリー名（任意）" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-xs font-bold p-3">
                     <div class="flex gap-2">
                         <input type="text" id="beer-brand" list="brand-list" placeholder="銘柄名（任意）" class="flex-1 bg-base-50 dark:bg-base-800 border-none rounded-xl text-xs font-bold p-3">
@@ -1058,16 +1114,6 @@
                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
                         </div>
                     </label>
-                    <div id="beer-kcal-preview-container" class="mt-4 p-4 bg-base-50 dark:bg-base-800 rounded-xl border border-base-200 dark:border-base-700">
-                        <div class="flex items-center justify-between">
-                            <span class="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                <i class="ph-duotone ph-calculator text-sm text-indigo-500" aria-hidden="true"></i>
-                                推定カロリー借金
-                            </span>
-                            <div id="beer-kcal-preview" class="text-2xl font-black text-brand dark:text-brand-light">
-                                0 <span class="text-xs font-bold ml-1 text-gray-500 dark:text-gray-400">kcal</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -2167,7 +2213,6 @@
 </body>
 
 </html>
-
 
 
 

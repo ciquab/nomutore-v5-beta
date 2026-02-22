@@ -72,6 +72,44 @@ Object.keys(STYLE_SPECS).forEach(key => {
 // 2. App Constants & Settings
 // ==========================================================================
 
+export const STATS_LAYOUT_DEFAULTS = {
+    version: 1,
+    beer: {
+        weekdayHeatmap: true,
+        exploreRepeat: true,
+        periodComparison: true,
+    },
+    activity: {
+        healthInsights: true,
+    },
+};
+
+export const STATS_LAYOUT_PRESETS = {
+    standard: STATS_LAYOUT_DEFAULTS,
+    compact: {
+        version: 1,
+        beer: {
+            weekdayHeatmap: false,
+            exploreRepeat: false,
+            periodComparison: false,
+        },
+        activity: {
+            healthInsights: false,
+        },
+    },
+    deep: {
+        version: 1,
+        beer: {
+            weekdayHeatmap: true,
+            exploreRepeat: true,
+            periodComparison: true,
+        },
+        activity: {
+            healthInsights: true,
+        },
+    },
+};
+
 export const APP = {
     STORAGE_KEYS: {
         ONBOARDED: 'nomutore_onboarding_complete',
@@ -106,7 +144,8 @@ export const APP = {
         NOTIF_PERIOD_EVE_TIME: 'nomutore_notif_period_eve_time',
         NOTIF_DAILY_LAST_SHOWN: 'nomutore_notif_daily_last_shown',
         NOTIF_PERIOD_EVE_LAST_SHOWN: 'nomutore_notif_period_eve_last_shown',
-        PUSH_SUBSCRIBED: 'nomutore_push_subscribed'
+        PUSH_SUBSCRIBED: 'nomutore_push_subscribed',
+        STATS_LAYOUT: 'nomutore_stats_layout'
     },
     PUSH: {
         VAPID_PUBLIC_KEY: 'BNU-pp-d12uQeWQkqsmyv3zlGRHNJkaR9n2aSm5FE4w1mBrWOwtItlGGfuW6BpNvzCkDHQeAKrD7LqiKUjdD0FE',
@@ -121,7 +160,8 @@ export const APP = {
         PERIOD_MODE: 'weekly',
         PERIOD_DURATION: 14,
         ORB_STYLE: 'lager',
-        UNIT_MODE: 'kcal'
+        UNIT_MODE: 'kcal',
+        STATS_LAYOUT: STATS_LAYOUT_DEFAULTS
     },
     TANK_MAX_CANS: 3.0,
     HASHTAGS: '#NOMUTORE #飲んだら動く' // SNSシェア用

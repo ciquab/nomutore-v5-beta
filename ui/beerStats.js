@@ -1,6 +1,5 @@
 // @ts-check
 import { Calc } from '../logic.js';
-import { Store } from '../store.js';
 import { DOM, escapeHtml } from './dom.js';
 import { APP, STYLE_METADATA, FLAVOR_AXES, FLAVOR_SCALE_MAX } from '../constants.js';
 import { openLogDetail } from './logDetail.js';
@@ -11,18 +10,137 @@ let statsChart = null;
 let flavorTrendChart = null;
 let rollingTrendChart = null;
 
-// モジュールスコープでビールデータを保持（ブルワリー詳細表示用）
-let _allBeers = [];
-let _breweryStats = [];
-let _allLogs = [];
-
-// フィルター状態管理
-let activeFilters = {
-    term: '',
-    brewery: '',
-    style: '',
-    rating: 0
+// Beer関連ビューの共有コンテキスト（モジュール内限定）
+const beerStatsContext = {
+    allBeers: [],
+    breweryStats: [],
+    allLogs: [],
+    latestBeerLogMap: new Map(),
+    breweryFlavorAvgMap: new Map()
 };
+
+const buildBeerIdentityKey = (brewery = '', name = '') => `${(brewery || '').trim()}::${(name || '').trim()}`;
+
+const setBeerStatsContext = (allLogs = [], allBeers = [], breweryStats = []) => {
+    beerStatsContext.allLogs = [...(allLogs || [])];
+    beerStatsContext.allBeers = [...(allBeers || [])];
+    beerStatsContext.breweryStats = [...(breweryStats || [])];
+
+    const latestBeerLogMap = new Map();
+    const breweryFlavorAggMap = new Map();
+
+    for (const log of beerStatsContext.allLogs) {
+        if (log.type !== 'beer') continue;
+
+        const key = buildBeerIdentityKey(log.brewery || '', log.brand || log.name || '');
+        const prev = latestBeerLogMap.get(key);
+        if (!prev || (log.timestamp || 0) > (prev.timestamp || 0)) {
+            latestBeerLogMap.set(key, log);
+        }
+
+        if (!log.flavorProfile || !log.brewery) continue;
+        const brewery = (log.brewery || '').trim();
+        if (!brewery) continue;
+
+        if (!breweryFlavorAggMap.has(brewery)) {
+            breweryFlavorAggMap.set(brewery, {
+                sums: Object.fromEntries(FLAVOR_AXES.map(a => [a.key, 0])),
+                counts: Object.fromEntries(FLAVOR_AXES.map(a => [a.key, 0]))
+            });
+        }
+
+        const agg = breweryFlavorAggMap.get(brewery);
+        FLAVOR_AXES.forEach(a => {
+            const v = log.flavorProfile?.[a.key];
+            if (v !== null && v !== undefined) {
+                agg.sums[a.key] += v;
+                agg.counts[a.key] += 1;
+            }
+        });
+    }
+
+    const breweryFlavorAvgMap = new Map();
+    breweryFlavorAggMap.forEach((agg, brewery) => {
+        const avg = {};
+        let hasData = false;
+        FLAVOR_AXES.forEach(a => {
+            if (agg.counts[a.key] > 0) {
+                avg[a.key] = Math.round((agg.sums[a.key] / agg.counts[a.key]) * 10) / 10;
+                hasData = true;
+            } else {
+                avg[a.key] = 0;
+            }
+        });
+        if (hasData) breweryFlavorAvgMap.set(brewery, avg);
+    });
+
+    beerStatsContext.latestBeerLogMap = latestBeerLogMap;
+    beerStatsContext.breweryFlavorAvgMap = breweryFlavorAvgMap;
+};
+
+
+const renderBeerLayoutEmptyState = () => `
+    <div class="glass-panel p-4 rounded-2xl border border-dashed border-base-300 dark:border-base-700">
+        <div class="empty-state flex flex-col items-center justify-center py-4 text-gray-500 dark:text-gray-400">
+            <i class="ph-duotone ph-sliders-horizontal text-2xl mb-2" aria-hidden="true"></i>
+            <p class="text-sm font-bold">表示カードがありません</p>
+            <p class="text-xs opacity-70">表示設定からBeer分析カードを1つ以上ONにしてください</p>
+        </div>
+    </div>
+`;
+
+const renderWeekdayHeatmapSection = (beerLayout, heatmap) => beerLayout.weekdayHeatmap ? `
+    <div class="glass-panel p-4 rounded-2xl">
+        <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-check section-icon text-sky-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
+        <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
+        <div class="grid gap-1 text-[10px]" style="grid-template-columns: 24px repeat(4, minmax(0,1fr));">
+            <div></div>
+            ${heatmap.slots.map(slot => `<div class="text-center font-bold text-gray-500 dark:text-gray-400">${slot}</div>`).join('')}
+            ${heatmap.weekdays.map((day, dayIdx) => `
+                <div class="font-bold text-gray-500 dark:text-gray-400 pr-1">${day}</div>
+                ${heatmap.values[dayIdx].map(cell => {
+                    const intensity = heatmap.max > 0 ? Math.round((cell / heatmap.max) * 100) : 0;
+                    const alpha = Math.max(0.08, intensity / 100);
+                    return `<div class="h-6 rounded-md border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold text-[10px]" style="background:rgba(14,165,233,${alpha});">${cell > 0 ? cell : ''}</div>`;
+                }).join('')}
+            `).join('')}
+        </div>
+    </div>
+` : '';
+
+const renderExploreRepeatSection = (beerLayout, explorationBalance) => beerLayout.exploreRepeat ? `
+    <div class="glass-panel p-4 rounded-2xl">
+        <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-compass section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
+        <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/60 dark:bg-violet-900/20 p-2.5">
+                <p class="font-semibold text-gray-500 dark:text-gray-400">Explore率</p>
+                <p class="text-lg font-black text-violet-600 dark:text-violet-300">${explorationBalance.exploreRate}%</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">新しいスタイル日 / 飲酒日</p>
+            </div>
+            <div class="rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-900/20 p-2.5">
+                <p class="font-semibold text-gray-500 dark:text-gray-400">Repeat率</p>
+                <p class="text-lg font-black text-amber-600 dark:text-amber-300">${explorationBalance.repeatRate}%</p>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400">同スタイル連続日 / 連続ペア</p>
+            </div>
+        </div>
+    </div>
+` : '';
+
+const renderPeriodComparisonSection = (beerLayout, { isPermanent, comparisonLabel, focusStats, previousStats, focusAlcohol, previousAlcohol, avgAbvCurrent, avgAbvPrevious }) => beerLayout.periodComparison ? `
+    <div class="glass-panel p-4 rounded-2xl">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> ${isPermanent ? '直近比較' : '期間比較'}</h3>
+            <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${comparisonLabel}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+            ${renderComparisonMetric('杯数', focusStats.totalCount, previousStats.totalCount, '杯')}
+            ${renderComparisonMetric('容量', Number((focusStats.totalMl / 1000).toFixed(1)), Number((previousStats.totalMl / 1000).toFixed(1)), 'L')}
+            ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
+            ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
+        </div>
+    </div>
+` : '';
 
 const renderRatingStars = (score) => {
     if (!score) return '';
@@ -107,9 +225,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
         periodComparison: statsLayout?.beer?.periodComparison !== false,
     };
 
-    // モジュールスコープに保存（ブルワリー詳細表示・Collection用）— 防御コピー
-    _allBeers = [...allBeers];
-    _breweryStats = [...(allStats.breweryStats || [])];
+    // 共有コンテキスト更新（詳細表示・コレクション共通）
+    setBeerStatsContext(allLogs, allBeers, allStats.breweryStats || []);
 
     // 2. HTML構造生成
     // セクションアイコン配色ルール: 味覚/傾向=暖色, 分析チャート=寒色, 解釈/比較=青系で統一
@@ -218,24 +335,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 短期トレンドの比較のため固定窓で表示</p>
             </div>
 
-            ${beerLayout.weekdayHeatmap ? `
-            <div class="glass-panel p-4 rounded-2xl">
-                <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-check section-icon text-sky-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
-                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
-                <div class="grid gap-1 text-[10px]" style="grid-template-columns: 24px repeat(4, minmax(0,1fr));">
-                    <div></div>
-                    ${heatmap.slots.map(slot => `<div class="text-center font-bold text-gray-500 dark:text-gray-400">${slot}</div>`).join('')}
-                    ${heatmap.weekdays.map((day, dayIdx) => `
-                        <div class="font-bold text-gray-500 dark:text-gray-400 pr-1">${day}</div>
-                        ${heatmap.values[dayIdx].map(cell => {
-                            const intensity = heatmap.max > 0 ? Math.round((cell / heatmap.max) * 100) : 0;
-                            const alpha = Math.max(0.08, intensity / 100);
-                            return `<div class="h-6 rounded-md border border-sky-100 dark:border-sky-900/40 flex items-center justify-center font-bold text-[10px]" style="background:rgba(14,165,233,${alpha});">${cell > 0 ? cell : ''}</div>`;
-                        }).join('')}
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
+            ${renderWeekdayHeatmapSection(beerLayout, heatmap)}
+            ${!beerLayout.weekdayHeatmap && !beerLayout.exploreRepeat && !beerLayout.periodComparison ? renderBeerLayoutEmptyState() : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-chart-line-up section-icon text-emerald-500" aria-hidden="true"></i> 1日あたり摂取プロファイル</h3>
@@ -248,40 +349,18 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">P50 = 中央値 / P90 = 多い日の目安（上位10%）</p>
             </div>
 
-            ${beerLayout.exploreRepeat ? `
-            <div class="glass-panel p-4 rounded-2xl">
-                <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-compass section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
-                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
-                <div class="grid grid-cols-2 gap-2 text-[11px]">
-                    <div class="rounded-xl border border-violet-100 dark:border-violet-900/40 bg-violet-50/60 dark:bg-violet-900/20 p-2.5">
-                        <p class="font-semibold text-gray-500 dark:text-gray-400">Explore率</p>
-                        <p class="text-lg font-black text-violet-600 dark:text-violet-300">${explorationBalance.exploreRate}%</p>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">新しいスタイル日 / 飲酒日</p>
-                    </div>
-                    <div class="rounded-xl border border-amber-100 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-900/20 p-2.5">
-                        <p class="font-semibold text-gray-500 dark:text-gray-400">Repeat率</p>
-                        <p class="text-lg font-black text-amber-600 dark:text-amber-300">${explorationBalance.repeatRate}%</p>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">同スタイル連続日 / 連続ペア</p>
-                    </div>
-                </div>
-            </div>
-            ` : ''}
+            ${renderExploreRepeatSection(beerLayout, explorationBalance)}
 
-            ${beerLayout.periodComparison ? `
-            <div class="glass-panel p-4 rounded-2xl">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> ${isPermanent ? '直近比較' : '期間比較'}</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${comparisonLabel}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-1.5 text-[11px]">
-                    ${renderComparisonMetric('杯数', focusStats.totalCount, previousStats.totalCount, '杯')}
-                    ${renderComparisonMetric('容量', Number((focusStats.totalMl / 1000).toFixed(1)), Number((previousStats.totalMl / 1000).toFixed(1)), 'L')}
-                    ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
-                    ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
-
-                </div>
-            </div>
-            ` : ''}
+            ${renderPeriodComparisonSection(beerLayout, {
+                isPermanent,
+                comparisonLabel,
+                focusStats,
+                previousStats,
+                focusAlcohol,
+                previousAlcohol,
+                avgAbvCurrent,
+                avgAbvPrevious
+            })}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> Beer Insight</h3>
@@ -819,11 +898,9 @@ export function renderBeerCollection(periodLogs, allLogs) {
     const container = document.getElementById('view-cellar-collection');
     if (!container) return;
 
-    _allLogs = [...allLogs];
     const allStats = Calc.getBeerStats(allLogs);
     const allBeers = allStats.beerStats || [];
-    _allBeers = [...allBeers];
-    _breweryStats = [...(allStats.breweryStats || [])];
+    setBeerStatsContext(allLogs, allBeers, allStats.breweryStats || []);
 
     const uniqueBreweries = [...new Set(allBeers.map(b => b.brewery).filter(b => b && b !== 'Unknown'))].sort();
     const uniqueStyles = [...new Set(allBeers.map(b => b.style).filter(s => s && s !== 'Unknown'))].sort();
@@ -888,6 +965,8 @@ export function renderBeerCollection(periodLogs, allLogs) {
         </div>
     `;
 
+    const activeFilters = { term: '', brewery: '', style: '', rating: 0 };
+
     // フィルター機能の実装
     const applyFilters = () => {
         const term = activeFilters.term.toLowerCase();
@@ -907,7 +986,7 @@ export function renderBeerCollection(periodLogs, allLogs) {
         const countLabel = document.getElementById('beer-list-count');
         if(countLabel) countLabel.textContent = `${filtered.length}銘柄`;
 
-        renderBeerList(filtered);
+        renderBeerList(filtered, beerStatsContext.latestBeerLogMap);
     };
 
     const bindFilter = (id, key) => {
@@ -926,11 +1005,10 @@ export function renderBeerCollection(periodLogs, allLogs) {
     bindFilter('filter-style', 'style');
     bindFilter('filter-rating', 'rating');
 
-    activeFilters = { term: '', brewery: '', style: '', rating: 0 };
     applyFilters();
 
     // ブルワリーランキング描画
-    renderBreweryLeaderboard(allStats.breweryStats || []);
+    renderBreweryLeaderboard(allStats.breweryStats || [], beerStatsContext);
 }
 
 // =============================================
@@ -1453,7 +1531,7 @@ function renderStyleChart(styleCounts) {
 /**
  * 銘柄リストの生成
  */
-function renderBeerList(beers) {
+function renderBeerList(beers, latestBeerLogMap = beerStatsContext.latestBeerLogMap) {
     const listEl = document.getElementById('beer-ranking-list');
     if (!listEl) return;
 
@@ -1472,10 +1550,6 @@ function renderBeerList(beers) {
         if (index === 0) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-yellow-500 drop-shadow-sm" aria-hidden="true"></i>`;
         if (index === 1) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-gray-500 dark:text-gray-400 drop-shadow-sm" aria-hidden="true"></i>`;
         if (index === 2) rankBadge = `<i class="ph-duotone ph-medal text-2xl text-amber-700 drop-shadow-sm" aria-hidden="true"></i>`;
-
-        const rating = beer.averageRating > 0 
-            ? `<span class="flex items-center text-[11px] text-yellow-500 font-bold bg-yellow-50 dark:bg-yellow-900/30 px-1.5 py-0.5 rounded gap-1"><i class="ph-fill ph-star" aria-hidden="true"></i>${beer.averageRating.toFixed(1)}</span>`
-            : '';
 
         // ★修正: STYLE_METADATAからアイコン定義を取得してレンダリング
         const styleMeta = STYLE_METADATA[beer.style];
@@ -1505,7 +1579,7 @@ function renderBeerList(beers) {
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-[11px] font-semibold text-gray-500 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-md truncate max-w-[100px]">${beer.style}</span>
                         ${renderRatingStars(beer.rating)}
-                        ${hasFlavorProfile(beer) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]" aria-hidden="true"></i></span>' : ''}
+                        ${hasFlavorProfile(beer, latestBeerLogMap) ? '<span class="text-[11px] text-orange-500 font-bold bg-orange-50 dark:bg-orange-900/30 px-1.5 py-0.5 rounded"><i class="ph-duotone ph-chart-polar text-[11px]" aria-hidden="true"></i></span>' : ''}
                         <span class="ml-auto text-[11px] font-mono text-gray-500 dark:text-gray-400">合計: ${(beer.totalMl/1000).toFixed(1)}L</span>
                     </div>
                 </div>
@@ -1522,12 +1596,8 @@ function renderBeerList(beers) {
         const brewery = el.dataset.beerBrewery || '';
         const name = el.dataset.beerName || '';
         
-        // 該当ビールの最新ログを検索
-        const matchingLog = _allLogs
-            .filter(l => l.type === 'beer' &&
-                (l.brewery || '').trim() === brewery &&
-                ((l.brand || l.name || '').trim() === name))
-            .sort((a, b) => b.timestamp - a.timestamp)[0];
+        // 事前計算済みの最新ログをO(1)で参照
+        const matchingLog = latestBeerLogMap.get(buildBeerIdentityKey(brewery, name));
             
         if (matchingLog) {
             openLogDetail(matchingLog);
@@ -1552,7 +1622,7 @@ let currentBreweryAxis = 'totalCount';
  * ブルワリーランキングの描画
  * @param {Array} breweryStats - Calc.getBeerStats().breweryStats
  */
-function renderBreweryLeaderboard(breweryStats) {
+function renderBreweryLeaderboard(breweryStats, context = beerStatsContext) {
     const tabsEl = document.getElementById('brewery-axis-tabs');
     const listEl = document.getElementById('brewery-ranking-list');
     const countLabel = document.getElementById('brewery-count-label');
@@ -1574,7 +1644,7 @@ function renderBreweryLeaderboard(breweryStats) {
     tabsEl.querySelectorAll('[data-brewery-axis]').forEach(btn => {
         btn.addEventListener('click', () => {
             currentBreweryAxis = btn.dataset.breweryAxis;
-            renderBreweryLeaderboard(breweryStats);
+            renderBreweryLeaderboard(breweryStats, context);
         });
     });
 
@@ -1615,7 +1685,7 @@ function renderBreweryLeaderboard(breweryStats) {
     listEl.onclick = (e) => {
         const target = e.target.closest('[data-brewery-name]');
         if (target) {
-            showBreweryDetail(target.dataset.breweryName);
+            showBreweryDetail(target.dataset.breweryName, context);
         }
     };
 
@@ -1692,7 +1762,7 @@ function buildBrewerySubInfo(b, currentKey) {
  * ブルワリー詳細をボトムシートで表示
  * @param {string} breweryName - ブルワリー名
  */
-function showBreweryDetail(breweryName) {
+function showBreweryDetail(breweryName, context = beerStatsContext) {
     console.log('Open Brewery:', breweryName); // デバッグ用ログ
 
     // 1. オーバーレイの取得・作成
@@ -1743,8 +1813,8 @@ function showBreweryDetail(breweryName) {
     }
 
     // 2. データの検索
-    const brewery = _breweryStats.find(b => b.brewery === breweryName);
-    const beers = _allBeers.filter(b => b.brewery === breweryName).sort((a, b) => b.count - a.count);
+    const brewery = context.breweryStats.find(b => b.brewery === breweryName);
+    const beers = context.allBeers.filter(b => b.brewery === breweryName).sort((a, b) => b.count - a.count);
 
     if (!brewery || beers.length === 0) {
         console.warn('Brewery data not found:', breweryName);
@@ -1810,7 +1880,7 @@ function showBreweryDetail(breweryName) {
 
     // ブルワリー平均レーダーチャートの描画
     requestAnimationFrame(() => {
-        const avgProfile = calcBreweryAvgFlavor(breweryName);
+        const avgProfile = calcBreweryAvgFlavor(breweryName, context);
         if (avgProfile) {
             renderBreweryFlavorRadar(avgProfile);
         }
@@ -1823,16 +1893,12 @@ function showBreweryDetail(breweryName) {
 
 /**
  * ビールに味わいプロファイルがあるか判定
- * _allLogs から該当ビールの最新ログを探して判定
+ * 事前計算済み latestBeerLogMap から味わい情報の有無を判定
  */
-function hasFlavorProfile(beer) {
-    const log = _allLogs.find(l =>
-        l.type === 'beer' &&
-        (l.brewery || '').trim() === (beer.brewery || '') &&
-        (l.brand || l.name || '').trim() === beer.name &&
-        l.flavorProfile
-    );
-    return !!log;
+function hasFlavorProfile(beer, latestBeerLogMap = beerStatsContext.latestBeerLogMap) {
+    const key = buildBeerIdentityKey(beer.brewery || '', beer.name || '');
+    const log = latestBeerLogMap.get(key);
+    return !!log?.flavorProfile;
 }
 
 /**
@@ -1840,44 +1906,9 @@ function hasFlavorProfile(beer) {
  * @param {string} breweryName
  * @returns {Record<string, number>|null}
  */
-function calcBreweryAvgFlavor(breweryName) {
-    const logs = _allLogs.filter(l =>
-        l.type === 'beer' &&
-        (l.brewery || '').trim() === breweryName &&
-        l.flavorProfile
-    );
-    if (logs.length === 0) return null;
-
-    const sums = {};
-    const counts = {};
-
-    FLAVOR_AXES.forEach(a => {
-        sums[a.key] = 0;
-        counts[a.key] = 0;
-    });
-
-    logs.forEach(l => {
-        const fp = l.flavorProfile;
-        FLAVOR_AXES.forEach(a => {
-            if (fp[a.key] !== null && fp[a.key] !== undefined) {
-                sums[a.key] += fp[a.key];
-                counts[a.key]++;
-            }
-        });
-    });
-
-    const result = {};
-    let hasData = false;
-    FLAVOR_AXES.forEach(a => {
-        if (counts[a.key] > 0) {
-            result[a.key] = Math.round((sums[a.key] / counts[a.key]) * 10) / 10;
-            hasData = true;
-        } else {
-            result[a.key] = 0;
-        }
-    });
-
-    return hasData ? result : null;
+function calcBreweryAvgFlavor(breweryName, context = beerStatsContext) {
+    const key = (breweryName || '').trim();
+    return context.breweryFlavorAvgMap.get(key) || null;
 }
 
 /**

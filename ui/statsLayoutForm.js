@@ -18,6 +18,20 @@ const mergeLayout = (input = null) => ({
     },
 });
 
+
+const ensureBeerLayoutHasOneEnabled = (layout) => {
+    const merged = mergeLayout(layout);
+    const beerKeys = ['weekdayHeatmap', 'exploreRepeat', 'periodComparison'];
+    const hasAnyEnabled = beerKeys.some(key => merged?.beer?.[key] !== false);
+
+    if (!hasAnyEnabled) {
+        merged.beer.weekdayHeatmap = true;
+        return { layout: merged, adjusted: true };
+    }
+
+    return { layout: merged, adjusted: false };
+};
+
 const renderStatsLayoutEditor = () => {
     const panel = document.getElementById('stats-layout-content');
     if (!panel) return;
@@ -72,9 +86,24 @@ export const toggleStatsLayoutItem = (args, event) => {
     draftLayout = mergeLayout(draftLayout);
     if (!draftLayout[section]) draftLayout[section] = {};
     draftLayout[section][key] = checked;
+
+    if (section === 'beer') {
+        const guarded = ensureBeerLayoutHasOneEnabled(draftLayout);
+        draftLayout = guarded.layout;
+        if (guarded.adjusted && event?.target) {
+            event.target.checked = true;
+            showMessage('Beer分析カードは最低1つ表示する必要があります', 'warning');
+        }
+    }
 };
 
 export const saveStatsLayoutSettings = () => {
+    const guarded = ensureBeerLayoutHasOneEnabled(draftLayout);
+    draftLayout = guarded.layout;
+    if (guarded.adjusted) {
+        showMessage('Beer分析カードが全てOFFだったため、ヒートマップをONに戻しました', 'warning');
+    }
+
     StateManager.setStatsLayout(draftLayout);
     toggleModal('stats-layout-modal', false);
     showMessage('Stats表示設定を保存しました', 'success');

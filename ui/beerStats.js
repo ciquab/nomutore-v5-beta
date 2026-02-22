@@ -522,7 +522,7 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
                 `).join('')}
             </div>
         </div>
-    `;
+    `; // ここでシンプルに閉じる
 }
 
 function renderExploreRepeatSection(beerLayout, explorationBalance) {
@@ -560,7 +560,7 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
                 ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
             </div>
         </div>
-    `;
+    `; // ここもシンプルに閉じる
 }
 function renderBeerLayoutEmptyState() {
     return `
@@ -596,8 +596,9 @@ function renderSessionMetric(label, data, unit = '') {
                     <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
                     <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end text-right tabular-nums">${Math.round(data.p90)}${suffix}</span>
                 </div>
-            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
-    `;
+            </div>
+        </div>
+    `; // 余計な三項演算子の残骸を消す
 }
 
 function calcAvgFlavorByLogs(logs) {

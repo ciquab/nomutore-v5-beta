@@ -54,6 +54,7 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
+import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings } from './statsLayoutForm.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -1203,6 +1204,10 @@ if (checkModal) {
     showUpdateNotification: showUpdateNotification,
     renderCheckLibrary: renderCheckLibrary,
     openCheckLibrary: openCheckLibrary,
+    openStatsLayoutModal: openStatsLayoutModal,
+    applyStatsLayoutPreset: applyStatsLayoutPreset,
+    toggleStatsLayoutItem: toggleStatsLayoutItem,
+    saveStatsLayoutSettings: saveStatsLayoutSettings,
     applyLibraryChanges: applyLibraryChanges,
     applyPreset: applyPreset,
     deleteCheckItem: deleteCheckItem,

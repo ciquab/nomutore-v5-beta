@@ -11,6 +11,8 @@ const getStartOfWeek = (date = undefined) => {
     return d.subtract(day - 1, 'day').startOf('day');
 };
 
+
+const ROLLOVER_NOTIFIED_START_KEY = 'nomutore_rollover_notified_start';
 /**
  * PeriodService: 期間管理・アーカイブ操作
  * 期間モードの切替、ロールオーバー判定、アーカイブ作成を担当する。
@@ -52,6 +54,7 @@ export const PeriodService = {
         } else {
             const start = PeriodService.calculatePeriodStart(newMode);
             localStorage.setItem(APP.STORAGE_KEYS.PERIOD_START, start);
+            localStorage.setItem(ROLLOVER_NOTIFIED_START_KEY, String(start));
         }
 
         return {
@@ -88,7 +91,13 @@ export const PeriodService = {
                     await PeriodService.archiveAndReset(weekStart.valueOf(), nextWeekStart.valueOf(), mode);
                     weekStart = nextWeekStart;
                 }
-                return true;
+                const settledStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0', 10);
+                const notifiedStart = parseInt(localStorage.getItem(ROLLOVER_NOTIFIED_START_KEY) || '0', 10);
+                if (settledStart && settledStart !== notifiedStart) {
+                    localStorage.setItem(ROLLOVER_NOTIFIED_START_KEY, String(settledStart));
+                    return true;
+                }
+                return false;
             }
         } else if (mode === 'monthly') {
             const currentMonthStart = now.startOf('month');
@@ -100,7 +109,13 @@ export const PeriodService = {
                     await PeriodService.archiveAndReset(monthStart.valueOf(), nextMonthStart.valueOf(), mode);
                     monthStart = nextMonthStart;
                 }
-                return true;
+                const settledStart = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START) || '0', 10);
+                const notifiedStart = parseInt(localStorage.getItem(ROLLOVER_NOTIFIED_START_KEY) || '0', 10);
+                if (settledStart && settledStart !== notifiedStart) {
+                    localStorage.setItem(ROLLOVER_NOTIFIED_START_KEY, String(settledStart));
+                    return true;
+                }
+                return false;
             }
         } else if (mode === 'custom') {
             const endDateTs = parseInt(localStorage.getItem(APP.STORAGE_KEYS.PERIOD_END_DATE));

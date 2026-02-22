@@ -715,6 +715,7 @@ export const showRolloverModal = () => {
         btn.addEventListener('click', async () => {
             await Service.updatePeriodSettings(mode); // 期間を更新（次週へ）
             toggleModal('rollover-modal', false);
+            document.dispatchEvent(new CustomEvent('confirm-rollover'));
             document.dispatchEvent(new CustomEvent('refresh-ui'));
         });
         
@@ -811,7 +812,6 @@ export const generateSettingsOptions = () => {
     const defRecSet = document.getElementById('setting-default-record-exercise');
     if(defRecSet) defRecSet.value = Store.getDefaultRecordExercise();
 };
-
 
 
 

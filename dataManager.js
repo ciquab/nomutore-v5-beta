@@ -8,6 +8,8 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
 export const DataManager = {
 
+    _restoreInFlight: false,
+
 // --- 共通ロジック (Internal) ---
 
 
@@ -71,6 +73,31 @@ export const DataManager = {
         return { created };
     },
 
+    _buildLogDedupKey: (log) => {
+        const safe = log || {};
+        const rawType = typeof safe.type === 'string' ? safe.type : '';
+        const type = rawType.trim() || 'unknown';
+        const timestamp = Number.isFinite(safe.timestamp) ? safe.timestamp : 0;
+        const name = typeof safe.name === 'string' ? safe.name : '';
+        const kcal = Number.isFinite(safe.kcal) ? safe.kcal : '';
+        const minutes = Number.isFinite(safe.minutes) ? safe.minutes : '';
+        const rawMinutes = Number.isFinite(safe.rawMinutes) ? safe.rawMinutes : '';
+        const ml = Number.isFinite(safe.ml) ? safe.ml : '';
+        const count = Number.isFinite(safe.count) ? safe.count : '';
+        const abv = Number.isFinite(safe.abv) ? safe.abv : '';
+        const brewery = typeof safe.brewery === 'string' ? safe.brewery : '';
+        const brand = typeof safe.brand === 'string' ? safe.brand : '';
+        return [timestamp, type, name, kcal, minutes, rawMinutes, ml, count, abv, brewery, brand].join('|');
+    },
+
+    _buildCheckDedupKey: (check) => {
+        const safe = check || {};
+        const timestamp = Number.isFinite(safe.timestamp) ? safe.timestamp : 0;
+        const isDryDay = safe.isDryDay === undefined ? '' : String(Boolean(safe.isDryDay));
+        const weight = safe.weight === undefined || safe.weight === null || safe.weight === '' ? '' : Number(safe.weight);
+        return [timestamp, isDryDay, Number.isFinite(weight) ? weight : ''].join('|');
+    },
+
 
     /**
      * バックアップ用の全データオブジェクトを生成する
@@ -123,15 +150,17 @@ export const DataManager = {
             // Logs
             if (logs.length > 0) {
                 const existingLogs = await db.logs.toArray();
-                // 重複排除キー: timestampとtypeの組み合わせ
-                const existingLogKeys = new Set(existingLogs.map(l => `${l.timestamp}_${l.type}`));
+                const existingLogKeys = new Set(existingLogs.map(l => DataManager._buildLogDedupKey(l)));
                 
-                const uniqueLogs = logs
-                    .filter(l => !existingLogKeys.has(`${l.timestamp}_${l.type}`))
-                    .map(l => {
-                        const { id, ...rest } = l; // IDを除外して新規採番
-                        return rest;
-                    });
+                const uniqueLogs = [];
+                for (const log of logs) {
+                    const key = DataManager._buildLogDedupKey(log);
+                    if (existingLogKeys.has(key)) continue;
+
+                    existingLogKeys.add(key);
+                    const { id, ...rest } = log; // IDを除外して新規採番
+                    uniqueLogs.push(rest);
+                }
                     
                 if (uniqueLogs.length > 0) {
                     await db.logs.bulkAdd(uniqueLogs);
@@ -141,14 +170,18 @@ export const DataManager = {
             // Checks
             if (checks.length > 0) {
                 const existingChecks = await db.checks.toArray();
-                const existingCheckTimestamps = new Set(existingChecks.map(c => c.timestamp));
+                const existingCheckKeys = new Set(existingChecks.map(c => DataManager._buildCheckDedupKey(c)));
                 
-                const uniqueChecks = checks
-                    .filter(c => !existingCheckTimestamps.has(c.timestamp))
-                    .map(c => {
-                        const { id, ...rest } = c;
-                        return rest;
-                    });
+                const uniqueChecks = [];
+                for (const check of checks) {
+                    const key = DataManager._buildCheckDedupKey(check);
+                    if (existingCheckKeys.has(key)) continue;
+
+                    existingCheckKeys.add(key);
+                    const { id, ...rest } = check;
+                    uniqueChecks.push(rest);
+                }
+
                 if (uniqueChecks.length > 0) {
                     await db.checks.bulkAdd(uniqueChecks);
                 }
@@ -236,6 +269,12 @@ export const DataManager = {
     },
 
     restoreFromCloud: async (options = {}) => {
+        if (DataManager._restoreInFlight) {
+            EventBus.emit(Events.NOTIFY, { message: '復元処理は実行中です。完了までお待ちください。', type: 'info' });
+            return false;
+        }
+
+        DataManager._restoreInFlight = true;
         try {
             EventBus.emit(Events.CLOUD_STATUS, { message: 'Connecting to Google Drive...' });
 
@@ -264,6 +303,8 @@ export const DataManager = {
             EventBus.emit(Events.NOTIFY, { message: '復元失敗: コンソールを確認してください', type: 'error' });
             EventBus.emit(Events.CLOUD_STATUS, { message: 'Error: Restore failed' });
             return false;
+        } finally {
+            DataManager._restoreInFlight = false;
         }
     },
 

@@ -85,6 +85,15 @@ const buildShareAction = async (kind, logData = null) => {
     return null;
 };
 
+
+const unlockInstallGuidanceOnce = () => {
+    const key = 'nomutore_install_nudge_unlocked_v1';
+    if (localStorage.getItem(key) === 'true') return;
+
+    localStorage.setItem(key, 'true');
+    document.dispatchEvent(new CustomEvent('install-guidance:unlock'));
+};
+
 /**
  * EventBus リスナーの一括登録
  * データ層・サービス層からの通知を受け取り、UI を更新する。
@@ -394,6 +403,7 @@ export const UI = {
                 Feedback.beer();
                 showConfetti();
                 showToastAnimation();
+                unlockInstallGuidanceOnce();
             }
 
             // 3. メッセージを表示（シェアボタン等のアクションを添えて）
@@ -455,6 +465,7 @@ document.addEventListener('save-exercise', async (e) => {
 
                 Feedback.success();
                 showConfetti();
+                unlockInstallGuidanceOnce();
             }
 
             // 3. UIへのフィードバック
@@ -495,6 +506,7 @@ document.addEventListener('save-check', async (e) => {
             const msg = result.isUpdate
                 ? '✅ デイリーチェックを更新しました'
                 : '✅ デイリーチェックを記録しました';
+            if (!result.isUpdate) unlockInstallGuidanceOnce();
 
             // 演出の実行
             Feedback.success();
@@ -1168,7 +1180,6 @@ if (checkModal) {
         if (el) el.click();
     },
     enableInteractions: () => {
-        document.body.style.pointerEvents = 'auto';
         setTimeout(() => {
             document.body.classList.remove('preload');
         }, 100);

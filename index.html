@@ -67,18 +67,6 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://apis.google.com/js/api.js" async defer></script>
 
-<script>
-  window.addEventListener('DOMContentLoaded', () => {
-    // body全体を操作不可にして、ヘッダー含む全要素を保護する
-    document.body.style.pointerEvents = 'none';
-    
-    // 安全策（万が一JSがロードされなかった場合のタイムアウト復帰）
-    setTimeout(() => {
-        document.body.style.pointerEvents = 'auto';
-    }, 3000);
-  });
-</script>
-
 </head>
 <body class="preload antialiased selection:bg-indigo-500 selection:text-white bg-base-50 dark:bg-base-900 text-base-900 dark:text-gray-100">
     <script>
@@ -587,6 +575,22 @@
                 </div>
             </div>
 
+
+            <!-- インストール案内 -->
+            <div id="install-card" class="hidden glass-panel p-5 rounded-2xl mb-4">
+                <h3 class="section-title text-sm font-bold mb-3 flex items-center gap-2">
+                    <i class="ph-fill ph-device-mobile text-indigo-500" aria-hidden="true"></i>
+                    アプリとして使う
+                </h3>
+                <p id="install-description" class="text-[11px] text-gray-500 dark:text-gray-400 mb-3"></p>
+                <div id="install-ios-steps" class="hidden mb-3 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 text-[11px] leading-relaxed text-gray-600 dark:text-gray-300">
+                    Safariの共有メニューから <strong>「ホーム画面に追加」</strong> を選ぶと、次回からアプリとして起動できます。
+                </div>
+                <button id="btn-install-app" class="w-full py-3 rounded-xl bg-brand text-white font-bold text-xs shadow-lg shadow-brand/20 hover:bg-brand-dark transition active:scale-95">
+                    インストール手順を表示
+                </button>
+            </div>
+
             <!-- Daily Checks (Updated Phase 1.5) -->
             <div class="glass-panel p-5 rounded-2xl mb-4">
                 <div class="flex items-center justify-between mb-4">
@@ -778,6 +782,10 @@
 <button id="btn-fab-fixed" aria-label="クイック記録"
     class="hidden fixed bottom-24 right-6 z-40 w-14 h-14 bg-brand text-white rounded-2xl shadow-xl shadow-brand/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-300 ease-out">    <i class="ph-bold ph-plus text-2xl" aria-hidden="true"></i>
 </button>
+
+    <div id="offline-banner" role="status" aria-live="polite" aria-atomic="true" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-[9998] px-4 py-2 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-100 text-xs font-bold shadow-lg border border-amber-200 dark:border-amber-700">
+        オフラインです。接続復帰まで一部機能が制限されます。
+    </div>
 
     <div id="message-box" aria-live="polite" aria-atomic="true" class="fixed top-6 left-1/2 transform -translate-x-1/2 translate-y-[-150%] opacity-0 transition-all duration-300"></div>
     

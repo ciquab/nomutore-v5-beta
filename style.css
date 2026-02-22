@@ -514,6 +514,38 @@ body {
     font-size: 1.25rem;
 }
 
+
+/* First-run discoverability boost: show bottom nav labels for early sessions */
+body.nav-labels-visible #bottom-nav .floating-nav {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}
+
+body.nav-labels-visible .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    min-width: 4rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 0.8rem;
+}
+
+body.nav-labels-visible .nav-item span.label {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+body.nav-labels-visible .nav-item.nav-pill-active {
+    transform: none;
+    padding: 0.35rem 0.5rem;
+    gap: 0.1rem;
+    border-radius: 0.8rem;
+}
+
 /* Status Text Styles */
 .text-accent { color: #f59e0b; }
 .text-recovery { color: #10b981; }
@@ -524,6 +556,16 @@ body {
 
 /* Utility */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+/* Fixed controls: base offset + safe area */
+#bottom-nav {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+#btn-fab-fixed,
+#settings-save-container {
+    bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
 
 /* タイマーの鼓動アニメーション */
 @keyframes timer-pulse {

@@ -278,6 +278,115 @@ window.__appInitState = window.__appInitState || APP_INIT_STATES.IDLE;
    Lifecycle Management
    ========================================================================== */
 
+
+const setupNetworkStatusBanner = () => {
+    const banner = document.getElementById('offline-banner');
+    if (!banner) return;
+
+    const sync = () => {
+        const offline = navigator.onLine === false;
+        banner.classList.toggle('hidden', !offline);
+    };
+
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    sync();
+};
+
+
+const setupInstallGuidance = () => {
+    const card = document.getElementById('install-card');
+    const btn = document.getElementById('btn-install-app');
+    const desc = document.getElementById('install-description');
+    const iosSteps = document.getElementById('install-ios-steps');
+    if (!card || !btn || !desc || !iosSteps) return;
+
+    const INSTALL_UNLOCKED_KEY = 'nomutore_install_nudge_unlocked_v1';
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    if (isStandalone) {
+        card.classList.add('hidden');
+        return;
+    }
+
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    let deferredInstallPrompt = null;
+    let hasUnlocked = localStorage.getItem(INSTALL_UNLOCKED_KEY) === 'true';
+
+    const render = () => {
+        if (!hasUnlocked) {
+            card.classList.add('hidden');
+            return;
+        }
+
+        card.classList.remove('hidden');
+
+        if (isIOS) {
+            desc.textContent = '使い方に慣れたら、ホーム画面に追加して次回以降をもっと速く開けます。';
+            btn.textContent = 'インストール手順を表示';
+            btn.disabled = false;
+            return;
+        }
+
+        if (deferredInstallPrompt) {
+            desc.textContent = 'ホーム画面に追加すると、アプリのようにすぐ開けます。';
+            btn.textContent = 'ホーム画面に追加';
+            btn.disabled = false;
+        } else {
+            desc.textContent = 'この環境ではブラウザメニューから「ホーム画面に追加」を選択してください。';
+            btn.textContent = 'ブラウザメニューから追加';
+            btn.disabled = true;
+        }
+    };
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        render();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        card.classList.add('hidden');
+        deferredInstallPrompt = null;
+    });
+
+    document.addEventListener('install-guidance:unlock', () => {
+        hasUnlocked = true;
+        localStorage.setItem(INSTALL_UNLOCKED_KEY, 'true');
+        render();
+    });
+
+    btn.addEventListener('click', async () => {
+        if (isIOS) {
+            iosSteps.classList.toggle('hidden');
+            return;
+        }
+        if (!deferredInstallPrompt) return;
+
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        render();
+    });
+
+    render();
+};
+
+
+
+const setupNavDiscoverability = () => {
+    const KEY = 'nomutore_nav_label_boost_count_v1';
+    const maxBoostCount = 3;
+    const count = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+    if (count < maxBoostCount) {
+        document.body.classList.add('nav-labels-visible');
+        localStorage.setItem(KEY, String(count + 1));
+    } else {
+        document.body.classList.remove('nav-labels-visible');
+    }
+};
+
 const setupLifecycleListeners = () => {
     document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
@@ -472,6 +581,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. ライフサイクル管理
     setupLifecycleListeners();
+    setupNetworkStatusBanner();
+    setupInstallGuidance();
+    setupNavDiscoverability();
 
     initApp();
 });

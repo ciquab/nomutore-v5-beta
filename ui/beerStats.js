@@ -560,7 +560,6 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
             </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
     `;
 }
-
 function renderBeerLayoutEmptyState() {
     return `
         <div class="empty-state flex flex-col items-center justify-center py-6 text-gray-500 dark:text-gray-400">

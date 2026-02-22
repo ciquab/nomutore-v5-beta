@@ -67,10 +67,18 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
     const statsLayout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT || { beer: {} };
     const beerLayout = {
+        summaryMetrics: statsLayout?.beer?.summaryMetrics !== false,
+        flavorTrend: statsLayout?.beer?.flavorTrend !== false,
+        styleBreakdown: statsLayout?.beer?.styleBreakdown !== false,
+        abvBands: statsLayout?.beer?.abvBands !== false,
+        rollingTrend: statsLayout?.beer?.rollingTrend !== false,
         weekdayHeatmap: statsLayout?.beer?.weekdayHeatmap !== false,
+        sessionProfile: statsLayout?.beer?.sessionProfile !== false,
         exploreRepeat: statsLayout?.beer?.exploreRepeat !== false,
         periodComparison: statsLayout?.beer?.periodComparison !== false,
+        beerInsights: statsLayout?.beer?.beerInsights !== false,
     };
+    const hasAnyBeerCardEnabled = Object.values(beerLayout).some(Boolean);
 
     // 共有コンテキスト更新（詳細表示・コレクション共通）
     setBeerStatsContext(allLogs, allBeers, allStats.breweryStats || []);
@@ -85,6 +93,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </span>
             </div>
 
+            ${beerLayout.summaryMetrics ? `
             <div class="grid grid-cols-3 gap-2 text-center">
                 <div class="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-2xl border border-amber-100 dark:border-amber-800/50">
                     <p class="text-[10px] font-bold text-amber-800 dark:text-amber-200 uppercase">${isPermanent ? '直近杯数' : '期間合計'}</p>
@@ -99,7 +108,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${firstTryBeers}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
+            ` : ''}
 
+            ${beerLayout.flavorTrend ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
@@ -130,7 +141,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 `}
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">${escapeHtml(flavorTrend.note)}</p>
             </div>
+            ` : ''}
 
+            ${beerLayout.styleBreakdown ? `
             <div class="glass-panel p-4 rounded-2xl relative">
                 <div class="flex items-center justify-between mb-3">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
@@ -146,7 +159,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
                 <div id="style-breakdown-list" class="mt-3 space-y-1.5"></div>
             </div>
+            ` : ''}
 
+            ${beerLayout.abvBands ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-gauge section-icon text-amber-500" aria-hidden="true"></i> ABV帯分布</h3>
                 <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
@@ -168,7 +183,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     }).join('')}
                 </div>
             </div>
+            ` : ''}
 
+            ${beerLayout.rollingTrend ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-line section-icon text-cyan-500" aria-hidden="true"></i> 4週間ローリングトレンド</h3>
@@ -179,10 +196,11 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">※ 短期トレンドの比較のため固定窓で表示</p>
             </div>
+            ` : ''}
 
             ${renderWeekdayHeatmapSection(beerLayout, heatmap)}
-            ${!beerLayout.weekdayHeatmap && !beerLayout.exploreRepeat && !beerLayout.periodComparison ? renderBeerLayoutEmptyState() : ''}
 
+            ${beerLayout.sessionProfile ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-chart-line-up section-icon text-emerald-500" aria-hidden="true"></i> 1日あたり摂取プロファイル</h3>
                 <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
@@ -193,6 +211,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 </div>
                 <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-2">P50 = 中央値 / P90 = 多い日の目安（上位10%）</p>
             </div>
+            ` : ''}
 
             ${renderExploreRepeatSection(beerLayout, explorationBalance)}
 
@@ -207,6 +226,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                 avgAbvPrevious
             })}
 
+            ${beerLayout.beerInsights ? `
             <div class="glass-panel p-4 rounded-2xl">
                 <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> Beer Insight</h3>
                 <div class="space-y-2">
@@ -218,6 +238,9 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     `).join('')}
                 </div>
             </div>
+            ` : ''}
+
+            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}
         </div>
     `;
 
@@ -497,8 +520,7 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
                         ${heatmap.values[dayIdx].map(v => `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`).join('')}
                     </div>
                 `).join('')}
-            </div>
-        </div>
+            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
     `;
 }
 
@@ -535,8 +557,7 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
                 ${renderComparisonMetric('容量', focusStats.totalMl / 1000, previousStats.totalMl / 1000, 'L', 1)}
                 ${renderComparisonMetric('純アルコール', focusAlcohol, previousAlcohol, 'g')}
                 ${renderComparisonMetric('平均ABV', avgAbvCurrent, avgAbvPrevious, '%', 1)}
-            </div>
-        </div>
+            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
     `;
 }
 
@@ -574,8 +595,7 @@ function renderSessionMetric(label, data, unit = '') {
                     <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
                     <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end text-right tabular-nums">${Math.round(data.p90)}${suffix}</span>
                 </div>
-            </div>
-        </div>
+            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
     `;
 }
 

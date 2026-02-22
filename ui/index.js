@@ -274,9 +274,24 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 _lastStatsRenderKey = statsKey;
 
                 if (statsMode === 'activity') {
-                    renderHeatmap(checks, allLogs, Store.getProfile());
-                    renderChart(allLogs, checks);
                     const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+
+                    const calendarSection = document.getElementById('activity-calendar-section');
+                    if (calendarSection) {
+                        calendarSection.classList.toggle('hidden', layout?.activity?.activityCalendar === false);
+                    }
+                    if (layout?.activity?.activityCalendar !== false) {
+                        renderHeatmap(checks, allLogs, Store.getProfile());
+                    }
+
+                    const calorieSection = document.getElementById('activity-calorie-balance-section');
+                    if (calorieSection) {
+                        calorieSection.classList.toggle('hidden', layout?.activity?.calorieBalance === false);
+                    }
+                    if (layout?.activity?.calorieBalance !== false) {
+                        renderChart(allLogs, checks);
+                    }
+
                     if (layout?.activity?.healthInsights !== false) {
                         renderHealthInsights(allLogs, checks);
                     } else {
@@ -1142,8 +1157,10 @@ if (checkModal) {
         // 2. 保存しておいたデータを使ってグラフだけ再描画
         const { allLogs, checks } = UI._statsData;
         if (allLogs && checks) {
-            renderChart(allLogs, checks);
             const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+            if (layout?.activity?.calorieBalance !== false) {
+                renderChart(allLogs, checks);
+            }
             if (layout?.activity?.healthInsights !== false) {
                 renderHealthInsights(allLogs, checks);
             } else {

@@ -373,6 +373,20 @@ const setupInstallGuidance = () => {
 };
 
 
+
+const setupNavDiscoverability = () => {
+    const KEY = 'nomutore_nav_label_boost_count_v1';
+    const maxBoostCount = 3;
+    const count = parseInt(localStorage.getItem(KEY) || '0', 10);
+
+    if (count < maxBoostCount) {
+        document.body.classList.add('nav-labels-visible');
+        localStorage.setItem(KEY, String(count + 1));
+    } else {
+        document.body.classList.remove('nav-labels-visible');
+    }
+};
+
 const setupLifecycleListeners = () => {
     document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
@@ -569,6 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupLifecycleListeners();
     setupNetworkStatusBanner();
     setupInstallGuidance();
+    setupNavDiscoverability();
 
     initApp();
 });

@@ -1168,7 +1168,6 @@ if (checkModal) {
         if (el) el.click();
     },
     enableInteractions: () => {
-        document.body.style.pointerEvents = 'auto';
         setTimeout(() => {
             document.body.classList.remove('preload');
         }, 100);

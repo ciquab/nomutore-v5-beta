@@ -252,6 +252,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     <p class="text-xl font-black text-emerald-600 dark:text-emerald-400">${firstTryBeers}<span class="text-xs ml-1">種</span></p>
                 </div>
             </div>
+            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">
@@ -321,6 +322,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
                     }).join('')}
                 </div>
             </div>
+            ` : ''}
 
             <div class="glass-panel p-4 rounded-2xl">
                 <div class="flex items-center justify-between mb-2">

@@ -278,6 +278,21 @@ window.__appInitState = window.__appInitState || APP_INIT_STATES.IDLE;
    Lifecycle Management
    ========================================================================== */
 
+
+const setupNetworkStatusBanner = () => {
+    const banner = document.getElementById('offline-banner');
+    if (!banner) return;
+
+    const sync = () => {
+        const offline = navigator.onLine === false;
+        banner.classList.toggle('hidden', !offline);
+    };
+
+    window.addEventListener('online', sync);
+    window.addEventListener('offline', sync);
+    sync();
+};
+
 const setupLifecycleListeners = () => {
     document.addEventListener('visibilitychange', async () => {
         if (document.visibilityState === 'visible') {
@@ -472,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. ライフサイクル管理
     setupLifecycleListeners();
+    setupNetworkStatusBanner();
 
     initApp();
 });

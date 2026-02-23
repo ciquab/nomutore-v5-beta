@@ -47,7 +47,13 @@ const registerActions = () => {
         'statsLayout:save': () => UI.saveStatsLayoutSettings(),
 
         // ========== Modal系 ==========
-        'modal:open': (modalId) => toggleModal(modalId, true),
+        'modal:open': (modalId) => {
+            if (modalId === 'stats-layout-modal') {
+                UI.openStatsLayoutModal();
+                return;
+            }
+            toggleModal(modalId, true);
+        },
         'modal:close': (modalId) => toggleModal(modalId, false),
         'modal:toggle': (modalId) => {
             UI.toggleModal(modalId);

@@ -49,7 +49,7 @@ const registerActions = () => {
         // ========== Modal系 ==========
         'modal:open': (modalId) => {
             if (modalId === 'stats-layout-modal') {
-                UI.openStatsLayoutModal();
+                UI.openStatsLayoutModal('action:modal:open');
                 return;
             }
             toggleModal(modalId, true);
@@ -67,7 +67,7 @@ const registerActions = () => {
         'modal:openHelp': (section) => UI.openHelp(section),
         'modal:openActionMenu': () => UI.openActionMenu(),
         'modal:openCheckLibrary': () =>  UI.openCheckLibrary(),
-        'modal:openStatsLayout': () => UI.openStatsLayoutModal(),
+        'modal:openStatsLayout': () => UI.openStatsLayoutModal('action:modal:openStatsLayout'),
         
         // ========== Data系 ==========
         'data:exportCSV': (type) => DataManager.exportCSV(type),

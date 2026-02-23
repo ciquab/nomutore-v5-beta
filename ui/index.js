@@ -392,6 +392,10 @@ export const UI = {
             e.preventDefault();
             openStatsLayoutModal();
         });
+        bind('btn-settings-stats-layout', 'click', (e) => {
+            e.preventDefault();
+            openStatsLayoutModal();
+        });
 
 
         // 🍺 ビール保存
@@ -1348,7 +1352,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 
 

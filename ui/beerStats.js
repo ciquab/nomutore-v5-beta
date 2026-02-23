@@ -420,8 +420,13 @@ function buildWeekdayTimeHeatmap(beerLogs) {
 
     (beerLogs || []).forEach(l => {
         const d = dayjs(l.timestamp);
+        const hour = d.hour();
+        const minute = d.minute();
+        const inferredDateOnly = l.timePrecision === 'date_only' || (l.timePrecision == null && hour === 12 && minute === 0);
+        if (inferredDateOnly) return;
+
         const dayIndex = (d.day() + 6) % 7;
-        const slotIndex = getSlot(d.hour());
+        const slotIndex = getSlot(hour);
         values[dayIndex][slotIndex] += (l.count || 1);
     });
 
@@ -515,7 +520,8 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
     return `
         <div class="glass-panel p-4 rounded-2xl">
             <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-blank section-icon text-cyan-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
-            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-1">基準: この期間</p>
+            <p class="text-[11px] text-gray-400 dark:text-gray-500 mb-2">※ 時刻未入力（12:00仮置き）データは時間帯集計から除外</p>
             <div class="grid gap-1 text-[11px]" style="grid-template-columns: minmax(2.25rem, auto) repeat(4, minmax(0, 1fr));">
                 <div></div>
                 ${heatmap.slots.map(slot => `<div class="text-center text-gray-500 dark:text-gray-400 font-bold py-1">${slot}</div>`).join('')}

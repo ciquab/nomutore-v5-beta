@@ -928,10 +928,14 @@
             </div>
             <div class="p-5 overflow-y-auto space-y-4 relative z-0">
                 <input type="hidden" id="editing-log-id" value="">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label for="check-date" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">日付</label>
                         <input type="date" id="beer-date" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1">
+                    </div>
+                    <div>
+                        <label for="beer-time" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">時刻(任意)</label>
+                        <input type="time" id="beer-time" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1" placeholder="--:--">
                     </div>
                     <div>
                         <label for="beer-count" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">本数</label>
@@ -2220,7 +2224,6 @@
 </body>
 
 </html>
-
 
 
 

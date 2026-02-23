@@ -388,6 +388,11 @@ export const UI = {
             if(el) el.addEventListener(event, fn);
 
         };
+        bind('btn-stats-layout', 'click', (e) => {
+            e.preventDefault();
+            openStatsLayoutModal();
+        });
+
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {

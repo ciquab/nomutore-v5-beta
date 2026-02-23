@@ -112,10 +112,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             ${beerLayout.flavorTrend ? `
             <div class="glass-panel p-4 rounded-2xl">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${escapeHtml(flavorTrend.caption)}</span>
-                </div>
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-wine section-icon text-rose-500" aria-hidden="true"></i> フレーバー推移</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2 truncate">基準: ${escapeHtml(flavorTrend.caption)}</p>
                 ${flavorTrend.hasData ? `
                     <div class="h-52 w-full">
                         <canvas id="beerFlavorTrendChart"></canvas>
@@ -145,10 +143,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             ${beerLayout.styleBreakdown ? `
             <div class="glass-panel p-4 rounded-2xl relative">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">基準: この期間</span>
-                </div>
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-chart-pie section-icon text-indigo-500" aria-hidden="true"></i> スタイル内訳</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-3">基準: この期間</p>
                 <div class="h-44 w-full relative">
                     <canvas id="beerStyleChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -187,10 +183,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             ${beerLayout.rollingTrend ? `
             <div class="glass-panel p-4 rounded-2xl">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-chart-line section-icon text-cyan-500" aria-hidden="true"></i> 4週間ローリングトレンド</h3>
-                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">固定: 4週間</span>
-                </div>
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-chart-line section-icon text-cyan-500" aria-hidden="true"></i> 4週間ローリングトレンド</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: 直近4週間（固定）</p>
                 <div class="h-52 w-full">
                     <canvas id="beerRollingTrendChart"></canvas>
                 </div>
@@ -228,7 +222,8 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
 
             ${beerLayout.beerInsights ? `
             <div class="glass-panel p-4 rounded-2xl">
-                <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> Beer Insight</h3>
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-lightbulb section-icon text-indigo-500" aria-hidden="true"></i> ビールインサイト</h3>
+                <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: ${escapeHtml(contextLabel)}</p>
                 <div class="space-y-2">
                     ${beerInsights.map(item => `
                         <div class="bg-indigo-50/60 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40 rounded-xl p-2.5">
@@ -545,7 +540,8 @@ function renderExploreRepeatSection(beerLayout, explorationBalance) {
     if (!beerLayout?.exploreRepeat) return '';
     return `
         <div class="glass-panel p-4 rounded-2xl">
-            <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-shuffle-angular section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-shuffle-angular section-icon text-violet-500" aria-hidden="true"></i> Explore / Repeat バランス</h3>
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
             <div class="grid grid-cols-2 gap-2">
                 <div class="rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/40 p-3">
                     <p class="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">Explore率</p>
@@ -565,10 +561,8 @@ function renderPeriodComparisonSection(beerLayout, { comparisonLabel, focusStats
     if (!beerLayout?.periodComparison) return '';
     return `
         <div class="glass-panel p-4 rounded-2xl">
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-sm font-bold flex items-center gap-2"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> 期間比較</h3>
-                <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400">${comparisonLabel}</span>
-            </div>
+            <h3 class="text-sm font-bold flex items-center gap-2 mb-1"><i class="ph-fill ph-arrows-left-right section-icon text-blue-500" aria-hidden="true"></i> 期間比較</h3>
+            <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: ${comparisonLabel}</p>
             <div class="grid grid-cols-2 gap-2">
                 ${renderComparisonMetric('杯数', focusStats.totalCount, previousStats.totalCount, '杯')}
                 ${renderComparisonMetric('容量', focusStats.totalMl / 1000, previousStats.totalMl / 1000, 'L', 1)}

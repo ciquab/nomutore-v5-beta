@@ -500,11 +500,16 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
 
     const levelClass = (value, max) => {
         if (!max || value <= 0) return 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500';
+        return 'text-white';
+    };
+
+    const levelStyle = (value, max) => {
+        if (!max || value <= 0) return '';
         const ratio = value / max;
-        if (ratio >= 0.75) return 'bg-indigo-600 text-white';
-        if (ratio >= 0.45) return 'bg-indigo-400 text-white';
-        if (ratio >= 0.2) return 'bg-indigo-200 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200';
-        return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-300';
+        if (ratio >= 0.75) return 'background-color:#4f46e5;color:#ffffff;';
+        if (ratio >= 0.45) return 'background-color:#818cf8;color:#ffffff;';
+        if (ratio >= 0.2) return 'background-color:#c7d2fe;color:#3730a3;';
+        return 'background-color:#eef2ff;color:#6366f1;';
     };
 
     return `
@@ -518,7 +523,7 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
                     const rowValues = heatmap.values?.[dayIdx] || [];
                     const cells = heatmap.slots.map((_, slotIdx) => {
                         const v = rowValues[slotIdx] || 0;
-                        return `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`;
+                        return `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}" style="${levelStyle(v, heatmap.max)}">${v > 0 ? v : ''}</div>`;
                     }).join('');
                     return `
                         <div class="text-gray-500 dark:text-gray-400 font-bold py-1">${day}</div>

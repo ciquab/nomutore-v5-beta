@@ -304,6 +304,7 @@ export const Service = {
             return await Service.saveBeerLog({
                 ...log,
                 timestamp: Date.now(),
+                timePrecision: 'exact',
                 isCustom: log.isCustom || false,
                 useUntappd: false
             }, null);
@@ -350,7 +351,8 @@ export const Service = {
             memo: data.memo,
             isCustom: data.isCustom,
             customType: data.isCustom ? data.type : null,
-            flavorProfile: data.flavorProfile || null
+            flavorProfile: data.flavorProfile || null,
+            timePrecision: data.timePrecision || null
         };
 
         if (id) {

@@ -455,6 +455,9 @@ const syncBackgroundScrollLock = () => {
 };
 
 export const toggleModal = (modalId, show = true) => {
+    if (modalId === 'stats-layout-modal') {
+        console.warn('[StatsLayoutDebug] toggleModal', { modalId, show, ts: Date.now() });
+    }
     // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
     const el = document.getElementById(modalId) || DOM.elements[modalId];
     if (!el) return;
@@ -466,6 +469,8 @@ export const toggleModal = (modalId, show = true) => {
     const content = el.querySelector('div[class*="transform"]');
 
     if (show) {
+        // Stats表示設定モーダルは環境差でtransition状態が残るケースがあるため強制可視化
+        const forceStatsVisibility = modalId === 'stats-layout-modal';
         const isAlreadyOpen = _openModalStack.includes(modalId) && !el.classList.contains('hidden');
         if (isAlreadyOpen) return;
 
@@ -497,6 +502,16 @@ export const toggleModal = (modalId, show = true) => {
             // translate-y-full（画面外）を消し、translate-y-0（表示位置）を足す
             content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
             content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+
+            if (forceStatsVisibility) {
+                el.style.zIndex = '2000';
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0) scale(1)';
+                content.style.transition = 'none';
+                if (bg) bg.style.opacity = '1';
+            }
         }
 
         if (!_isHandlingModalPopState && typeof window !== 'undefined' && window.history?.pushState) {
@@ -532,6 +547,16 @@ export const toggleModal = (modalId, show = true) => {
             // 現在地(translate-y-0)を削除し、アニメーション対象(scale/opacity)を付与
             content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
+
+            if (modalId === 'stats-layout-modal') {
+                el.style.zIndex = '';
+                el.style.opacity = '';
+                el.style.pointerEvents = '';
+                content.style.opacity = '';
+                content.style.transform = '';
+                content.style.transition = '';
+                if (bg) bg.style.opacity = '';
+            }
 
             const slideDownModals = ['day-detail-modal', 'action-menu-modal', 'day-add-selector', 'log-detail-modal'];
             if (slideDownModals.includes(modalId)) {

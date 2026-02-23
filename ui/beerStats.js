@@ -599,7 +599,6 @@ function renderSessionMetric(label, data, unit = '') {
             </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
     `;
 }
-
 function calcAvgFlavorByLogs(logs) {
     const target = (logs || []).filter(l => l.type === 'beer' && l.flavorProfile);
     if (target.length === 0) return null;

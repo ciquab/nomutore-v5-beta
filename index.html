@@ -532,6 +532,11 @@
                     <label for="setting-default-record-exercise" class="text-xs font-medium text-gray-500 mb-1 block">デフォルト運動</label>
                     <select id="setting-default-record-exercise" class="w-full bg-base-50 dark:bg-base-900 border border-base-200 dark:border-base-700 rounded-xl p-3 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 dark:focus:border-indigo-500 transition"></select>
                 </div>
+
+                <button id="btn-settings-stats-layout" data-action="modal:open" data-args='["stats-layout-modal"]' class="w-full mt-3 p-3 rounded-xl border border-base-200 dark:border-base-700 bg-base-50 dark:bg-base-800 flex items-center justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition">
+                    <span class="text-sm font-bold text-base-900 dark:text-white">Stats表示設定を開く</span>
+                    <i class="ph-bold ph-sliders-horizontal text-lg text-gray-400" aria-hidden="true"></i>
+                </button>
             </div>
 
             <!-- 通知設定 -->
@@ -805,9 +810,8 @@
     </div>
 
 
-<div id="stats-layout-modal" role="dialog" aria-modal="true" aria-labelledby="stats-layout-title" class="fixed inset-0 hidden items-center justify-center p-4 relative">
-    <div class="modal-bg absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-200"></div>
-    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200 relative z-10">
+<div id="stats-layout-modal" role="dialog" aria-modal="true" aria-labelledby="stats-layout-title" class="fixed inset-0 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 z-[1200]">
+    <div class="bg-white dark:bg-base-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transform transition-all scale-95 opacity-0 duration-200">
         <div class="p-4 border-b border-base-200 dark:border-base-800 flex justify-between items-center z-20">
             <div>
                 <h3 id="stats-layout-title" class="font-black text-lg">Stats表示設定</h3>
@@ -1714,7 +1718,6 @@
             </section>
 
             <section>
-                <h4 id="help-stats"            <section>
                 <h4 id="help-stats" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="ph-duotone ph-chart-line" aria-hidden="true"></i> 統計 (Stats)
                 </h4>
@@ -2217,8 +2220,6 @@
 </body>
 
 </html>
-
-
 
 
 

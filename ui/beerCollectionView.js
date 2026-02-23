@@ -18,14 +18,14 @@ export function renderBeerCollection(periodLogs, allLogs) {
 
     container.innerHTML = `
         <div id="beer-collection-section">
-            <section id="brewery-leaderboard-section" class="px-1 mb-1">
-                <div class="flex items-center justify-between mb-1">
+            <section id="brewery-leaderboard-section" class="px-1 mb-2">
+                <div class="flex items-center justify-between mb-2">
                     <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">ブルワリーランキング</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
-                <p class="section-helper">軸を切り替えてブルワリー傾向を比較できます</p>
+                <p class="section-helper mt-1">軸を切り替えてブルワリー傾向を比較できます</p>
             </section>
-            <div id="brewery-axis-tabs" class="flex gap-1.5 mb-3 overflow-x-auto pb-1 -mx-1 px-1"></div>
+            <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
             <div id="brewery-ranking-list" class="space-y-2 mb-4"></div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
@@ -325,7 +325,7 @@ function renderBreweryLeaderboardItem({ brewery, rankIndex, axis, maxVal }) {
                     </div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 font-bold truncate mt-1">${subInfo}</p>
                     <div class="mt-2 h-1.5 rounded-full bg-gray-100 dark:bg-base-800 overflow-hidden" aria-hidden="true">
-                        <div class="h-full rounded-full bg-indigo-400 dark:bg-indigo-500" style="width: ${pct}%"></div>
+                        <div class="h-full rounded-full bg-indigo-500 dark:bg-indigo-500" style="width: ${pct}%"></div>
                     </div>
                 </div>
                 <i class="ph-bold ph-caret-right text-xs text-gray-300 dark:text-gray-600 flex-shrink-0" aria-hidden="true"></i>

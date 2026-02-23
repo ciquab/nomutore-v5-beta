@@ -245,7 +245,7 @@ export function renderBeerStats(periodLogs, allLogs, checks) {
     `;
 
     // チャート描画
-    renderStyleChart(allStats.styleCounts);
+    renderStyleChart(focusStats.styleCounts);
     renderFlavorTrendChart(flavorTrend);
     renderRollingTrendChart(rollingTrend);
 }
@@ -511,7 +511,7 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
         <div class="glass-panel p-4 rounded-2xl">
             <h3 class="text-sm font-bold flex items-center gap-2 mb-2"><i class="ph-fill ph-calendar-blank section-icon text-cyan-500" aria-hidden="true"></i> 曜日×時間帯ヒートマップ</h3>
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
-            <div class="grid grid-cols-5 gap-1 text-[11px]">
+            <div class="grid gap-1 text-[11px]" style="grid-template-columns: minmax(2.25rem, auto) repeat(4, minmax(0, 1fr));">
                 <div></div>
                 ${heatmap.slots.map(slot => `<div class="text-center text-gray-500 dark:text-gray-400 font-bold">${slot}</div>`).join('')}
                 ${heatmap.weekdays.map((day, dayIdx) => `

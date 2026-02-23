@@ -98,7 +98,7 @@ export const STATS_LAYOUT_PRESETS = {
     compact: {
         version: 1,
         beer: {
-            summaryMetrics: false,
+            summaryMetrics: true,
             flavorTrend: false,
             styleBreakdown: false,
             abvBands: false,
@@ -110,7 +110,7 @@ export const STATS_LAYOUT_PRESETS = {
             beerInsights: false,
         },
         activity: {
-            activityCalendar: false,
+            activityCalendar: true,
             calorieBalance: false,
             healthInsights: false,
         },

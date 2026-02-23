@@ -39,6 +39,7 @@ const METRIC_BADGE = {
 
 let libraryMetricFilter = 'all';
 
+
 /**
  * @param {string | undefined} metricType
  */

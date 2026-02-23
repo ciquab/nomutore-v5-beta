@@ -17,7 +17,7 @@ export const openLogDetail = (log) => {
 
     // ▼▼▼ 表示データの準備 ▼▼▼
     const logDate = dayjs(log.timestamp);
-    const isNoon = logDate.format('HH:mm') === '12:00';
+    const isNoon = log.timePrecision === 'date_only' || logDate.format('HH:mm') === '12:00';
     
     // 12:00以外なら時間も表示、12:00なら日付のみ
     const dateDisplay = isNoon 

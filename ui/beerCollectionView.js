@@ -25,8 +25,8 @@ export function renderBeerCollection(periodLogs, allLogs) {
                 </div>
                 <p class="section-helper">軸を切り替えてブルワリー傾向を比較できます</p>
             </section>
-            <div id="brewery-axis-tabs" class="flex gap-1.5 mb-2 overflow-x-auto pb-1 -mx-1 px-1"></div>
-            <div id="brewery-ranking-list" class="divide-y divide-gray-100 dark:divide-gray-800 mb-3"></div>
+            <div id="brewery-axis-tabs" class="flex gap-1.5 mb-3 overflow-x-auto pb-1 -mx-1 px-1"></div>
+            <div id="brewery-ranking-list" class="space-y-2 mb-4"></div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
                 <div class="flex items-center justify-between mb-1 px-1">
@@ -315,20 +315,20 @@ function renderBreweryLeaderboardItem({ brewery, rankIndex, axis, maxVal }) {
     else rankBadge = `<span class="text-xs font-bold text-gray-500 dark:text-gray-400">${rankIndex + 1}</span>`;
 
     return `
-        <div class="item-row px-1 py-2.5 cursor-pointer active:scale-[0.98] transition-transform bg-transparent border-none rounded-none shadow-none" data-brewery-name="${escapeHtml(brewery.brewery)}">
-            <div class="flex items-center gap-2.5">
-                <div class="flex-shrink-0 w-6 text-center">${rankBadge}</div>
+        <div class="item-row px-3 py-3 cursor-pointer active:scale-[0.98] transition-transform bg-white dark:bg-base-900 border border-base-100 dark:border-base-700 shadow-sm" data-brewery-name="${escapeHtml(brewery.brewery)}">
+            <div class="flex items-center gap-3">
+                <div class="flex-shrink-0 w-7 text-center">${rankBadge}</div>
                 <div class="flex-grow min-w-0">
                     <div class="flex items-center justify-between gap-2">
-                        <p class="text-xs font-black text-base-900 dark:text-white truncate">${escapeHtml(brewery.brewery)}</p>
-                        <p class="text-[11px] font-black text-brand dark:text-brand-light whitespace-nowrap">${value}${axis.unit}</p>
+                        <p class="text-sm font-black text-base-900 dark:text-white truncate">${escapeHtml(brewery.brewery)}</p>
+                        <p class="text-xs font-black text-brand dark:text-brand-light whitespace-nowrap">${value}${axis.unit}</p>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400 font-bold truncate mt-0.5">${subInfo}</p>
-                    <div class="mt-1.5 h-1.5 rounded-full bg-gray-100 dark:bg-base-800 overflow-hidden" aria-hidden="true">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 font-bold truncate mt-1">${subInfo}</p>
+                    <div class="mt-2 h-1.5 rounded-full bg-gray-100 dark:bg-base-800 overflow-hidden" aria-hidden="true">
                         <div class="h-full rounded-full bg-indigo-400 dark:bg-indigo-500" style="width: ${pct}%"></div>
                     </div>
                 </div>
-                <i class="ph-bold ph-caret-right text-[11px] text-gray-300 dark:text-gray-600 flex-shrink-0" aria-hidden="true"></i>
+                <i class="ph-bold ph-caret-right text-xs text-gray-300 dark:text-gray-600 flex-shrink-0" aria-hidden="true"></i>
             </div>
         </div>`;
 }

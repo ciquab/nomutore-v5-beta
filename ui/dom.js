@@ -417,6 +417,14 @@ export const escapeHtml = (str) => {
 // Escape キーでモーダルを閉じるためのスタック管理
 const _openModalStack = [];
 const MODAL_HISTORY_KEY = '__nomutoreModalId';
+const RESILIENT_MODAL_IDS = new Set([
+    'beer-modal',
+    'check-modal',
+    'exercise-modal',
+    'settings-modal',
+    'check-library-modal',
+    'stats-layout-modal'
+]);
 let _isHandlingModalPopState = false;
 let _lockedScrollY = 0;
 
@@ -469,8 +477,8 @@ export const toggleModal = (modalId, show = true) => {
     const content = el.querySelector('div[class*="transform"]');
 
     if (show) {
-        // Stats表示設定モーダルは環境差でtransition状態が残るケースがあるため強制可視化
-        const forceStatsVisibility = modalId === 'stats-layout-modal';
+        // 一部モーダルは環境差でtransition状態が残るケースがあるため強制可視化
+        const forceVisibility = RESILIENT_MODAL_IDS.has(modalId);
         const isAlreadyOpen = _openModalStack.includes(modalId) && !el.classList.contains('hidden');
         if (isAlreadyOpen) return;
 
@@ -503,7 +511,7 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
             content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
 
-            if (forceStatsVisibility) {
+            if (forceVisibility) {
                 el.style.zIndex = '2000';
                 el.style.opacity = '1';
                 el.style.pointerEvents = 'auto';
@@ -548,7 +556,7 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
 
-            if (modalId === 'stats-layout-modal' || modalId === 'check-modal') {
+            if (RESILIENT_MODAL_IDS.has(modalId)) {
                 el.style.zIndex = '';
                 el.style.opacity = '';
                 el.style.pointerEvents = '';

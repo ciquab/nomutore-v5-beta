@@ -930,7 +930,7 @@
             </div>
             <div class="p-5 overflow-y-auto space-y-4 relative z-0">
                 <input type="hidden" id="editing-log-id" value="">
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label for="check-date" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">日付</label>
                         <input type="date" id="beer-date" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1">
@@ -938,14 +938,6 @@
                     <div>
                         <label for="beer-time" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">時刻(任意)</label>
                         <input type="time" id="beer-time" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1" placeholder="--:--">
-                    </div>
-                    <div>
-                        <label for="beer-count" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">本数</label>
-                        <div class="flex items-center gap-2 mt-1">
-                            <button id="btn-beer-minus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">-</button>
-                            <input type="number" id="beer-count" value="1" class="w-full text-center bg-transparent font-bold text-lg" readonly>
-                            <button id="btn-beer-plus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">+</button>
-                        </div>
                     </div>
                 </div>
                 <div id="beer-input-preset" class="space-y-4">
@@ -957,16 +949,26 @@
                         <label for="beer-size" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">サイズ</label>
                         <select id="beer-size" class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3 mt-1"></select>
                     </div>
-                    <div id="preset-abv-container">
-        <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase flex items-center gap-1">
-            ABV (%) <span class="lowercase font-normal opacity-60">(Override)</span>
-        </label>
-        <div class="relative mt-1">
-            <input type="number" id="preset-abv" step="0.1" placeholder="5.0" 
-                   class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3">
-            <span class="absolute right-4 top-3 text-gray-500 dark:text-gray-400 font-bold">%</span>
-        </div>
-    </div>
+                    <div id="preset-abv-container" class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase flex items-center gap-1">
+                                ABV (%) <span class="lowercase font-normal opacity-60">(Override)</span>
+                            </label>
+                            <div class="relative mt-1">
+                                <input type="number" id="preset-abv" step="0.1" placeholder="5.0" 
+                                    class="w-full bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold p-3">
+                                <span class="absolute right-4 top-3 text-gray-500 dark:text-gray-400 font-bold">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="beer-count" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">本数</label>
+                            <div class="flex items-center gap-2 mt-1">
+                                <button id="btn-beer-minus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">-</button>
+                                <input type="number" id="beer-count" value="1" class="w-full text-center bg-transparent font-bold text-lg" readonly>
+                                <button id="btn-beer-plus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">+</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="beer-input-custom" class="hidden space-y-4">
                     <div class="grid grid-cols-2 gap-3 mb-5">
@@ -2226,7 +2228,6 @@
 </body>
 
 </html>
-
 
 
 

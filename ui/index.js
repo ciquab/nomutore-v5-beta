@@ -268,7 +268,8 @@ const _executeRefreshUI = async (forcedTabId = null) => {
         else if (activeTabId === 'stats') {
             const statsMode = StateManager.statsViewMode || 'activity';
             const currentTheme = localStorage.getItem(APP.STORAGE_KEYS.THEME) || 'system';
-            const statsKey = `${currentFingerprint}:${statsMode}:${currentTheme}:${StateManager.heatmapOffset}`;
+            const statsLayoutKey = JSON.stringify(StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT || {});
+            const statsKey = `${currentFingerprint}:${statsMode}:${currentTheme}:${StateManager.heatmapOffset}:${statsLayoutKey}`;
 
             if (statsKey !== _lastStatsRenderKey) {
                 _lastStatsRenderKey = statsKey;
@@ -398,6 +399,22 @@ export const UI = {
             e.stopPropagation();
             openStatsLayoutModal('ui-bind:btn-settings-stats-layout');
         });
+        bind('btn-settings-stats-layout', 'click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openStatsLayoutModal('ui-bind:btn-settings-stats-layout');
+        });
+
+        // Debug: クリックが届いているか追跡
+        document.addEventListener('click', (e) => {
+            const target = e.target instanceof Element ? e.target.closest('#btn-stats-layout, #btn-settings-stats-layout') : null;
+            if (!target) return;
+            console.warn('[StatsLayoutDebug] raw click detected', {
+                id: target.id,
+                action: target.getAttribute('data-action'),
+                args: target.getAttribute('data-args')
+            });
+        }, true);
 
         // Debug: クリックが届いているか追跡
         document.addEventListener('click', (e) => {
@@ -1365,7 +1382,6 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 
 

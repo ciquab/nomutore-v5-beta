@@ -20,6 +20,7 @@
  * @typedef {Object} Log
  * @property {number} [id] - Dexieの自動採番ID (新規作成時は未定義)
  * @property {number} timestamp - 記録日時 (Unix Timestamp ms)
+ * @property {'exact'|'date_only'} [timePrecision] - 記録時刻の精度（exact:時刻確定, date_only:日付のみ）
  * @property {'beer' | 'exercise'} type - 記録タイプ
  * @property {string} [name] - 表示名 (例: "Yona Yona Ale", "Walking")
  * @property {number} [kcal] - カロリー収支 (飲酒はマイナス、運動はプラス)

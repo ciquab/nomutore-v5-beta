@@ -4,6 +4,32 @@ import { StateManager } from './state.js';
 import { toggleModal, showMessage } from './dom.js';
 
 let draftLayout = structuredClone(STATS_LAYOUT_DEFAULTS);
+let activePresetKey = null;
+
+const emitStatsLayoutDebug = (source, extra = {}) => {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!window.__statsLayoutDebug) {
+            window.__statsLayoutDebug = { openCount: 0, logs: [] };
+        }
+        window.__statsLayoutDebug.openCount += 1;
+        const modalEl = document.getElementById('stats-layout-modal');
+        const payload = {
+            ts: Date.now(),
+            source,
+            modalFound: !!modalEl,
+            modalHidden: modalEl ? modalEl.classList.contains('hidden') : null,
+            ...extra
+        };
+        window.__statsLayoutDebug.logs.push(payload);
+        if (window.__statsLayoutDebug.logs.length > 100) {
+            window.__statsLayoutDebug.logs.shift();
+        }
+        console.warn('[StatsLayoutDebug] open request', payload);
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] debug emit failed', e);
+    }
+};
 
 const emitStatsLayoutDebug = (source, extra = {}) => {
     try {
@@ -64,6 +90,40 @@ const STATS_LAYOUT_ITEMS = {
     ],
 };
 
+const PRESET_ACTIVE_CLASSES = ['bg-indigo-100', 'text-brand', 'ring-2', 'ring-indigo-300'];
+
+const layoutSignature = (layout) => {
+    const merged = mergeLayout(layout);
+    return JSON.stringify({
+        activity: STATS_LAYOUT_ITEMS.activity.reduce((acc, item) => {
+            acc[item.key] = merged?.activity?.[item.key] !== false;
+            return acc;
+        }, {}),
+        beer: STATS_LAYOUT_ITEMS.beer.reduce((acc, item) => {
+            acc[item.key] = merged?.beer?.[item.key] !== false;
+            return acc;
+        }, {}),
+    });
+};
+
+const detectActivePresetKey = (layout) => {
+    const current = layoutSignature(layout);
+    for (const [key, preset] of Object.entries(STATS_LAYOUT_PRESETS)) {
+        if (layoutSignature(preset) === current) return key;
+    }
+    return null;
+};
+
+const syncPresetButtonState = () => {
+    const buttons = document.querySelectorAll('button[data-action="statsLayout:applyPreset"]');
+    buttons.forEach((btn) => {
+        const key = JSON.parse(btn.dataset.args || '[]')?.[0];
+        const isActive = !!activePresetKey && key === activePresetKey;
+        PRESET_ACTIVE_CLASSES.forEach((cls) => btn.classList.toggle(cls, isActive));
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+};
+
 const ensureBeerLayoutHasOneEnabled = (layout) => {
     const merged = mergeLayout(layout);
     const beerKeys = STATS_LAYOUT_ITEMS.beer.map(item => item.key);
@@ -104,10 +164,13 @@ const renderStatsLayoutEditor = () => {
             ${renderStatsLayoutSection('beer', 'Beer分析カード')}
         </div>
     `;
+
+    syncPresetButtonState();
 };
 
 export const primeStatsLayoutModalContent = () => {
     draftLayout = mergeLayout(StateManager.statsLayout);
+    activePresetKey = detectActivePresetKey(draftLayout);
     renderStatsLayoutEditor();
 };
 
@@ -203,6 +266,7 @@ export const applyStatsLayoutPreset = (presetKey) => {
     const preset = STATS_LAYOUT_PRESETS[presetKey];
     if (!preset) return;
     draftLayout = mergeLayout(preset);
+    activePresetKey = presetKey;
     renderStatsLayoutEditor();
 };
 
@@ -224,6 +288,9 @@ export const toggleStatsLayoutItem = (args, event) => {
             showMessage('Beer分析カードは最低1つ表示する必要があります', 'warning');
         }
     }
+
+    activePresetKey = detectActivePresetKey(draftLayout);
+    syncPresetButtonState();
 };
 
 export const saveStatsLayoutSettings = () => {

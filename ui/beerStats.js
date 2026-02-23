@@ -513,13 +513,18 @@ function renderWeekdayHeatmapSection(beerLayout, heatmap) {
             <p class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 mb-2">基準: この期間</p>
             <div class="grid gap-1 text-[11px]" style="grid-template-columns: minmax(2.25rem, auto) repeat(4, minmax(0, 1fr));">
                 <div></div>
-                ${heatmap.slots.map(slot => `<div class="text-center text-gray-500 dark:text-gray-400 font-bold">${slot}</div>`).join('')}
-                ${heatmap.weekdays.map((day, dayIdx) => `
-                    <div class="contents">
+                ${heatmap.slots.map(slot => `<div class="text-center text-gray-500 dark:text-gray-400 font-bold py-1">${slot}</div>`).join('')}
+                ${heatmap.weekdays.map((day, dayIdx) => {
+                    const rowValues = heatmap.values?.[dayIdx] || [];
+                    const cells = heatmap.slots.map((_, slotIdx) => {
+                        const v = rowValues[slotIdx] || 0;
+                        return `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`;
+                    }).join('');
+                    return `
                         <div class="text-gray-500 dark:text-gray-400 font-bold py-1">${day}</div>
-                        ${heatmap.values[dayIdx].map(v => `<div class="h-8 rounded-md flex items-center justify-center font-bold ${levelClass(v, heatmap.max)}">${v > 0 ? v : ''}</div>`).join('')}
-                    </div>
-                `).join('')}
+                        ${cells}
+                    `;
+                }).join('')}
             </div>
         </div>
     `; // ここでシンプルに閉じる

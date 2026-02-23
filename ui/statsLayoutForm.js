@@ -5,6 +5,31 @@ import { toggleModal, showMessage } from './dom.js';
 
 let draftLayout = structuredClone(STATS_LAYOUT_DEFAULTS);
 
+const emitStatsLayoutDebug = (source, extra = {}) => {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!window.__statsLayoutDebug) {
+            window.__statsLayoutDebug = { openCount: 0, logs: [] };
+        }
+        window.__statsLayoutDebug.openCount += 1;
+        const modalEl = document.getElementById('stats-layout-modal');
+        const payload = {
+            ts: Date.now(),
+            source,
+            modalFound: !!modalEl,
+            modalHidden: modalEl ? modalEl.classList.contains('hidden') : null,
+            ...extra
+        };
+        window.__statsLayoutDebug.logs.push(payload);
+        if (window.__statsLayoutDebug.logs.length > 100) {
+            window.__statsLayoutDebug.logs.shift();
+        }
+        console.warn('[StatsLayoutDebug] open request', payload);
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] debug emit failed', e);
+    }
+};
+
 const mergeLayout = (input = null) => ({
     ...structuredClone(STATS_LAYOUT_DEFAULTS),
     ...(input || {}),
@@ -86,7 +111,8 @@ export const primeStatsLayoutModalContent = () => {
     renderStatsLayoutEditor();
 };
 
-export const openStatsLayoutModal = () => {
+export const openStatsLayoutModal = (source = 'unknown') => {
+    emitStatsLayoutDebug(source);
     primeStatsLayoutModalContent();
     toggleModal('stats-layout-modal', true);
 };

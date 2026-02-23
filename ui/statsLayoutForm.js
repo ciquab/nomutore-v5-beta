@@ -4,6 +4,32 @@ import { StateManager } from './state.js';
 import { toggleModal, showMessage } from './dom.js';
 
 let draftLayout = structuredClone(STATS_LAYOUT_DEFAULTS);
+let activePresetKey = null;
+
+const emitStatsLayoutDebug = (source, extra = {}) => {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!window.__statsLayoutDebug) {
+            window.__statsLayoutDebug = { openCount: 0, logs: [] };
+        }
+        window.__statsLayoutDebug.openCount += 1;
+        const modalEl = document.getElementById('stats-layout-modal');
+        const payload = {
+            ts: Date.now(),
+            source,
+            modalFound: !!modalEl,
+            modalHidden: modalEl ? modalEl.classList.contains('hidden') : null,
+            ...extra
+        };
+        window.__statsLayoutDebug.logs.push(payload);
+        if (window.__statsLayoutDebug.logs.length > 100) {
+            window.__statsLayoutDebug.logs.shift();
+        }
+        console.warn('[StatsLayoutDebug] open request', payload);
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] debug emit failed', e);
+    }
+};
 
 const mergeLayout = (input = null) => ({
     ...structuredClone(STATS_LAYOUT_DEFAULTS),
@@ -37,6 +63,51 @@ const STATS_LAYOUT_ITEMS = {
         { key: 'calorieBalance', label: 'カロリーバランス推移' },
         { key: 'healthInsights', label: 'ヘルスインサイト' },
     ],
+};
+
+const PRESET_ACTIVE_CLASSES = ['bg-indigo-100', 'text-brand', 'ring-2', 'ring-indigo-300'];
+
+const parseJsonArraySafe = (raw) => {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] Failed to parse preset args', raw, e);
+        return [];
+    }
+};
+
+const layoutSignature = (layout) => {
+    const merged = mergeLayout(layout);
+    return JSON.stringify({
+        activity: STATS_LAYOUT_ITEMS.activity.reduce((acc, item) => {
+            acc[item.key] = merged?.activity?.[item.key] !== false;
+            return acc;
+        }, {}),
+        beer: STATS_LAYOUT_ITEMS.beer.reduce((acc, item) => {
+            acc[item.key] = merged?.beer?.[item.key] !== false;
+            return acc;
+        }, {}),
+    });
+};
+
+const detectActivePresetKey = (layout) => {
+    const current = layoutSignature(layout);
+    for (const [key, preset] of Object.entries(STATS_LAYOUT_PRESETS)) {
+        if (layoutSignature(preset) === current) return key;
+    }
+    return null;
+};
+
+const syncPresetButtonState = () => {
+    const buttons = document.querySelectorAll('button[data-action="statsLayout:applyPreset"]');
+    buttons.forEach((btn) => {
+        const key = parseJsonArraySafe(btn.dataset.args)?.[0];
+        const isActive = !!activePresetKey && key === activePresetKey;
+        PRESET_ACTIVE_CLASSES.forEach((cls) => btn.classList.toggle(cls, isActive));
+        btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
 };
 
 const ensureBeerLayoutHasOneEnabled = (layout) => {
@@ -79,22 +150,109 @@ const renderStatsLayoutEditor = () => {
             ${renderStatsLayoutSection('beer', 'Beer分析カード')}
         </div>
     `;
+
+    syncPresetButtonState();
 };
 
 export const primeStatsLayoutModalContent = () => {
     draftLayout = mergeLayout(StateManager.statsLayout);
+    activePresetKey = detectActivePresetKey(draftLayout);
     renderStatsLayoutEditor();
 };
 
-export const openStatsLayoutModal = () => {
+export const openStatsLayoutModal = (source = 'unknown') => {
+    emitStatsLayoutDebug(source, { phase: 'before-open' });
     primeStatsLayoutModalContent();
     toggleModal('stats-layout-modal', true);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
+        const modalStyle = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyle = contentEl ? getComputedStyle(contentEl) : null;
+
+        // フェイルセーフ: クリックは届いているのに表示されないケースを強制復旧
+        const shouldRescue = !!modalEl && (
+            modalEl.classList.contains('hidden') ||
+            modalStyle?.display === 'none' ||
+            (contentEl && contentStyle?.opacity === '0')
+        );
+
+        if (shouldRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+            if (contentEl) {
+                contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+                contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                contentEl.style.opacity = '1';
+                contentEl.style.transform = 'translateY(0) scale(1)';
+            }
+        }
+
+        const modalStyleAfter = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyleAfter = contentEl ? getComputedStyle(contentEl) : null;
+        emitStatsLayoutDebug(source, {
+            phase: 'after-open',
+            rescued: shouldRescue,
+            modalDisplay: modalStyleAfter?.display || null,
+            modalOpacity: modalStyleAfter?.opacity || null,
+            modalPointerEvents: modalStyleAfter?.pointerEvents || null,
+            contentOpacity: contentStyleAfter?.opacity || null,
+            contentTransform: contentStyleAfter?.transform || null,
+        });
+    }, 0);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
+        const contentOpacity = contentEl ? parseFloat(getComputedStyle(contentEl).opacity || '0') : 0;
+
+        const needsFinalRescue = !!modalEl && !!contentEl && contentOpacity < 0.1;
+        if (needsFinalRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+
+            contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+            contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+            contentEl.style.opacity = '1';
+            contentEl.style.transform = 'translateY(0) scale(1)';
+            contentEl.style.transition = 'none';
+        }
+
+        emitStatsLayoutDebug(source, {
+            phase: 'final-check',
+            needsFinalRescue,
+            contentOpacityAfterDelay: contentEl ? getComputedStyle(contentEl).opacity : null,
+            contentTransformAfterDelay: contentEl ? getComputedStyle(contentEl).transform : null,
+        });
+    }, 260);
 };
 
 export const applyStatsLayoutPreset = (presetKey) => {
     const preset = STATS_LAYOUT_PRESETS[presetKey];
     if (!preset) return;
     draftLayout = mergeLayout(preset);
+    activePresetKey = presetKey;
     renderStatsLayoutEditor();
 };
 
@@ -116,6 +274,9 @@ export const toggleStatsLayoutItem = (args, event) => {
             showMessage('Beer分析カードは最低1つ表示する必要があります', 'warning');
         }
     }
+
+    activePresetKey = detectActivePresetKey(draftLayout);
+    syncPresetButtonState();
 };
 
 export const saveStatsLayoutSettings = () => {

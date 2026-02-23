@@ -112,9 +112,24 @@ export const primeStatsLayoutModalContent = () => {
 };
 
 export const openStatsLayoutModal = (source = 'unknown') => {
-    emitStatsLayoutDebug(source);
+    emitStatsLayoutDebug(source, { phase: 'before-open' });
     primeStatsLayoutModalContent();
     toggleModal('stats-layout-modal', true);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const modalStyle = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyle = contentEl ? getComputedStyle(contentEl) : null;
+        emitStatsLayoutDebug(source, {
+            phase: 'after-open',
+            modalDisplay: modalStyle?.display || null,
+            modalOpacity: modalStyle?.opacity || null,
+            modalPointerEvents: modalStyle?.pointerEvents || null,
+            contentOpacity: contentStyle?.opacity || null,
+            contentTransform: contentStyle?.transform || null,
+        });
+    }, 0);
 };
 
 export const applyStatsLayoutPreset = (presetKey) => {

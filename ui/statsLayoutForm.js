@@ -5,6 +5,31 @@ import { toggleModal, showMessage } from './dom.js';
 
 let draftLayout = structuredClone(STATS_LAYOUT_DEFAULTS);
 
+const emitStatsLayoutDebug = (source, extra = {}) => {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!window.__statsLayoutDebug) {
+            window.__statsLayoutDebug = { openCount: 0, logs: [] };
+        }
+        window.__statsLayoutDebug.openCount += 1;
+        const modalEl = document.getElementById('stats-layout-modal');
+        const payload = {
+            ts: Date.now(),
+            source,
+            modalFound: !!modalEl,
+            modalHidden: modalEl ? modalEl.classList.contains('hidden') : null,
+            ...extra
+        };
+        window.__statsLayoutDebug.logs.push(payload);
+        if (window.__statsLayoutDebug.logs.length > 100) {
+            window.__statsLayoutDebug.logs.shift();
+        }
+        console.warn('[StatsLayoutDebug] open request', payload);
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] debug emit failed', e);
+    }
+};
+
 const mergeLayout = (input = null) => ({
     ...structuredClone(STATS_LAYOUT_DEFAULTS),
     ...(input || {}),
@@ -86,9 +111,92 @@ export const primeStatsLayoutModalContent = () => {
     renderStatsLayoutEditor();
 };
 
-export const openStatsLayoutModal = () => {
+export const openStatsLayoutModal = (source = 'unknown') => {
+    emitStatsLayoutDebug(source, { phase: 'before-open' });
     primeStatsLayoutModalContent();
     toggleModal('stats-layout-modal', true);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
+        const modalStyle = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyle = contentEl ? getComputedStyle(contentEl) : null;
+
+        // フェイルセーフ: クリックは届いているのに表示されないケースを強制復旧
+        const shouldRescue = !!modalEl && (
+            modalEl.classList.contains('hidden') ||
+            modalStyle?.display === 'none' ||
+            (contentEl && contentStyle?.opacity === '0')
+        );
+
+        if (shouldRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+            if (contentEl) {
+                contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+                contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                contentEl.style.opacity = '1';
+                contentEl.style.transform = 'translateY(0) scale(1)';
+            }
+        }
+
+        const modalStyleAfter = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyleAfter = contentEl ? getComputedStyle(contentEl) : null;
+        emitStatsLayoutDebug(source, {
+            phase: 'after-open',
+            rescued: shouldRescue,
+            modalDisplay: modalStyleAfter?.display || null,
+            modalOpacity: modalStyleAfter?.opacity || null,
+            modalPointerEvents: modalStyleAfter?.pointerEvents || null,
+            contentOpacity: contentStyleAfter?.opacity || null,
+            contentTransform: contentStyleAfter?.transform || null,
+        });
+    }, 0);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
+        const contentOpacity = contentEl ? parseFloat(getComputedStyle(contentEl).opacity || '0') : 0;
+
+        const needsFinalRescue = !!modalEl && !!contentEl && contentOpacity < 0.1;
+        if (needsFinalRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+
+            contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+            contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+            contentEl.style.opacity = '1';
+            contentEl.style.transform = 'translateY(0) scale(1)';
+            contentEl.style.transition = 'none';
+        }
+
+        emitStatsLayoutDebug(source, {
+            phase: 'final-check',
+            needsFinalRescue,
+            contentOpacityAfterDelay: contentEl ? getComputedStyle(contentEl).opacity : null,
+            contentTransformAfterDelay: contentEl ? getComputedStyle(contentEl).transform : null,
+        });
+    }, 260);
 };
 
 export const applyStatsLayoutPreset = (presetKey) => {

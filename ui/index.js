@@ -54,7 +54,7 @@ import { renderCheckEditor, openCheckModal, getCheckFormData,
 import * as LogDetail from './logDetail.js';
 import { setupGlobalListeners } from './gestures.js';
 import { DataManager } from '../dataManager.js';
-import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings } from './statsLayoutForm.js';
+import { openStatsLayoutModal, applyStatsLayoutPreset, toggleStatsLayoutItem, saveStatsLayoutSettings, primeStatsLayoutModalContent } from './statsLayoutForm.js';
 
 import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 
@@ -274,9 +274,24 @@ const _executeRefreshUI = async (forcedTabId = null) => {
                 _lastStatsRenderKey = statsKey;
 
                 if (statsMode === 'activity') {
-                    renderHeatmap(checks, allLogs, Store.getProfile());
-                    renderChart(allLogs, checks);
                     const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+
+                    const calendarSection = document.getElementById('activity-calendar-section');
+                    if (calendarSection) {
+                        calendarSection.classList.toggle('hidden', layout?.activity?.activityCalendar === false);
+                    }
+                    if (layout?.activity?.activityCalendar !== false) {
+                        renderHeatmap(checks, allLogs, Store.getProfile());
+                    }
+
+                    const calorieSection = document.getElementById('activity-calorie-balance-section');
+                    if (calorieSection) {
+                        calorieSection.classList.toggle('hidden', layout?.activity?.calorieBalance === false);
+                    }
+                    if (layout?.activity?.calorieBalance !== false) {
+                        renderChart(allLogs, checks);
+                    }
+
                     if (layout?.activity?.healthInsights !== false) {
                         renderHealthInsights(allLogs, checks);
                     } else {
@@ -353,6 +368,7 @@ export const UI = {
 
         resetRenderCaches();
         DOM.init();
+        primeStatsLayoutModalContent();
 
         // ───── EventBus リスナー登録（単方向データフロー: Data層 → UI層） ─────
         setupEventBusListeners();
@@ -372,6 +388,11 @@ export const UI = {
             if(el) el.addEventListener(event, fn);
 
         };
+        bind('btn-stats-layout', 'click', (e) => {
+            e.preventDefault();
+            openStatsLayoutModal();
+        });
+
 
         // 🍺 ビール保存
         document.addEventListener('save-beer', async (e) => {
@@ -1142,8 +1163,10 @@ if (checkModal) {
         // 2. 保存しておいたデータを使ってグラフだけ再描画
         const { allLogs, checks } = UI._statsData;
         if (allLogs && checks) {
-            renderChart(allLogs, checks);
             const layout = StateManager.statsLayout || APP.DEFAULTS.STATS_LAYOUT;
+            if (layout?.activity?.calorieBalance !== false) {
+                renderChart(allLogs, checks);
+            }
             if (layout?.activity?.healthInsights !== false) {
                 renderHealthInsights(allLogs, checks);
             } else {

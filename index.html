@@ -951,17 +951,15 @@
                     </div>
                     <div id="preset-abv-container" class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase flex items-center gap-1">
-                                ABV (%) <span class="lowercase font-normal opacity-60">(Override)</span>
-                            </label>
+                            <label class="h-5 flex items-end text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase whitespace-nowrap">ABV (%) <span class="lowercase font-normal opacity-60 ml-1">override</span></label>
                             <div class="relative mt-1">
                                 <input type="number" id="preset-abv" step="0.1" placeholder="5.0" 
-                                    class="w-full h-10 bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold px-3 py-0">
-                                <span class="absolute right-4 top-2.5 text-gray-500 dark:text-gray-400 font-bold">%</span>
+                                    class="w-full h-10 bg-base-50 dark:bg-base-800 border-none rounded-xl text-sm font-bold px-3 py-0 leading-10">
+                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-bold">%</span>
                             </div>
                         </div>
                         <div>
-                            <label for="beer-count" class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">本数</label>
+                            <label for="beer-count" class="h-5 flex items-end text-[11px] font-semibold text-gray-500 dark:text-gray-400 uppercase">本数</label>
                             <div class="flex items-center gap-2 mt-1">
                                 <button id="btn-beer-minus" class="w-10 h-10 rounded-xl bg-base-100 dark:bg-base-800 font-bold">-</button>
                                 <input type="number" id="beer-count" value="1" class="w-full h-10 text-center bg-transparent font-bold text-lg" readonly>

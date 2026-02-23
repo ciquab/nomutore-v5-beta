@@ -548,7 +548,7 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.remove('scale-100', 'opacity-100', 'translate-y-0');
             content.classList.add('scale-95', 'opacity-0');
 
-            if (modalId === 'stats-layout-modal') {
+            if (modalId === 'stats-layout-modal' || modalId === 'check-modal') {
                 el.style.zIndex = '';
                 el.style.opacity = '';
                 el.style.pointerEvents = '';

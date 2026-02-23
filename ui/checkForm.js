@@ -39,6 +39,34 @@ const METRIC_BADGE = {
 
 let libraryMetricFilter = 'all';
 
+const ensureCheckModalVisible = () => {
+    const modalEl = document.getElementById('check-modal');
+    if (!modalEl) return;
+
+    const contentEl = modalEl.querySelector('div[class*="transform"]');
+    const modalStyle = getComputedStyle(modalEl);
+    const contentStyle = contentEl ? getComputedStyle(contentEl) : null;
+
+    const shouldRescue = modalEl.classList.contains('hidden')
+        || modalStyle.display === 'none'
+        || (contentEl && contentStyle?.opacity === '0');
+
+    if (!shouldRescue) return;
+
+    modalEl.classList.remove('hidden');
+    modalEl.classList.add('flex');
+    modalEl.style.zIndex = '2000';
+    modalEl.style.opacity = '1';
+    modalEl.style.pointerEvents = 'auto';
+
+    if (contentEl) {
+        contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+        contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+        contentEl.style.opacity = '1';
+        contentEl.style.transform = 'translateY(0) scale(1)';
+    }
+};
+
 /**
  * @param {string | undefined} metricType
  */
@@ -115,6 +143,11 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+
+    // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
+    toggleModal('check-modal', true);
+    ensureCheckModalVisible();
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
@@ -137,8 +170,9 @@ export const openCheckModal = async (dateStr = null) => {
     if (container) {
         container.innerHTML = '';
         const schema = getStoredSchema();
+        const safeSchema = Array.isArray(schema) ? schema : [];
 
-        schema.forEach(item => {
+        safeSchema.forEach(item => {
             const div = document.createElement('div');
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
@@ -289,7 +323,8 @@ export const openCheckModal = async (dateStr = null) => {
         console.error("Failed to fetch check data:", e); 
     }
 
-    toggleModal('check-modal', true);
+    // 念のため最終段でも可視状態を保証
+    ensureCheckModalVisible();
 };
 
 /* --- Check Library Logic (Phase 1.5 New) --- */

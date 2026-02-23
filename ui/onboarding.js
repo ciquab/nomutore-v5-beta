@@ -440,7 +440,22 @@ export const Onboarding = {
        Phase C: UI Tour (Driver.js)
        ========================================================================== */
     
+    stopTour: () => {
+        const activeTour = Onboarding._activeTour;
+        if (!activeTour) return;
+
+        try {
+            activeTour.destroy();
+        } catch (_) {
+            // ignore
+        }
+
+        Onboarding._activeTour = null;
+    },
+
     startTour: () => {
+        Onboarding.stopTour();
+
         const driverObj = driver({
             showProgress: true,
             animate: true,
@@ -504,8 +519,11 @@ export const Onboarding = {
             ]
         });
 
+        Onboarding._activeTour = driverObj;
         setTimeout(() => driverObj.drive(), 500);
-    }
+    },
+
+    _activeTour: null
 };
 
 /* ==========================================================================

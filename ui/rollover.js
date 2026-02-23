@@ -19,6 +19,8 @@ const archiveCompletedCustomPeriod = async () => {
 
 export const handleRollover = async (action) => {
     toggleModal('rollover-modal', false);
+    // 復元・ロールオーバー直後に誤って残る可能性があるため念のため閉じる
+    toggleModal('stats-layout-modal', false);
     try {
         if (action === 'weekly') {
             await archiveCompletedCustomPeriod();

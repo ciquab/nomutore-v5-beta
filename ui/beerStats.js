@@ -596,7 +596,8 @@ function renderSessionMetric(label, data, unit = '') {
                     <span class="text-gray-700 dark:text-gray-300 font-bold">P90</span>
                     <span class="text-base text-base-900 dark:text-white font-bold whitespace-nowrap justify-self-end text-right tabular-nums">${Math.round(data.p90)}${suffix}</span>
                 </div>
-            </div>\n            ` : ''}\n\n            ${!hasAnyBeerCardEnabled ? renderBeerLayoutEmptyState() : ''}\n        </div>
+            </div>
+        </div>
     `;
 }
 function calcAvgFlavorByLogs(logs) {

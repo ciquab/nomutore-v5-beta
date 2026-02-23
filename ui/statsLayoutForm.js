@@ -119,17 +119,84 @@ export const openStatsLayoutModal = (source = 'unknown') => {
     setTimeout(() => {
         const modalEl = document.getElementById('stats-layout-modal');
         const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
         const modalStyle = modalEl ? getComputedStyle(modalEl) : null;
         const contentStyle = contentEl ? getComputedStyle(contentEl) : null;
+
+        // フェイルセーフ: クリックは届いているのに表示されないケースを強制復旧
+        const shouldRescue = !!modalEl && (
+            modalEl.classList.contains('hidden') ||
+            modalStyle?.display === 'none' ||
+            (contentEl && contentStyle?.opacity === '0')
+        );
+
+        if (shouldRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+            if (contentEl) {
+                contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+                contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+                contentEl.style.opacity = '1';
+                contentEl.style.transform = 'translateY(0) scale(1)';
+            }
+        }
+
+        const modalStyleAfter = modalEl ? getComputedStyle(modalEl) : null;
+        const contentStyleAfter = contentEl ? getComputedStyle(contentEl) : null;
         emitStatsLayoutDebug(source, {
             phase: 'after-open',
-            modalDisplay: modalStyle?.display || null,
-            modalOpacity: modalStyle?.opacity || null,
-            modalPointerEvents: modalStyle?.pointerEvents || null,
-            contentOpacity: contentStyle?.opacity || null,
-            contentTransform: contentStyle?.transform || null,
+            rescued: shouldRescue,
+            modalDisplay: modalStyleAfter?.display || null,
+            modalOpacity: modalStyleAfter?.opacity || null,
+            modalPointerEvents: modalStyleAfter?.pointerEvents || null,
+            contentOpacity: contentStyleAfter?.opacity || null,
+            contentTransform: contentStyleAfter?.transform || null,
         });
     }, 0);
+
+    setTimeout(() => {
+        const modalEl = document.getElementById('stats-layout-modal');
+        const contentEl = modalEl?.querySelector('div[class*="transform"]');
+        const bgEl = modalEl?.querySelector('.modal-bg');
+        const contentOpacity = contentEl ? parseFloat(getComputedStyle(contentEl).opacity || '0') : 0;
+
+        const needsFinalRescue = !!modalEl && !!contentEl && contentOpacity < 0.1;
+        if (needsFinalRescue) {
+            modalEl.classList.remove('hidden');
+            modalEl.classList.add('flex');
+            modalEl.style.zIndex = '2000';
+            modalEl.style.opacity = '1';
+            modalEl.style.pointerEvents = 'auto';
+
+            if (bgEl) {
+                bgEl.classList.remove('opacity-0');
+                bgEl.classList.add('opacity-100');
+                bgEl.style.opacity = '1';
+            }
+
+            contentEl.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
+            contentEl.classList.add('scale-100', 'opacity-100', 'translate-y-0');
+            contentEl.style.opacity = '1';
+            contentEl.style.transform = 'translateY(0) scale(1)';
+            contentEl.style.transition = 'none';
+        }
+
+        emitStatsLayoutDebug(source, {
+            phase: 'final-check',
+            needsFinalRescue,
+            contentOpacityAfterDelay: contentEl ? getComputedStyle(contentEl).opacity : null,
+            contentTransformAfterDelay: contentEl ? getComputedStyle(contentEl).transform : null,
+        });
+    }, 260);
 };
 
 export const applyStatsLayoutPreset = (presetKey) => {

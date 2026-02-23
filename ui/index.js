@@ -390,10 +390,12 @@ export const UI = {
         };
         bind('btn-stats-layout', 'click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             openStatsLayoutModal('ui-bind:btn-stats-layout');
         });
         bind('btn-settings-stats-layout', 'click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             openStatsLayoutModal('ui-bind:btn-settings-stats-layout');
         });
 

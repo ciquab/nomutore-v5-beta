@@ -455,6 +455,9 @@ const syncBackgroundScrollLock = () => {
 };
 
 export const toggleModal = (modalId, show = true) => {
+    if (modalId === 'stats-layout-modal') {
+        console.warn('[StatsLayoutDebug] toggleModal', { modalId, show, ts: Date.now() });
+    }
     // 優先的に最新のDOMを取得（キャッシュによるゾンビ現象を防ぐ）
     const el = document.getElementById(modalId) || DOM.elements[modalId];
     if (!el) return;

@@ -33,9 +33,13 @@ export const openBeerModal = (e, dateStr = null, log = null) => {
     }
 
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('beer-date'));
+    const timeInput = /** @type {HTMLInputElement} */ (document.getElementById('beer-time'));
     if (dateInput) {
         dateInput.value = targetDate;
         console.log(`[BeerForm] Target date set to: ${targetDate}`); 
+    }
+    if (timeInput) {
+        timeInput.value = log ? dayjs(log.timestamp).format('HH:mm') : '';
     }
 
     updateBeerSelectOptions();
@@ -153,27 +157,43 @@ export const getBeerFormData = (existingLog = null) => {
 
     const now = dayjs();
     const inputDate = dateVal ? dayjs(dateVal) : now;
+    const timeInput = /** @type {HTMLInputElement} */ (document.getElementById('beer-time'));
+    const timeVal = (timeInput?.value || '').trim();
+    const parsedHour = timeVal ? parseInt(timeVal.split(':')[0], 10) : NaN;
+    const parsedMinute = timeVal ? parseInt(timeVal.split(':')[1], 10) : NaN;
+    const hasExplicitTime = Number.isFinite(parsedHour) && Number.isFinite(parsedMinute);
+    const fallbackHour = 12;
+    const fallbackMinute = 0;
     let ts;
+    let timePrecision = hasExplicitTime ? 'exact' : 'date_only';
 
     if (existingLog) {
         const originalDate = dayjs(existingLog.timestamp);
-        const isSameDate = inputDate.format('YYYY-MM-DD') === originalDate.format('YYYY-MM-DD');
+        const originalHour = originalDate.hour();
+        const originalMinute = originalDate.minute();
+        const originalPrecision = existingLog.timePrecision || ((originalHour === 12 && originalMinute === 0) ? 'date_only' : 'exact');
+        const targetHour = hasExplicitTime ? parsedHour : originalHour;
+        const targetMinute = hasExplicitTime ? parsedMinute : originalMinute;
 
-        if (isSameDate) {
-            ts = existingLog.timestamp;
-        } else {
-            ts = inputDate
-                .hour(originalDate.hour())
-                .minute(originalDate.minute())
-                .second(originalDate.second())
-                .valueOf();
-        }
+        ts = inputDate
+            .hour(targetHour)
+            .minute(targetMinute)
+            .second(originalDate.second())
+            .millisecond(originalDate.millisecond())
+            .valueOf();
+
+        timePrecision = hasExplicitTime ? 'exact' : originalPrecision;
     } else {
         const vToday = getVirtualDate();
-        if (dateVal === vToday) {
+        if (hasExplicitTime) {
+            ts = inputDate.hour(parsedHour).minute(parsedMinute).second(0).millisecond(0).valueOf();
+            timePrecision = 'exact';
+        } else if (dateVal === vToday) {
             ts = Date.now();
+            timePrecision = 'exact';
         } else {
-            ts = inputDate.startOf('day').add(12, 'hour').valueOf();
+            ts = inputDate.startOf('day').add(fallbackHour, 'hour').add(fallbackMinute, 'minute').valueOf();
+            timePrecision = 'date_only';
         }
     }
     
@@ -245,6 +265,7 @@ export const getBeerFormData = (existingLog = null) => {
 
     return {
         timestamp: ts,
+        timePrecision,
         brewery, brand, rating, memo,
         style, size, count,
         isCustom,
@@ -373,6 +394,8 @@ export const resetBeerForm = (keepDate = false) => {
     if (!keepDate) {
         /** @type {HTMLInputElement} */(document.getElementById('beer-date')).value = getVirtualDate();
     }
+    const beerTimeInput = /** @type {HTMLInputElement} */ (document.getElementById('beer-time'));
+    if (beerTimeInput) beerTimeInput.value = '';
     
     const idField = /** @type {HTMLInputElement} */(document.getElementById('editing-log-id'));
     if(idField) idField.value = '';

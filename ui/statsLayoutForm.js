@@ -31,31 +31,6 @@ const emitStatsLayoutDebug = (source, extra = {}) => {
     }
 };
 
-const emitStatsLayoutDebug = (source, extra = {}) => {
-    try {
-        if (typeof window === 'undefined') return;
-        if (!window.__statsLayoutDebug) {
-            window.__statsLayoutDebug = { openCount: 0, logs: [] };
-        }
-        window.__statsLayoutDebug.openCount += 1;
-        const modalEl = document.getElementById('stats-layout-modal');
-        const payload = {
-            ts: Date.now(),
-            source,
-            modalFound: !!modalEl,
-            modalHidden: modalEl ? modalEl.classList.contains('hidden') : null,
-            ...extra
-        };
-        window.__statsLayoutDebug.logs.push(payload);
-        if (window.__statsLayoutDebug.logs.length > 100) {
-            window.__statsLayoutDebug.logs.shift();
-        }
-        console.warn('[StatsLayoutDebug] open request', payload);
-    } catch (e) {
-        console.warn('[StatsLayoutDebug] debug emit failed', e);
-    }
-};
-
 const mergeLayout = (input = null) => ({
     ...structuredClone(STATS_LAYOUT_DEFAULTS),
     ...(input || {}),
@@ -92,6 +67,17 @@ const STATS_LAYOUT_ITEMS = {
 
 const PRESET_ACTIVE_CLASSES = ['bg-indigo-100', 'text-brand', 'ring-2', 'ring-indigo-300'];
 
+const parseJsonArraySafe = (raw) => {
+    if (!raw) return [];
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        console.warn('[StatsLayoutDebug] Failed to parse preset args', raw, e);
+        return [];
+    }
+};
+
 const layoutSignature = (layout) => {
     const merged = mergeLayout(layout);
     return JSON.stringify({
@@ -117,7 +103,7 @@ const detectActivePresetKey = (layout) => {
 const syncPresetButtonState = () => {
     const buttons = document.querySelectorAll('button[data-action="statsLayout:applyPreset"]');
     buttons.forEach((btn) => {
-        const key = JSON.parse(btn.dataset.args || '[]')?.[0];
+        const key = parseJsonArraySafe(btn.dataset.args)?.[0];
         const isActive = !!activePresetKey && key === activePresetKey;
         PRESET_ACTIVE_CLASSES.forEach((cls) => btn.classList.toggle(cls, isActive));
         btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');

@@ -60,7 +60,10 @@ const registerActions = () => {
         },
         'modal:openBeer': () => UI.openBeerModal(),
         'modal:openExercise': () => UI.openManualInput(),
-        'modal:openCheck': () => UI.openCheckModal(),
+        'modal:openCheck': () => {
+            if (Onboarding && typeof Onboarding.stopTour === 'function') Onboarding.stopTour();
+            UI.openCheckModal();
+        },
         'modal:openSettings': () => toggleModal('settings-modal', true),
         'modal:openTimer': () => UI.openTimer(true),
         'modal:closeTimer': () => UI.closeTimer(),
@@ -187,6 +190,7 @@ const registerActions = () => {
             setTimeout(() => UI.openManualInput(UI.selectedDate), 200);
         },
         'dayAdd:openCheck': () => {
+            if (Onboarding && typeof Onboarding.stopTour === 'function') Onboarding.stopTour();
             toggleModal('day-add-selector', false);
             setTimeout(() => UI.openCheckModal(UI.selectedDate), 200);
         },

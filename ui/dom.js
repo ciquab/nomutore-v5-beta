@@ -344,6 +344,8 @@ export const DOM = {
 
     init: () => {
         if (DOM.isInitialized) return;
+
+        installModalDebugHelpers();
         
         const ids = [
             'message-box', 'drinking-section', 
@@ -456,6 +458,37 @@ const recordModalDebug = (stage, payload = {}) => {
     }
 
     console.warn('[ModalDebug]', entry);
+};
+
+
+const installModalDebugHelpers = () => {
+    if (window.__nomutoreModalDebugHelpersInstalled) return;
+    window.__nomutoreModalDebugHelpersInstalled = true;
+
+    window.enableModalDebug = () => {
+        try {
+            localStorage.setItem('nomutore_modal_debug', '1');
+        } catch (_) {}
+        window.__NOMUTORE_MODAL_DEBUG = true;
+        console.warn('[ModalDebug] enabled');
+    };
+
+    window.disableModalDebug = () => {
+        try {
+            localStorage.removeItem('nomutore_modal_debug');
+        } catch (_) {}
+        window.__NOMUTORE_MODAL_DEBUG = false;
+        console.warn('[ModalDebug] disabled');
+    };
+
+    window.dumpModalDebug = () => ({
+        modal: Array.isArray(window.__nomutoreModalDebugLog) ? [...window.__nomutoreModalDebugLog] : [],
+        check: Array.isArray(window.__checkModalDebugLog) ? [...window.__checkModalDebugLog] : []
+    });
+
+    if (isModalDebugEnabled()) {
+        console.warn('[ModalDebug] helpers installed. Use dumpModalDebug() to inspect logs.');
+    }
 };
 
 const syncBackgroundScrollLock = () => {

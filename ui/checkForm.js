@@ -189,6 +189,23 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+    const callId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    debugCheckModal('open:invoke', {
+        callId,
+        requestedDate: dateVal
+    });
+
+    // イベントループ停止の切り分け用プローブ
+    Promise.resolve().then(() => {
+        debugCheckModal('open:probe:microtask', { callId });
+    });
+    window.setTimeout(() => {
+        debugCheckModal('open:probe:timeout0', { callId });
+    }, 0);
+    requestAnimationFrame(() => {
+        debugCheckModal('open:probe:raf', { callId });
+    });
 
     // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
     toggleModal('check-modal', true);
@@ -206,6 +223,7 @@ export const openCheckModal = async (dateStr = null) => {
     const openStartedAt = performance.now();
     const pendingTimer = window.setTimeout(() => {
         debugCheckModal('open:pending', {
+            callId,
             requestedDate: dateVal,
             pendingMs: Math.round(performance.now() - openStartedAt)
         });
@@ -214,9 +232,6 @@ export const openCheckModal = async (dateStr = null) => {
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
-        
-        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
-        dateInput.setAttribute('data-action', 'check:changeDate');
         
         // 重複防止のため一度削除してから追加
         dateInput.removeEventListener('change', handleCheckDateChange);
@@ -234,6 +249,10 @@ export const openCheckModal = async (dateStr = null) => {
         const renderStartedAt = performance.now();
         container.innerHTML = '';
         const schema = getStoredSchema();
+        debugCheckModal('schema:loaded', {
+            callId,
+            rawCount: Array.isArray(schema) ? schema.length : null
+        });
         const safeSchema = sanitizeCheckSchemaForRender(schema);
 
         safeSchema.forEach(item => {
@@ -261,16 +280,14 @@ export const openCheckModal = async (dateStr = null) => {
         });
 
         debugCheckModal('schema:rendered', {
+            callId,
             count: safeSchema.length,
             durationMs: Math.round(performance.now() - renderStartedAt)
         });
     }
 
-        const isDryCheck = document.getElementById('check-is-dry');
+    const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        // ★修正: トグルも同様に、直接イベントを繋ぐ
-        isDryCheck.setAttribute('data-action', 'check:toggleDry');
-        
         isDryCheck.removeEventListener('change', handleDryDayToggle);
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }
@@ -321,7 +338,14 @@ export const openCheckModal = async (dateStr = null) => {
 
     try {
         // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽
-        const { check: anyRecord, hasBeer } = await Service.getCheckStatusForDate(d.valueOf());
+        // 取得がハングした場合でも UI が固まらないようにタイムアウト保険を入れる
+        const checkStatus = await Promise.race([
+            Service.getCheckStatusForDate(d.valueOf()),
+            new Promise((_, reject) => window.setTimeout(() => reject(new Error('check-status-timeout')), 4000))
+        ]);
+
+        // @ts-ignore Promise.race の型簡略化のため
+        const { check: anyRecord, hasBeer } = checkStatus;
 
         if (anyRecord) {
             setCheck('check-is-dry', !!anyRecord.isDryDay);
@@ -391,6 +415,7 @@ export const openCheckModal = async (dateStr = null) => {
         const modalStyle = checkModalEl ? window.getComputedStyle(checkModalEl) : null;
         const panelStyle = checkModalPanel ? window.getComputedStyle(checkModalPanel) : null;
         debugCheckModal('open:ready', {
+            callId,
             requestedDate: dateVal,
             hasRecord: !!anyRecord,
             hasBeer,
@@ -403,13 +428,19 @@ export const openCheckModal = async (dateStr = null) => {
 
     } catch (e) { 
         debugCheckModal('open:error', {
+            callId,
             requestedDate: dateVal,
             message: e instanceof Error ? e.message : String(e)
         });
+        if (e instanceof Error && e.message === 'check-status-timeout') {
+            // 画面操作不能に見える状態を避けるため、最低限開いたまま使える状態を維持
+            showMessage('デイリーチェックの読込が遅延しています。再度お試しください。', 'error');
+        }
         console.error("Failed to fetch check data:", e); 
     } finally {
         window.clearTimeout(pendingTimer);
         debugCheckModal('open:finally', {
+            callId,
             requestedDate: dateVal,
             elapsedMs: Math.round(performance.now() - openStartedAt)
         });

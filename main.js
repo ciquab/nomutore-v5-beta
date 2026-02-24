@@ -30,13 +30,33 @@ const stopOnboardingTourIfActive = () => {
 };
 
 const openCheckModalSafely = (date = null) => {
+    const hadActiveTour = !!Onboarding?._activeTour || !!Onboarding?._tourStartTimer;
+    console.warn('[CheckModalDebug]', {
+        stage: 'safe-open:before-stopTour',
+        hadActiveTour,
+        date
+    });
     stopOnboardingTourIfActive();
 
-    // Driver.js の destroy 直後に同一タスクでモーダルを開くと
-    // まれにオーバーレイ状態が競合するため、1フレーム遅延させる。
-    requestAnimationFrame(() => {
-        UI.openCheckModal(date);
+    const open = () => UI.openCheckModal(date);
+
+    // Driver.js の destroy 直後だけ待機し、通常は他モーダルと同じ即時オープンに揃える。
+    if (hadActiveTour) {
+        // Driver.js の destroy 後に overlay/style cleanup が完了するまで少し待つ
+        console.warn('[CheckModalDebug]', {
+            stage: 'safe-open:deferred',
+            delayMs: 180,
+            date
+        });
+        setTimeout(open, 180);
+        return;
+    }
+
+    console.warn('[CheckModalDebug]', {
+        stage: 'safe-open:immediate',
+        date
     });
+    open();
 };
 
 const registerActions = () => {
@@ -78,7 +98,11 @@ const registerActions = () => {
         },
         'modal:openBeer': () => { stopOnboardingTourIfActive(); UI.openBeerModal(); },
         'modal:openExercise': () => { stopOnboardingTourIfActive(); UI.openManualInput(); },
-        'modal:openCheck': () => {
+        'modal:openCheck': (event) => {
+            console.warn('[CheckModalDebug]', {
+                stage: 'action:modal:openCheck',
+                from: event?.target?.id || event?.target?.className || null
+            });
             openCheckModalSafely();
         },
         'modal:openSettings': () => { stopOnboardingTourIfActive(); toggleModal('settings-modal', true); },
@@ -621,10 +645,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
-
-
-
-
 
 
 

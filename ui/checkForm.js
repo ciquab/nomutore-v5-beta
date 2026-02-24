@@ -214,8 +214,6 @@ export const openCheckModal = async (dateStr = null) => {
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
-        dateInput.setAttribute('data-action-change', 'check:changeDate');
-        dateInput.removeAttribute('data-action');
         
         // 重複防止のため一度削除してから追加
         dateInput.removeEventListener('change', handleCheckDateChange);
@@ -265,11 +263,8 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }
 
-        const isDryCheck = document.getElementById('check-is-dry');
+    const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        isDryCheck.setAttribute('data-action-change', 'check:toggleDry');
-        isDryCheck.removeAttribute('data-action');
-        
         isDryCheck.removeEventListener('change', handleDryDayToggle);
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }

@@ -332,13 +332,14 @@ export const DOM = {
      */
     renderIcon: (iconDef, extraClasses = "") => {
         if (!iconDef) return "";
+        const normalizedIcon = typeof iconDef === 'string' ? iconDef : String(iconDef);
         
         // Phosphor Icon (ph-) かどうか判定
-        if (iconDef.includes('ph-')) {
-            return `<i class="${iconDef} ${extraClasses}"></i>`;
+        if (normalizedIcon.includes('ph-')) {
+            return `<i class="${normalizedIcon} ${extraClasses}"></i>`;
         } else {
             // 絵文字の場合はそのままspanで囲む（後方互換性）
-            return `<span class="${extraClasses} font-emoji">${iconDef}</span>`;
+            return `<span class="${extraClasses} font-emoji">${normalizedIcon}</span>`;
         }
     },
 
@@ -973,7 +974,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

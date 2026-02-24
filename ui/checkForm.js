@@ -189,6 +189,23 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+    const callId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    debugCheckModal('open:invoke', {
+        callId,
+        requestedDate: dateVal
+    });
+
+    // イベントループ停止の切り分け用プローブ
+    Promise.resolve().then(() => {
+        debugCheckModal('open:probe:microtask', { callId });
+    });
+    window.setTimeout(() => {
+        debugCheckModal('open:probe:timeout0', { callId });
+    }, 0);
+    requestAnimationFrame(() => {
+        debugCheckModal('open:probe:raf', { callId });
+    });
 
     // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
     toggleModal('check-modal', true);
@@ -206,6 +223,7 @@ export const openCheckModal = async (dateStr = null) => {
     const openStartedAt = performance.now();
     const pendingTimer = window.setTimeout(() => {
         debugCheckModal('open:pending', {
+            callId,
             requestedDate: dateVal,
             pendingMs: Math.round(performance.now() - openStartedAt)
         });
@@ -231,6 +249,10 @@ export const openCheckModal = async (dateStr = null) => {
         const renderStartedAt = performance.now();
         container.innerHTML = '';
         const schema = getStoredSchema();
+        debugCheckModal('schema:loaded', {
+            callId,
+            rawCount: Array.isArray(schema) ? schema.length : null
+        });
         const safeSchema = sanitizeCheckSchemaForRender(schema);
 
         safeSchema.forEach(item => {
@@ -258,6 +280,7 @@ export const openCheckModal = async (dateStr = null) => {
         });
 
         debugCheckModal('schema:rendered', {
+            callId,
             count: safeSchema.length,
             durationMs: Math.round(performance.now() - renderStartedAt)
         });
@@ -392,6 +415,7 @@ export const openCheckModal = async (dateStr = null) => {
         const modalStyle = checkModalEl ? window.getComputedStyle(checkModalEl) : null;
         const panelStyle = checkModalPanel ? window.getComputedStyle(checkModalPanel) : null;
         debugCheckModal('open:ready', {
+            callId,
             requestedDate: dateVal,
             hasRecord: !!anyRecord,
             hasBeer,
@@ -404,6 +428,7 @@ export const openCheckModal = async (dateStr = null) => {
 
     } catch (e) { 
         debugCheckModal('open:error', {
+            callId,
             requestedDate: dateVal,
             message: e instanceof Error ? e.message : String(e)
         });
@@ -415,6 +440,7 @@ export const openCheckModal = async (dateStr = null) => {
     } finally {
         window.clearTimeout(pendingTimer);
         debugCheckModal('open:finally', {
+            callId,
             requestedDate: dateVal,
             elapsedMs: Math.round(performance.now() - openStartedAt)
         });

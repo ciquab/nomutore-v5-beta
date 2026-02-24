@@ -22,6 +22,13 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
  * 【重要】DOMContentLoaded の中で actionRouter.init() を呼ぶ前に
  * すべてのアクションを登録しておく必要があります
  */
+
+const stopOnboardingTourIfActive = () => {
+    if (Onboarding && typeof Onboarding.stopTour === 'function') {
+        Onboarding.stopTour();
+    }
+};
+
 const registerActions = () => {
     actionRouter.registerBulk({
         // ========== UI系 ==========
@@ -48,6 +55,7 @@ const registerActions = () => {
 
         // ========== Modal系 ==========
         'modal:open': (modalId) => {
+            stopOnboardingTourIfActive();
             if (modalId === 'stats-layout-modal') {
                 UI.openStatsLayoutModal('action:modal:open');
                 return;
@@ -58,16 +66,19 @@ const registerActions = () => {
         'modal:toggle': (modalId) => {
             UI.toggleModal(modalId);
         },
-        'modal:openBeer': () => UI.openBeerModal(),
-        'modal:openExercise': () => UI.openManualInput(),
-        'modal:openCheck': () => UI.openCheckModal(),
-        'modal:openSettings': () => toggleModal('settings-modal', true),
-        'modal:openTimer': () => UI.openTimer(true),
+        'modal:openBeer': () => { stopOnboardingTourIfActive(); UI.openBeerModal(); },
+        'modal:openExercise': () => { stopOnboardingTourIfActive(); UI.openManualInput(); },
+        'modal:openCheck': () => {
+            stopOnboardingTourIfActive();
+            UI.openCheckModal();
+        },
+        'modal:openSettings': () => { stopOnboardingTourIfActive(); toggleModal('settings-modal', true); },
+        'modal:openTimer': () => { stopOnboardingTourIfActive(); UI.openTimer(true); },
         'modal:closeTimer': () => UI.closeTimer(),
-        'modal:openHelp': (section) => UI.openHelp(section),
-        'modal:openActionMenu': () => UI.openActionMenu(),
-        'modal:openCheckLibrary': () =>  UI.openCheckLibrary(),
-        'modal:openStatsLayout': () => UI.openStatsLayoutModal('action:modal:openStatsLayout'),
+        'modal:openHelp': (section) => { stopOnboardingTourIfActive(); UI.openHelp(section); },
+        'modal:openActionMenu': () => { stopOnboardingTourIfActive(); UI.openActionMenu(); },
+        'modal:openCheckLibrary': () =>  { stopOnboardingTourIfActive(); UI.openCheckLibrary(); },
+        'modal:openStatsLayout': () => { stopOnboardingTourIfActive(); UI.openStatsLayoutModal('action:modal:openStatsLayout'); },
         
         // ========== Data系 ==========
         'data:exportCSV': (type) => DataManager.exportCSV(type),
@@ -179,14 +190,17 @@ const registerActions = () => {
         
         // ========== Day Add Selector系 ==========
         'dayAdd:openBeer': () => {
+            stopOnboardingTourIfActive();
             toggleModal('day-add-selector', false);
             setTimeout(() => UI.openBeerModal(null, UI.selectedDate), 200);
         },
         'dayAdd:openExercise': () => {
+            stopOnboardingTourIfActive();
             toggleModal('day-add-selector', false);
             setTimeout(() => UI.openManualInput(UI.selectedDate), 200);
         },
         'dayAdd:openCheck': () => {
+            stopOnboardingTourIfActive();
             toggleModal('day-add-selector', false);
             setTimeout(() => UI.openCheckModal(UI.selectedDate), 200);
         },

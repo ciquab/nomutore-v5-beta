@@ -97,6 +97,12 @@ export const Service = {
             const stored = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
             if (!stored) return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
 
+            // 異常に大きなスキーマ文字列はUIフリーズを招くため安全側に倒す
+            if (stored.length > 200_000) {
+                console.warn('[Service] CHECK_SCHEMA payload is too large. Falling back to defaults.', { length: stored.length });
+                return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+            }
+
             const parsed = JSON.parse(stored);
             return Array.isArray(parsed) && parsed.length > 0
                 ? parsed

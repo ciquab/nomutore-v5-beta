@@ -76,25 +76,39 @@ const MAX_RENDER_CHECK_ITEMS = 80;
 const sanitizeCheckSchemaForRender = (rawSchema) => {
     if (!Array.isArray(rawSchema)) return [];
 
-    const normalized = rawSchema
-        .filter((item) => item && typeof item.id === 'string' && typeof item.label === 'string')
-        .map((item) => ({
-            ...item,
-            id: String(item.id).trim(),
-            label: String(item.label || '').slice(0, 40),
-            desc: typeof item.desc === 'string' ? item.desc.slice(0, 120) : '',
-            icon: typeof item.icon === 'string' ? item.icon : 'ph-duotone ph-check-circle'
-        }))
-        .filter((item) => item.id.length > 0 && item.label.length > 0);
+    /** @type {CheckSchemaItem[]} */
+    const normalized = [];
+    let truncated = false;
 
-    if (normalized.length > MAX_RENDER_CHECK_ITEMS) {
+    for (let i = 0; i < rawSchema.length; i++) {
+        if (normalized.length >= MAX_RENDER_CHECK_ITEMS) {
+            truncated = true;
+            break;
+        }
+
+        const item = rawSchema[i];
+        if (!item || typeof item.id !== 'string' || typeof item.label !== 'string') continue;
+
+        const id = String(item.id).trim();
+        const label = String(item.label || '').slice(0, 40);
+        if (!id || !label) continue;
+
+        normalized.push({
+            ...item,
+            id,
+            label,
+            desc: typeof item.desc === 'string' ? item.desc.slice(0, 120) : '',
+            icon: typeof item.icon === 'string' ? item.icon.slice(0, 80) : 'ph-duotone ph-check-circle'
+        });
+    }
+
+    if (truncated) {
         debugCheckModal('schema:truncated', {
-            originalCount: normalized.length,
             limitedTo: MAX_RENDER_CHECK_ITEMS
         });
     }
 
-    return normalized.slice(0, MAX_RENDER_CHECK_ITEMS);
+    return normalized;
 };
 
 

@@ -803,32 +803,14 @@ export const addNewCheckItem = () => {
  * @returns {CheckSchemaItem[]}
  */
 const getStoredSchema = () => {
-    try {
-        const raw = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
-        if (!raw) return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
-
-        // open:start 以降の停止対策: モーダル描画時は安全側でより厳しく制限
-        const MAX_MODAL_SCHEMA_PAYLOAD = 50_000;
-        if (raw.length > MAX_MODAL_SCHEMA_PAYLOAD) {
-            debugCheckModal('schema:payload-guard', {
-                rawLength: raw.length,
-                maxAllowed: MAX_MODAL_SCHEMA_PAYLOAD
-            });
-            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
-        }
-
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
-        }
-
-        return parsed;
-    } catch (e) {
-        debugCheckModal('schema:payload-parse-error', {
-            message: e instanceof Error ? e.message : String(e)
-        });
-        return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
-    }
+    // NOTE:
+    // `open:start` 直後で停止する事象が継続しているため、モーダル表示経路では
+    // localStorage由来の同期読み込み/パースを一旦使わず、既定スキーマで即時描画する。
+    // まず「モーダルが必ず開く」ことを優先し、復旧後に段階的に再導入する。
+    debugCheckModal('schema:forced-defaults', {
+        reason: 'avoid-sync-storage-stall-on-open'
+    });
+    return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
 };
 
 /**

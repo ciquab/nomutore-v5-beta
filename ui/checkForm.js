@@ -67,6 +67,37 @@ const debugCheckModal = (stage, payload = {}) => {
     console.warn('[CheckModalDebug]', entry);
 };
 
+const MAX_RENDER_CHECK_ITEMS = 80;
+
+/**
+ * @param {any[]} rawSchema
+ * @returns {CheckSchemaItem[]}
+ */
+const sanitizeCheckSchemaForRender = (rawSchema) => {
+    if (!Array.isArray(rawSchema)) return [];
+
+    const normalized = rawSchema
+        .filter((item) => item && typeof item.id === 'string' && typeof item.label === 'string')
+        .map((item) => ({
+            ...item,
+            id: String(item.id).trim(),
+            label: String(item.label || '').slice(0, 40),
+            desc: typeof item.desc === 'string' ? item.desc.slice(0, 120) : '',
+            icon: typeof item.icon === 'string' ? item.icon : 'ph-duotone ph-check-circle'
+        }))
+        .filter((item) => item.id.length > 0 && item.label.length > 0);
+
+    if (normalized.length > MAX_RENDER_CHECK_ITEMS) {
+        debugCheckModal('schema:truncated', {
+            originalCount: normalized.length,
+            limitedTo: MAX_RENDER_CHECK_ITEMS
+        });
+    }
+
+    return normalized.slice(0, MAX_RENDER_CHECK_ITEMS);
+};
+
+
 
 /**
  * @param {string | undefined} metricType
@@ -186,9 +217,10 @@ export const openCheckModal = async (dateStr = null) => {
     
     const container = document.getElementById('check-items-container');
     if (container) {
+        const renderStartedAt = performance.now();
         container.innerHTML = '';
         const schema = getStoredSchema();
-        const safeSchema = Array.isArray(schema) ? schema : [];
+        const safeSchema = sanitizeCheckSchemaForRender(schema);
 
         safeSchema.forEach(item => {
             const div = document.createElement('div');
@@ -212,6 +244,11 @@ export const openCheckModal = async (dateStr = null) => {
                 </label>
             `;
             container.appendChild(div);
+        });
+
+        debugCheckModal('schema:rendered', {
+            count: safeSchema.length,
+            durationMs: Math.round(performance.now() - renderStartedAt)
         });
     }
 

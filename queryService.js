@@ -8,6 +8,34 @@ import dayjs from 'https://cdn.jsdelivr.net/npm/dayjs@1.11.10/+esm';
 /**
  * チェックデータの重複を排除し、保存済みデータを優先する内部ヘルパー
  */
+
+const isModalDebugEnabled = () => {
+    try {
+        return localStorage.getItem('nomutore_modal_debug') === '1' || window.__NOMUTORE_MODAL_DEBUG === true;
+    } catch (_) {
+        return window.__NOMUTORE_MODAL_DEBUG === true;
+    }
+};
+
+const recordQueryDebug = (stage, payload = {}) => {
+    if (!isModalDebugEnabled()) return;
+    const entry = {
+        ts: new Date().toISOString(),
+        stage,
+        ...payload
+    };
+
+    if (!Array.isArray(window.__queryDebugLog)) {
+        window.__queryDebugLog = [];
+    }
+    window.__queryDebugLog.push(entry);
+    if (window.__queryDebugLog.length > 200) {
+        window.__queryDebugLog.splice(0, window.__queryDebugLog.length - 200);
+    }
+
+    console.warn('[QueryDebug]', entry);
+};
+
 const _deduplicateChecks = (rawChecks) => {
     return Object.values(rawChecks.reduce((acc, cur) => {
         const dateStr = dayjs(cur.timestamp).format('YYYY-MM-DD');
@@ -48,6 +76,9 @@ export const QueryService = {
      * アプリ全体のデータスナップショットを取得
      */
     getAppDataSnapshot: async () => {
+        const startedAt = performance.now();
+        recordQueryDebug('getAppDataSnapshot:start');
+
         const mode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || 'weekly';
         const startStr = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_START);
         const start = startStr ? parseInt(startStr) : 0;
@@ -67,6 +98,14 @@ export const QueryService = {
 
         Store.setCachedData(currentLogs, checks, targetLogs);
 
+        recordQueryDebug('getAppDataSnapshot:done', {
+            durationMs: Math.round(performance.now() - startedAt),
+            logsCount: currentLogs.length,
+            checksCount: checks.length,
+            targetLogsCount: targetLogs.length,
+            mode
+        });
+
         return {
             logs: targetLogs,
             allLogs: universalLogs,
@@ -85,6 +124,7 @@ export const QueryService = {
      * 指定した日付のチェック記録と飲酒状況を取得する
      */
     getCheckStatusForDate: async (dateVal) => {
+        const startedAt = performance.now();
         // dateVal は呼び出し元で既に仮想日付から生成された日付文字列のタイムスタンプ。
         // 再度 getVirtualDate を適用すると、深夜0時のタイムスタンプが前日と判定されてしまうため、
         // 日付文字列として直接使用する。
@@ -92,6 +132,11 @@ export const QueryService = {
         const v = dayjs(dateStr);
         const start = v.startOf('day').valueOf();
         const end = v.endOf('day').valueOf();
+
+        recordQueryDebug('getCheckStatusForDate:start', {
+            inputDateVal: dateVal,
+            dateStr
+        });
 
         const snapshot = await QueryService.getAppDataSnapshot();
 
@@ -104,6 +149,13 @@ export const QueryService = {
         const hasBeer = snapshot.allLogs.some(l =>
             getVirtualDate(l.timestamp) === dateStr && l.type === 'beer'
         );
+
+        recordQueryDebug('getCheckStatusForDate:done', {
+            dateStr,
+            hasCheck: !!check,
+            hasBeer,
+            durationMs: Math.round(performance.now() - startedAt)
+        });
 
         return { check, hasBeer };
     },

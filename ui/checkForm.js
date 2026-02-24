@@ -215,9 +215,6 @@ export const openCheckModal = async (dateStr = null) => {
     if(dateInput) {
         dateInput.value = dateVal;
         
-        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
-        dateInput.setAttribute('data-action', 'check:changeDate');
-        
         // 重複防止のため一度削除してから追加
         dateInput.removeEventListener('change', handleCheckDateChange);
         dateInput.addEventListener('change', handleCheckDateChange);
@@ -266,11 +263,8 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }
 
-        const isDryCheck = document.getElementById('check-is-dry');
+    const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        // ★修正: トグルも同様に、直接イベントを繋ぐ
-        isDryCheck.setAttribute('data-action', 'check:toggleDry');
-        
         isDryCheck.removeEventListener('change', handleDryDayToggle);
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }

@@ -122,6 +122,39 @@ const sanitizeCheckSchemaForRender = (rawSchema) => {
     return normalized;
 };
 
+/**
+ * スキーマ項目から1行分のHTMLを安全に生成する
+ * @param {CheckSchemaItem} item
+ */
+const buildCheckItemRow = (item) => {
+    const spec = getCheckItemSpec(item.id);
+    const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
+    let iconHtml = '';
+
+    try {
+        iconHtml = DOM.renderIcon(iconDef, 'text-xl text-indigo-500 dark:text-indigo-400');
+    } catch (e) {
+        debugCheckModal('schema:item-icon-error', {
+            id: item.id,
+            iconDef: typeof iconDef === 'string' ? iconDef : String(iconDef),
+            message: e instanceof Error ? e.message : String(e)
+        });
+        iconHtml = '<i class="ph-duotone ph-check-circle text-xl text-indigo-500 dark:text-indigo-400"></i>';
+    }
+
+    return `
+        <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
+            <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+            <div class="flex flex-col">
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    ${iconHtml} ${item.label}
+                </span>
+                ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
+            </div>
+        </label>
+    `;
+};
+
 
 
 /**
@@ -270,23 +303,28 @@ export const openCheckModal = async (dateStr = null) => {
             const div = document.createElement('div');
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
-            
-            // マスタデータからアイコン取得
-            const spec = getCheckItemSpec(item.id);
-            const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
-            const iconHtml = DOM.renderIcon(iconDef, 'text-xl text-indigo-500 dark:text-indigo-400');
 
-            div.innerHTML = `
-                <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
-                    <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
-                            ${iconHtml} ${item.label}
-                        </span>
-                        ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
-                    </div>
-                </label>
-            `;
+            try {
+                div.innerHTML = buildCheckItemRow(item);
+            } catch (e) {
+                debugCheckModal('schema:item-render-error', {
+                    callId,
+                    id: item.id,
+                    message: e instanceof Error ? e.message : String(e)
+                });
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-700">
+                        <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                                <i class="ph-duotone ph-check-circle text-xl text-indigo-500 dark:text-indigo-400"></i> ${item.label}
+                            </span>
+                            <span class="text-[11px] text-red-500">項目描画を簡易表示に切替</span>
+                        </div>
+                    </label>
+                `;
+            }
+
             container.appendChild(div);
         });
 

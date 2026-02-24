@@ -441,6 +441,11 @@ export const Onboarding = {
        ========================================================================== */
     
     stopTour: () => {
+        if (Onboarding._tourStartTimer) {
+            clearTimeout(Onboarding._tourStartTimer);
+            Onboarding._tourStartTimer = null;
+        }
+
         const activeTour = Onboarding._activeTour;
         if (!activeTour) return;
 
@@ -520,10 +525,15 @@ export const Onboarding = {
         });
 
         Onboarding._activeTour = driverObj;
-        setTimeout(() => driverObj.drive(), 500);
+        Onboarding._tourStartTimer = setTimeout(() => {
+            if (Onboarding._activeTour !== driverObj) return;
+            driverObj.drive();
+            Onboarding._tourStartTimer = null;
+        }, 500);
     },
 
-    _activeTour: null
+    _activeTour: null,
+    _tourStartTimer: null
 };
 
 /* ==========================================================================

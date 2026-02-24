@@ -474,7 +474,7 @@ export const toggleModal = (modalId, show = true) => {
 
     // 背景とコンテンツを特定
     const bg = el.querySelector('.modal-bg') || el.querySelector('[id$="-bg"]');
-    const content = el.querySelector('div[class*="transform"]');
+    const content = el.querySelector('div[class*="transform"]') || el.firstElementChild;
 
     if (show) {
         // 一部モーダルは環境差でtransition状態が残るケースがあるため強制可視化
@@ -511,15 +511,21 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
             content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
 
-            if (forceVisibility) {
-                el.style.zIndex = '2000';
-                el.style.opacity = '1';
-                el.style.pointerEvents = 'auto';
+            content.style.opacity = '';
+            content.style.transform = '';
+            content.style.transition = '';
+        }
+
+        if (forceVisibility) {
+            el.style.zIndex = '2000';
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+            if (content) {
                 content.style.opacity = '1';
                 content.style.transform = 'translateY(0) scale(1)';
                 content.style.transition = 'none';
-                if (bg) bg.style.opacity = '1';
             }
+            if (bg) bg.style.opacity = '1';
         }
 
         if (!_isHandlingModalPopState && typeof window !== 'undefined' && window.history?.pushState) {
@@ -849,7 +855,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

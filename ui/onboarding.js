@@ -447,15 +447,27 @@ export const Onboarding = {
         }
 
         const activeTour = Onboarding._activeTour;
-        if (!activeTour) return;
+        if (activeTour) {
+            try {
+                activeTour.destroy();
+            } catch (_) {
+                // ignore
+            }
 
-        try {
-            activeTour.destroy();
-        } catch (_) {
-            // ignore
+            Onboarding._activeTour = null;
         }
 
-        Onboarding._activeTour = null;
+        // Driver.js の残留DOM/状態を強制的に掃除
+        document.querySelectorAll('.driver-overlay, .driver-popover, .driver-highlighted-element, .driver-active-element').forEach(el => {
+            el.remove();
+        });
+
+        document.body.classList.remove('driver-active', 'driver-no-interaction');
+        document.documentElement.classList.remove('driver-active', 'driver-no-interaction');
+
+        // オーバーレイ解除漏れに備え、操作不能を回避
+        document.body.style.pointerEvents = '';
+        document.documentElement.style.pointerEvents = '';
     },
 
     startTour: () => {
@@ -729,6 +741,4 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-
-
 

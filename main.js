@@ -30,13 +30,19 @@ const stopOnboardingTourIfActive = () => {
 };
 
 const openCheckModalSafely = (date = null) => {
+    const hadActiveTour = !!Onboarding?._activeTour || !!Onboarding?._tourStartTimer;
     stopOnboardingTourIfActive();
 
-    // Driver.js の destroy 直後に同一タスクでモーダルを開くと
-    // まれにオーバーレイ状態が競合するため、1フレーム遅延させる。
-    requestAnimationFrame(() => {
-        UI.openCheckModal(date);
-    });
+    const open = () => UI.openCheckModal(date);
+
+    // Driver.js の destroy 直後だけ待機し、通常は他モーダルと同じ即時オープンに揃える。
+    if (hadActiveTour) {
+        // Driver.js の destroy 後に overlay/style cleanup が完了するまで少し待つ
+        setTimeout(open, 180);
+        return;
+    }
+
+    open();
 };
 
 const registerActions = () => {
@@ -621,8 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
-
-
 
 
 

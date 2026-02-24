@@ -215,9 +215,6 @@ export const openCheckModal = async (dateStr = null) => {
     if(dateInput) {
         dateInput.value = dateVal;
         
-        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
-        dateInput.setAttribute('data-action', 'check:changeDate');
-        
         // 重複防止のため一度削除してから追加
         dateInput.removeEventListener('change', handleCheckDateChange);
         dateInput.addEventListener('change', handleCheckDateChange);
@@ -266,11 +263,8 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }
 
-        const isDryCheck = document.getElementById('check-is-dry');
+    const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        // ★修正: トグルも同様に、直接イベントを繋ぐ
-        isDryCheck.setAttribute('data-action', 'check:toggleDry');
-        
         isDryCheck.removeEventListener('change', handleDryDayToggle);
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }
@@ -321,7 +315,14 @@ export const openCheckModal = async (dateStr = null) => {
 
     try {
         // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽
-        const { check: anyRecord, hasBeer } = await Service.getCheckStatusForDate(d.valueOf());
+        // 取得がハングした場合でも UI が固まらないようにタイムアウト保険を入れる
+        const checkStatus = await Promise.race([
+            Service.getCheckStatusForDate(d.valueOf()),
+            new Promise((_, reject) => window.setTimeout(() => reject(new Error('check-status-timeout')), 4000))
+        ]);
+
+        // @ts-ignore Promise.race の型簡略化のため
+        const { check: anyRecord, hasBeer } = checkStatus;
 
         if (anyRecord) {
             setCheck('check-is-dry', !!anyRecord.isDryDay);
@@ -406,6 +407,10 @@ export const openCheckModal = async (dateStr = null) => {
             requestedDate: dateVal,
             message: e instanceof Error ? e.message : String(e)
         });
+        if (e instanceof Error && e.message === 'check-status-timeout') {
+            // 画面操作不能に見える状態を避けるため、最低限開いたまま使える状態を維持
+            showMessage('デイリーチェックの読込が遅延しています。再度お試しください。', 'error');
+        }
         console.error("Failed to fetch check data:", e); 
     } finally {
         window.clearTimeout(pendingTimer);

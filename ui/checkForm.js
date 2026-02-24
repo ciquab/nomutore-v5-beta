@@ -39,6 +39,7 @@ const METRIC_BADGE = {
 
 let libraryMetricFilter = 'all';
 
+
 /**
  * @param {string | undefined} metricType
  */
@@ -115,6 +116,10 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+
+    // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
+    toggleModal('check-modal', true);
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
@@ -137,8 +142,9 @@ export const openCheckModal = async (dateStr = null) => {
     if (container) {
         container.innerHTML = '';
         const schema = getStoredSchema();
+        const safeSchema = Array.isArray(schema) ? schema : [];
 
-        schema.forEach(item => {
+        safeSchema.forEach(item => {
             const div = document.createElement('div');
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
@@ -289,7 +295,6 @@ export const openCheckModal = async (dateStr = null) => {
         console.error("Failed to fetch check data:", e); 
     }
 
-    toggleModal('check-modal', true);
 };
 
 /* --- Check Library Logic (Phase 1.5 New) --- */

@@ -68,6 +68,7 @@ const debugCheckModal = (stage, payload = {}) => {
 };
 
 const MAX_RENDER_CHECK_ITEMS = 80;
+const MAX_SCAN_CHECK_ITEMS = 300;
 
 /**
  * @param {any[]} rawSchema
@@ -80,7 +81,9 @@ const sanitizeCheckSchemaForRender = (rawSchema) => {
     const normalized = [];
     let truncated = false;
 
-    for (let i = 0; i < rawSchema.length; i++) {
+    const scanLimit = Math.min(rawSchema.length, MAX_SCAN_CHECK_ITEMS);
+
+    for (let i = 0; i < scanLimit; i++) {
         if (normalized.length >= MAX_RENDER_CHECK_ITEMS) {
             truncated = true;
             break;
@@ -108,7 +111,48 @@ const sanitizeCheckSchemaForRender = (rawSchema) => {
         });
     }
 
+    if (rawSchema.length > scanLimit) {
+        debugCheckModal('schema:scan-truncated', {
+            originalLength: rawSchema.length,
+            scanLimit: MAX_SCAN_CHECK_ITEMS,
+            kept: normalized.length
+        });
+    }
+
     return normalized;
+};
+
+/**
+ * スキーマ項目から1行分のHTMLを安全に生成する
+ * @param {CheckSchemaItem} item
+ */
+const buildCheckItemRow = (item) => {
+    const spec = getCheckItemSpec(item.id);
+    const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
+    let iconHtml = '';
+
+    try {
+        iconHtml = DOM.renderIcon(iconDef, 'text-xl text-indigo-500 dark:text-indigo-400');
+    } catch (e) {
+        debugCheckModal('schema:item-icon-error', {
+            id: item.id,
+            iconDef: typeof iconDef === 'string' ? iconDef : String(iconDef),
+            message: e instanceof Error ? e.message : String(e)
+        });
+        iconHtml = '<i class="ph-duotone ph-check-circle text-xl text-indigo-500 dark:text-indigo-400"></i>';
+    }
+
+    return `
+        <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
+            <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+            <div class="flex flex-col">
+                <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                    ${iconHtml} ${item.label}
+                </span>
+                ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
+            </div>
+        </label>
+    `;
 };
 
 
@@ -189,6 +233,23 @@ export const openCheckModal = async (dateStr = null) => {
     const targetDate = dateStr || getVirtualDate();
     const d = dayjs(targetDate);
     const dateVal = d.format('YYYY-MM-DD');
+    const callId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+    debugCheckModal('open:invoke', {
+        callId,
+        requestedDate: dateVal
+    });
+
+    // イベントループ停止の切り分け用プローブ
+    Promise.resolve().then(() => {
+        debugCheckModal('open:probe:microtask', { callId });
+    });
+    window.setTimeout(() => {
+        debugCheckModal('open:probe:timeout0', { callId });
+    }, 0);
+    requestAnimationFrame(() => {
+        debugCheckModal('open:probe:raf', { callId });
+    });
 
     // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
     toggleModal('check-modal', true);
@@ -206,22 +267,28 @@ export const openCheckModal = async (dateStr = null) => {
     const openStartedAt = performance.now();
     const pendingTimer = window.setTimeout(() => {
         debugCheckModal('open:pending', {
+            callId,
             requestedDate: dateVal,
             pendingMs: Math.round(performance.now() - openStartedAt)
         });
     }, 2500);
 
+    let wEl = /** @type {HTMLInputElement | null} */ (null);
+    let saveBtn = /** @type {HTMLElement | null} */ (null);
+    let isDryInput = /** @type {HTMLInputElement | null} */ (null);
+    let hint = /** @type {HTMLElement | null} */ (null);
+
+    try {
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
-        
-        // ★修正: data-actionは残しつつ、changeイベントを直接ハンドラに繋ぐ
-        dateInput.setAttribute('data-action', 'check:changeDate');
         
         // 重複防止のため一度削除してから追加
         dateInput.removeEventListener('change', handleCheckDateChange);
         dateInput.addEventListener('change', handleCheckDateChange);
     }
+    debugCheckModal('open:after-bind-date', { callId });
 
     // 日付表示バッジの更新
     const displayEl = document.getElementById('daily-check-date-display');
@@ -234,43 +301,57 @@ export const openCheckModal = async (dateStr = null) => {
         const renderStartedAt = performance.now();
         container.innerHTML = '';
         const schema = getStoredSchema();
+        debugCheckModal('schema:loaded', {
+            callId,
+            rawCount: Array.isArray(schema) ? schema.length : null
+        });
         const safeSchema = sanitizeCheckSchemaForRender(schema);
 
         safeSchema.forEach(item => {
             const div = document.createElement('div');
             const visibilityClass = item.drinking_only ? 'drinking-only' : '';
             if (visibilityClass) div.className = visibilityClass;
-            
-            // マスタデータからアイコン取得
-            const spec = getCheckItemSpec(item.id);
-            const iconDef = (spec && spec.icon) ? spec.icon : item.icon;
-            const iconHtml = DOM.renderIcon(iconDef, 'text-xl text-indigo-500 dark:text-indigo-400');
 
-            div.innerHTML = `
-                <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl cursor-pointer border border-transparent hover:border-indigo-200 dark:hover:border-indigo-700 transition h-full">
-                    <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
-                            ${iconHtml} ${item.label}
-                        </span>
-                        ${item.desc ? `<span class="text-[11px] text-gray-500 dark:text-gray-400">${item.desc}</span>` : ''}
-                    </div>
-                </label>
-            `;
+            try {
+                div.innerHTML = buildCheckItemRow(item);
+            } catch (e) {
+                debugCheckModal('schema:item-render-error', {
+                    callId,
+                    id: item.id,
+                    message: e instanceof Error ? e.message : String(e)
+                });
+                div.innerHTML = `
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-red-200 dark:border-red-700">
+                        <input type="checkbox" id="check-${item.id}" class="rounded text-brand focus:ring-indigo-500 w-5 h-5 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                                <i class="ph-duotone ph-check-circle text-xl text-indigo-500 dark:text-indigo-400"></i> ${item.label}
+                            </span>
+                            <span class="text-[11px] text-red-500">項目描画を簡易表示に切替</span>
+                        </div>
+                    </label>
+                `;
+            }
+
             container.appendChild(div);
         });
 
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        debugCheckModal('schema:yielded', {
+            callId,
+            count: safeSchema.length
+        });
+
         debugCheckModal('schema:rendered', {
+            callId,
             count: safeSchema.length,
             durationMs: Math.round(performance.now() - renderStartedAt)
         });
     }
+    debugCheckModal('open:after-schema', { callId });
 
-        const isDryCheck = document.getElementById('check-is-dry');
+    const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
-        // ★修正: トグルも同様に、直接イベントを繋ぐ
-        isDryCheck.setAttribute('data-action', 'check:toggleDry');
-        
         isDryCheck.removeEventListener('change', handleDryDayToggle);
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }
@@ -288,16 +369,16 @@ export const openCheckModal = async (dateStr = null) => {
     setCheck('check-is-dry', false);
     syncDryDayUI(false);
     
-    const wEl = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
+    wEl = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
     if(wEl) wEl.value = '';
 
-    const saveBtn = document.getElementById('btn-save-check');
+    saveBtn = document.getElementById('btn-save-check');
     if (saveBtn) saveBtn.textContent = '記録する';
 
-    const isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
+    isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
     const dryLabelText = dryLabelContainer ? dryLabelContainer.querySelector('span.font-bold') : null;
-    const hint = document.querySelector('#drinking-section p');
+    hint = /** @type {HTMLElement|null} */ (document.querySelector('#drinking-section p'));
 
     // ラベルを日本語化
     if (dryLabelText) dryLabelText.innerHTML = "休肝日";
@@ -318,10 +399,29 @@ export const openCheckModal = async (dateStr = null) => {
 
     // UI同期（初期状態として呼ぶ）
     syncDryDayUI(false);
+    debugCheckModal('open:after-reset', { callId });
+
+    } catch (e) {
+        window.clearTimeout(pendingTimer);
+        debugCheckModal('open:preload-error', {
+            callId,
+            requestedDate: dateVal,
+            message: e instanceof Error ? e.message : String(e)
+        });
+        console.error('Check modal preload failed:', e);
+        return;
+    }
 
     try {
         // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽
-        const { check: anyRecord, hasBeer } = await Service.getCheckStatusForDate(d.valueOf());
+        // 取得がハングした場合でも UI が固まらないようにタイムアウト保険を入れる
+        const checkStatus = await Promise.race([
+            Service.getCheckStatusForDate(d.valueOf()),
+            new Promise((_, reject) => window.setTimeout(() => reject(new Error('check-status-timeout')), 4000))
+        ]);
+
+        // @ts-ignore Promise.race の型簡略化のため
+        const { check: anyRecord, hasBeer } = checkStatus;
 
         if (anyRecord) {
             setCheck('check-is-dry', !!anyRecord.isDryDay);
@@ -391,6 +491,7 @@ export const openCheckModal = async (dateStr = null) => {
         const modalStyle = checkModalEl ? window.getComputedStyle(checkModalEl) : null;
         const panelStyle = checkModalPanel ? window.getComputedStyle(checkModalPanel) : null;
         debugCheckModal('open:ready', {
+            callId,
             requestedDate: dateVal,
             hasRecord: !!anyRecord,
             hasBeer,
@@ -403,13 +504,19 @@ export const openCheckModal = async (dateStr = null) => {
 
     } catch (e) { 
         debugCheckModal('open:error', {
+            callId,
             requestedDate: dateVal,
             message: e instanceof Error ? e.message : String(e)
         });
+        if (e instanceof Error && e.message === 'check-status-timeout') {
+            // 画面操作不能に見える状態を避けるため、最低限開いたまま使える状態を維持
+            showMessage('デイリーチェックの読込が遅延しています。再度お試しください。', 'error');
+        }
         console.error("Failed to fetch check data:", e); 
     } finally {
         window.clearTimeout(pendingTimer);
         debugCheckModal('open:finally', {
+            callId,
             requestedDate: dateVal,
             elapsedMs: Math.round(performance.now() - openStartedAt)
         });
@@ -695,7 +802,16 @@ export const addNewCheckItem = () => {
  * 保存されたスキーマを取得
  * @returns {CheckSchemaItem[]}
  */
-const getStoredSchema = () => Service.getCheckSchema();
+const getStoredSchema = () => {
+    // NOTE:
+    // `open:start` 直後で停止する事象が継続しているため、モーダル表示経路では
+    // localStorage由来の同期読み込み/パースを一旦使わず、既定スキーマで即時描画する。
+    // まず「モーダルが必ず開く」ことを優先し、復旧後に段階的に再導入する。
+    debugCheckModal('schema:forced-defaults', {
+        reason: 'avoid-sync-storage-stall-on-open'
+    });
+    return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+};
 
 /**
  * 休肝日UIの同期

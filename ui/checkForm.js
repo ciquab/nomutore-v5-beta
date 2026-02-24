@@ -8,7 +8,7 @@
  * @typedef {import('../types.js').CheckSchemaItem} CheckSchemaItem
  */
 
-import { CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
+import { APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
 import { Service } from '../service.js';       
 import { DOM, toggleModal, showMessage, Feedback } from './dom.js';
@@ -802,7 +802,34 @@ export const addNewCheckItem = () => {
  * 保存されたスキーマを取得
  * @returns {CheckSchemaItem[]}
  */
-const getStoredSchema = () => Service.getCheckSchema();
+const getStoredSchema = () => {
+    try {
+        const raw = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
+        if (!raw) return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+
+        // open:start 以降の停止対策: モーダル描画時は安全側でより厳しく制限
+        const MAX_MODAL_SCHEMA_PAYLOAD = 50_000;
+        if (raw.length > MAX_MODAL_SCHEMA_PAYLOAD) {
+            debugCheckModal('schema:payload-guard', {
+                rawLength: raw.length,
+                maxAllowed: MAX_MODAL_SCHEMA_PAYLOAD
+            });
+            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+        }
+
+        return parsed;
+    } catch (e) {
+        debugCheckModal('schema:payload-parse-error', {
+            message: e instanceof Error ? e.message : String(e)
+        });
+        return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+    }
+};
 
 /**
  * 休肝日UIの同期

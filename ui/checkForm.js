@@ -40,6 +40,79 @@ const METRIC_BADGE = {
 let libraryMetricFilter = 'all';
 
 
+const isCheckModalDebugEnabled = () => {
+    try {
+        return localStorage.getItem('nomutore_modal_debug') === '1' || window.__NOMUTORE_MODAL_DEBUG === true;
+    } catch (_) {
+        return window.__NOMUTORE_MODAL_DEBUG === true;
+    }
+};
+
+const debugCheckModal = (stage, payload = {}) => {
+    if (!isCheckModalDebugEnabled()) return;
+    const entry = {
+        ts: new Date().toISOString(),
+        stage,
+        ...payload
+    };
+
+    if (!Array.isArray(window.__checkModalDebugLog)) {
+        window.__checkModalDebugLog = [];
+    }
+    window.__checkModalDebugLog.push(entry);
+    if (window.__checkModalDebugLog.length > 200) {
+        window.__checkModalDebugLog.splice(0, window.__checkModalDebugLog.length - 200);
+    }
+
+    console.warn('[CheckModalDebug]', entry);
+};
+
+const MAX_RENDER_CHECK_ITEMS = 80;
+
+/**
+ * @param {any[]} rawSchema
+ * @returns {CheckSchemaItem[]}
+ */
+const sanitizeCheckSchemaForRender = (rawSchema) => {
+    if (!Array.isArray(rawSchema)) return [];
+
+    /** @type {CheckSchemaItem[]} */
+    const normalized = [];
+    let truncated = false;
+
+    for (let i = 0; i < rawSchema.length; i++) {
+        if (normalized.length >= MAX_RENDER_CHECK_ITEMS) {
+            truncated = true;
+            break;
+        }
+
+        const item = rawSchema[i];
+        if (!item || typeof item.id !== 'string' || typeof item.label !== 'string') continue;
+
+        const id = String(item.id).trim();
+        const label = String(item.label || '').slice(0, 40);
+        if (!id || !label) continue;
+
+        normalized.push({
+            ...item,
+            id,
+            label,
+            desc: typeof item.desc === 'string' ? item.desc.slice(0, 120) : '',
+            icon: typeof item.icon === 'string' ? item.icon.slice(0, 80) : 'ph-duotone ph-check-circle'
+        });
+    }
+
+    if (truncated) {
+        debugCheckModal('schema:truncated', {
+            limitedTo: MAX_RENDER_CHECK_ITEMS
+        });
+    }
+
+    return normalized;
+};
+
+
+
 /**
  * @param {string | undefined} metricType
  */
@@ -120,6 +193,24 @@ export const openCheckModal = async (dateStr = null) => {
     // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
     toggleModal('check-modal', true);
 
+    const checkModalEl = document.getElementById('check-modal');
+    const checkModalPanel = checkModalEl?.querySelector('[data-modal-content="true"]') || checkModalEl?.querySelector('div[class*="transform"]');
+    debugCheckModal('open:start', {
+        requestedDate: dateVal,
+        hasModalEl: !!checkModalEl,
+        hasModalPanel: !!checkModalPanel,
+        modalClass: checkModalEl?.className || null,
+        panelClass: checkModalPanel?.className || null
+    });
+
+    const openStartedAt = performance.now();
+    const pendingTimer = window.setTimeout(() => {
+        debugCheckModal('open:pending', {
+            requestedDate: dateVal,
+            pendingMs: Math.round(performance.now() - openStartedAt)
+        });
+    }, 2500);
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
@@ -140,9 +231,10 @@ export const openCheckModal = async (dateStr = null) => {
     
     const container = document.getElementById('check-items-container');
     if (container) {
+        const renderStartedAt = performance.now();
         container.innerHTML = '';
         const schema = getStoredSchema();
-        const safeSchema = Array.isArray(schema) ? schema : [];
+        const safeSchema = sanitizeCheckSchemaForRender(schema);
 
         safeSchema.forEach(item => {
             const div = document.createElement('div');
@@ -166,6 +258,11 @@ export const openCheckModal = async (dateStr = null) => {
                 </label>
             `;
             container.appendChild(div);
+        });
+
+        debugCheckModal('schema:rendered', {
+            count: safeSchema.length,
+            durationMs: Math.round(performance.now() - renderStartedAt)
         });
     }
 
@@ -291,8 +388,31 @@ export const openCheckModal = async (dateStr = null) => {
             }
         }
 
+        const modalStyle = checkModalEl ? window.getComputedStyle(checkModalEl) : null;
+        const panelStyle = checkModalPanel ? window.getComputedStyle(checkModalPanel) : null;
+        debugCheckModal('open:ready', {
+            requestedDate: dateVal,
+            hasRecord: !!anyRecord,
+            hasBeer,
+            modalDisplay: modalStyle?.display || null,
+            modalOpacity: modalStyle?.opacity || null,
+            panelOpacity: panelStyle?.opacity || null,
+            panelTransform: panelStyle?.transform || null
+        });
+
+
     } catch (e) { 
+        debugCheckModal('open:error', {
+            requestedDate: dateVal,
+            message: e instanceof Error ? e.message : String(e)
+        });
         console.error("Failed to fetch check data:", e); 
+    } finally {
+        window.clearTimeout(pendingTimer);
+        debugCheckModal('open:finally', {
+            requestedDate: dateVal,
+            elapsedMs: Math.round(performance.now() - openStartedAt)
+        });
     }
 
 };

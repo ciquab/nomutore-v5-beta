@@ -447,15 +447,15 @@ export const Onboarding = {
         }
 
         const activeTour = Onboarding._activeTour;
-        if (!activeTour) return;
+        if (activeTour) {
+            try {
+                activeTour.destroy();
+            } catch (_) {
+                // ignore
+            }
 
-        try {
-            activeTour.destroy();
-        } catch (_) {
-            // ignore
+            Onboarding._activeTour = null;
         }
-
-        Onboarding._activeTour = null;
 
         // Driver.js の残留DOM/状態を強制的に掃除
         document.querySelectorAll('.driver-overlay, .driver-popover, .driver-highlighted-element, .driver-active-element').forEach(el => {
@@ -741,5 +741,4 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-
 

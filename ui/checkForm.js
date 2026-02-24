@@ -8,7 +8,7 @@
  * @typedef {import('../types.js').CheckSchemaItem} CheckSchemaItem
  */
 
-import { CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
+import { APP, CHECK_LIBRARY, CHECK_PRESETS, CHECK_DEFAULT_IDS, getCheckItemSpec } from '../constants.js';
 import { getVirtualDate } from '../logic.js';
 import { Service } from '../service.js';       
 import { DOM, toggleModal, showMessage, Feedback } from './dom.js';

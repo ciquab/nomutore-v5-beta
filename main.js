@@ -37,7 +37,8 @@ const openCheckModalSafely = (date = null) => {
 
     // Driver.js の destroy 直後だけ待機し、通常は他モーダルと同じ即時オープンに揃える。
     if (hadActiveTour) {
-        setTimeout(open, 80);
+        // Driver.js の destroy 後に overlay/style cleanup が完了するまで少し待つ
+        setTimeout(open, 180);
         return;
     }
 
@@ -626,7 +627,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
-
 
 
 

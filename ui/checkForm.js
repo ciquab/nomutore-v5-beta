@@ -273,6 +273,13 @@ export const openCheckModal = async (dateStr = null) => {
         });
     }, 2500);
 
+    let wEl = /** @type {HTMLInputElement | null} */ (null);
+    let saveBtn = /** @type {HTMLElement | null} */ (null);
+    let isDryInput = /** @type {HTMLInputElement | null} */ (null);
+    let hint = /** @type {HTMLElement | null} */ (null);
+
+    try {
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
@@ -281,6 +288,7 @@ export const openCheckModal = async (dateStr = null) => {
         dateInput.removeEventListener('change', handleCheckDateChange);
         dateInput.addEventListener('change', handleCheckDateChange);
     }
+    debugCheckModal('open:after-bind-date', { callId });
 
     // 日付表示バッジの更新
     const displayEl = document.getElementById('daily-check-date-display');
@@ -340,6 +348,7 @@ export const openCheckModal = async (dateStr = null) => {
             durationMs: Math.round(performance.now() - renderStartedAt)
         });
     }
+    debugCheckModal('open:after-schema', { callId });
 
     const isDryCheck = document.getElementById('check-is-dry');
     if (isDryCheck) {
@@ -360,16 +369,16 @@ export const openCheckModal = async (dateStr = null) => {
     setCheck('check-is-dry', false);
     syncDryDayUI(false);
     
-    const wEl = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
+    wEl = /** @type {HTMLInputElement} */ (document.getElementById('check-weight'));
     if(wEl) wEl.value = '';
 
-    const saveBtn = document.getElementById('btn-save-check');
+    saveBtn = document.getElementById('btn-save-check');
     if (saveBtn) saveBtn.textContent = '記録する';
 
-    const isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
+    isDryInput = /** @type {HTMLInputElement} */ (document.getElementById('check-is-dry'));
     const dryLabelContainer = isDryInput ? isDryInput.closest('#drinking-section') : null;
     const dryLabelText = dryLabelContainer ? dryLabelContainer.querySelector('span.font-bold') : null;
-    const hint = document.querySelector('#drinking-section p');
+    hint = /** @type {HTMLElement|null} */ (document.querySelector('#drinking-section p'));
 
     // ラベルを日本語化
     if (dryLabelText) dryLabelText.innerHTML = "休肝日";
@@ -390,6 +399,18 @@ export const openCheckModal = async (dateStr = null) => {
 
     // UI同期（初期状態として呼ぶ）
     syncDryDayUI(false);
+    debugCheckModal('open:after-reset', { callId });
+
+    } catch (e) {
+        window.clearTimeout(pendingTimer);
+        debugCheckModal('open:preload-error', {
+            callId,
+            requestedDate: dateVal,
+            message: e instanceof Error ? e.message : String(e)
+        });
+        console.error('Check modal preload failed:', e);
+        return;
+    }
 
     try {
         // ✅ Service.getCheckStatusForDate を利用してロジックを隠蔽

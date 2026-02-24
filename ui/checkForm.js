@@ -803,14 +803,24 @@ export const addNewCheckItem = () => {
  * @returns {CheckSchemaItem[]}
  */
 const getStoredSchema = () => {
-    // NOTE:
-    // `open:start` 直後で停止する事象が継続しているため、モーダル表示経路では
-    // localStorage由来の同期読み込み/パースを一旦使わず、既定スキーマで即時描画する。
-    // まず「モーダルが必ず開く」ことを優先し、復旧後に段階的に再導入する。
-    debugCheckModal('schema:forced-defaults', {
-        reason: 'avoid-sync-storage-stall-on-open'
-    });
-    return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+    // 再導入: Service.getCheckSchema() を利用しつつ、モーダル側でも安全ガードを維持
+    try {
+        const schema = Service.getCheckSchema();
+        if (!Array.isArray(schema) || schema.length === 0) {
+            debugCheckModal('schema:service-empty-fallback', {});
+            return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+        }
+
+        debugCheckModal('schema:service-loaded', {
+            count: schema.length
+        });
+        return schema;
+    } catch (e) {
+        debugCheckModal('schema:service-error-fallback', {
+            message: e instanceof Error ? e.message : String(e)
+        });
+        return Service.resolveCheckSchemaItemsByIds(CHECK_DEFAULT_IDS);
+    }
 };
 
 /**

@@ -428,6 +428,36 @@ const RESILIENT_MODAL_IDS = new Set([
 let _isHandlingModalPopState = false;
 let _lockedScrollY = 0;
 
+
+const isModalDebugEnabled = () => {
+    try {
+        return localStorage.getItem('nomutore_modal_debug') === '1' || window.__NOMUTORE_MODAL_DEBUG === true;
+    } catch (_) {
+        return window.__NOMUTORE_MODAL_DEBUG === true;
+    }
+};
+
+const recordModalDebug = (stage, payload = {}) => {
+    if (!isModalDebugEnabled()) return;
+
+    const entry = {
+        ts: new Date().toISOString(),
+        stage,
+        ...payload
+    };
+
+    if (!Array.isArray(window.__nomutoreModalDebugLog)) {
+        window.__nomutoreModalDebugLog = [];
+    }
+
+    window.__nomutoreModalDebugLog.push(entry);
+    if (window.__nomutoreModalDebugLog.length > 200) {
+        window.__nomutoreModalDebugLog.splice(0, window.__nomutoreModalDebugLog.length - 200);
+    }
+
+    console.warn('[ModalDebug]', entry);
+};
+
 const syncBackgroundScrollLock = () => {
     const hasOpenModal = _openModalStack.length > 0;
     const body = document.body;
@@ -474,7 +504,32 @@ export const toggleModal = (modalId, show = true) => {
 
     // 背景とコンテンツを特定
     const bg = el.querySelector('.modal-bg') || el.querySelector('[id$="-bg"]');
-    const content = el.querySelector('div[class*="transform"]');
+
+    // data-modal-content を最優先し、なければ「背景以外の直接子」→従来セレクタの順に解決
+    const directChildren = Array.from(el.children).filter((child) => child instanceof HTMLElement);
+    const explicitContent = el.querySelector('[data-modal-content="true"]');
+    const firstNonBackdropChild = directChildren.find((child) => {
+        if (bg && child === bg) return false;
+        if (child.dataset.action === 'modal:close' && child.classList.contains('absolute') && child.classList.contains('inset-0')) return false;
+        return true;
+    });
+    const transformChild = directChildren.find((child) => {
+        if (bg && child === bg) return false;
+        return child.classList.contains('transform');
+    });
+    const content = explicitContent || transformChild || firstNonBackdropChild || el.querySelector('div[class*="transform"]');
+
+    recordModalDebug('resolve', {
+        modalId,
+        show,
+        hasEl: !!el,
+        hasBg: !!bg,
+        hasExplicitContent: !!explicitContent,
+        hasTransformChild: !!transformChild,
+        hasFirstNonBackdropChild: !!firstNonBackdropChild,
+        hasContent: !!content,
+        openStack: [..._openModalStack]
+    });
 
     if (show) {
         // 一部モーダルは環境差でtransition状態が残るケースがあるため強制可視化
@@ -511,15 +566,36 @@ export const toggleModal = (modalId, show = true) => {
             content.classList.remove('scale-95', 'opacity-0', 'translate-y-full', 'sm:translate-y-10');
             content.classList.add('scale-100', 'opacity-100', 'translate-y-0');
 
-            if (forceVisibility) {
-                el.style.zIndex = '2000';
-                el.style.opacity = '1';
-                el.style.pointerEvents = 'auto';
+            content.style.opacity = '';
+            content.style.transform = '';
+            content.style.transition = '';
+        }
+
+        if (forceVisibility) {
+            el.style.zIndex = '2000';
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+            if (content) {
                 content.style.opacity = '1';
                 content.style.transform = 'translateY(0) scale(1)';
                 content.style.transition = 'none';
-                if (bg) bg.style.opacity = '1';
             }
+            if (bg) bg.style.opacity = '1';
+        }
+
+        if (isModalDebugEnabled()) {
+            const modalStyle = window.getComputedStyle(el);
+            const contentStyle = content ? window.getComputedStyle(content) : null;
+            recordModalDebug('shown', {
+                modalId,
+                className: el.className,
+                modalDisplay: modalStyle.display,
+                modalOpacity: modalStyle.opacity,
+                contentClass: content ? content.className : null,
+                contentOpacity: contentStyle ? contentStyle.opacity : null,
+                contentTransform: contentStyle ? contentStyle.transform : null,
+                openStack: [..._openModalStack]
+            });
         }
 
         if (!_isHandlingModalPopState && typeof window !== 'undefined' && window.history?.pushState) {
@@ -532,6 +608,12 @@ export const toggleModal = (modalId, show = true) => {
 
     } else {
         // --- 閉じる処理 ---
+
+        recordModalDebug('hide:start', {
+            modalId,
+            openStack: [..._openModalStack],
+            className: el.className
+        });
 
         const topModalId = _openModalStack[_openModalStack.length - 1];
         const currentStateModalId = window.history?.state?.[MODAL_HISTORY_KEY] || null;
@@ -581,6 +663,12 @@ export const toggleModal = (modalId, show = true) => {
                 el.classList.add('hidden');
                 el.classList.remove('flex');
             }
+
+            recordModalDebug('hide:done', {
+                modalId,
+                className: el.className,
+                openStack: [..._openModalStack]
+            });
         }, 350);
     }
 };
@@ -849,8 +937,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
-
 
 
 

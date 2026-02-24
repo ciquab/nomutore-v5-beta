@@ -278,6 +278,15 @@ export const openCheckModal = async (dateStr = null) => {
     let isDryInput = /** @type {HTMLInputElement | null} */ (null);
     let hint = /** @type {HTMLElement | null} */ (null);
 
+    /**
+     * @param {string} id
+     * @param {boolean} val
+     */
+    const setCheck = (id, val) => {
+        const el = /** @type {HTMLInputElement} */ (document.getElementById(id));
+        if(el) el.checked = !!val;
+    };
+
     try {
 
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
@@ -356,15 +365,6 @@ export const openCheckModal = async (dateStr = null) => {
         isDryCheck.addEventListener('change', handleDryDayToggle);
     }
 
-    /**
-     * @param {string} id
-     * @param {boolean} val
-     */
-    const setCheck = (id, val) => {
-        const el = /** @type {HTMLInputElement} */ (document.getElementById(id));
-        if(el) el.checked = !!val;
-    };
-    
     // Reset to initial state
     setCheck('check-is-dry', false);
     syncDryDayUI(false);

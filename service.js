@@ -64,7 +64,22 @@ export const Service = {
         /** @type {any[]} */
         const resolved = [];
         const seen = new Set();
-        const currentSchema = Service.getCheckSchema();
+        /** @type {any[]} */
+        let currentSchema = [];
+
+        // NOTE:
+        // Service.getCheckSchema() をここで呼ぶと、
+        // getCheckSchema -> resolveCheckSchemaItemsByIds の相互呼び出しになり得るため
+        // localStorage から直接・安全に参照して再帰を回避する。
+        try {
+            const raw = localStorage.getItem(APP.STORAGE_KEYS.CHECK_SCHEMA);
+            if (raw && raw.length <= 200_000) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) currentSchema = parsed;
+            }
+        } catch (_) {
+            currentSchema = [];
+        }
 
         ids.forEach(id => {
             if (seen.has(id)) return;

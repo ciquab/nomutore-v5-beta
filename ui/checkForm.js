@@ -68,6 +68,7 @@ const debugCheckModal = (stage, payload = {}) => {
 };
 
 const MAX_RENDER_CHECK_ITEMS = 80;
+const MAX_SCAN_CHECK_ITEMS = 300;
 
 /**
  * @param {any[]} rawSchema
@@ -80,7 +81,9 @@ const sanitizeCheckSchemaForRender = (rawSchema) => {
     const normalized = [];
     let truncated = false;
 
-    for (let i = 0; i < rawSchema.length; i++) {
+    const scanLimit = Math.min(rawSchema.length, MAX_SCAN_CHECK_ITEMS);
+
+    for (let i = 0; i < scanLimit; i++) {
         if (normalized.length >= MAX_RENDER_CHECK_ITEMS) {
             truncated = true;
             break;
@@ -105,6 +108,14 @@ const sanitizeCheckSchemaForRender = (rawSchema) => {
     if (truncated) {
         debugCheckModal('schema:truncated', {
             limitedTo: MAX_RENDER_CHECK_ITEMS
+        });
+    }
+
+    if (rawSchema.length > scanLimit) {
+        debugCheckModal('schema:scan-truncated', {
+            originalLength: rawSchema.length,
+            scanLimit: MAX_SCAN_CHECK_ITEMS,
+            kept: normalized.length
         });
     }
 
@@ -277,6 +288,12 @@ export const openCheckModal = async (dateStr = null) => {
                 </label>
             `;
             container.appendChild(div);
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        debugCheckModal('schema:yielded', {
+            callId,
+            count: safeSchema.length
         });
 
         debugCheckModal('schema:rendered', {

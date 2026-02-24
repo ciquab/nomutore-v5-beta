@@ -464,10 +464,15 @@ export const Onboarding = {
         const driverObj = driver({
             showProgress: true,
             animate: true,
-            allowClose: false,
+            allowClose: true,
             doneBtnText: '完了',
             nextBtnText: '次へ',
             prevBtnText: '戻る',
+            onDestroyed: () => {
+                if (Onboarding._activeTour === driverObj) {
+                    Onboarding._activeTour = null;
+                }
+            },
             steps: [
                 {
                     element: '#beer-select-display', 
@@ -724,8 +729,6 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-
-
 
 
 

@@ -29,6 +29,16 @@ const stopOnboardingTourIfActive = () => {
     }
 };
 
+const openCheckModalSafely = (date = null) => {
+    stopOnboardingTourIfActive();
+
+    // Driver.js の destroy 直後に同一タスクでモーダルを開くと
+    // まれにオーバーレイ状態が競合するため、1フレーム遅延させる。
+    requestAnimationFrame(() => {
+        UI.openCheckModal(date);
+    });
+};
+
 const registerActions = () => {
     actionRouter.registerBulk({
         // ========== UI系 ==========
@@ -69,8 +79,7 @@ const registerActions = () => {
         'modal:openBeer': () => { stopOnboardingTourIfActive(); UI.openBeerModal(); },
         'modal:openExercise': () => { stopOnboardingTourIfActive(); UI.openManualInput(); },
         'modal:openCheck': () => {
-            stopOnboardingTourIfActive();
-            UI.openCheckModal();
+            openCheckModalSafely();
         },
         'modal:openSettings': () => { stopOnboardingTourIfActive(); toggleModal('settings-modal', true); },
         'modal:openTimer': () => { stopOnboardingTourIfActive(); UI.openTimer(true); },
@@ -200,9 +209,8 @@ const registerActions = () => {
             setTimeout(() => UI.openManualInput(UI.selectedDate), 200);
         },
         'dayAdd:openCheck': () => {
-            stopOnboardingTourIfActive();
             toggleModal('day-add-selector', false);
-            setTimeout(() => UI.openCheckModal(UI.selectedDate), 200);
+            setTimeout(() => openCheckModalSafely(UI.selectedDate), 200);
         },
 
         // ========== Beer系 ==========
@@ -613,9 +621,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initApp();
 });
-
-
-
 
 
 

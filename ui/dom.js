@@ -474,11 +474,20 @@ export const toggleModal = (modalId, show = true) => {
 
     // 背景とコンテンツを特定
     const bg = el.querySelector('.modal-bg') || el.querySelector('[id$="-bg"]');
-    const content = Array.from(el.children).find((child) => {
-        if (!(child instanceof HTMLElement)) return false;
+
+    // data-modal-content を最優先し、なければ「背景以外の直接子」→従来セレクタの順に解決
+    const directChildren = Array.from(el.children).filter((child) => child instanceof HTMLElement);
+    const explicitContent = el.querySelector('[data-modal-content="true"]');
+    const firstNonBackdropChild = directChildren.find((child) => {
+        if (bg && child === bg) return false;
+        if (child.dataset.action === 'modal:close' && child.classList.contains('absolute') && child.classList.contains('inset-0')) return false;
+        return true;
+    });
+    const transformChild = directChildren.find((child) => {
         if (bg && child === bg) return false;
         return child.classList.contains('transform');
-    }) || el.querySelector('div[class*="transform"]');
+    });
+    const content = explicitContent || transformChild || firstNonBackdropChild || el.querySelector('div[class*="transform"]');
 
     if (show) {
         // 一部モーダルは環境差でtransition状態が残るケースがあるため強制可視化

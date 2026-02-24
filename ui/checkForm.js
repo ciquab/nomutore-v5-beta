@@ -40,6 +40,34 @@ const METRIC_BADGE = {
 let libraryMetricFilter = 'all';
 
 
+const isCheckModalDebugEnabled = () => {
+    try {
+        return localStorage.getItem('nomutore_modal_debug') === '1' || window.__NOMUTORE_MODAL_DEBUG === true;
+    } catch (_) {
+        return window.__NOMUTORE_MODAL_DEBUG === true;
+    }
+};
+
+const debugCheckModal = (stage, payload = {}) => {
+    if (!isCheckModalDebugEnabled()) return;
+    const entry = {
+        ts: new Date().toISOString(),
+        stage,
+        ...payload
+    };
+
+    if (!Array.isArray(window.__checkModalDebugLog)) {
+        window.__checkModalDebugLog = [];
+    }
+    window.__checkModalDebugLog.push(entry);
+    if (window.__checkModalDebugLog.length > 200) {
+        window.__checkModalDebugLog.splice(0, window.__checkModalDebugLog.length - 200);
+    }
+
+    console.warn('[CheckModalDebug]', entry);
+};
+
+
 /**
  * @param {string | undefined} metricType
  */
@@ -119,6 +147,24 @@ export const openCheckModal = async (dateStr = null) => {
 
     // 先にモーダル自体を表示して、データ取得待ちで「開かない」状態を防ぐ
     toggleModal('check-modal', true);
+
+    const checkModalEl = document.getElementById('check-modal');
+    const checkModalPanel = checkModalEl?.querySelector('[data-modal-content="true"]') || checkModalEl?.querySelector('div[class*="transform"]');
+    debugCheckModal('open:start', {
+        requestedDate: dateVal,
+        hasModalEl: !!checkModalEl,
+        hasModalPanel: !!checkModalPanel,
+        modalClass: checkModalEl?.className || null,
+        panelClass: checkModalPanel?.className || null
+    });
+
+    const openStartedAt = performance.now();
+    const pendingTimer = window.setTimeout(() => {
+        debugCheckModal('open:pending', {
+            requestedDate: dateVal,
+            pendingMs: Math.round(performance.now() - openStartedAt)
+        });
+    }, 2500);
 
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
@@ -291,8 +337,31 @@ export const openCheckModal = async (dateStr = null) => {
             }
         }
 
+        const modalStyle = checkModalEl ? window.getComputedStyle(checkModalEl) : null;
+        const panelStyle = checkModalPanel ? window.getComputedStyle(checkModalPanel) : null;
+        debugCheckModal('open:ready', {
+            requestedDate: dateVal,
+            hasRecord: !!anyRecord,
+            hasBeer,
+            modalDisplay: modalStyle?.display || null,
+            modalOpacity: modalStyle?.opacity || null,
+            panelOpacity: panelStyle?.opacity || null,
+            panelTransform: panelStyle?.transform || null
+        });
+
+
     } catch (e) { 
+        debugCheckModal('open:error', {
+            requestedDate: dateVal,
+            message: e instanceof Error ? e.message : String(e)
+        });
         console.error("Failed to fetch check data:", e); 
+    } finally {
+        window.clearTimeout(pendingTimer);
+        debugCheckModal('open:finally', {
+            requestedDate: dateVal,
+            elapsedMs: Math.round(performance.now() - openStartedAt)
+        });
     }
 
 };

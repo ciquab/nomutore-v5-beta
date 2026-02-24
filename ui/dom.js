@@ -474,7 +474,11 @@ export const toggleModal = (modalId, show = true) => {
 
     // 背景とコンテンツを特定
     const bg = el.querySelector('.modal-bg') || el.querySelector('[id$="-bg"]');
-    const content = el.querySelector('div[class*="transform"]') || el.firstElementChild;
+    const content = Array.from(el.children).find((child) => {
+        if (!(child instanceof HTMLElement)) return false;
+        if (bg && child === bg) return false;
+        return child.classList.contains('transform');
+    }) || el.querySelector('div[class*="transform"]');
 
     if (show) {
         // 一部モーダルは環境差でtransition状態が残るケースがあるため強制可視化
@@ -855,7 +859,6 @@ export const showUpdateNotification = (waitingWorker) => {
         btn.disabled = true;
     });
 };
-
 
 
 

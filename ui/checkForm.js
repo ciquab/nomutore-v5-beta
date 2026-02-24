@@ -158,6 +158,14 @@ export const openCheckModal = async (dateStr = null) => {
         panelClass: checkModalPanel?.className || null
     });
 
+    const openStartedAt = performance.now();
+    const pendingTimer = window.setTimeout(() => {
+        debugCheckModal('open:pending', {
+            requestedDate: dateVal,
+            pendingMs: Math.round(performance.now() - openStartedAt)
+        });
+    }, 2500);
+
     const dateInput = /** @type {HTMLInputElement} */ (document.getElementById('check-date'));
     if(dateInput) {
         dateInput.value = dateVal;
@@ -348,6 +356,12 @@ export const openCheckModal = async (dateStr = null) => {
             message: e instanceof Error ? e.message : String(e)
         });
         console.error("Failed to fetch check data:", e); 
+    } finally {
+        window.clearTimeout(pendingTimer);
+        debugCheckModal('open:finally', {
+            requestedDate: dateVal,
+            elapsedMs: Math.round(performance.now() - openStartedAt)
+        });
     }
 
 };

@@ -483,7 +483,8 @@ const installModalDebugHelpers = () => {
 
     window.dumpModalDebug = () => ({
         modal: Array.isArray(window.__nomutoreModalDebugLog) ? [...window.__nomutoreModalDebugLog] : [],
-        check: Array.isArray(window.__checkModalDebugLog) ? [...window.__checkModalDebugLog] : []
+        check: Array.isArray(window.__checkModalDebugLog) ? [...window.__checkModalDebugLog] : [],
+        query: Array.isArray(window.__queryDebugLog) ? [...window.__queryDebugLog] : []
     });
 
     if (isModalDebugEnabled()) {

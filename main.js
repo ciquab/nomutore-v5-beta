@@ -97,7 +97,16 @@ const registerActions = () => {
             UI.toggleModal(modalId);
         },
         'modal:openBeer': () => { stopOnboardingTourIfActive(); UI.openBeerModal(); },
-        'modal:openExercise': () => { stopOnboardingTourIfActive(); UI.openManualInput(); },
+        'modal:openExercise': () => {
+            stopOnboardingTourIfActive();
+            if (localStorage.getItem('nomutore_profile_deferred') === 'true') {
+                UI.showMessage('運動記録の前に、プロフィール設定を完了してください。', 'info');
+                UI.switchTab('settings');
+                toggleModal('settings-modal', true);
+                return;
+            }
+            UI.openManualInput();
+        },
         'modal:openCheck': (event) => {
             console.warn('[CheckModalDebug]', {
                 stage: 'action:modal:openCheck',
@@ -196,7 +205,21 @@ const registerActions = () => {
         'onboarding:prevStep': () => Onboarding.prevStep(),
         'onboarding:finish': () => Onboarding.finishWizard(),
         'onboarding:goToWizard': () => Onboarding.goToWizard(),
-        'onboarding:start-new': () => Onboarding.startNew(),
+        'onboarding:start-new': (args) => Onboarding.startNew(args?.intent),
+        'onboarding:skipProfile': () => Onboarding.skipProfile(),
+        'onboarding:startDetailedTour': (args) => {
+            const scope = args?.scope || 'home';
+            const scopeToTab = {
+                home: 'home',
+                record: 'record',
+                stats: 'stats',
+                cellar: 'cellar',
+                settings: 'settings'
+            };
+            const tab = scopeToTab[scope] || 'home';
+            UI.switchTab(tab, { silent: true });
+            setTimeout(() => Onboarding.startDetailedTour(scope), 180);
+        },
         // ▼ 修正：Serviceの呼び出しをActionRouter側で行い、結果をOnboardingに伝える
         'onboarding:setPeriod': async (args) => {
             try {

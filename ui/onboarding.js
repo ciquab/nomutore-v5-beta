@@ -570,7 +570,14 @@ export const Onboarding = {
         localStorage.setItem(APP.STORAGE_KEYS.AGE, String(APP.DEFAULTS.AGE));
         localStorage.setItem(APP.STORAGE_KEYS.GENDER, APP.DEFAULTS.GENDER);
         localStorage.setItem('nomutore_profile_deferred', 'true');
-        Onboarding.nextStep();
+
+        // プロフィール未入力エラーのバリデーションは通さず、次ステップへ遷移
+        Feedback.haptic.light();
+        if (currentStepIndex < WIZARD_STEPS.length - 1) {
+            Onboarding.showWizard(currentStepIndex + 1);
+        } else {
+            Onboarding.finishWizard();
+        }
     },
 
     showWizard: (index) => {

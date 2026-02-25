@@ -8,6 +8,7 @@ import { DataManager } from '../dataManager.js';
 let currentStepIndex = 0;
 const FIRST_RECORD_INTENT_KEY = 'nomutore_first_record_intent';
 const MANDATORY_TOUR_RUNNING_KEY = 'nomutore_mandatory_tour_running';
+const POST_TOUR_GO_RECORD_KEY = 'nomutore_post_tour_go_record';
 
 
 const DETAILED_TOUR_STEPS = {
@@ -470,69 +471,20 @@ const WIZARD_STEPS = [
             const periodLabel = periodLabelMap[periodMode] || periodMode;
 
             return `
-                <div class="space-y-3 text-sm">
+                <div class="space-y-3 text-sm text-gray-900 dark:text-gray-100">
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
                         <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
-                        <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
-                        <p class="font-bold">計算基準: ${genderLabel}</p>
+                        <p class="font-bold text-gray-900 dark:text-gray-100">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold text-gray-900 dark:text-gray-100">計算基準: ${genderLabel}</p>
                     </div>
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
                         <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
-                        <p class="font-bold">メイン: ${mode1}</p>
-                        <p class="font-bold">サブ: ${mode2}</p>
+                        <p class="font-bold text-gray-900 dark:text-gray-100">メイン: ${mode1}</p>
+                        <p class="font-bold text-gray-900 dark:text-gray-100">サブ: ${mode2}</p>
                     </div>
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
                         <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
-                        <p class="font-bold">${periodLabel}</p>
-                    </div>
-                    <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
-                </div>
-            `;
-        },
-        validate: () => true
-    },
-
-    {
-        id: 'step-summary',
-        title: '設定内容の確認',
-        desc: 'この内容ではじめます。必要なら戻って修正できます。',
-        render: () => {
-            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
-            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
-            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
-            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
-            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
-            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
-            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
-            const genderLabelMap = {
-                male: '男性基準',
-                female: '女性基準',
-                other: 'その他'
-            };
-            const periodLabelMap = {
-                weekly: '週次リセット',
-                monthly: '月次リセット',
-                permanent: 'リセットなし（永久）',
-                custom: 'カスタム'
-            };
-            const genderLabel = genderLabelMap[gender] || 'その他';
-            const periodLabel = periodLabelMap[periodMode] || periodMode;
-
-            return `
-                <div class="space-y-3 text-sm">
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
-                        <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
-                        <p class="font-bold">計算基準: ${genderLabel}</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
-                        <p class="font-bold">メイン: ${mode1}</p>
-                        <p class="font-bold">サブ: ${mode2}</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
-                        <p class="font-bold">${periodLabel}</p>
+                        <p class="font-bold text-gray-900 dark:text-gray-100">${periodLabel}</p>
                     </div>
                     <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
                 </div>
@@ -634,22 +586,6 @@ export const Onboarding = {
 
     skipProfile: () => {
         applyDeferredProfileDefaults();
-
-        // プロフィール未入力エラーのバリデーションは通さず、次ステップへ遷移
-        Feedback.haptic.light();
-        if (currentStepIndex < WIZARD_STEPS.length - 1) {
-            Onboarding.showWizard(currentStepIndex + 1);
-        } else {
-            Onboarding.finishWizard();
-        }
-    },
-
-    skipProfile: () => {
-        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, String(APP.DEFAULTS.WEIGHT));
-        localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, String(APP.DEFAULTS.HEIGHT));
-        localStorage.setItem(APP.STORAGE_KEYS.AGE, String(APP.DEFAULTS.AGE));
-        localStorage.setItem(APP.STORAGE_KEYS.GENDER, APP.DEFAULTS.GENDER);
-        localStorage.setItem('nomutore_profile_deferred', 'true');
 
         // プロフィール未入力エラーのバリデーションは通さず、次ステップへ遷移
         Feedback.haptic.light();
@@ -766,10 +702,13 @@ export const Onboarding = {
         localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
         Onboarding.showAppUI();
 
-        // Phase 1: 完了後は Record タブへ誘導
-        const recordTabBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('nav-tab-record'));
-        if (recordTabBtn) {
-            setTimeout(() => recordTabBtn.click(), 80);
+        // mandatory tour 終了後に Record タブへ誘導する
+        localStorage.setItem(POST_TOUR_GO_RECORD_KEY, 'true');
+
+        // ツアー中のターゲット要素ずれを避けるため、開始時はHomeを表示
+        const homeTabBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('nav-tab-home'));
+        if (homeTabBtn) {
+            homeTabBtn.click();
         }
 
         Onboarding.startTour();
@@ -827,6 +766,15 @@ export const Onboarding = {
                     Onboarding._activeTour = null;
                 }
                 localStorage.removeItem(MANDATORY_TOUR_RUNNING_KEY);
+
+                if (localStorage.getItem(POST_TOUR_GO_RECORD_KEY) === 'true') {
+                    localStorage.removeItem(POST_TOUR_GO_RECORD_KEY);
+                    const recordTabBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('nav-tab-record'));
+                    if (recordTabBtn) {
+                        setTimeout(() => recordTabBtn.click(), 80);
+                    }
+                }
+
                 document.dispatchEvent(new CustomEvent('onboarding:mandatoryTourFinished'));
             },
             steps: MANDATORY_TOUR_STEPS

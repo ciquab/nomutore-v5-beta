@@ -88,10 +88,20 @@ const buildShareAction = async (kind, logData = null) => {
 
 
 
+const RECORD_GUIDE_SHOWN_KEY = 'nomutore_record_first_guide_shown_v1';
+const RECORD_GUIDE_PENDING_KEY = 'nomutore_record_first_guide_pending_v1';
+const MANDATORY_TOUR_RUNNING_KEY = 'nomutore_mandatory_tour_running';
+
 const showRecordGuideOnce = () => {
-    const key = 'nomutore_record_first_guide_shown_v1';
+    const key = RECORD_GUIDE_SHOWN_KEY;
     if (localStorage.getItem(key) === 'true') return;
 
+    if (localStorage.getItem(MANDATORY_TOUR_RUNNING_KEY) === 'true') {
+        localStorage.setItem(RECORD_GUIDE_PENDING_KEY, 'true');
+        return;
+    }
+
+    localStorage.removeItem(RECORD_GUIDE_PENDING_KEY);
     localStorage.setItem(key, 'true');
     showMessage('まずは「ビールを記録」または「運動を記録」から1件入力してみましょう。', 'info');
 };
@@ -1005,6 +1015,14 @@ if (checkModal) {
 
         // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
         setupGlobalListeners((tabId) => UI.switchTab(tabId));
+
+        // mandatory tour 完了後に、保留中のRecordガイドを1回だけ表示
+        document.addEventListener('onboarding:mandatoryTourFinished', () => {
+            if (localStorage.getItem(RECORD_GUIDE_PENDING_KEY) !== 'true') return;
+            if (!localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) return;
+            showRecordGuideOnce();
+        });
+
 
                 // --- ★追加: チェックライブラリの開閉を監視してSaveボタンを制御 ---
         const libModal = document.getElementById('check-library-modal');

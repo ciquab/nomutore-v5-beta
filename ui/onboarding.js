@@ -7,6 +7,7 @@ import { DataManager } from '../dataManager.js';
 
 let currentStepIndex = 0;
 const FIRST_RECORD_INTENT_KEY = 'nomutore_first_record_intent';
+const MANDATORY_TOUR_RUNNING_KEY = 'nomutore_mandatory_tour_running';
 
 
 const DETAILED_TOUR_STEPS = {
@@ -154,6 +155,15 @@ const MANDATORY_TOUR_STEPS = [
 /* ==========================================================================
    Phase A: Initial Setup (Wizard Steps)
    ========================================================================== */
+
+
+const applyDeferredProfileDefaults = () => {
+    localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, String(APP.DEFAULTS.WEIGHT));
+    localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, String(APP.DEFAULTS.HEIGHT));
+    localStorage.setItem(APP.STORAGE_KEYS.AGE, String(APP.DEFAULTS.AGE));
+    localStorage.setItem(APP.STORAGE_KEYS.GENDER, APP.DEFAULTS.GENDER);
+    localStorage.setItem('nomutore_profile_deferred', 'true');
+};
 
 const WIZARD_STEPS = [
     {
@@ -483,6 +493,55 @@ const WIZARD_STEPS = [
     },
 
     {
+        id: 'step-summary',
+        title: '設定内容の確認',
+        desc: 'この内容ではじめます。必要なら戻って修正できます。',
+        render: () => {
+            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
+            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
+            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
+            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
+            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+            const genderLabelMap = {
+                male: '男性基準',
+                female: '女性基準',
+                other: 'その他'
+            };
+            const periodLabelMap = {
+                weekly: '週次リセット',
+                monthly: '月次リセット',
+                permanent: 'リセットなし（永久）',
+                custom: 'カスタム'
+            };
+            const genderLabel = genderLabelMap[gender] || 'その他';
+            const periodLabel = periodLabelMap[periodMode] || periodMode;
+
+            return `
+                <div class="space-y-3 text-sm">
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
+                        <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold">計算基準: ${genderLabel}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
+                        <p class="font-bold">メイン: ${mode1}</p>
+                        <p class="font-bold">サブ: ${mode2}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
+                        <p class="font-bold">${periodLabel}</p>
+                    </div>
+                    <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
+                </div>
+            `;
+        },
+        validate: () => true
+    },
+
+    {
         id: 'step-start',
         title: 'Beer & Burn',
         desc: '',
@@ -560,8 +619,29 @@ export const Onboarding = {
             restoreOptions.classList.add('hidden');
         }
 
-        // 次のステップ（通常はプロフィール設定）へ進む
-        Onboarding.nextStep();
+        Feedback.haptic.light();
+
+        // ビール先行ならプロフィールを自動で後回しし、直接お気に入りビールへ進める
+        if (normalizedIntent === 'beer') {
+            applyDeferredProfileDefaults();
+            Onboarding.showWizard(2);
+            return;
+        }
+
+        // 運動先行はプロフィール入力が必須
+        Onboarding.showWizard(1);
+    },
+
+    skipProfile: () => {
+        applyDeferredProfileDefaults();
+
+        // プロフィール未入力エラーのバリデーションは通さず、次ステップへ遷移
+        Feedback.haptic.light();
+        if (currentStepIndex < WIZARD_STEPS.length - 1) {
+            Onboarding.showWizard(currentStepIndex + 1);
+        } else {
+            Onboarding.finishWizard();
+        }
     },
 
     skipProfile: () => {
@@ -727,10 +807,13 @@ export const Onboarding = {
         // オーバーレイ解除漏れに備え、操作不能を回避
         document.body.style.pointerEvents = '';
         document.documentElement.style.pointerEvents = '';
+
+        localStorage.removeItem(MANDATORY_TOUR_RUNNING_KEY);
     },
 
     startTour: () => {
         Onboarding.stopTour();
+        localStorage.setItem(MANDATORY_TOUR_RUNNING_KEY, 'true');
 
         const driverObj = driver({
             showProgress: true,
@@ -743,6 +826,8 @@ export const Onboarding = {
                 if (Onboarding._activeTour === driverObj) {
                     Onboarding._activeTour = null;
                 }
+                localStorage.removeItem(MANDATORY_TOUR_RUNNING_KEY);
+                document.dispatchEvent(new CustomEvent('onboarding:mandatoryTourFinished'));
             },
             steps: MANDATORY_TOUR_STEPS
         });

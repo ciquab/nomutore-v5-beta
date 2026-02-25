@@ -472,55 +472,6 @@ const WIZARD_STEPS = [
             const periodLabel = periodLabelMap[periodMode] || periodMode;
 
             return `
-                <div class="space-y-3 text-sm" style="color:#111827;">
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] mb-1" style="color:#4b5563;">プロフィール</p>
-                        <p class="font-bold" style="color:#111827;">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
-                        <p class="font-bold" style="color:#111827;">計算基準: ${genderLabel}</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] mb-1" style="color:#4b5563;">お気に入りビール</p>
-                        <p class="font-bold" style="color:#111827;">メイン: ${mode1}</p>
-                        <p class="font-bold" style="color:#111827;">サブ: ${mode2}</p>
-                    </div>
-                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] mb-1" style="color:#4b5563;">リセット周期</p>
-                        <p class="font-bold" style="color:#111827;">${periodLabel}</p>
-                    </div>
-                    <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
-                </div>
-            `;
-        },
-        validate: () => true
-    },
-
-    {
-        id: 'step-summary',
-        title: '設定内容の確認',
-        desc: 'この内容ではじめます。必要なら戻って修正できます。',
-        render: () => {
-            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
-            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
-            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
-            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
-            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
-            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
-            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
-            const genderLabelMap = {
-                male: '男性基準',
-                female: '女性基準',
-                other: 'その他'
-            };
-            const periodLabelMap = {
-                weekly: '週次リセット',
-                monthly: '月次リセット',
-                permanent: 'リセットなし（永久）',
-                custom: 'カスタム'
-            };
-            const genderLabel = genderLabelMap[gender] || 'その他';
-            const periodLabel = periodLabelMap[periodMode] || periodMode;
-
-            return `
                 <div class="space-y-3 text-sm text-gray-700 dark:text-gray-200">
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-base-800 border border-gray-100 dark:border-gray-700/70">
                         <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-1">プロフィール</p>
@@ -536,31 +487,14 @@ const WIZARD_STEPS = [
                         <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-1">リセット周期</p>
                         <p class="font-bold text-base-900 dark:text-white">${periodLabel}</p>
                     </div>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center">※修正する場合は「Back」で戻ってください。</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center">※修正する場合は「戻る」で前の項目に戻ってください。</p>
                 </div>
             `;
         },
         validate: () => true
     },
 
-    {
-        id: 'step-start',
-        title: 'Beer & Burn',
-        desc: '',
-        render: () => `
-            <div class="text-center space-y-6 py-4">
-                <div class="text-6xl animate-pulse">🍻</div>
-                <div>
-                    <h3 class="text-xl font-black text-base-900 dark:text-white mb-2">Ready to Drink?</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-                        飲んだ分だけ、動いて返す。<br>
-                        「実質ゼロ」を目指しましょう。
-                    </p>
-                </div>
-            </div>
-        `,
-        validate: () => true
-    }
+
 ];
 
 /* ==========================================================================
@@ -689,6 +623,8 @@ export const Onboarding = {
         // --- 2. ボタンの表示制御（ここに追加） ---
     
     // Backボタン：最初のステップなら隠す
+    btnPrev.textContent = '戻る';
+    btnPrev.className = "px-5 py-2.5 border-2 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-200 bg-white/90 dark:bg-base-800 rounded-xl font-bold text-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition active:scale-95";
     if (index === 0) btnPrev.classList.add('invisible');
     else btnPrev.classList.remove('invisible');
 

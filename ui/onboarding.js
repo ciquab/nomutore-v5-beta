@@ -242,12 +242,26 @@ const WIZARD_STEPS = [
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center gap-2 mt-2 opacity-60">
+                <label class="flex items-center justify-center gap-2 mt-2 p-2 rounded-xl bg-white/60 dark:bg-white/5 cursor-pointer border border-red-100 dark:border-red-900/30">
+                    <input type="checkbox" id="wiz-data-safety-ack" class="w-4 h-4 accent-emerald-500">
+                    <span class="text-[11px] font-bold">上記を理解しました（必須）</span>
+                </label>
+
+                <div class="flex items-center justify-center gap-2 opacity-60">
                     <i class="ph-bold ph-check-circle text-emerald-500" aria-hidden="true"></i>
-                    <span class="text-[11px] font-bold">上記を理解して次へ進む</span>
+                    <span class="text-[11px] font-bold">確認後に次へ進めます</span>
                 </div>
             </div>
-        `
+        `,
+        validate: () => {
+            const ack = /** @type {HTMLInputElement|null} */ (document.getElementById('wiz-data-safety-ack'));
+            if (!ack || !ack.checked) {
+                showMessage('データ保護の注意事項への同意が必要です', 'error');
+                return false;
+            }
+            localStorage.setItem('nomutore_data_safety_ack_completed', 'true');
+            return true;
+        }
     },
     {
         id: 'step-start',
@@ -433,6 +447,13 @@ export const Onboarding = {
     complete: () => {
         localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
         Onboarding.showAppUI();
+
+        // Phase 1: 完了後は Record タブへ誘導
+        const recordTabBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('nav-tab-record'));
+        if (recordTabBtn) {
+            setTimeout(() => recordTabBtn.click(), 80);
+        }
+
         Onboarding.startTour();
     },
 
@@ -489,54 +510,29 @@ export const Onboarding = {
                 {
                     element: '#beer-select-display', 
                     popover: {
-                        title: 'ビアスタイルの選択',
-                        description: 'タップでお気に入りビールを切り替えます。<br>選択中のビールのカロリーを基準に、借金の換算本数が再計算されます。',
+                        title: 'Home（収支の確認）',
+                        description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
                         side: 'bottom', 
                         align: 'center'
                     }
                 },
                 { 
-                    element: '.orb-container', 
-                    popover: { 
-                        title: 'カロリー収支',
-                        description: 'カロリー収支を表示します。<br>飲んで溜まった借金を、運動で返済しましょう。',
-                        side: 'bottom',
-                        align: 'center'
-                    } 
-                },
-                { 
                     element: '#nav-tab-record', 
                     popover: { 
-                        title: 'Recordタブ',
-                        description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
+                        title: 'Record（最初の1件を記録）',
+                        description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
                         side: 'top',
                         align: 'center'
                     } 
                 },
                 { 
-                    element: '#liver-rank-card', 
+                    element: '.orb-container', 
                     popover: { 
-                        title: 'Liver Rank', 
-                        description: 'あなたのランクです。<br>休肝日や完済（ビールのカロリーを運動で相殺すること）を継続すると、ランクが上がります。'
-                    } 
-                },
-                { 
-                    element: '#btn-fab-fixed', 
-                    popover: { 
-                        title: 'アクションメニュー',
-                        description: '前回登録したビールや運動は、ここからワンタップでもう一度記録できます。',
-                        side: 'top',
-                        align: 'center'
-                    } 
-                },
-                {
-                    element: '#btn-help', 
-                    popover: {
-                        title: 'ヘルプ',
-                        description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
+                        title: '反映結果（Homeオーブ）',
+                        description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
                         side: 'bottom',
-                        align: 'end'
-                    }
+                        align: 'center'
+                    } 
                 }
             ]
         });
@@ -741,4 +737,3 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-

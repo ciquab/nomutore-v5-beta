@@ -495,6 +495,55 @@ const WIZARD_STEPS = [
     },
 
     {
+        id: 'step-summary',
+        title: '設定内容の確認',
+        desc: 'この内容ではじめます。必要なら戻って修正できます。',
+        render: () => {
+            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
+            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
+            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
+            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
+            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+            const genderLabelMap = {
+                male: '男性基準',
+                female: '女性基準',
+                other: 'その他'
+            };
+            const periodLabelMap = {
+                weekly: '週次リセット',
+                monthly: '月次リセット',
+                permanent: 'リセットなし（永久）',
+                custom: 'カスタム'
+            };
+            const genderLabel = genderLabelMap[gender] || 'その他';
+            const periodLabel = periodLabelMap[periodMode] || periodMode;
+
+            return `
+                <div class="space-y-3 text-sm text-gray-700 dark:text-gray-200">
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-base-800 border border-gray-100 dark:border-gray-700/70">
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-1">プロフィール</p>
+                        <p class="font-bold text-base-900 dark:text-white">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold text-base-900 dark:text-white">計算基準: ${genderLabel}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-base-800 border border-gray-100 dark:border-gray-700/70">
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-1">お気に入りビール</p>
+                        <p class="font-bold text-base-900 dark:text-white">メイン: ${mode1}</p>
+                        <p class="font-bold text-base-900 dark:text-white">サブ: ${mode2}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-base-800 border border-gray-100 dark:border-gray-700/70">
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mb-1">リセット周期</p>
+                        <p class="font-bold text-base-900 dark:text-white">${periodLabel}</p>
+                    </div>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400 text-center">※修正する場合は「Back」で戻ってください。</p>
+                </div>
+            `;
+        },
+        validate: () => true
+    },
+
+    {
         id: 'step-start',
         title: 'Beer & Burn',
         desc: '',

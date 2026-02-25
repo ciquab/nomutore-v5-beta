@@ -7,6 +7,36 @@ import { DataManager } from '../dataManager.js';
 
 let currentStepIndex = 0;
 
+const MANDATORY_TOUR_STEPS = [
+    {
+        element: '#beer-select-display',
+        popover: {
+            title: 'Home（収支の確認）',
+            description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    },
+    {
+        element: '#nav-tab-record',
+        popover: {
+            title: 'Record（最初の1件を記録）',
+            description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
+            side: 'top',
+            align: 'center'
+        }
+    },
+    {
+        element: '.orb-container',
+        popover: {
+            title: '反映結果（Homeオーブ）',
+            description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    }
+];
+
 /* ==========================================================================
    Phase A: Initial Setup (Wizard Steps)
    ========================================================================== */
@@ -264,6 +294,47 @@ const WIZARD_STEPS = [
         }
     },
     {
+        id: 'step-summary',
+        title: '設定内容の確認',
+        desc: 'この内容ではじめます。必要なら戻って修正できます。',
+        render: () => {
+            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
+            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
+            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
+            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+            const periodLabelMap = {
+                weekly: '週次リセット',
+                monthly: '月次リセット',
+                permanent: 'リセットなし（永久）',
+                custom: 'カスタム'
+            };
+            const periodLabel = periodLabelMap[periodMode] || periodMode;
+
+            return `
+                <div class="space-y-3 text-sm">
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
+                        <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
+                        <p class="font-bold">メイン: ${mode1}</p>
+                        <p class="font-bold">サブ: ${mode2}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
+                        <p class="font-bold">${periodLabel}</p>
+                    </div>
+                    <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
+                </div>
+            `;
+        },
+        validate: () => true
+    },
+
+    {
         id: 'step-start',
         title: 'Beer & Burn',
         desc: '',
@@ -506,35 +577,7 @@ export const Onboarding = {
                     Onboarding._activeTour = null;
                 }
             },
-            steps: [
-                {
-                    element: '#beer-select-display', 
-                    popover: {
-                        title: 'Home（収支の確認）',
-                        description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
-                        side: 'bottom', 
-                        align: 'center'
-                    }
-                },
-                { 
-                    element: '#nav-tab-record', 
-                    popover: { 
-                        title: 'Record（最初の1件を記録）',
-                        description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
-                        side: 'top',
-                        align: 'center'
-                    } 
-                },
-                { 
-                    element: '.orb-container', 
-                    popover: { 
-                        title: '反映結果（Homeオーブ）',
-                        description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
-                        side: 'bottom',
-                        align: 'center'
-                    } 
-                }
-            ]
+            steps: MANDATORY_TOUR_STEPS
         });
 
         Onboarding._activeTour = driverObj;

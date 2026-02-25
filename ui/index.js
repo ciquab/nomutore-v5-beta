@@ -141,7 +141,9 @@ const FIRST_RECORD_SAVED_KEY = 'nomutore_first_record_saved_once';
 const HOME_DETAILED_TOUR_PROMPTED_KEY = 'nomutore_home_detailed_tour_prompted_once';
 
 const maybePromptHomeDetailedTour = async () => {
-    if (StateManager.activeTab !== 'home') return;
+    const activeTabEl = document.querySelector('.tab-content.active');
+    const activeTabId = activeTabEl?.id?.replace('tab-', '') || 'home';
+    if (activeTabId !== 'home') return;
     if (localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED) !== 'true') return;
     if (localStorage.getItem(FIRST_RECORD_SAVED_KEY) !== 'true') return;
     if (localStorage.getItem(HOME_DETAILED_TOUR_PROMPTED_KEY) === 'true') return;

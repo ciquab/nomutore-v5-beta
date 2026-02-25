@@ -38,6 +38,36 @@ const MANDATORY_TOUR_STEPS = [
     }
 ];
 
+const MANDATORY_TOUR_STEPS = [
+    {
+        element: '#beer-select-display',
+        popover: {
+            title: 'Home（収支の確認）',
+            description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    },
+    {
+        element: '#nav-tab-record',
+        popover: {
+            title: 'Record（最初の1件を記録）',
+            description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
+            side: 'top',
+            align: 'center'
+        }
+    },
+    {
+        element: '.orb-container',
+        popover: {
+            title: '反映結果（Homeオーブ）',
+            description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    }
+];
+
 /* ==========================================================================
    Phase A: Initial Setup (Wizard Steps)
    ========================================================================== */

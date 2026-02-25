@@ -142,7 +142,79 @@ const DETAILED_TOUR_STEPS = {
             element: '#tab-settings',
             popover: {
                 title: 'Settingsの使い方',
-                description: 'プロフィール、期間設定、バックアップなどをここで管理します。',
+                description: 'プロフィール、集計期間、テーマ、計算基準、通知、バックアップなどを一元管理します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#weight-input',
+            popover: {
+                title: 'プロフィール（体重・身長・年齢・性別）',
+                description: 'この4項目は運動消費カロリーや各種推定値の計算精度に影響します。入力後は必ず保存してください。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#setting-period-mode',
+            popover: {
+                title: '集計期間モード',
+                description: '週次・月次・通期・カスタム期間を切り替えられます。Stats / Home / アーカイブの見え方に反映されます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#custom-period-settings',
+            popover: {
+                title: 'カスタム期間',
+                description: '任意の開始日・終了日・ラベルで期間を固定できます。特定イベント期間だけを追跡したい時に便利です。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#theme-input',
+            popover: {
+                title: 'テーマ設定',
+                description: 'ライト / ダーク / システム連動を切り替えます。見やすい表示で継続しやすくなります。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#setting-mode-1',
+            popover: {
+                title: 'ビール換算基準（Mode1 / Mode2）',
+                description: 'Home表示で使う換算基準を2つ登録できます。ヘッダーの切替と連動し、表示の解釈を合わせられます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#setting-base-exercise',
+            popover: {
+                title: '運動プリセット',
+                description: '「ベース運動」と「Recordのデフォルト運動」を設定できます。日々の入力回数を減らして記録を高速化できます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#notif-daily-enabled',
+            popover: {
+                title: '通知設定（デイリー / 期日）',
+                description: 'デイリーリマインドと、期間終了前通知をON/OFFできます。必要に応じて通知時刻も調整できます。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-cloud-backup',
+            popover: {
+                title: 'バックアップ・復元',
+                description: 'クラウド保存やJSON入出力でデータ保護ができます。端末変更や障害時に備えて定期バックアップがおすすめです。',
                 side: 'top',
                 align: 'center'
             }
@@ -151,7 +223,7 @@ const DETAILED_TOUR_STEPS = {
             element: '#btn-save-settings',
             popover: {
                 title: '保存',
-                description: '設定変更後は保存ボタンで反映してください。',
+                description: '設定変更後はこの保存ボタンで反映します。保存しないと変更は適用されません。',
                 side: 'top',
                 align: 'center'
             }

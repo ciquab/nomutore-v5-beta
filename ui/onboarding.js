@@ -6,6 +6,37 @@ import { Feedback, showConfetti, showMessage, showAppShell } from './dom.js';
 import { DataManager } from '../dataManager.js';
 
 let currentStepIndex = 0;
+const FIRST_RECORD_INTENT_KEY = 'nomutore_first_record_intent';
+
+const MANDATORY_TOUR_STEPS = [
+    {
+        element: '#beer-select-display',
+        popover: {
+            title: 'Home（収支の確認）',
+            description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    },
+    {
+        element: '#nav-tab-record',
+        popover: {
+            title: 'Record（最初の1件を記録）',
+            description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
+            side: 'top',
+            align: 'center'
+        }
+    },
+    {
+        element: '.orb-container',
+        popover: {
+            title: '反映結果（Homeオーブ）',
+            description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    }
+];
 
 const MANDATORY_TOUR_STEPS = [
     {
@@ -48,18 +79,33 @@ const WIZARD_STEPS = [
         desc: '開始方法を選択してください。',
         render: () => `
             <div class="space-y-4">
-                <button data-action="onboarding:start-new" 
-                        class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-fill ph-sparkle" aria-hidden="true"></i>
+                <div class="grid grid-cols-1 gap-2">
+                    <button data-action="onboarding:start-new" data-intent="beer"
+                            class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl">
+                                <i class="ph-fill ph-beer-bottle" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <div class="font-black text-base-900 dark:text-white">ビールを先に記録したい</div>
+                                <div class="text-[11px] text-gray-500">プロフィールは後で設定できます</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="font-black text-base-900 dark:text-white">新規ではじめる</div>
-                            <div class="text-[11px] text-gray-500">新しく記録を開始します</div>
+                    </button>
+
+                    <button data-action="onboarding:start-new" data-intent="exercise"
+                            class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left group hover:border-indigo-300 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 text-brand rounded-full flex items-center justify-center text-xl">
+                                <i class="ph-fill ph-person-simple-run" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <div class="font-black text-base-900 dark:text-white">運動を先に記録したい</div>
+                                <div class="text-[11px] text-gray-500">先にプロフィール入力が必要です</div>
+                            </div>
                         </div>
-                    </div>
-                </button>
+                    </button>
+                </div>
 
                 <button id="btn-toggle-restore" 
                         class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left hover:border-indigo-300 transition-all">
@@ -83,6 +129,11 @@ const WIZARD_STEPS = [
                     </button>
                     <input type="file" id="wizard-import-file" class="hidden">
                 </div>
+                ${localStorage.getItem(FIRST_RECORD_INTENT_KEY) === 'beer' ? `
+                <button data-action="onboarding:skipProfile" class="w-full py-2 text-xs font-bold text-gray-500 hover:text-indigo-500 transition">
+                    後で設定する（ビール記録を先に開始）
+                </button>
+                ` : ''}
             </div>
         `,
         // このステップ自体にバリデーションは不要（ボタンクリックで遷移するため）
@@ -137,6 +188,7 @@ const WIZARD_STEPS = [
             localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, h);
             localStorage.setItem(APP.STORAGE_KEYS.AGE, a);
             localStorage.setItem(APP.STORAGE_KEYS.GENDER, document.getElementById('wiz-gender').value);
+            localStorage.removeItem('nomutore_profile_deferred');
             return true;
         }
     },
@@ -301,15 +353,22 @@ const WIZARD_STEPS = [
             const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
             const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
             const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
+            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
             const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
             const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
             const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+            const genderLabelMap = {
+                male: '男性基準',
+                female: '女性基準',
+                other: 'その他'
+            };
             const periodLabelMap = {
                 weekly: '週次リセット',
                 monthly: '月次リセット',
                 permanent: 'リセットなし（永久）',
                 custom: 'カスタム'
             };
+            const genderLabel = genderLabelMap[gender] || 'その他';
             const periodLabel = periodLabelMap[periodMode] || periodMode;
 
             return `
@@ -317,6 +376,7 @@ const WIZARD_STEPS = [
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
                         <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
                         <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold">計算基準: ${genderLabel}</p>
                     </div>
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
                         <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
@@ -402,7 +462,10 @@ export const Onboarding = {
     /**
      * 新規ユーザーとしてウィザードを進行させる
      */
-    startNew: () => {
+    startNew: (intent = 'beer') => {
+        const normalizedIntent = intent === 'exercise' ? 'exercise' : 'beer';
+        localStorage.setItem(FIRST_RECORD_INTENT_KEY, normalizedIntent);
+
         // 復元オプションが表示されている場合は隠す
         const restoreOptions = document.getElementById('restore-options');
         if (restoreOptions) {
@@ -410,6 +473,15 @@ export const Onboarding = {
         }
 
         // 次のステップ（通常はプロフィール設定）へ進む
+        Onboarding.nextStep();
+    },
+
+    skipProfile: () => {
+        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, String(APP.DEFAULTS.WEIGHT));
+        localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, String(APP.DEFAULTS.HEIGHT));
+        localStorage.setItem(APP.STORAGE_KEYS.AGE, String(APP.DEFAULTS.AGE));
+        localStorage.setItem(APP.STORAGE_KEYS.GENDER, APP.DEFAULTS.GENDER);
+        localStorage.setItem('nomutore_profile_deferred', 'true');
         Onboarding.nextStep();
     },
 

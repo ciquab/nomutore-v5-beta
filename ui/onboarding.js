@@ -8,35 +8,118 @@ import { DataManager } from '../dataManager.js';
 let currentStepIndex = 0;
 const FIRST_RECORD_INTENT_KEY = 'nomutore_first_record_intent';
 
-const MANDATORY_TOUR_STEPS = [
-    {
-        element: '#beer-select-display',
-        popover: {
-            title: 'Home（収支の確認）',
-            description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
-            side: 'bottom',
-            align: 'center'
+
+const DETAILED_TOUR_STEPS = {
+    home: [
+        {
+            element: '.orb-container',
+            popover: {
+                title: 'Homeの見方',
+                description: '中央のオーブで、飲酒カロリーと運動消費の収支を一目で確認できます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#liver-rank-card',
+            popover: {
+                title: 'LiverRank',
+                description: '記録の傾向から現在のコンディション目安を表示します。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#check-status',
+            popover: {
+                title: 'CheckStatus',
+                description: 'デイリーチェックの達成状況を確認できます。',
+                side: 'bottom',
+                align: 'center'
+            }
         }
-    },
-    {
-        element: '#nav-tab-record',
-        popover: {
-            title: 'Record（最初の1件を記録）',
-            description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
-            side: 'top',
-            align: 'center'
+    ],
+    record: [
+        {
+            element: '#record-manual-input',
+            popover: {
+                title: 'Recordの使い方',
+                description: 'ここからビール記録・運動記録・デイリーチェックを開始できます。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-beer',
+            popover: {
+                title: 'ビールを記録',
+                description: '飲んだ内容を記録します。必要に応じて詳細入力も可能です。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-exercise',
+            popover: {
+                title: '運動を記録',
+                description: '運動種目と時間を入力して、消費カロリーを反映します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-check',
+            popover: {
+                title: 'デイリーチェック',
+                description: '体重や体調を毎日記録すると、変化の振り返りに役立ちます。',
+                side: 'top',
+                align: 'center'
+            }
         }
-    },
-    {
-        element: '.orb-container',
-        popover: {
-            title: '反映結果（Homeオーブ）',
-            description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
-            side: 'bottom',
-            align: 'center'
+    ],
+    stats: [
+        {
+            element: '#tab-stats',
+            popover: {
+                title: 'Statsの使い方',
+                description: '飲酒・運動・チェック傾向を期間別に分析できます。',
+                side: 'top',
+                align: 'center'
+            }
         }
-    }
-];
+    ],
+    cellar: [
+        {
+            element: '#tab-cellar',
+            popover: {
+                title: 'Cellarの使い方',
+                description: 'Logsで履歴、Collectionsで銘柄別の集計を確認できます。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ],
+    settings: [
+        {
+            element: '#tab-settings',
+            popover: {
+                title: 'Settingsの使い方',
+                description: 'プロフィール、期間設定、バックアップなどをここで管理します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-save-settings',
+            popover: {
+                title: '保存',
+                description: '設定変更後は保存ボタンで反映してください。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ]
+};
 
 const MANDATORY_TOUR_STEPS = [
     {
@@ -658,6 +741,41 @@ export const Onboarding = {
             driverObj.drive();
             Onboarding._tourStartTimer = null;
         }, 500);
+    },
+
+
+    startDetailedTour: (scope = 'home') => {
+        const steps = DETAILED_TOUR_STEPS[scope] || DETAILED_TOUR_STEPS.home;
+        const availableSteps = steps.filter(step => document.querySelector(step.element));
+
+        if (!availableSteps.length) {
+            showMessage('この画面で開始できる詳細ツアーが見つかりませんでした。', 'warning');
+            return;
+        }
+
+        Onboarding.stopTour();
+
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            allowClose: true,
+            doneBtnText: '完了',
+            nextBtnText: '次へ',
+            prevBtnText: '戻る',
+            onDestroyed: () => {
+                if (Onboarding._activeTour === driverObj) {
+                    Onboarding._activeTour = null;
+                }
+            },
+            steps: availableSteps
+        });
+
+        Onboarding._activeTour = driverObj;
+        Onboarding._tourStartTimer = setTimeout(() => {
+            if (Onboarding._activeTour !== driverObj) return;
+            driverObj.drive();
+            Onboarding._tourStartTimer = null;
+        }, 120);
     },
 
     _activeTour: null,

@@ -207,6 +207,19 @@ const registerActions = () => {
         'onboarding:goToWizard': () => Onboarding.goToWizard(),
         'onboarding:start-new': (args) => Onboarding.startNew(args?.intent),
         'onboarding:skipProfile': () => Onboarding.skipProfile(),
+        'onboarding:startDetailedTour': (args) => {
+            const scope = args?.scope || 'home';
+            const scopeToTab = {
+                home: 'home',
+                record: 'record',
+                stats: 'stats',
+                cellar: 'cellar',
+                settings: 'settings'
+            };
+            const tab = scopeToTab[scope] || 'home';
+            UI.switchTab(tab, { silent: true });
+            setTimeout(() => Onboarding.startDetailedTour(scope), 180);
+        },
         // ▼ 修正：Serviceの呼び出しをActionRouter側で行い、結果をOnboardingに伝える
         'onboarding:setPeriod': async (args) => {
             try {

@@ -106,6 +106,26 @@ const showBackupReminderOnce = () => {
     }, 900);
 };
 
+
+const showTabHintOnce = (tabId) => {
+    const config = {
+        stats: {
+            key: 'nomutore_stats_first_hint_shown_v1',
+            message: 'Statsでは期間ごとの飲酒・運動傾向を分析できます。'
+        },
+        cellar: {
+            key: 'nomutore_cellar_first_hint_shown_v1',
+            message: 'CellarではLogsとCollectionsを切り替えて履歴を確認できます。'
+        }
+    };
+    const target = config[tabId];
+    if (!target) return;
+    if (localStorage.getItem(target.key) === 'true') return;
+
+    localStorage.setItem(target.key, 'true');
+    showMessage(target.message, 'info');
+};
+
 const unlockInstallGuidanceOnce = () => {
     const key = 'nomutore_install_nudge_unlocked_v1';
     if (localStorage.getItem(key) === 'true') return;
@@ -1074,6 +1094,10 @@ if (checkModal) {
 
             if (tabId === 'record' && localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) {
                 showRecordGuideOnce();
+            }
+
+            if (tabId === 'stats' || tabId === 'cellar') {
+                showTabHintOnce(tabId);
             }
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）

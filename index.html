@@ -236,11 +236,11 @@
 
     <hr class="border-gray-100 dark:border-gray-800 mx-2">
 
-    <section class="px-1">
+    <section id="record-manual-input" class="px-1">
         <h3 class="section-title text-sm font-bold text-base-900 dark:text-white mb-2 ml-1">手入力</h3>
         <div class="grid grid-cols-2 gap-3">
             
-            <button data-action="modal:openBeer" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+            <button id="btn-record-beer" data-action="modal:openBeer" class="group relative overflow-hidden p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
                 <div class="w-10 h-10 rounded-full bg-white dark:bg-amber-900/40 flex items-center justify-center text-amber-500 shadow-sm group-hover:scale-110 transition">
                     <i class="ph-duotone ph-beer-bottle text-2xl" aria-hidden="true"></i>
                 </div>
@@ -250,7 +250,7 @@
                 </div>
             </button>
 
-            <button data-action="modal:openExercise" class="group relative overflow-hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
+            <button id="btn-record-exercise" data-action="modal:openExercise" class="group relative overflow-hidden p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition h-28">
                 <div class="w-10 h-10 rounded-full bg-white dark:bg-indigo-900/40 flex items-center justify-center text-indigo-500 shadow-sm group-hover:scale-110 transition">
                     <i class="ph-duotone ph-person-simple-run text-2xl" aria-hidden="true"></i>
                 </div>
@@ -267,7 +267,7 @@
         <h3 class="section-title text-sm font-bold text-base-900 dark:text-white mb-2 ml-1">コンディション & ツール</h3>
         <div class="grid grid-cols-2 gap-3">
             
-            <button data-action="modal:openCheck" class="p-4 rounded-2xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
+            <button id="btn-record-check" data-action="modal:openCheck" class="p-4 rounded-2xl bg-white dark:bg-base-800 border border-gray-100 dark:border-gray-700 flex items-center gap-3 active:scale-95 transition hover:border-emerald-200 shadow-sm">
                 <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-500 shrink-0">
                     <i class="ph-duotone ph-heartbeat text-xl" aria-hidden="true"></i>
                 </div>
@@ -684,6 +684,14 @@
                     <i class="ph-fill ph-info text-indigo-500" aria-hidden="true"></i>
                     このアプリについて
                 </h3>
+                <div class="mb-3 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/40">
+                    <p class="text-[11px] font-bold text-indigo-700 dark:text-indigo-200 mb-2">チュートリアルを再実行</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button data-action="onboarding:startDetailedTour" data-scope="home" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">基本ツアー</button>
+                        <button data-action="onboarding:startDetailedTour" data-scope="settings" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">設定ツアー</button>
+                    </div>
+                </div>
+
                 <button data-action="modal:openHelp" class="w-full flex items-center justify-between p-4 bg-gray-100 dark:bg-gray-800 rounded-xl group transition hover:bg-gray-200 dark:hover:bg-gray-700 mb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm">
@@ -1935,6 +1943,16 @@
                 </h4>
                 
                 <div class="space-y-3">
+                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800/40">
+                        <p class="text-[11px] font-bold text-indigo-700 dark:text-indigo-200 mb-2">詳細ツアー（任意）</p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button data-action="onboarding:startDetailedTour" data-scope="home" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">Home</button>
+                            <button data-action="onboarding:startDetailedTour" data-scope="record" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">Record</button>
+                            <button data-action="onboarding:startDetailedTour" data-scope="stats" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">Stats</button>
+                            <button data-action="onboarding:startDetailedTour" data-scope="cellar" class="py-2 text-[11px] font-bold bg-white dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-700">Cellar</button>
+                        </div>
+                    </div>
+
                     <div class="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700 flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center shadow-sm shrink-0">
                             <i class="ph-duotone ph-lightning text-yellow-500 text-xl" aria-hidden="true"></i>
@@ -2181,14 +2199,14 @@
     </div>
 </div>
 
-<div id="onboarding-modal" class="fixed inset-0 hidden flex items-center justify-center bg-base-50/90 dark:bg-base-900/90 backdrop-blur-xl transition-all duration-300 opacity-0 scale-95">
-        <div class="w-full max-w-md p-6 relative">
+<div id="onboarding-modal" class="fixed inset-0 hidden flex items-start justify-center overflow-y-auto bg-base-50/90 dark:bg-base-900/90 backdrop-blur-xl transition-all duration-300 opacity-0 scale-95 py-4">
+        <div class="w-full max-w-md p-4 sm:p-6 relative my-auto">
             
             <div class="flex justify-center mb-6">
                 <img src="logo-header.png" class="w-16 h-16 object-contain animate-neon-flicker">
             </div>
 
-            <div class="bg-white dark:bg-base-900 rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-white/5">
+            <div class="bg-white dark:bg-base-900 rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-white/5 max-h-[calc(100dvh-2rem)] overflow-y-auto">
                 <div class="px-8 pt-8 pb-4 text-center">
                     <h2 id="wizard-title" class="text-2xl font-black text-base-900 dark:text-white mb-2"></h2>
                     <p id="wizard-desc" class="text-xs font-bold text-gray-500 dark:text-gray-400 leading-relaxed"></p>

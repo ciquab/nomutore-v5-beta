@@ -125,7 +125,7 @@ const DETAILED_TOUR_STEPS = {
 
 const MANDATORY_TOUR_STEPS = [
     {
-        element: '#beer-select-display',
+        element: '.orb-container',
         popover: {
             title: 'Home（収支の確認）',
             description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
@@ -444,6 +444,7 @@ const WIZARD_STEPS = [
             return true;
         }
     },
+
     {
         id: 'step-summary',
         title: '設定内容の確認',
@@ -471,20 +472,20 @@ const WIZARD_STEPS = [
             const periodLabel = periodLabelMap[periodMode] || periodMode;
 
             return `
-                <div class="space-y-3 text-sm text-gray-900 dark:text-gray-100">
+                <div class="space-y-3 text-sm" style="color:#111827;">
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
-                        <p class="font-bold text-gray-900 dark:text-gray-100">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
-                        <p class="font-bold text-gray-900 dark:text-gray-100">計算基準: ${genderLabel}</p>
+                        <p class="text-[11px] mb-1" style="color:#4b5563;">プロフィール</p>
+                        <p class="font-bold" style="color:#111827;">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold" style="color:#111827;">計算基準: ${genderLabel}</p>
                     </div>
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
-                        <p class="font-bold text-gray-900 dark:text-gray-100">メイン: ${mode1}</p>
-                        <p class="font-bold text-gray-900 dark:text-gray-100">サブ: ${mode2}</p>
+                        <p class="text-[11px] mb-1" style="color:#4b5563;">お気に入りビール</p>
+                        <p class="font-bold" style="color:#111827;">メイン: ${mode1}</p>
+                        <p class="font-bold" style="color:#111827;">サブ: ${mode2}</p>
                     </div>
                     <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
-                        <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
-                        <p class="font-bold text-gray-900 dark:text-gray-100">${periodLabel}</p>
+                        <p class="text-[11px] mb-1" style="color:#4b5563;">リセット周期</p>
+                        <p class="font-bold" style="color:#111827;">${periodLabel}</p>
                     </div>
                     <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
                 </div>

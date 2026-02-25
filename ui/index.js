@@ -87,6 +87,25 @@ const buildShareAction = async (kind, logData = null) => {
 };
 
 
+
+const showRecordGuideOnce = () => {
+    const key = 'nomutore_record_first_guide_shown_v1';
+    if (localStorage.getItem(key) === 'true') return;
+
+    localStorage.setItem(key, 'true');
+    showMessage('まずは「ビールを記録」または「運動を記録」から1件入力してみましょう。', 'info');
+};
+
+const showBackupReminderOnce = () => {
+    const key = 'nomutore_backup_reminder_shown_once';
+    if (localStorage.getItem(key) === 'true') return;
+
+    localStorage.setItem(key, 'true');
+    setTimeout(() => {
+        showMessage('データ保護のため、設定画面からバックアップを作成しておくのがおすすめです。', 'info');
+    }, 900);
+};
+
 const unlockInstallGuidanceOnce = () => {
     const key = 'nomutore_install_nudge_unlocked_v1';
     if (localStorage.getItem(key) === 'true') return;
@@ -456,6 +475,10 @@ export const UI = {
             const shareAction = await buildShareAction('beer', result.savedLog);
             showMessage(msg, 'success', shareAction);
 
+            if (!result.isUpdate) {
+                showBackupReminderOnce();
+            }
+
             // 4. Untappd連携（Serviceが生成したURLがあれば開く）
             if (result.untappdSearchTerm) {
                 const query = encodeURIComponent(result.untappdSearchTerm);
@@ -519,6 +542,10 @@ document.addEventListener('save-exercise', async (e) => {
                 ? await buildShareAction('exercise', result.savedLog)
                 : null;
             showMessage(msg, 'success', shareAction);
+
+            if (!result.isUpdate) {
+                showBackupReminderOnce();
+            }
 
             // 4. クリーンアップ処理
             toggleModal('exercise-modal', false);
@@ -1043,6 +1070,10 @@ if (checkModal) {
 
             if (tabId === 'settings') {
                 renderSettings();
+            }
+
+            if (tabId === 'record' && localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) {
+                showRecordGuideOnce();
             }
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）

@@ -259,6 +259,11 @@ const WIZARD_STEPS = [
                     </button>
                     <input type="file" id="wizard-import-file" class="hidden">
                 </div>
+                ${localStorage.getItem(FIRST_RECORD_INTENT_KEY) === 'beer' ? `
+                <button data-action="onboarding:skipProfile" class="w-full py-2 text-xs font-bold text-gray-500 hover:text-indigo-500 transition">
+                    後で設定する（ビール記録を先に開始）
+                </button>
+                ` : ''}
             </div>
         `,
         // このステップ自体にバリデーションは不要（ボタンクリックで遷移するため）
@@ -475,6 +480,7 @@ const WIZARD_STEPS = [
             return true;
         }
     },
+
     {
         id: 'step-summary',
         title: '設定内容の確認',

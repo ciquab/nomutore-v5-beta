@@ -6,6 +6,150 @@ import { Feedback, showConfetti, showMessage, showAppShell } from './dom.js';
 import { DataManager } from '../dataManager.js';
 
 let currentStepIndex = 0;
+const FIRST_RECORD_INTENT_KEY = 'nomutore_first_record_intent';
+
+
+const DETAILED_TOUR_STEPS = {
+    home: [
+        {
+            element: '.orb-container',
+            popover: {
+                title: 'Homeの見方',
+                description: '中央のオーブで、飲酒カロリーと運動消費の収支を一目で確認できます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#liver-rank-card',
+            popover: {
+                title: 'LiverRank',
+                description: '記録の傾向から現在のコンディション目安を表示します。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#check-status',
+            popover: {
+                title: 'CheckStatus',
+                description: 'デイリーチェックの達成状況を確認できます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        }
+    ],
+    record: [
+        {
+            element: '#record-manual-input',
+            popover: {
+                title: 'Recordの使い方',
+                description: 'ここからビール記録・運動記録・デイリーチェックを開始できます。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-beer',
+            popover: {
+                title: 'ビールを記録',
+                description: '飲んだ内容を記録します。必要に応じて詳細入力も可能です。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-exercise',
+            popover: {
+                title: '運動を記録',
+                description: '運動種目と時間を入力して、消費カロリーを反映します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-record-check',
+            popover: {
+                title: 'デイリーチェック',
+                description: '体重や体調を毎日記録すると、変化の振り返りに役立ちます。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ],
+    stats: [
+        {
+            element: '#tab-stats',
+            popover: {
+                title: 'Statsの使い方',
+                description: '飲酒・運動・チェック傾向を期間別に分析できます。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ],
+    cellar: [
+        {
+            element: '#tab-cellar',
+            popover: {
+                title: 'Cellarの使い方',
+                description: 'Logsで履歴、Collectionsで銘柄別の集計を確認できます。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ],
+    settings: [
+        {
+            element: '#tab-settings',
+            popover: {
+                title: 'Settingsの使い方',
+                description: 'プロフィール、期間設定、バックアップなどをここで管理します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-save-settings',
+            popover: {
+                title: '保存',
+                description: '設定変更後は保存ボタンで反映してください。',
+                side: 'top',
+                align: 'center'
+            }
+        }
+    ]
+};
+
+const MANDATORY_TOUR_STEPS = [
+    {
+        element: '#beer-select-display',
+        popover: {
+            title: 'Home（収支の確認）',
+            description: 'このオーブ周辺で、飲酒と運動の収支を確認できます。<br>まずは「今どういう状態か」をここで見ます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    },
+    {
+        element: '#nav-tab-record',
+        popover: {
+            title: 'Record（最初の1件を記録）',
+            description: 'ビール/運動の記録はここから開始します。<br>デイリーチェックもこのタブから入力できます。',
+            side: 'top',
+            align: 'center'
+        }
+    },
+    {
+        element: '.orb-container',
+        popover: {
+            title: '反映結果（Homeオーブ）',
+            description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
+            side: 'bottom',
+            align: 'center'
+        }
+    }
+];
 
 /* ==========================================================================
    Phase A: Initial Setup (Wizard Steps)
@@ -18,18 +162,33 @@ const WIZARD_STEPS = [
         desc: '開始方法を選択してください。',
         render: () => `
             <div class="space-y-4">
-                <button data-action="onboarding:start-new" 
-                        class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl">
-                            <i class="ph-fill ph-sparkle" aria-hidden="true"></i>
+                <div class="grid grid-cols-1 gap-2">
+                    <button data-action="onboarding:start-new" data-intent="beer"
+                            class="w-full p-4 bg-indigo-50 dark:bg-indigo-900/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-2xl text-left group hover:border-indigo-500 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-brand text-white rounded-full flex items-center justify-center text-xl">
+                                <i class="ph-fill ph-beer-bottle" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <div class="font-black text-base-900 dark:text-white">ビールを先に記録したい</div>
+                                <div class="text-[11px] text-gray-500">プロフィールは後で設定できます</div>
+                            </div>
                         </div>
-                        <div>
-                            <div class="font-black text-base-900 dark:text-white">新規ではじめる</div>
-                            <div class="text-[11px] text-gray-500">新しく記録を開始します</div>
+                    </button>
+
+                    <button data-action="onboarding:start-new" data-intent="exercise"
+                            class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left group hover:border-indigo-300 transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 text-brand rounded-full flex items-center justify-center text-xl">
+                                <i class="ph-fill ph-person-simple-run" aria-hidden="true"></i>
+                            </div>
+                            <div>
+                                <div class="font-black text-base-900 dark:text-white">運動を先に記録したい</div>
+                                <div class="text-[11px] text-gray-500">先にプロフィール入力が必要です</div>
+                            </div>
                         </div>
-                    </div>
-                </button>
+                    </button>
+                </div>
 
                 <button id="btn-toggle-restore" 
                         class="w-full p-4 bg-white dark:bg-base-800 border-2 border-gray-100 dark:border-gray-700 rounded-2xl text-left hover:border-indigo-300 transition-all">
@@ -93,6 +252,11 @@ const WIZARD_STEPS = [
                         </div>
                     </div>
                 </div>
+                ${localStorage.getItem(FIRST_RECORD_INTENT_KEY) === 'beer' ? `
+                <button data-action="onboarding:skipProfile" class="w-full py-2 text-xs font-bold text-gray-500 hover:text-indigo-500 transition">
+                    後で設定する（ビール記録を先に開始）
+                </button>
+                ` : ''}
             </div>
         `,
         validate: () => {
@@ -107,6 +271,7 @@ const WIZARD_STEPS = [
             localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, h);
             localStorage.setItem(APP.STORAGE_KEYS.AGE, a);
             localStorage.setItem(APP.STORAGE_KEYS.GENDER, document.getElementById('wiz-gender').value);
+            localStorage.removeItem('nomutore_profile_deferred');
             return true;
         }
     },
@@ -242,13 +407,76 @@ const WIZARD_STEPS = [
                     </div>
                 </div>
 
-                <div class="flex items-center justify-center gap-2 mt-2 opacity-60">
+                <label class="flex items-center justify-center gap-2 mt-2 p-2 rounded-xl bg-white/60 dark:bg-white/5 cursor-pointer border border-red-100 dark:border-red-900/30">
+                    <input type="checkbox" id="wiz-data-safety-ack" class="w-4 h-4 accent-emerald-500">
+                    <span class="text-[11px] font-bold">上記を理解しました（必須）</span>
+                </label>
+
+                <div class="flex items-center justify-center gap-2 opacity-60">
                     <i class="ph-bold ph-check-circle text-emerald-500" aria-hidden="true"></i>
-                    <span class="text-[11px] font-bold">上記を理解して次へ進む</span>
+                    <span class="text-[11px] font-bold">確認後に次へ進めます</span>
                 </div>
             </div>
-        `
+        `,
+        validate: () => {
+            const ack = /** @type {HTMLInputElement|null} */ (document.getElementById('wiz-data-safety-ack'));
+            if (!ack || !ack.checked) {
+                showMessage('データ保護の注意事項への同意が必要です', 'error');
+                return false;
+            }
+            localStorage.setItem('nomutore_data_safety_ack_completed', 'true');
+            return true;
+        }
     },
+    {
+        id: 'step-summary',
+        title: '設定内容の確認',
+        desc: 'この内容ではじめます。必要なら戻って修正できます。',
+        render: () => {
+            const weight = localStorage.getItem(APP.STORAGE_KEYS.WEIGHT) || '-';
+            const height = localStorage.getItem(APP.STORAGE_KEYS.HEIGHT) || '-';
+            const age = localStorage.getItem(APP.STORAGE_KEYS.AGE) || '-';
+            const gender = localStorage.getItem(APP.STORAGE_KEYS.GENDER) || APP.DEFAULTS.GENDER;
+            const mode1 = localStorage.getItem(APP.STORAGE_KEYS.MODE1) || APP.DEFAULTS.MODE1;
+            const mode2 = localStorage.getItem(APP.STORAGE_KEYS.MODE2) || APP.DEFAULTS.MODE2;
+            const periodMode = localStorage.getItem(APP.STORAGE_KEYS.PERIOD_MODE) || APP.DEFAULTS.PERIOD_MODE;
+            const genderLabelMap = {
+                male: '男性基準',
+                female: '女性基準',
+                other: 'その他'
+            };
+            const periodLabelMap = {
+                weekly: '週次リセット',
+                monthly: '月次リセット',
+                permanent: 'リセットなし（永久）',
+                custom: 'カスタム'
+            };
+            const genderLabel = genderLabelMap[gender] || 'その他';
+            const periodLabel = periodLabelMap[periodMode] || periodMode;
+
+            return `
+                <div class="space-y-3 text-sm">
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">プロフィール</p>
+                        <p class="font-bold">体重 ${weight}kg / 身長 ${height}cm / 年齢 ${age}</p>
+                        <p class="font-bold">計算基準: ${genderLabel}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">お気に入りビール</p>
+                        <p class="font-bold">メイン: ${mode1}</p>
+                        <p class="font-bold">サブ: ${mode2}</p>
+                    </div>
+                    <div class="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/70">
+                        <p class="text-[11px] text-gray-500 mb-1">リセット周期</p>
+                        <p class="font-bold">${periodLabel}</p>
+                    </div>
+                    <p class="text-[11px] text-gray-500 text-center">※修正する場合は「Back」で戻ってください。</p>
+                </div>
+            `;
+        },
+        validate: () => true
+    },
+
     {
         id: 'step-start',
         title: 'Beer & Burn',
@@ -317,7 +545,10 @@ export const Onboarding = {
     /**
      * 新規ユーザーとしてウィザードを進行させる
      */
-    startNew: () => {
+    startNew: (intent = 'beer') => {
+        const normalizedIntent = intent === 'exercise' ? 'exercise' : 'beer';
+        localStorage.setItem(FIRST_RECORD_INTENT_KEY, normalizedIntent);
+
         // 復元オプションが表示されている場合は隠す
         const restoreOptions = document.getElementById('restore-options');
         if (restoreOptions) {
@@ -326,6 +557,22 @@ export const Onboarding = {
 
         // 次のステップ（通常はプロフィール設定）へ進む
         Onboarding.nextStep();
+    },
+
+    skipProfile: () => {
+        localStorage.setItem(APP.STORAGE_KEYS.WEIGHT, String(APP.DEFAULTS.WEIGHT));
+        localStorage.setItem(APP.STORAGE_KEYS.HEIGHT, String(APP.DEFAULTS.HEIGHT));
+        localStorage.setItem(APP.STORAGE_KEYS.AGE, String(APP.DEFAULTS.AGE));
+        localStorage.setItem(APP.STORAGE_KEYS.GENDER, APP.DEFAULTS.GENDER);
+        localStorage.setItem('nomutore_profile_deferred', 'true');
+
+        // プロフィール未入力エラーのバリデーションは通さず、次ステップへ遷移
+        Feedback.haptic.light();
+        if (currentStepIndex < WIZARD_STEPS.length - 1) {
+            Onboarding.showWizard(currentStepIndex + 1);
+        } else {
+            Onboarding.finishWizard();
+        }
     },
 
     showWizard: (index) => {
@@ -433,6 +680,13 @@ export const Onboarding = {
     complete: () => {
         localStorage.setItem(APP.STORAGE_KEYS.ONBOARDED, 'true');
         Onboarding.showAppUI();
+
+        // Phase 1: 完了後は Record タブへ誘導
+        const recordTabBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('nav-tab-record'));
+        if (recordTabBtn) {
+            setTimeout(() => recordTabBtn.click(), 80);
+        }
+
         Onboarding.startTour();
     },
 
@@ -485,60 +739,7 @@ export const Onboarding = {
                     Onboarding._activeTour = null;
                 }
             },
-            steps: [
-                {
-                    element: '#beer-select-display', 
-                    popover: {
-                        title: 'ビアスタイルの選択',
-                        description: 'タップでお気に入りビールを切り替えます。<br>選択中のビールのカロリーを基準に、借金の換算本数が再計算されます。',
-                        side: 'bottom', 
-                        align: 'center'
-                    }
-                },
-                { 
-                    element: '.orb-container', 
-                    popover: { 
-                        title: 'カロリー収支',
-                        description: 'カロリー収支を表示します。<br>飲んで溜まった借金を、運動で返済しましょう。',
-                        side: 'bottom',
-                        align: 'center'
-                    } 
-                },
-                { 
-                    element: '#nav-tab-record', 
-                    popover: { 
-                        title: 'Recordタブ',
-                        description: 'ビールや運動の記録はここから。<br>また、画面を<strong>左右にスワイプ</strong>することでもタブを切り替えられます。',
-                        side: 'top',
-                        align: 'center'
-                    } 
-                },
-                { 
-                    element: '#liver-rank-card', 
-                    popover: { 
-                        title: 'Liver Rank', 
-                        description: 'あなたのランクです。<br>休肝日や完済（ビールのカロリーを運動で相殺すること）を継続すると、ランクが上がります。'
-                    } 
-                },
-                { 
-                    element: '#btn-fab-fixed', 
-                    popover: { 
-                        title: 'アクションメニュー',
-                        description: '前回登録したビールや運動は、ここからワンタップでもう一度記録できます。',
-                        side: 'top',
-                        align: 'center'
-                    } 
-                },
-                {
-                    element: '#btn-help', 
-                    popover: {
-                        title: 'ヘルプ',
-                        description: '詳しい使い方やヒントは、いつでもこのボタンから確認できます。<br>Good Luck!',
-                        side: 'bottom',
-                        align: 'end'
-                    }
-                }
-            ]
+            steps: MANDATORY_TOUR_STEPS
         });
 
         Onboarding._activeTour = driverObj;
@@ -547,6 +748,41 @@ export const Onboarding = {
             driverObj.drive();
             Onboarding._tourStartTimer = null;
         }, 500);
+    },
+
+
+    startDetailedTour: (scope = 'home') => {
+        const steps = DETAILED_TOUR_STEPS[scope] || DETAILED_TOUR_STEPS.home;
+        const availableSteps = steps.filter(step => document.querySelector(step.element));
+
+        if (!availableSteps.length) {
+            showMessage('この画面で開始できる詳細ツアーが見つかりませんでした。', 'warning');
+            return;
+        }
+
+        Onboarding.stopTour();
+
+        const driverObj = driver({
+            showProgress: true,
+            animate: true,
+            allowClose: true,
+            doneBtnText: '完了',
+            nextBtnText: '次へ',
+            prevBtnText: '戻る',
+            onDestroyed: () => {
+                if (Onboarding._activeTour === driverObj) {
+                    Onboarding._activeTour = null;
+                }
+            },
+            steps: availableSteps
+        });
+
+        Onboarding._activeTour = driverObj;
+        Onboarding._tourStartTimer = setTimeout(() => {
+            if (Onboarding._activeTour !== driverObj) return;
+            driverObj.drive();
+            Onboarding._tourStartTimer = null;
+        }, 120);
     },
 
     _activeTour: null,
@@ -741,4 +977,3 @@ Onboarding.playSplash = () => {
         }
     }, 2000); // 2秒で十分
 };
-

@@ -136,6 +136,28 @@ const showTabHintOnce = (tabId) => {
     showMessage(target.message, 'info');
 };
 
+
+const FIRST_RECORD_SAVED_KEY = 'nomutore_first_record_saved_once';
+const HOME_DETAILED_TOUR_PROMPTED_KEY = 'nomutore_home_detailed_tour_prompted_once';
+
+const maybePromptHomeDetailedTour = async () => {
+    if (StateManager.activeTab !== 'home') return;
+    if (localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED) !== 'true') return;
+    if (localStorage.getItem(FIRST_RECORD_SAVED_KEY) !== 'true') return;
+    if (localStorage.getItem(HOME_DETAILED_TOUR_PROMPTED_KEY) === 'true') return;
+    if (localStorage.getItem(MANDATORY_TOUR_RUNNING_KEY) === 'true') return;
+
+    localStorage.setItem(HOME_DETAILED_TOUR_PROMPTED_KEY, 'true');
+
+    const shouldStart = confirm('ホーム画面の詳細説明を確認しますか？');
+    if (!shouldStart) return;
+
+    const mod = await import('./onboarding.js');
+    if (mod?.Onboarding?.startDetailedTour) {
+        mod.Onboarding.startDetailedTour('home');
+    }
+};
+
 const unlockInstallGuidanceOnce = () => {
     const key = 'nomutore_install_nudge_unlocked_v1';
     if (localStorage.getItem(key) === 'true') return;
@@ -506,6 +528,7 @@ export const UI = {
             showMessage(msg, 'success', shareAction);
 
             if (!result.isUpdate) {
+                localStorage.setItem(FIRST_RECORD_SAVED_KEY, 'true');
                 showBackupReminderOnce();
             }
 
@@ -574,6 +597,7 @@ document.addEventListener('save-exercise', async (e) => {
             showMessage(msg, 'success', shareAction);
 
             if (!result.isUpdate) {
+                localStorage.setItem(FIRST_RECORD_SAVED_KEY, 'true');
                 showBackupReminderOnce();
             }
 
@@ -1114,6 +1138,12 @@ if (checkModal) {
                 showRecordGuideOnce();
             }
 
+            if (tabId === 'home') {
+                setTimeout(() => {
+                    maybePromptHomeDetailedTour().catch((e) => console.error('home detailed tour prompt failed', e));
+                }, 120);
+            }
+
             if (tabId === 'stats' || tabId === 'cellar') {
                 showTabHintOnce(tabId);
             }
@@ -1439,6 +1469,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 

@@ -23,6 +23,15 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
+            element: '#beer-select-display',
+            popover: {
+                title: 'ビール基準の切り替え',
+                description: 'ここで表示の換算基準となるビールスタイルを切り替えできます。',
+                side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
             element: '#liver-rank-card',
             popover: {
                 title: 'LiverRank',
@@ -34,9 +43,36 @@ const DETAILED_TOUR_STEPS = {
         {
             element: '#check-status',
             popover: {
-                title: 'CheckStatus',
-                description: 'デイリーチェックの達成状況を確認できます。',
+                title: 'CheckStatus（デイリーチェック）',
+                description: 'デイリーチェックの達成状況を確認し、未入力ならここから記録を開けます。',
                 side: 'bottom',
+                align: 'center'
+            }
+        },
+        {
+            element: '#alcohol-meter-card',
+            popover: {
+                title: 'Weekly Alcohol & Streak',
+                description: '週間の飲酒量推移とストリーク状態をまとめて確認できます。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#streak-count',
+            popover: {
+                title: 'Streak',
+                description: '継続状況を数値化した指標です。習慣化の目安として使えます。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#weekly-calendar',
+            popover: {
+                title: 'Weekly Alcohol',
+                description: '曜日ごとの記録状況を確認できます。週内の偏り把握に便利です。',
+                side: 'top',
                 align: 'center'
             }
         }

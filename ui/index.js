@@ -87,6 +87,77 @@ const buildShareAction = async (kind, logData = null) => {
 };
 
 
+
+const RECORD_GUIDE_SHOWN_KEY = 'nomutore_record_first_guide_shown_v1';
+const RECORD_GUIDE_PENDING_KEY = 'nomutore_record_first_guide_pending_v1';
+const MANDATORY_TOUR_RUNNING_KEY = 'nomutore_mandatory_tour_running';
+
+const showRecordGuideOnce = () => {
+    const key = RECORD_GUIDE_SHOWN_KEY;
+    if (localStorage.getItem(key) === 'true') return;
+
+    if (localStorage.getItem(MANDATORY_TOUR_RUNNING_KEY) === 'true') {
+        localStorage.setItem(RECORD_GUIDE_PENDING_KEY, 'true');
+        return;
+    }
+
+    localStorage.removeItem(RECORD_GUIDE_PENDING_KEY);
+    localStorage.setItem(key, 'true');
+    showMessage('まずは「ビールを記録」または「運動を記録」から1件入力してみましょう。', 'info');
+};
+
+const showBackupReminderOnce = () => {
+    const key = 'nomutore_backup_reminder_shown_once';
+    if (localStorage.getItem(key) === 'true') return;
+
+    localStorage.setItem(key, 'true');
+    setTimeout(() => {
+        showMessage('データ保護のため、設定画面からバックアップを作成しておくのがおすすめです。', 'info');
+    }, 900);
+};
+
+
+const showTabHintOnce = (tabId) => {
+    const config = {
+        stats: {
+            key: 'nomutore_stats_first_hint_shown_v1',
+            message: 'Statsでは期間ごとの飲酒・運動傾向を分析できます。'
+        },
+        cellar: {
+            key: 'nomutore_cellar_first_hint_shown_v1',
+            message: 'CellarではLogsとCollectionsを切り替えて履歴を確認できます。'
+        }
+    };
+    const target = config[tabId];
+    if (!target) return;
+    if (localStorage.getItem(target.key) === 'true') return;
+
+    localStorage.setItem(target.key, 'true');
+    showMessage(target.message, 'info');
+};
+
+
+const FIRST_RECORD_SAVED_KEY = 'nomutore_first_record_saved_once';
+const HOME_DETAILED_TOUR_PROMPTED_KEY = 'nomutore_home_detailed_tour_prompted_once';
+
+const maybePromptHomeDetailedTour = async () => {
+    if (StateManager.activeTab !== 'home') return;
+    if (localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED) !== 'true') return;
+    if (localStorage.getItem(FIRST_RECORD_SAVED_KEY) !== 'true') return;
+    if (localStorage.getItem(HOME_DETAILED_TOUR_PROMPTED_KEY) === 'true') return;
+    if (localStorage.getItem(MANDATORY_TOUR_RUNNING_KEY) === 'true') return;
+
+    localStorage.setItem(HOME_DETAILED_TOUR_PROMPTED_KEY, 'true');
+
+    const shouldStart = confirm('ホーム画面の詳細説明を確認しますか？');
+    if (!shouldStart) return;
+
+    const mod = await import('./onboarding.js');
+    if (mod?.Onboarding?.startDetailedTour) {
+        mod.Onboarding.startDetailedTour('home');
+    }
+};
+
 const unlockInstallGuidanceOnce = () => {
     const key = 'nomutore_install_nudge_unlocked_v1';
     if (localStorage.getItem(key) === 'true') return;
@@ -456,6 +527,11 @@ export const UI = {
             const shareAction = await buildShareAction('beer', result.savedLog);
             showMessage(msg, 'success', shareAction);
 
+            if (!result.isUpdate) {
+                localStorage.setItem(FIRST_RECORD_SAVED_KEY, 'true');
+                showBackupReminderOnce();
+            }
+
             // 4. Untappd連携（Serviceが生成したURLがあれば開く）
             if (result.untappdSearchTerm) {
                 const query = encodeURIComponent(result.untappdSearchTerm);
@@ -519,6 +595,11 @@ document.addEventListener('save-exercise', async (e) => {
                 ? await buildShareAction('exercise', result.savedLog)
                 : null;
             showMessage(msg, 'success', shareAction);
+
+            if (!result.isUpdate) {
+                localStorage.setItem(FIRST_RECORD_SAVED_KEY, 'true');
+                showBackupReminderOnce();
+            }
 
             // 4. クリーンアップ処理
             toggleModal('exercise-modal', false);
@@ -959,6 +1040,14 @@ if (checkModal) {
         // --- グローバルジェスチャーリスナー（スワイプ・FABスクロール） ---
         setupGlobalListeners((tabId) => UI.switchTab(tabId));
 
+        // mandatory tour 完了後に、保留中のRecordガイドを1回だけ表示
+        document.addEventListener('onboarding:mandatoryTourFinished', () => {
+            if (localStorage.getItem(RECORD_GUIDE_PENDING_KEY) !== 'true') return;
+            if (!localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) return;
+            showRecordGuideOnce();
+        });
+
+
                 // --- ★追加: チェックライブラリの開閉を監視してSaveボタンを制御 ---
         const libModal = document.getElementById('check-library-modal');
         if (libModal) {
@@ -1043,6 +1132,20 @@ if (checkModal) {
 
             if (tabId === 'settings') {
                 renderSettings();
+            }
+
+            if (tabId === 'record' && localStorage.getItem(APP.STORAGE_KEYS.ONBOARDED)) {
+                showRecordGuideOnce();
+            }
+
+            if (tabId === 'home') {
+                setTimeout(() => {
+                    maybePromptHomeDetailedTour().catch((e) => console.error('home detailed tour prompt failed', e));
+                }, 120);
+            }
+
+            if (tabId === 'stats' || tabId === 'cellar') {
+                showTabHintOnce(tabId);
             }
 
             // Cellarタブ: サブビューのDOM切替のみ行う（refreshUIはTransition外で）
@@ -1366,6 +1469,5 @@ export const initHandleRepeatDelegation = () => {
         }
     });
 };
-
 
 

@@ -52,8 +52,8 @@ const DETAILED_TOUR_STEPS = {
         {
             element: '#alcohol-meter-card',
             popover: {
-                title: 'Weekly Alcohol & Streak',
-                description: '週間の飲酒量推移とストリーク状態をまとめて確認できます。',
+                title: 'Weekly Alcohol',
+                description: '週間の飲酒量推移を確認できます。飲酒量の増減や偏りの把握に役立ちます。',
                 side: 'top',
                 align: 'center'
             }
@@ -70,7 +70,7 @@ const DETAILED_TOUR_STEPS = {
         {
             element: '#weekly-calendar',
             popover: {
-                title: 'Weekly Alcohol',
+                title: 'Weekly Calendar',
                 description: '曜日ごとの記録状況を確認できます。週内の偏り把握に便利です。',
                 side: 'top',
                 align: 'center'

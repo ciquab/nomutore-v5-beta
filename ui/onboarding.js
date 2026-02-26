@@ -148,7 +148,7 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
-            element: '#weight-input',
+            element: '#settings-profile-card',
             popover: {
                 title: 'プロフィール（体重・身長・年齢・性別）',
                 description: 'この4項目は運動消費カロリーや各種推定値の計算精度に影響します。入力後は必ず保存してください。',
@@ -166,10 +166,10 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
-            element: '#custom-period-settings',
+            element: '#setting-period-mode',
             popover: {
-                title: 'カスタム期間',
-                description: '任意の開始日・終了日・ラベルで期間を固定できます。特定イベント期間だけを追跡したい時に便利です。',
+                title: 'カスタム期間の使い方',
+                description: '期間を「カスタム」にすると、この下に開始日・終了日・ラベル入力欄が表示されます。イベント期間や短期目標の追跡に便利です。',
                 side: 'bottom',
                 align: 'center'
             }
@@ -202,7 +202,7 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
-            element: '#notif-daily-enabled',
+            element: '#settings-notification-card',
             popover: {
                 title: '通知設定（デイリー / 期日）',
                 description: 'デイリーリマインドと、期間終了前通知をON/OFFできます。必要に応じて通知時刻も調整できます。',
@@ -211,7 +211,7 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
-            element: '#btn-cloud-backup',
+            element: '#settings-data-card',
             popover: {
                 title: 'バックアップ・復元',
                 description: 'クラウド保存やJSON入出力でデータ保護ができます。端末変更や障害時に備えて定期バックアップがおすすめです。',

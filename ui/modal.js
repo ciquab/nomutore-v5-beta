@@ -444,6 +444,12 @@ export const handleSaveSettings = async () => {
         await Service.updateProfile(profileData);
         await Service.updateAppSettings(appSettings);
 
+        const hasCompletedProfile = [profileData.weight, profileData.height, profileData.age, profileData.gender]
+            .every(v => String(v ?? '').trim() !== '');
+        if (hasCompletedProfile) {
+            localStorage.removeItem('nomutore_profile_deferred');
+        }
+
         // 4b. 通知設定の保存
         const dailyEnabled = document.getElementById('notif-daily-enabled')?.checked ?? false;
         const dailyTime = document.getElementById('notif-daily-time')?.value || '21:00';

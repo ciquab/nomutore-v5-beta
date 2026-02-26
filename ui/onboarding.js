@@ -113,6 +113,15 @@ const DETAILED_TOUR_STEPS = {
                 side: 'top',
                 align: 'center'
             }
+        },
+        {
+            element: '[data-action="modal:openTimer"]',
+            popover: {
+                title: 'ストップウォッチ',
+                description: '運動中のタイマーとして使えます。没入モードで集中でき、終了時に消費カロリーを自動計算します。',
+                side: 'top',
+                align: 'center'
+            }
         }
     ],
     stats: [
@@ -133,6 +142,15 @@ const DETAILED_TOUR_STEPS = {
                 title: 'Cellarの使い方',
                 description: 'Logsで履歴、Collectionsで銘柄別の集計を確認できます。',
                 side: 'top',
+                align: 'center'
+            }
+        },
+        {
+            element: '#btn-cellar-archives',
+            popover: {
+                title: 'Archives（過去の記録）',
+                description: '期間リセットごとの結果を保存・閲覧できます。各期間の収支や達成状況をあとから振り返れます。',
+                side: 'bottom',
                 align: 'center'
             }
         }

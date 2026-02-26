@@ -211,6 +211,15 @@ const DETAILED_TOUR_STEPS = {
             }
         },
         {
+            element: '#settings-daily-check-card',
+            popover: {
+                title: 'デイリーチェック項目設定',
+                description: '「ライブラリを開く」で記録項目のON/OFF、「カスタム追加」で独自項目を追加できます。日々入力するチェック項目をここで最適化します。',
+                side: 'top',
+                align: 'center'
+            }
+        },
+        {
             element: '#settings-data-card',
             popover: {
                 title: 'バックアップ・復元',

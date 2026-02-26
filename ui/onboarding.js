@@ -340,15 +340,10 @@ const WIZARD_STEPS = [
                     </button>
                     <input type="file" id="wizard-import-file" class="hidden">
                 </div>
-                ${localStorage.getItem(FIRST_RECORD_INTENT_KEY) === 'beer' ? `
-                <button data-action="onboarding:skipProfile" class="w-full py-2 text-xs font-bold text-gray-500 hover:text-indigo-500 transition">
-                    後で設定する（ビール記録を先に開始）
-                </button>
-                ` : ''}
             </div>
         `,
         // このステップ自体にバリデーションは不要（ボタンクリックで遷移するため）
-        validate: () => true 
+        validate: () => true
     },
     {
         id: 'step-profile',
@@ -700,6 +695,7 @@ export const Onboarding = {
     showWizard: (index) => {
         currentStepIndex = index;
         const step = WIZARD_STEPS[index];
+        if (!step) return;
         const modal = document.getElementById('onboarding-modal');
         const container = document.getElementById('wizard-content');
         const title = document.getElementById('wizard-title');
@@ -707,6 +703,7 @@ export const Onboarding = {
         const btnNext = document.getElementById('btn-wizard-next');
         const btnPrev = document.getElementById('btn-wizard-prev');
         const dots = document.getElementById('wizard-dots');
+        if (!modal || !container || !title || !desc || !btnNext || !btnPrev || !dots) return;
 
         title.textContent = step.title;
         desc.innerHTML = step.desc;
@@ -746,8 +743,9 @@ export const Onboarding = {
     else btnPrev.classList.remove('invisible');
 
     // Nextボタン：ステップに応じた切り替え
-    if (index === 0) {
-        // Welcomeページでは、中のカードボタンで次に進ませるため、下のNextボタンは消す
+    const step_id = step.id;
+    if (index === 0 || step_id === 'step-period') {
+        // Welcomeページ / Periodページでは、中のカードボタンで次に進ませるため、下のNextボタンは消す
         btnNext.classList.add('hidden');
     } else {
         btnNext.classList.remove('hidden');

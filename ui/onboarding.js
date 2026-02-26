@@ -26,7 +26,7 @@ const DETAILED_TOUR_STEPS = {
             element: '#beer-select-display',
             popover: {
                 title: 'ビール基準の切り替え',
-                description: 'ここで表示の換算基準となるビールスタイルを切り替えできます。',
+                description: 'ここで表示の換算基準となるビアスタイルを切り替えできます。',
                 side: 'bottom',
                 align: 'center'
             }
@@ -204,8 +204,8 @@ const DETAILED_TOUR_STEPS = {
         {
             element: '#setting-mode-1',
             popover: {
-                title: 'ビール換算基準（Mode1 / Mode2）',
-                description: 'Home表示で使う換算基準を2つ登録できます。ヘッダーの切替と連動し、表示の解釈を合わせられます。',
+                title: 'ビール換算基準',
+                description: 'Home表示で使う換算基準（メインビール・サブビール）を登録できます。ヘッダーの切替と連動し、表示の解釈を合わせられます。',
                 side: 'bottom',
                 align: 'center'
             }
@@ -214,7 +214,7 @@ const DETAILED_TOUR_STEPS = {
             element: '#setting-base-exercise',
             popover: {
                 title: '運動プリセット',
-                description: '「ベース運動」と「Recordのデフォルト運動」を設定できます。日々の入力回数を減らして記録を高速化できます。',
+                description: 'オーブの換算基準となる「基準運動」と「Recordのデフォルト運動」を設定できます。日々の入力回数を減らして記録を高速化できます。',
                 side: 'bottom',
                 align: 'center'
             }
@@ -280,7 +280,7 @@ const MANDATORY_TOUR_STEPS = [
     {
         element: '.orb-container',
         popover: {
-            title: '反映結果（Homeオーブ）',
+            title: '反映結果（オーブ）',
             description: '記録すると、このオーブの表示が更新されます。<br>履歴の詳細確認は Cellar > Logs から行えます。',
             side: 'bottom',
             align: 'center'

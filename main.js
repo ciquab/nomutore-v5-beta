@@ -217,6 +217,7 @@ const registerActions = () => {
                 settings: 'settings'
             };
             const tab = scopeToTab[scope] || 'home';
+            toggleModal('help-modal', false);
             UI.switchTab(tab, { silent: true });
             setTimeout(() => Onboarding.startDetailedTour(scope), 180);
         },

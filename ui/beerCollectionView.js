@@ -19,21 +19,21 @@ export function renderBeerCollection(periodLogs, allLogs) {
     container.innerHTML = `
         <div id="beer-collection-section">
             <section id="brewery-leaderboard-section" class="px-1 mb-2">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between">
                     <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">ブルワリーランキング</h3>
                     <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400" id="brewery-count-label"></span>
                 </div>
-                <p class="section-helper mt-1">軸を切り替えてブルワリー傾向を比較できます</p>
+                <p class="section-helper mt-0.5">軸を切り替えてブルワリー傾向を比較できます</p>
             </section>
             <div id="brewery-axis-tabs" class="flex gap-1.5 mb-4 overflow-x-auto pb-1 -mx-1 px-1"></div>
             <div id="brewery-ranking-list" class="space-y-2 mb-4"></div>
 
             <div class="sticky-section-shell py-3 -mx-2 px-2">
-                <div class="flex items-center justify-between mb-1 px-1">
+                <div class="flex items-center justify-between px-1">
                     <h3 class="section-title text-sm font-bold text-base-900 dark:text-white">マイビール</h3>
                     <span class="text-xs font-bold text-gray-500 dark:text-gray-400" id="beer-list-count">${allBeers.length}銘柄</span>
                 </div>
-                <p class="section-helper px-1 mb-3">検索・フィルターで条件を絞り込めます</p>
+                <p class="section-helper mt-0.5 px-1 mb-3">検索・フィルターで条件を絞り込めます</p>
 
                 <div class="space-y-2">
                     <div class="relative">
